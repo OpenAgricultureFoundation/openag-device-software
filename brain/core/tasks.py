@@ -14,3 +14,12 @@ def create_random_user_accounts(total):
         password = get_random_string(50)
         User.objects.create_user(username=username, email=email, password=password)
     return '{} random users created with success!'.format(total)
+
+
+@shared_task
+def increment():
+	i=0
+	while True:
+		print(i)
+		delay(1)
+		i = i + 1
