@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Simple is Better Than Complex</title>
+  <style type="text/css">
+    body {
+      width: 800px;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Django Celery Example</h1>
+  <a href="{% url 'users_list' %}">Users List</a> /
+  <a href="{% url 'generate' %}">Generate Random Users</a>
+  <hr>
+
+  {% if messages %}
+      {% for message in messages %}
+        <p style="color: green">{{ message }}</p>
+      {% endfor %}
+    <hr>
+  {% endif %}
+
+  {% block content %}
+  {% endblock %}
+
+</body>
+</html>
