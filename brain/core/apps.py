@@ -10,4 +10,15 @@ class CoreConfig(AppConfig):
         	return
      
         # Startup code here
-        print("Startup!!!!!!!___!__!__!___!_!_!_")
+        print("--------------------")
+        
+
+        # Import tasks
+        from .tasks import printy
+        
+        # Setup tasks
+        # printy.delay(34)
+
+
+
+
