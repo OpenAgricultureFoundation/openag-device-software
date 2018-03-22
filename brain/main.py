@@ -51,6 +51,6 @@ if __name__ == "__main__":
 
 
 	while True:
-		env.log()
+		env.log(inst=True)
 		sys.log()
 		time.sleep(10)

@@ -16,6 +16,7 @@ class System(object):
     NOS = "Normal Operation"
     CONFIG = "Configuration"
     ERROR = "Error"
+    INVALID_TRANSITION = "Invalid Transition"
 
     # Initialize peripheral states
     WARMING = "Warming up"
@@ -46,6 +47,11 @@ class System(object):
     def prev_state(self, value):
         self._prev_state = value
 
-    def log(self):
-        self.logger.info("System prev_state: {}, state: {}".format(self.prev_state, self.state))
-        self.logger.info("Peripheral state: {}".format(self.peripheral))
+    def log(self, prev_state=False):
+        if prev_state:
+            self.logger.info(self.peripheral)
+        else:
+            log = "{"
+            for peripheral in self.peripheral:
+                log += "'" + peripheral + "'" + ": '" + self.peripheral[peripheral]["state"] + "', "
+            self.logger.info(log[:-2] + "}")

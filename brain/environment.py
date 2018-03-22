@@ -42,7 +42,7 @@ class Environment(object):
             self._avg[variable] = {}
 
 
-    def set(self, peripheral, variable, value):
+    def set_sensor(self, peripheral, variable, value):
         """ Description. """
 
         # Update raw environment dictionary
@@ -89,11 +89,10 @@ class Environment(object):
         self.logger.debug("Reset average")
 
 
-    def log(self):
-        self.logger.info(self._raw)
-
-
-
-        
-
-
+    def log(self, raw=False, inst=False, avg=False):
+        if raw:
+            self.logger.info(self._raw)
+        if inst:
+            self.logger.info(self._inst)
+        if avg:
+            self.logger.info(self._avg)

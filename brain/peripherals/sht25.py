@@ -7,8 +7,8 @@ class SHT25(object):
 	""" A temperature and humidity sensor.
 	
 	Attributes:
-		temperature: Temperature measurement in degrees Celcuis.
-		humidity: Humidity measurement in %RH
+		temperature: Temperature measurement.
+		humidity: Humidity measurement.
 	"""
 
 	# Initialize logger
@@ -21,6 +21,7 @@ class SHT25(object):
 	# Initialize sensor values
 	temperature = None
 	humidity = None
+	initialized = False
 
 	# Initialize class
 	def __init__(self, config, name, env, sys):
@@ -33,7 +34,9 @@ class SHT25(object):
 		self.channel = config["comms"]["channel"]
 		self.address = config["comms"]["address"]
 		self.temperature_name = config["variables"]["temperature"]["name"]
+		self.temperature_unit = config["variables"]["temperature"]["unit"]
 		self.humidity_name = config["variables"]["humidity"]["name"]
+		self.humidity_unit = config["variables"]["humidity"]["unit"]
 
 		# Initialize state variables in class object
 		self._prev_state = self.sys.BOOT
@@ -76,9 +79,24 @@ class SHT25(object):
 
 			self.state = self.sys.NOS
 
-			# Normal Operation State
-			if self.state == self.sys.NOS:
+			# Initialization State
+			# System Transitions: INIT --> NOS or INIT --> CONFIG
+			# Class Transitions: INIT --> ERROR
+			if self.state == self.sys.INIT:
+				if not self.initialized:
+					self.initialize()
+				else:
+					# Check system state for transition
+					if (self.sys.state == self.sys.NOS) or (self.sys.state == self.sys.CONFIG):
+						self.state = self.sys.state
+					else:
+						self.state = self.sys.INVALID_TRANSITION
+					time.sleep(0.2) # 200 ms
 
+			# Normal Operation State
+			# System Transitions: NOS --> CONFIG
+			# Class Transitions: NOS --> ERROR
+			if self.state == self.sys.NOS:
 				# Initialize start time for sampling rate management
 				start_time_ms = time.time()
 				
@@ -88,8 +106,8 @@ class SHT25(object):
 
 				# Update shared environment object
 				with threading.Lock():
-					self.env.set(self.name, self.temperature_name, self.temperature)
-					self.env.set(self.name, self.humidity_name, self.humidity)
+					self.env.set_sensor(self.name, self.temperature_name, self.temperature)
+					self.env.set_sensor(self.name, self.humidity_name, self.humidity)
 
 				# Try to enforce sampling rate
 				self.sampling_duration_seconds = (time.time() - start_time_ms) * 1000
@@ -99,6 +117,23 @@ class SHT25(object):
 					time.sleep(self.sampling_rate_seconds - self.sampling_duration_seconds)
 
 
+			# Configuration State
+
+
+			# Error State
+
+
+
+	def initialize(self):
+		""" Initialize the physical sensor. """
+		try:
+			self.initialized = True
+		except:
+			self.logger.exception("Unable to initialize")
+			self.initialized = False
+			self.sys.state = self.sys.ERROR
+
+
 	def get_temperature(self):
 		""" Description. """
 		try:
@@ -106,8 +141,7 @@ class SHT25(object):
 			self.logger.debug("Got temperature of: {}".format(self.temperature))
 		except:
 			self.logger.exception("Unable to get temperature")
-			# self.set_state(self.sys.ERROR)
-
+			self.sys.state = self.sys.ERROR
 
 
 	def get_humidity(self):
@@ -117,3 +151,4 @@ class SHT25(object):
 			self.logger.debug("Got humidity of: {}".format(self.humidity))
 		except:
 			self.logger.exception("Unable to get humidity")
+			self.sys.state = self.sys.ERROR
