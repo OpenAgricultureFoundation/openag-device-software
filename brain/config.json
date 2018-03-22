@@ -2,15 +2,22 @@
 	"sht25_1": {
 		"class_file": "sht25", 
 		"class_name": "SHT25", 
-		"class_config": {
+		"comms": {
+			"type": "i2c",
 			"bus": "2", 
 			"mux": "7", 
 			"channel": "0", 
 			"address": "0x40"
 		},
-		"variables": [
-			"air_temperature",
-			"air_humidity"
-		]
+		"variables": {
+			"temperature": {
+				"name": "air_temperature",
+				"unit": "celcius"
+			},
+			"humidity": {
+				"name": "air_humidity",
+				"unit": "percent_relative"
+			}
+		}
 	}
 }

@@ -5,7 +5,7 @@ import json, time
 
 # Setup logging
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Try to import models shared with api
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
 	# Create environment object
 	from environment import Environment
-	env = Environment()
+	env = Environment(config)
 
 	# Create system object
 	from system import System
@@ -42,9 +42,15 @@ if __name__ == "__main__":
 		class_instance = getattr(module_instance, class_name)
 
 		# Create peripheral object instances
-		peripheral[peripheral_name] = class_instance(config=config[peripheral_name]["class_config"], name=peripheral_name)
+		peripheral[peripheral_name] = class_instance(config=config[peripheral_name], name=peripheral_name, env=env, sys=sys)
 
 	# Run peripheral objects
 	logger.info("Running peripheral object threads")
 	for peripheral_name in peripheral:
-		peripheral[peripheral_name].run(env)
+		peripheral[peripheral_name].run()
+
+
+	while True:
+		env.log()
+		sys.log()
+		time.sleep(10)

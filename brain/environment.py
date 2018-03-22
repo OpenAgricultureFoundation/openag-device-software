@@ -1,9 +1,9 @@
 """ Description of what file does. """
 
 # Import python modules
-import logging, time, threading
+import logging, time
 
-# Define environment class
+# Define system class
 class Environment(object):
     """ Description """
 
@@ -14,12 +14,17 @@ class Environment(object):
     sampling_rate_seconds = 2
     sampling_duration_seconds = None
 
-
-    def __init__(self):
+    # Initialize class
+    def __init__(self, config):
         """ Description. """
 
-        # Extract all variables from config
-        variables = ["air_temperature", "air_humidity"]
+        # Extract all variable types from config
+        variables = []
+        for peripheral in config:
+            for variable in config[peripheral]["variables"]:
+                var_name = config[peripheral]["variables"][variable]["name"]
+                if var_name not in variables:
+                    variables.append(var_name)
 
         # Initialize raw environment dictionary
         self._raw = {}
@@ -82,3 +87,13 @@ class Environment(object):
         for variable in variables:
             self._avg[variable] = {}
         self.logger.debug("Reset average")
+
+
+    def log(self):
+        self.logger.info(self._raw)
+
+
+
+        
+
+

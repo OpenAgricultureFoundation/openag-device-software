@@ -1,14 +1,4 @@
-{
-	"sht25_1": {
-		"class_file": "sht25", 
-		"class_name": "SHT25", 
-		"class_config": {
-			"bus": "2", 
-			"mux": "7", 
-			"channel": "0", 
-			"address": "0x40"
-		}
-	}, 
+, 
 	"light_panel_taurus_1": {
 		"class_file": "light_panel_taurus", 
 		"class_name": "LightPanelTaurus", 
@@ -19,4 +9,6 @@
 			"address": "0x3c"
 		}
 	}
-}
+
+
+	args=(env, sys,)
