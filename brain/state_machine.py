@@ -78,11 +78,25 @@ class StateMachine(object):
             Transitions to error state on error."""
         self.logger.debug("Entered NOS state")
 
+         # Remove me
+        with threading.Lock():
+            self.env.sensor["desired"]["light_intensity_par"] = 320
+            self.env.sensor["desired"]["light_spectrum_taurus"] = [10, 10, 10, 50, 10, 10]
+
         while True:
-            self.logger.info(self.env.sensor)
-            time.sleep(3) # seconds
+            time.sleep(2) # seconds
+            self.logger.info("sensor:reported: {}".format(self.env.sensor["reported"]))
+            self.logger.info("sensor:desired: {}".format(self.env.sensor["desired"]))
+            self.logger.info("actuator:desired: {}".format(self.env.actuator["desired"]))
+            self.logger.info("actuator:reported: {}".format(self.env.actuator["reported"]))
 
+            if self.sys.reset:
+                self.sys.state = self.states.RESET
+                continue
+            elif self.sys.state == self.states.ERROR:
+                continue
 
+ 
     def reset_state(self):
         """ Runs reset state. """
         time.sleep(0.1) # 100ms
@@ -111,7 +125,7 @@ class StateMachine(object):
         for peripheral_name in self.config["peripherals"]:
             # Extract module parameters from config
             peripheral = self.config["peripherals"][peripheral_name]
-            module_name = "peripherals." + peripheral["class_file"]
+            module_name = "peripheral." + peripheral["class_file"]
             class_name = peripheral["class_name"]
 
             # Import peripheral library
@@ -131,4 +145,9 @@ class StateMachine(object):
     def all_peripherals_ready(self):
         for peripheral in self.sys.peripheral_state:
             state = self.sys.peripheral_state[peripheral]
-            self.logger.warning(state)
+            if state["state"] != self.states.NOS and \
+                state["state"] != self.states.WARMING and \
+                state["state"] != self.states.ERROR:
+                    return False
+        return True
+

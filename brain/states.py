@@ -1,7 +1,6 @@
-""" List of all possible states. """
-
-
 class States(object):
+	""" State machine states """
+
 	BOOT = "Boot"
 	CONFIG = "Configuration"
 	SETUP = "Setup"

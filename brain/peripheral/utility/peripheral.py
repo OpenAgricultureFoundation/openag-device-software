@@ -6,8 +6,8 @@ from states import States
 from errors import Errors
 
 
-class SHT25(object):
-    """ A temperature and humidity sensor. """
+class Peripheral:
+    """ Parent class for peripheral devices e.g. sensors and actuators. """
 
     # Initialize logger
     logger = logging.getLogger(__name__)
@@ -20,10 +20,6 @@ class SHT25(object):
     _state = None
     _error = None
 
-    # Initialize sensor variables
-    _temperature = None
-    _humidity = None
-
     # Initialize timeing variables
     sampling_interval_sec = 2
     last_update_time = None
@@ -32,16 +28,18 @@ class SHT25(object):
     def __init__(self, name, config, env, sys):
         """ Initializes SHT25. """
         self.name = name
+        self.config = config
         self.env = env
         self.sys = sys
+
+        # Initialize communication
         self.bus = config["comms"]["bus"]
         self.mux = config["comms"]["mux"]
         self.channel = config["comms"]["channel"]
         self.address = config["comms"]["address"]
-        self.temperature_name = config["variables"]["temperature"]["name"]
-        self.temperature_unit = config["variables"]["temperature"]["unit"]
-        self.humidity_name = config["variables"]["humidity"]["name"]
-        self.humidity_unit = config["variables"]["humidity"]["unit"]
+
+        # Initialize peripheral specific config
+        self.initialize_peripheral_config()
 
         # Set state & error values
         self.state = self.states.SETUP
@@ -90,38 +88,6 @@ class SHT25(object):
                 self.sys.peripheral_state[self.name] = {}
             self.sys.peripheral_state[self.name]["error"] = self._error
 
-
-    @property
-    def temperature(self):
-        """ Gets temperature value. """
-        return self._temperature
-
-
-    @temperature.setter
-    def temperature(self, value):
-        """ Safely updates temperature in environment object each time
-            it is changed. """
-        self._temperature = value
-        with threading.Lock():
-            self.env.report_sensor_value(self.name, self.temperature_name, 
-                                        self._temperature)
-
-    @property
-    def humidity(self):
-        """ Gets humidity value. """
-        return self._humidity
-
-
-    @humidity.setter
-    def humidity(self, value):
-        """ Safely updates humidity in environment object each time 
-            it is changed. """
-        self._humidity = value
-        with threading.Lock():
-            self.env.report_sensor_value(self.name, self.humidity_name, 
-                                        self._humidity)
-
-
     def run(self):
         """ Spawns peripheral thread. """
         t = threading.Thread(target=self.state_machine)
@@ -158,7 +124,7 @@ class SHT25(object):
         """ Runs initialization state. Initializes sensor then transitions to 
             normal operating state. Transitions to error state on error. """
         self.logger.debug("Entered INIT state")
-        self.initialize_sensor()
+        self.initialize_peripheral()
         self.state = self.states.NOS
 
 
@@ -170,8 +136,7 @@ class SHT25(object):
         self.last_update_time_ms = time.time()
         while True:
             if self.sampling_interval_sec < time.time() - self.last_update_time_ms:
-                self.get_temperature()
-                self.get_humidity()
+                self.update_peripheral()
                 self.last_update_time_ms = time.time()
             else:
                 time.sleep(0.100) # 100ms
@@ -179,8 +144,7 @@ class SHT25(object):
             if self.commanded_state() == self.states.RESET:
                 self.state = self.commanded_state()
                 continue
-
-            if self.state == self.states.ERROR:
+            elif self.state == self.states.ERROR:
                 continue
 
     def error_state(self):
@@ -197,39 +161,6 @@ class SHT25(object):
         """ Runs reset state. Resets device state then transitions to 
             initialization state. """
         self.logger.debug("Entered RESET state")
-        self.temperature = None
-        self.humidity = None
         self.error = self.errors.NONE
         self.state = self.state.INIT
-
-
-    def initialize_sensor(self):
-        """ Initializes sensor. """
-        try:
-            self.logger.debug("Sensor initialized")
-        except:
-            self.logger.exception("Unable to initialize")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
-
-
-    def get_temperature(self):
-        """ Get sensor temperature. """
-        try:
-            self.temperature = 22.0
-            self.logger.debug("Got temperature: {}".format(self.temperature))
-        except:
-            self.logger.exception("Unable to get temperature")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
-
-
-    def get_humidity(self):
-        """ Get sensor humidity. """
-        try:
-            self.humidity = 23
-            self.logger.debug("Got humidity: {}".format(self.humidity))
-        except:
-            self.logger.exception("Unable to get humidity")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
+        self.reset_peripheral()

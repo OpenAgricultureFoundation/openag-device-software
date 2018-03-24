@@ -19,10 +19,10 @@ class System(object):
 
     # Initialize system state
     state = states.CONFIG
+    reset = False
 
-
-    def __init__(self):
-        """ Initializes system object. """
-        self.system_state = {"reset": False}
-        self.peripheral_state = {}
-        self.controller_state = {}
+    # Initialize state objects
+    system_state = {"reset": False}
+    peripheral_state = {}
+    controller_state = {}
+    recipe_state = {}
