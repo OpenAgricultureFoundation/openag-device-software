@@ -1,22 +1,24 @@
-{
-	"sht25_1": {
-		"class_file": "sht25", 
-		"class_name": "SHT25", 
-		"comms": {
-			"type": "i2c",
-			"bus": "2", 
-			"mux": "7", 
-			"channel": "0", 
-			"address": "0x40"
-		},
-		"variables": {
-			"temperature": {
-				"name": "air_temperature",
-				"unit": "celcius"
+{	
+	"peripherals": {
+		"sht25_1": {
+			"class_file": "sht25", 
+			"class_name": "SHT25", 
+			"comms": {
+				"type": "i2c",
+				"bus": "2", 
+				"mux": "7", 
+				"channel": "0", 
+				"address": "0x40"
 			},
-			"humidity": {
-				"name": "air_humidity",
-				"unit": "percent_relative"
+			"variables": {
+				"temperature": {
+					"name": "air_temperature",
+					"unit": "celcius"
+				},
+				"humidity": {
+					"name": "air_humidity",
+					"unit": "percent_relative"
+				}
 			}
 		}
 	}

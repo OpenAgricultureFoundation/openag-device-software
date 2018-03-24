@@ -1,3 +1,29 @@
+   # Update instantaneous environment dictionary 
+        # Average values from all peripheral devices with identical variables
+        inst_value = 0
+        num_peripherals = 0
+        for peripheral in self._raw[variable]:
+            inst_value += self._raw[variable][peripheral]
+            num_peripherals += 1
+        inst_value /= num_peripherals
+        self._inst[variable] = inst_value
+        self.logger.debug("Set instantaneous {}: {}".format(variable, inst_value))
+
+        # Update average environment dictionary
+        # Average value for each peripheral
+        if peripheral not in self._avg[variable]:
+            avg_value = value
+            samples = 1
+        else:
+            stored_avg = self._avg[variable][peripheral]["value"]
+            stored_samples = self._avg[variable][peripheral]["samples"]
+            samples = stored_samples + 1
+            avg_value = (stored_avg*stored_samples + value) / samples
+        self._avg[variable][peripheral] = {"value": avg_value, "samples": samples}
+        self.logger.debug("Set average {} ({}): {}, samples: {}".format(variable, peripheral, avg_value, samples))
+
+
+
 , 
 	"light_panel_taurus_1": {
 		"class_file": "light_panel_taurus", 
@@ -12,3 +38,101 @@
 
 
 	args=(env, sys,)
+
+				# Update peripheral state in system object
+			# if self.prev_state != self.state:
+			# 	sys.peripheral[self.name]["prev_state"]
+
+			# 	self.prev_state = self.state
+
+
+
+
+   @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    @property
+    def prev_state(self):
+        return self._prev_state
+
+    @prev_state.setter
+    def prev_state(self, value):
+        self._prev_state = value
+
+
+        # Try to import models shared with api
+try:
+	from core.models import *
+except:
+	logger.warning("Unable to import models. Make sure api is running.")
+
+
+
+
+	# Create system object
+	# from system import System
+	# sys = System()
+
+	# Start state machine
+	while True:
+		
+		# Configuration state
+		if sys.state == sys.CONFIG:
+			
+			# Load in configuration file
+			logger.info("Loading in configuration file")
+			config = json.load(open('config.json'))
+
+			# TODO: Validate config file
+
+			# Transition to setup state
+			sys.state = sys.SETUP
+
+
+		# Setup state
+		elif sys.state == sys.SETUP
+
+			# TODO: Initailize stored system state
+
+			# Create environment object
+			from environment import Environment
+			env = Environment(config)
+
+
+
+
+
+
+
+	# Create peripheral objects from config
+	logger.info("Creating peripheral objects")
+	peripheral = {}
+	for peripheral_name in config:
+		# Extract module parameters from config
+		module_name = "peripherals." + config[peripheral_name]["class_file"]
+		class_name = config[peripheral_name]["class_name"]
+
+		# Import peripheral library
+		module_instance= __import__(module_name, fromlist=[class_name])
+		class_instance = getattr(module_instance, class_name)
+
+		# Create peripheral object instances
+		peripheral[peripheral_name] = class_instance(config=config[peripheral_name], name=peripheral_name, env=env, sys=sys)
+
+	# Run peripheral objects
+	logger.info("Running peripheral object threads")
+	for peripheral_name in peripheral:
+		peripheral[peripheral_name].run()
+
+
+	while True:
+		env.log(inst=True)
+		sys.log()
+		time.sleep(10)
+
+

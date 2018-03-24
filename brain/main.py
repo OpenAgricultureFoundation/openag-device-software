@@ -1,56 +1,28 @@
-""" Description of what this file does. """
+""" Main entry point to run the application for running recipes, reading 
+sensors, setting actuators, managing control loops, syncing data, and managing
+external events. 
 
-# Import python modules
-import json, time
+Main starts a state machine which spawns threads to do the above tasks.
+Threads comminicate with each other via shared memory objects for the system
+and environment.
+
+The `system` shared memory object is used to manage the state machines in each 
+thread and signal events.
+
+The `environment` shared memory object is used to report sensor data, set 
+desired setpoints, and command actuators. """
+
+
+# Import state machine
+from state_machine import StateMachine
 
 # Setup logging
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-# Try to import models shared with api
-try:
-	from core.models import *
-except:
-	logger.warning("Unable to import models. Make sure api is running.")
 
 
 # Run main
 if __name__ == "__main__":
-	# Load in configuration file
-	logger.info("Loading in configuration file")
-	config = json.load(open('config.json'))
-
-	# Create environment object
-	from environment import Environment
-	env = Environment(config)
-
-	# Create system object
-	from system import System
-	sys = System()
-
-	# Create peripheral objects from config
-	logger.info("Creating peripheral objects")
-	peripheral = {}
-	for peripheral_name in config:
-		# Extract module parameters from config
-		module_name = "peripherals." + config[peripheral_name]["class_file"]
-		class_name = config[peripheral_name]["class_name"]
-
-		# Import peripheral library
-		module_instance= __import__(module_name, fromlist=[class_name])
-		class_instance = getattr(module_instance, class_name)
-
-		# Create peripheral object instances
-		peripheral[peripheral_name] = class_instance(config=config[peripheral_name], name=peripheral_name, env=env, sys=sys)
-
-	# Run peripheral objects
-	logger.info("Running peripheral object threads")
-	for peripheral_name in peripheral:
-		peripheral[peripheral_name].run()
-
-
-	while True:
-		env.log(inst=True)
-		sys.log()
-		time.sleep(10)
+	state_machine = StateMachine()
+	state_machine.run()

@@ -1,11 +1,10 @@
-""" Description of what file does. """
-
 # Import python modules
 import logging, time
 
-# Define system class
+
 class Environment(object):
-    """ Description """
+    """ A shared memory object is used to report sensor data, 
+    set desired setpoints, and command actuators. """
 
     # Initialize logger
     logger = logging.getLogger(__name__)
@@ -14,85 +13,77 @@ class Environment(object):
     sampling_rate_seconds = 2
     sampling_duration_seconds = None
 
-    # Initialize class
-    def __init__(self, config):
-        """ Description. """
 
-        # Extract all variable types from config
-        variables = []
-        for peripheral in config:
-            for variable in config[peripheral]["variables"]:
-                var_name = config[peripheral]["variables"][variable]["name"]
-                if var_name not in variables:
-                    variables.append(var_name)
+    def __init__(self):
+        """ Initializes environment object. """
+        self.actuator = {"desired": {}, "reported": {}}
+        self.sensor = {"desired": {}, "reported": {}}
+        self.reported_sensor_stats = {
+            "individual": {
+                "instantaneous": {},
+                "average": {}
+            },
+            "group": {
+                "instantaneous": {},
+                "average": {}
+            }
+        }
+        
 
-        # Initialize raw environment dictionary
-        self._raw = {}
-        for variable in variables:
-            self._raw[variable] = {}
+    def report_sensor_value(self, sensor, variable, value):
+        """ Report sensor value to sensor dict and reported sensor 
+            stats dict. """
 
-        # Initialize instantantaneous environment dictionary
-        self._inst = {}
-        for variable in variables:
-            self._inst[variable] = None
+        # Update individual instantaneous
+        by_type = self.reported_sensor_stats["individual"]["instantaneous"]
+        if variable not in by_type:
+            by_type[variable] = {}
+        by_var = self.reported_sensor_stats["individual"]["instantaneous"][variable]
+        by_var[sensor] = value
 
-        # Initialize average environment dictionary
-        self._avg = {}
-        for variable in variables:
-            self._avg[variable] = {}
-
-
-    def set_sensor(self, peripheral, variable, value):
-        """ Description. """
-
-        # Update raw environment dictionary
-        self._raw[variable][peripheral] = value
-        self.logger.debug('Set raw {} ({}): {}'.format(variable, peripheral, value))
-
-        # Update instantaneous environment dictionary 
-        # Average values from all peripheral devices with identical variables
-        inst_value = 0
-        num_peripherals = 0
-        for peripheral in self._raw[variable]:
-            inst_value += self._raw[variable][peripheral]
-            num_peripherals += 1
-        inst_value /= num_peripherals
-        self._inst[variable] = inst_value
-        self.logger.debug("Set instantaneous {}: {}".format(variable, inst_value))
-
-        # Update average environment dictionary
-        # Average value for each peripheral
-        if peripheral not in self._avg[variable]:
-            avg_value = value
-            samples = 1
+        # Update individual average
+        by_type = self.reported_sensor_stats["individual"]["average"]
+        if variable not in by_type:
+            by_type[variable] = {}
+        if sensor not in by_type:
+            by_type[sensor] = {"value": value, "samples": 1}
         else:
-            stored_avg = self._avg[variable][peripheral]["value"]
-            stored_samples = self._avg[variable][peripheral]["samples"]
-            samples = stored_samples + 1
-            avg_value = (stored_avg*stored_samples + value) / samples
-        self._avg[variable][peripheral] = {"value": avg_value, "samples": samples}
-        self.logger.debug("Set average {} ({}): {}, samples: {}".format(variable, peripheral, avg_value, samples))
+            stored_value = by_type[sensor]["value"]
+            stored_samples = by_type[sensor]["samples"]
+            new_samples = (stored_samples + 1)
+            new_value = (stored_value * stored_samples + value) / new_samples
+            by_type[sensor]["value"] = new_value
+            by_type[sensor]["samples"] = new_samples
 
+        # Update group instantaneous
+        by_var_i = self.reported_sensor_stats["individual"]["instantaneous"][variable]
+        num_sensors = 0
+        total = 0
+        for sensor in by_var_i:
+            total += by_var_i[sensor]
+            num_sensors += 1
+        new_value = total / num_sensors
+        self.reported_sensor_stats["group"]["instantaneous"][variable] = {"value": new_value, "samples": num_sensors}
 
-    def get(self, variable):
-        """ Description. """
-        if variable in self.inst:
-            return self._inst[variable]
+        # Update group average
+        by_type = self.reported_sensor_stats["group"]["average"]
+        if variable not in by_type:
+            by_type[variable] = {"value": value, "samples": 1}
         else:
-            return None
+            stored_value = by_type[variable]["value"]
+            stored_samples = by_type[variable]["samples"]
+            new_samples = (stored_samples + 1)
+            new_value = (stored_value * stored_samples + value) / new_samples
+            by_type[variable]["value"] = new_value
+            by_type[variable]["samples"] = new_samples
+
+        # Update simple sensor value
+        self.sensor["reported"][variable] = self.reported_sensor_stats["group"]["instantaneous"][variable]["value"]
 
 
     def reset_average(self):
-        self._avg = {}
-        for variable in variables:
-            self._avg[variable] = {}
+        """ Reset the data in the reported sensor averages. Should be reset 
+            each time environment state is stored in database. """
+        self.reported_sensor_stats["individual"]["average"] = {}
+        self.reported_sensor_stats["group"]["average"] = {}
         self.logger.debug("Reset average")
-
-
-    def log(self, raw=False, inst=False, avg=False):
-        if raw:
-            self.logger.info(self._raw)
-        if inst:
-            self.logger.info(self._inst)
-        if avg:
-            self.logger.info(self._avg)
