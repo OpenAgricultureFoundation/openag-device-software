@@ -2,7 +2,7 @@
 import threading
 
 # Import peripheral parent class
-from peripheral.utility.actuator.light_spectrum_intensity import LightSpectrumIntensity
+from device.peripheral.utility.actuator.light_spectrum_intensity import LightSpectrumIntensity
 
 
 class LightPanelTaurus(LightSpectrumIntensity):

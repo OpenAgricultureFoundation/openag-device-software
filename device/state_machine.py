@@ -2,12 +2,12 @@
 import logging, time, json, threading
 
 # Import all possible states & errors
-from states import States
-from errors import Errors
+from device.utility.states import States
+from device.utility.errors import Errors
 
 # Import shared memory objects
-from system import System
-from environment import Environment
+from device.system import System
+from device.environment import Environment
 
 
 class StateMachine(object):
@@ -115,7 +115,7 @@ class StateMachine(object):
 
     def load_config(self):
         """ Loads configuration. """
-        self.config = json.load(open('config.json'))
+        self.config = json.load(open('device/data/config.json'))
         # TODO: validate config
 
 
@@ -125,7 +125,7 @@ class StateMachine(object):
         for peripheral_name in self.config["peripherals"]:
             # Extract module parameters from config
             peripheral = self.config["peripherals"][peripheral_name]
-            module_name = "peripheral." + peripheral["class_file"]
+            module_name = "device.peripheral." + peripheral["class_file"]
             class_name = peripheral["class_name"]
 
             # Import peripheral library

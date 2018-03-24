@@ -2,7 +2,7 @@
 import threading
 
 # Import peripheral parent class
-from peripheral.utility.sensor.temperature_humidity import TemperatureHumidity
+from device.peripheral.utility.sensor.temperature_humidity import TemperatureHumidity
 
 
 class SHT25(TemperatureHumidity):

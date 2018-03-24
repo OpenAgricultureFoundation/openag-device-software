@@ -2,8 +2,8 @@
 import logging, time, threading
 
 # Import all possible states & errors
-from states import States
-from errors import Errors
+from device.utility.states import States
+from device.utility.errors import Errors
 
 
 class Peripheral:

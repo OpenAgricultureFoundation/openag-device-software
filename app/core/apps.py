@@ -2,7 +2,7 @@ from django.apps import AppConfig
 import os
 
 class CoreConfig(AppConfig):
-    name = 'brain.core'
+    name = 'app.core'
 
     def ready(self):
     	# Ensure startup code only runs once
@@ -10,15 +10,7 @@ class CoreConfig(AppConfig):
         	return
      
         # Startup code here
-        print("--------------------")
         
-
-        # Import tasks
-        from .tasks import printy
-        
-        # Setup tasks
-        # printy.delay(34)
-
 
 
 
