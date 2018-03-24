@@ -12,14 +12,6 @@ thread and signal events.
 The `environment` shared memory object is used to report sensor data, set 
 desired setpoints, and command actuators. """
 
-import os, sys
-
-# path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# sys.path.insert(0, path)
-
-
-from common.models import *
-
 
 # Import state machine
 from device.state_machine import StateMachine
@@ -32,5 +24,11 @@ logger = logging.getLogger(__name__)
 
 # Run main
 if __name__ == "__main__":
-	state_machine = StateMachine()
-	state_machine.run()
+	# state_machine = StateMachine()
+	# state_machine.run()
+
+
+	from device.recipe import Recipe
+	recipe = Recipe()
+
+	recipe.load_recipe_file("device/data/recipe.json")

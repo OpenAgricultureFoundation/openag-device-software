@@ -133,11 +133,11 @@ class Peripheral:
             every <sampling_rate> seconds. Transitions to reset if commanded. 
             Transitions to error state on error. """
         self.logger.debug("Entered NOS state")
-        self.last_update_time_ms = time.time()
+        self.last_update_time_sec = time.time()
         while True:
-            if self.sampling_interval_sec < time.time() - self.last_update_time_ms:
+            if self.sampling_interval_sec < time.time() - self.last_update_time_sec:
                 self.update_peripheral()
-                self.last_update_time_ms = time.time()
+                self.last_update_time_sec = time.time()
             else:
                 time.sleep(0.100) # 100ms
 

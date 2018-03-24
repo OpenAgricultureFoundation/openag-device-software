@@ -1,8 +1,9 @@
 from django.apps import AppConfig
 import os
 
+
 class CoreConfig(AppConfig):
-    name = 'app.core'
+    name = 'app'
 
     def ready(self):
     	# Ensure startup code only runs once
@@ -10,7 +11,3 @@ class CoreConfig(AppConfig):
         	return
      
         # Startup code here
-        
-
-
-

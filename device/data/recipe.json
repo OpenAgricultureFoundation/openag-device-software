@@ -28,7 +28,7 @@
 	"phases": [
 		{
 			"name": "Early Growth",
-			"repeat": 10,
+			"repeat": 3,
 			"cycles": [
 				{
 					"name": "Day",
@@ -44,7 +44,7 @@
 		},
 		{
 			"name": "Late Growth",
-			"repeat": 10,
+			"repeat": 3,
 			"cycles": [
 				{
 					"name": "Day",

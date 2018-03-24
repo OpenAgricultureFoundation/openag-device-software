@@ -1,4 +1,4 @@
-from common.models import *
+from app.models import *
 
 
 # from django.contrib.auth.models import User
