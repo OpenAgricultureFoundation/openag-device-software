@@ -24,11 +24,5 @@ logger = logging.getLogger(__name__)
 
 # Run main
 if __name__ == "__main__":
-	# state_machine = StateMachine()
-	# state_machine.run()
-
-
-	from device.recipe import Recipe
-	recipe = Recipe()
-
-	recipe.load_recipe_file("device/data/recipe.json")
+	state_machine = StateMachine()
+	state_machine.run()

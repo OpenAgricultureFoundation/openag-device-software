@@ -22,6 +22,12 @@ class Environment(object):
             "average": {}
         }
     }
+
+
+    def set_desired_sensor_values(self, environment_dict):
+        """ Sets desired sensor values from provided environment dict. """
+        for variable in environment_dict:
+            self.sensor["desired"][variable] = environment_dict[variable]
         
 
     def report_sensor_value(self, sensor, variable, value, simple=False):

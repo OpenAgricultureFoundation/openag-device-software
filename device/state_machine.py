@@ -9,6 +9,9 @@ from device.utility.errors import Errors
 from device.system import System
 from device.environment import Environment
 
+# Import recipe handler
+from device.recipe import Recipe
+
 
 class StateMachine(object):
     """ A state machine that spawns threads to run recipes, read sensors, set 
@@ -21,7 +24,7 @@ class StateMachine(object):
     states = States()
     errors = Errors()
 
-    # Initialize thread objects
+    # Initialize configurable thread objects
     peripheral = {}
     controller = {}
 
@@ -29,6 +32,7 @@ class StateMachine(object):
     def __init__(self):
         """ Initializes state machine. """
         self.sys = System()
+        self.env = Environment()
 
     
     def run(self):
@@ -48,17 +52,22 @@ class StateMachine(object):
     def config_state(self):
         """ Runs configuration state. Loads config then transitions to 
             setup state. """
-        self.logger.debug("Entered CONFIG state")
+        self.logger.info("Entered CONFIG state")
         self.load_config()
         self.set_state(self.states.SETUP)
 
 
     def setup_state(self):
-        """ Runs setup state. Creates `environment` shared memory object, 
-            creates peripheral object threads, spawns peripheral threads, 
-            then transitions to initialization state. """
-        self.logger.debug("Entered SETUP state")
-        self.env = Environment()
+        """ Runs setup state. Loads stored system state, creates and spawns 
+            recipe, peripheral, and controller threads, then transitions to 
+            initialization state. """
+        self.logger.info("Entered SETUP state")
+        
+        # TODO: Load in stored system state from database
+
+        # Create and spawn threads
+        self.recipe = Recipe(self.env, self.sys)
+        self.recipe.spawn()
         self.create_peripherals()
         self.spawn_peripherals()
         self.sys.state = self.states.INIT
@@ -67,21 +76,21 @@ class StateMachine(object):
     def init_state(self):
         """ Runs initialization state. Waits for all peripherals to enter NOS, 
             WARMING, or ERROR, then transitions to normal operating state. """
-        self.logger.debug("Entered INIT state")
+        self.logger.info("Entered INIT state")
         while not self.all_peripherals_ready():
-            time.sleep(2)
+            time.sleep(0.2)
         self.sys.state = self.states.NOS
 
 
     def nos_state(self):
         """ Runs normal operation state. Transitions to reset if commanded. 
             Transitions to error state on error."""
-        self.logger.debug("Entered NOS state")
+        self.logger.info("Entered NOS state")
 
-         # Remove me
-        with threading.Lock():
-            self.env.sensor["desired"]["light_intensity_par"] = 320
-            self.env.sensor["desired"]["light_spectrum_taurus"] = [10, 10, 10, 50, 10, 10]
+        #  # Remove me
+        # with threading.Lock():
+        #     self.env.sensor["desired"]["light_intensity_par"] = 320
+        #     self.env.sensor["desired"]["light_spectrum_taurus"] = [10, 10, 10, 50, 10, 10]
 
         while True:
             time.sleep(2) # seconds
@@ -89,6 +98,8 @@ class StateMachine(object):
             self.logger.info("sensor:desired: {}".format(self.env.sensor["desired"]))
             self.logger.info("actuator:desired: {}".format(self.env.actuator["desired"]))
             self.logger.info("actuator:reported: {}".format(self.env.actuator["reported"]))
+            self.logger.info("recipe_state: {}".format(self.sys.recipe_state))
+
 
             if self.sys.reset:
                 self.sys.state = self.states.RESET
@@ -139,15 +150,18 @@ class StateMachine(object):
     def spawn_peripherals(self):
         """ Runs peripheral threads. """
         for peripheral_name in self.peripheral:
-            self.peripheral[peripheral_name].run()
+            self.peripheral[peripheral_name].spawn()
 
 
     def all_peripherals_ready(self):
+        """ Check that all peripherals are either in NOS, WARMING, or 
+            ERROR states. """
         for peripheral in self.sys.peripheral_state:
-            state = self.sys.peripheral_state[peripheral]
-            if state["state"] != self.states.NOS and \
-                state["state"] != self.states.WARMING and \
-                state["state"] != self.states.ERROR:
+            individual_peripheral = self.sys.peripheral_state[peripheral]
+            if individual_peripheral["state"] != self.states.NOS and \
+                individual_peripheral["state"] != self.states.WARMING and \
+                individual_peripheral["state"] != self.states.ERROR:
+                    self.logger.info("Waiting for peripherals to be ready")
                     return False
         return True
 

@@ -9,4 +9,9 @@ class States(object):
 	ERROR = "Error"
 	RESET = "Reset"
 	WARMING = "Warming up"
+	RUN = "Run"
+	START = "Start"
+	PAUSE = "Pause"
+	STOP = "Stop"
+
 	

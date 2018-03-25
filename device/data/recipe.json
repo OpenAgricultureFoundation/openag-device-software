@@ -10,17 +10,17 @@
 		"Spicy Cilantro": "http://www.this.is.a/fake/link"
 	},
 	"environments": {
-		"day_red": {
+		"Day Red": {
 			"light_spectrum_taurus": [10, 50, 10, 10, 10, 10],
 			"light_intensity_par": 300,
 			"air_temperature_celcius": 22
 		},
-		"day_blue": {
+		"Day Blue": {
 			"light_spectrum_taurus": [10, 10, 10, 50, 10, 10],
 			"light_intensity_par": 300,
 			"air_temperature_celcius": 22
 		},
-		"night": {
+		"Night": {
 			"light_intensity_par": 0,
 			"air_temperature_celcius": 20
 		}
@@ -32,12 +32,12 @@
 			"cycles": [
 				{
 					"name": "Day",
-					"environment": "day_red",
+					"environment": "Day Red",
 					"duration_hours": 18
 				},
 				{
 					"name": "Night",
-					"environment": "night",
+					"environment": "Night",
 					"duration_hours": 6
 				}
 			]
@@ -48,12 +48,12 @@
 			"cycles": [
 				{
 					"name": "Day",
-					"environment": "day_blue",
+					"environment": "Day Blue",
 					"duration_hours": 22
 				},
 				{
 					"name": "Night",
-					"environment": "night",
+					"environment": "Night",
 					"duration_hours": 2
 				}
 			]

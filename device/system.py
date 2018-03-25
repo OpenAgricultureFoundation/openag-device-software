@@ -21,8 +21,17 @@ class System(object):
     state = states.CONFIG
     reset = False
 
+    # Initialize recipe variables
+    recipe_dict = None
+
     # Initialize state objects
     system_state = {"reset": False}
     peripheral_state = {}
     controller_state = {}
     recipe_state = {}
+
+
+    def __init__(self):
+        # Remove this:
+        import json
+        self.recipe_dict = json.load(open("device/data/recipe.json"))
