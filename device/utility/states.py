@@ -14,4 +14,3 @@ class States(object):
 	PAUSE = "Pause"
 	STOP = "Stop"
 
-	

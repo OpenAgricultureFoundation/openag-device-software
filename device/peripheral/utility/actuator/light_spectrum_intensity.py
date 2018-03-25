@@ -53,6 +53,23 @@ class LightSpectrumIntensity(Peripheral):
                 self.env.report_sensor_value(self.name, self.intensity_name, self.intensity)
 
 
+    def setup_peripheral(self):
+        """ Setup peripheral. """
+
+        self._intensity = None
+        self._spectrum = None
+        with threading.Lock():
+            # Update intensity
+            self.env.report_actuator_value(self.name, self.intensity_name,  self._intensity)
+            if self.pseudo_sensor_enabled:
+                self.env.report_sensor_value(self.name, self.intensity_name, self._intensity, simple=True)
+
+            # Update spectrum
+            self.env.report_actuator_value(self.name, self.spectrum_name, self._spectrum)
+            if self.pseudo_sensor_enabled:
+                self.env.report_sensor_value(self.name, self.spectrum_name, self._spectrum, simple=True)
+
+
     def initialize_peripheral(self):
         """ Initializes peripheral. """
         try:

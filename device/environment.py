@@ -1,6 +1,9 @@
 # Import python modules
 import logging, time
 
+# Import variable info
+from device.utility.variables import Variables
+
 
 class Environment(object):
     """ A shared memory object is used to report sensor data, 
@@ -8,6 +11,9 @@ class Environment(object):
 
     # Initialize logger
     logger = logging.getLogger(__name__)
+
+    # Initialize variable info
+    variables = Variables()
 
     # Initialize environment objects
     actuator = {"desired": {}, "reported": {}}
@@ -22,6 +28,7 @@ class Environment(object):
             "average": {}
         }
     }
+
 
 
     def set_desired_sensor_values(self, environment_dict):
@@ -65,8 +72,9 @@ class Environment(object):
             num_sensors = 0
             total = 0
             for sensor in by_var_i:
-                total += by_var_i[sensor]
-                num_sensors += 1
+                if by_var_i[sensor] != None:
+                    total += by_var_i[sensor]
+                    num_sensors += 1
             new_value = total / num_sensors
             self.reported_sensor_stats["group"]["instantaneous"][variable] = {"value": new_value, "samples": num_sensors}
 
@@ -97,3 +105,51 @@ class Environment(object):
         self.reported_sensor_stats["individual"]["average"] = {}
         self.reported_sensor_stats["group"]["average"] = {}
         self.logger.debug("Reset average")
+
+
+    def get_log(self, sensors=True, actuators=True):
+        """ Returns log string of current sensor and actuator values. """
+        log = ""
+        if sensors:
+            log += "\n    Sensors:" + self.get_peripheral_log(self.sensor)
+        if actuators:
+            log += "\n    Actuators:" + self.get_peripheral_log(self.actuator)
+        return log
+
+
+
+    def get_peripheral_log(self, peripheral):
+        """ Gets log of current reported --> desired value for peripheral. """
+        log = ""
+
+        # Log all variables in reported
+        for variable in peripheral["reported"]:
+            name = self.variables.info[variable]["name"]
+            unit = self.variables.info[variable]["unit"]
+            reported = str(peripheral["reported"][variable])
+            if variable in peripheral["desired"]:
+                desired = str(peripheral["desired"][variable])
+            else:
+                desired = "None"
+            log += self.get_log_line(name, unit, reported, desired)
+
+        # Log remaining variables in desired
+        for variable in peripheral["desired"]:
+            if variable not in peripheral["reported"]:
+                name = self.variables.info[variable]["name"]
+                unit = self.variables.info[variable]["unit"]
+                desired = str(peripheral["desired"][variable])
+                reported = "None"
+                log += self.get_log_line(name, unit, reported, desired)
+
+        # Check for empty log
+        if log == "":
+            log = "\n        None"
+
+        return log
+
+
+    def get_log_line(self, name, unit, reported, desired):
+        """ Returns a log line string for a reported --> desired value. """
+        line = "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
+        return line

@@ -35,3 +35,21 @@ class System(object):
         # Remove this:
         import json
         self.recipe_dict = json.load(open("device/data/recipe.json"))
+
+
+    def get_log(self, recipe=True):
+        """ Returns log string of current system state. """
+        log = ""
+
+        if recipe:
+            
+            log += "\n    Recipe:"
+            log += "\n        Name: {}".format(self.recipe_state["name"])
+            log += "\n        Started: {}".format(self.recipe_state["start_datestring"])
+            log += "\n        Duration: {}".format(self.recipe_state["duration_string"])
+            log += "\n        Progress: {} %".format(self.recipe_state["percent_complete_string"])
+            log += "\n        Phase: {}".format(self.recipe_state["phase"])
+            log += "\n        Cycle: {}".format(self.recipe_state["cycle"])
+            log += "\n        Environment: {}".format(self.recipe_state["environment_name"])
+
+        return log

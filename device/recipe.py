@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, threading, os
+import logging, time, threading, os, datetime
 
 # Import all possible states & errors
 from device.utility.states import States
@@ -14,7 +14,7 @@ from app.models import RecipeTransition
 
 class Recipe:
     """ Recipe handler. Manages recipe state machine and interactions
-    	with recipe table in database. """
+        with recipe table in database. """
 
     # Initialize logger
     logger = logging.getLogger(__name__)
@@ -119,6 +119,9 @@ class Recipe:
             accordingly. """
         self.logger.info("Entered SETUP state")
 
+        # Initialize recipe state
+        self.set_null_recipe_state()
+
         # TODO: Load stored state from system
 
         # Pretend we loaded in START state
@@ -137,8 +140,6 @@ class Recipe:
         self.logger.info("Entered START state")
         try:
             self.load_recipe_dict(self.sys.recipe_dict)
-            with threading.Lock():
-                self.sys.recipe_state["start_timestamp_minutes"] = self.timestamp_minutes()
             self.state = self.states.RUN
         except:
             self.logger.exception("Unable to load recipe dict.")
@@ -149,19 +150,13 @@ class Recipe:
     def run_state(self):
         """ Runs run state. """
         self.logger.info("Entered RUN state")
-        while True:
-            current_minute = self.timestamp_minutes() - self.sys.recipe_state["start_timestamp_minutes"] 
-            if current_minute > self.sys.recipe_state["last_update_minute"]:
-                environment = self.get_recipe_environment_obj(current_minute)
-                # TODO: only update state if new
-                with threading.Lock():
-                    self.sys.recipe_state["last_update_minute"] = current_minute
-                    self.sys.recipe_state["phase"] = environment.phase
-                    self.sys.recipe_state["cycle"] = environment.cycle
-                    self.sys.recipe_state["environment_name"] = environment.environment_name
-                    self.sys.recipe_state["environment_state"] = environment.environment_state
-                    self.env.set_desired_sensor_values(environment.environment_state)
+        self.update_recipe_environment()
 
+        while True:
+            # Update recipe environment every minute
+            if self.new_minute():
+                self.update_recipe_environment()
+                
             # Check for transition to reset
             if self.commanded_state() == self.states.RESET:
                 self.state = self.states.RESET
@@ -185,14 +180,7 @@ class Recipe:
         """ Runs error state. Waits for commanded state to be set to reset,
             then transitions to reset state. """
         self.logger.info("Entered ERROR state")
-
-        # Update recipe state to reflect error state
-        with threading.Lock():
-            self.sys.recipe_state["last_update_minute"] = -1
-            self.sys.recipe_state["phase"] = "Error"
-            self.sys.recipe_state["cycle"] = 'Error'
-            self.sys.recipe_state["environment_name"] = "Error"
-            self.sys.recipe_state["environment_state"] = {}
+        self.set_null_recipe_state()
 
         # TODO: How to update desired sensor values in error state?
 
@@ -205,14 +193,7 @@ class Recipe:
         """ Runs reset state. Resets device state then transitions to 
             initialization state. """
         self.logger.info("Entered RESET state")
-
-        # Reset recipe state
-        with threading.Lock():
-            self.sys.recipe_state["last_update_minute"] = -1
-            self.sys.recipe_state["phase"] = "Reset"
-            self.sys.recipe_state["cycle"] = 'Reset'
-            self.sys.recipe_state["environment_name"] = "Reset"
-            self.sys.recipe_state["environment_state"] = {}
+        self.set_null_recipe_state()
 
         # TODO: How to handle resetting desired sensor values?
 
@@ -272,7 +253,101 @@ class Recipe:
             environment_state = {}
         )
 
+        # Update recipe state
+        self.update_recipe_state(
+            name=recipe["name"],
+            duration_min = minute_counter,
+            start_timestamp_min=self.timestamp_minutes())
+
+
 
     def timestamp_minutes(self):
         """ Get timestamp in minutes. """
         return int(time.time() / 60)
+
+
+    def update_recipe_environment(self):
+        """ Updates recipe environment. """
+        self.logger.info("Updating recipe environment")
+
+        current_minute = self.timestamp_minutes() - self.sys.recipe_state["start_timestamp_minutes"]
+        environment = self.get_recipe_environment_obj(current_minute)
+    
+        self.update_recipe_state(
+            phase=environment.phase, 
+            cycle=environment.cycle, 
+            env_name=environment.environment_name, 
+            env_state=environment.environment_state, 
+            last_update_min=current_minute)
+
+
+    def set_null_recipe_state(self):
+        """ Clears recipe state. """
+        self.update_recipe_state(
+            name=None, 
+            phase=None, 
+            cycle=None, 
+            env_name=None,
+            env_state={}, 
+            last_update_min=-1, 
+            duration_min=-1)
+
+
+    def update_recipe_state(self, name=None, phase=None, cycle=None, 
+        env_name=None, env_state=None, last_update_min=None, 
+        start_timestamp_min=None, duration_min=None):
+        """ Safely update recipe state with provided parameters. """
+
+        with threading.Lock():
+            if name is not None:
+                self.sys.recipe_state["name"] = name
+            if phase is not None:
+                self.sys.recipe_state["phase"] = phase
+            if cycle is not None:
+                self.sys.recipe_state["cycle"] = cycle
+            if env_name is not None:
+                self.sys.recipe_state["environment_name"] = env_name
+            if env_state is not None:
+                self.sys.recipe_state["environment_state"] = env_state
+                for variable in env_state:
+                    self.env.set_desired_sensor_values(env_state)
+            if last_update_min is not None:
+                self.sys.recipe_state["last_update_minute"] = last_update_min
+                if last_update_min == -1:
+                    self.sys.recipe_state["percent_complete"] = None
+                    self.sys.recipe_state["percent_complete_string"] = None
+                else:
+                    duration_min = self.sys.recipe_state["duration_minutes"]
+                    percent_complete = float(last_update_min) / duration_min * 100
+                    percent_complete_string = "{0:.2f}".format(percent_complete)
+                    self.sys.recipe_state["percent_complete"] = percent_complete
+                    self.sys.recipe_state["percent_complete_string"] = percent_complete_string
+            if start_timestamp_min is not None:
+                self.sys.recipe_state["start_timestamp_minutes"] = start_timestamp_min
+                started = datetime.datetime.fromtimestamp(start_timestamp_min*60).strftime('%Y-%m-%d %H:%M:%S') + " UTC"
+                self.sys.recipe_state["start_datestring"] = started
+            if duration_min is not None:
+                self.sys.recipe_state["duration_minutes"] = duration_min
+                if duration_min == -1:
+                    self.sys.recipe_state["duration_string"] = None 
+                else:
+                    self.sys.recipe_state["duration_string"] = self.get_duration_string(duration_min)
+
+
+    def new_minute(self):
+        """ Check if system clock is on a new minute. """
+        current_minute = self.timestamp_minutes() - self.sys.recipe_state["start_timestamp_minutes"] 
+        last_update_minute = self.sys.recipe_state["last_update_minute"]
+        if current_minute > last_update_minute:
+            return True
+        else:
+            return False
+
+
+    def get_duration_string(self, duration_minutes):
+        """ Converts duration in minutes to duration day-hour-minute string. """
+        days = int(float(duration_minutes) / (60*24))
+        hours = int((float(duration_minutes) - days*60*24) / 60)
+        minutes = duration_minutes - days*60*24 - hours*60
+        string = "{} Days {} Hours {} Minutes".format(days, hours, minutes)
+        return string

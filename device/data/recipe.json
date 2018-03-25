@@ -1,5 +1,5 @@
 {
-	"name": "Example Recipe", 
+	"name": "Behind These Basil Eyes", 
 	"guid": "1231-243265-2363-3453",
 	"format": "phased-environment",
 	"date_created": "2018-03-23",
@@ -10,19 +10,19 @@
 		"Spicy Cilantro": "http://www.this.is.a/fake/link"
 	},
 	"environments": {
-		"Day Red": {
+		"Red Day": {
 			"light_spectrum_taurus": [10, 50, 10, 10, 10, 10],
 			"light_intensity_par": 300,
-			"air_temperature_celcius": 22
+			"air_temperature_celcius": 22.0
 		},
-		"Day Blue": {
+		"Blue Day": {
 			"light_spectrum_taurus": [10, 10, 10, 50, 10, 10],
 			"light_intensity_par": 300,
-			"air_temperature_celcius": 22
+			"air_temperature_celcius": 22.0
 		},
 		"Night": {
 			"light_intensity_par": 0,
-			"air_temperature_celcius": 20
+			"air_temperature_celcius": 20.0
 		}
 	},
 	"phases": [
@@ -32,7 +32,7 @@
 			"cycles": [
 				{
 					"name": "Day",
-					"environment": "Day Red",
+					"environment": "Red Day",
 					"duration_hours": 18
 				},
 				{
@@ -48,7 +48,7 @@
 			"cycles": [
 				{
 					"name": "Day",
-					"environment": "Day Blue",
+					"environment": "Blue Day",
 					"duration_hours": 22
 				},
 				{

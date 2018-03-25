@@ -117,6 +117,7 @@ class Peripheral:
         """ Runs setup state. Waits for system to enter initialization state 
             then transitions to initialization state. """
         self.logger.info("{} entered SETUP state".format(self.name))
+        self.setup_peripheral()
         while self.sys.state != self.states.INIT:
             time.sleep(0.100) # 100ms
         self.state = self.states.INIT

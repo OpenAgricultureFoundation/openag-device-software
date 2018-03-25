@@ -87,25 +87,22 @@ class StateMachine(object):
             Transitions to error state on error."""
         self.logger.info("Entered NOS state")
 
-        #  # Remove me
-        # with threading.Lock():
-        #     self.env.sensor["desired"]["light_intensity_par"] = 320
-        #     self.env.sensor["desired"]["light_spectrum_taurus"] = [10, 10, 10, 50, 10, 10]
-
         while True:
-            time.sleep(2) # seconds
-            self.logger.info("sensor:reported: {}".format(self.env.sensor["reported"]))
-            self.logger.info("sensor:desired: {}".format(self.env.sensor["desired"]))
-            self.logger.info("actuator:desired: {}".format(self.env.actuator["desired"]))
-            self.logger.info("actuator:reported: {}".format(self.env.actuator["reported"]))
-            self.logger.info("recipe_state: {}".format(self.sys.recipe_state))
+            # Log environment data
+            self.log_all()
 
-
+            # Check for system reset
             if self.sys.reset:
                 self.sys.state = self.states.RESET
                 continue
-            elif self.sys.state == self.states.ERROR:
+            
+            # Check for system error
+            if self.sys.state == self.states.ERROR:
                 continue
+
+            # Update every 2 seconds
+            time.sleep(2) # seconds
+
 
  
     def reset_state(self):
@@ -164,4 +161,11 @@ class StateMachine(object):
                     self.logger.info("Waiting for peripherals to be ready")
                     return False
         return True
+
+
+    def log_all(self):
+        with threading.Lock():
+            log = self.env.get_log()
+            log += self.sys.get_log()
+            self.logger.info(log)
 

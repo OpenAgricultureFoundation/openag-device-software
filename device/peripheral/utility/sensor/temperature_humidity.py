@@ -47,6 +47,15 @@ class TemperatureHumidity(Peripheral):
             self.env.report_sensor_value(self.name, self.humidity_name, 
                                         self._humidity)
 
+    def setup_peripheral(self):
+        """ Setup peripheral. """
+
+        self._temperature = None
+        self._humidity = None
+        with threading.Lock():
+            self.env.report_sensor_value(self.name, self.temperature_name, self._temperature, simple=True)
+            self.env.report_sensor_value(self.name, self.humidity_name, self._humidity, simple=True)
+
 
     def initialize_peripheral(self):
         """ Initializes peripheral. """
