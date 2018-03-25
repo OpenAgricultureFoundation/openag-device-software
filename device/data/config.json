@@ -1,6 +1,7 @@
 {	
 	"peripherals": {
 		"sht25_1": {
+			"verbose_name": "SHT25",
 			"class_file": "sensor.sht25", 
 			"class_name": "SHT25", 
 			"comms": {
@@ -20,6 +21,7 @@
 			}
 		},
 		"light_panel_taurus_1": {
+			"verbose_name": "Light Panel",
 			"class_file": "actuator.light_panel_taurus", 
 			"class_name": "LightPanelTaurus", 
 			"comms": {

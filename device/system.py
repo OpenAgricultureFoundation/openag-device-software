@@ -37,19 +37,31 @@ class System(object):
         self.recipe_dict = json.load(open("device/data/recipe.json"))
 
 
-    def get_log(self, recipe=True):
+    def get_log(self, recipe=True, thread_states=True):
         """ Returns log string of current system state. """
         log = ""
 
+        # Create recipe log
         if recipe:
-            
             log += "\n    Recipe:"
             log += "\n        Name: {}".format(self.recipe_state["name"])
             log += "\n        Started: {}".format(self.recipe_state["start_datestring"])
-            log += "\n        Duration: {}".format(self.recipe_state["duration_string"])
             log += "\n        Progress: {} %".format(self.recipe_state["percent_complete_string"])
+            log += "\n        Time Elapsed: {}".format(self.recipe_state["time_elapsed_string"])
+            log += "\n        Time Remaining: {}".format(self.recipe_state["time_remaining_string"])
             log += "\n        Phase: {}".format(self.recipe_state["phase"])
             log += "\n        Cycle: {}".format(self.recipe_state["cycle"])
             log += "\n        Environment: {}".format(self.recipe_state["environment_name"])
+        
+        # Create thread states log
+        if thread_states:
+            log += "\n    States:"
+            log += "\n        System: {}".format(self.state)
+            log += "\n        Recipe: {}".format(self.recipe_state["state"])
+            for periph in self.peripheral_state:
+                verbose_name = self.peripheral_state[periph]["verbose_name"]
+                state = self.peripheral_state[periph]["state"]
+                log += "\n        {}: {}".format(verbose_name, state)
 
+        # Return log string
         return log

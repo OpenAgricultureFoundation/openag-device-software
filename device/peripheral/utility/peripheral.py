@@ -26,11 +26,16 @@ class Peripheral:
 
 
     def __init__(self, name, config, env, sys):
-        """ Initializes SHT25. """
+        """ Initializes Peripheral. """
         self.name = name
         self.config = config
         self.env = env
         self.sys = sys
+
+        # Initialize peripheral's system state (partial)
+        with threading.Lock():
+            self.sys.peripheral_state[self.name] = {}
+            self.sys.peripheral_state[self.name]["verbose_name"] = self.config["verbose_name"]
 
         # Initialize communication
         self.bus = config["comms"]["bus"]
@@ -44,8 +49,6 @@ class Peripheral:
         # Set state & error values
         self.state = self.states.SETUP
         self.error = self.errors.NONE
-
-        # Initialize thread object
 
 
     @property

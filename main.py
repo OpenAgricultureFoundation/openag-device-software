@@ -14,15 +14,20 @@ desired setpoints, and command actuators. """
 
 
 # Import state machine
-from device.state_machine import StateMachine
+from device.device import Device
 
 # Setup logging
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Setup connection to djando app
+import django, os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
+django.setup()
+
 
 # Run main
 if __name__ == "__main__":
-	state_machine = StateMachine()
-	state_machine.run()
+	device = Device()
+	device.run()

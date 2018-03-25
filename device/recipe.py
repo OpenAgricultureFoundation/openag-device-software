@@ -5,8 +5,8 @@ import logging, time, threading, os, datetime
 from device.utility.states import States
 from device.utility.errors import Errors
 
-# Import db models from django
-import django
+# Import database models
+import django, os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 django.setup()
 from app.models import RecipeTransition
@@ -123,6 +123,7 @@ class Recipe:
         self.set_null_recipe_state()
 
         # TODO: Load stored state from system
+
 
         # Pretend we loaded in START state
         self._state = self.states.START
@@ -260,7 +261,6 @@ class Recipe:
             start_timestamp_min=self.timestamp_minutes())
 
 
-
     def timestamp_minutes(self):
         """ Get timestamp in minutes. """
         return int(time.time() / 60)
@@ -268,8 +268,6 @@ class Recipe:
 
     def update_recipe_environment(self):
         """ Updates recipe environment. """
-        self.logger.info("Updating recipe environment")
-
         current_minute = self.timestamp_minutes() - self.sys.recipe_state["start_timestamp_minutes"]
         environment = self.get_recipe_environment_obj(current_minute)
     
@@ -316,12 +314,35 @@ class Recipe:
                 if last_update_min == -1:
                     self.sys.recipe_state["percent_complete"] = None
                     self.sys.recipe_state["percent_complete_string"] = None
+                    self.sys.recipe_state["time_remaining_minutes"] = None
+                    self.sys.recipe_state["time_remaining_string"] = None
+                    self.sys.recipe_state["time_elapsed_string"] = None
+
                 else:
+                    # Update duration minutes
                     duration_min = self.sys.recipe_state["duration_minutes"]
+
+                    # Update percent complete
                     percent_complete = float(last_update_min) / duration_min * 100
-                    percent_complete_string = "{0:.2f}".format(percent_complete)
                     self.sys.recipe_state["percent_complete"] = percent_complete
+                    
+                    # Update percent complete string
+                    percent_complete_string = "{0:.2f}".format(percent_complete)
                     self.sys.recipe_state["percent_complete_string"] = percent_complete_string
+                    
+                    # Update time remaining minutes
+                    time_remaining_minutes = duration_min - last_update_min
+                    self.sys.recipe_state["time_remaining_minutes"] = time_remaining_minutes
+                    
+                    # Update time remaining string
+                    time_remaining_string = self.get_duration_string(time_remaining_minutes)
+                    self.sys.recipe_state["time_remaining_string"] = time_remaining_string
+
+                    # Update time elapsed string
+                    time_elapsed_string = self.get_duration_string(last_update_min)
+                    self.sys.recipe_state["time_elapsed_string"] = time_elapsed_string
+
+
             if start_timestamp_min is not None:
                 self.sys.recipe_state["start_timestamp_minutes"] = start_timestamp_min
                 started = datetime.datetime.fromtimestamp(start_timestamp_min*60).strftime('%Y-%m-%d %H:%M:%S') + " UTC"

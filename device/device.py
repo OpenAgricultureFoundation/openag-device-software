@@ -12,13 +12,20 @@ from device.environment import Environment
 # Import recipe handler
 from device.recipe import Recipe
 
+# Import database models
+import django, os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
+django.setup()
+from app.models import Device as DeviceModel
 
-class StateMachine(object):
+
+class Device(object):
     """ A state machine that spawns threads to run recipes, read sensors, set 
     actuators, manage control loops, sync data, and manage external events. """
 
     # Initialize logger
     logger = logging.getLogger(__name__)
+    log_summary = None
 
     # Initialize state and error lists
     states = States()
@@ -88,8 +95,12 @@ class StateMachine(object):
         self.logger.info("Entered NOS state")
 
         while True:
-            # Log environment data
-            self.log_all()
+            # Log environment data to console
+            self.get_log_summary()
+
+            # Store device state in database
+            self.store_device_state()
+
 
             # Check for system reset
             if self.sys.reset:
@@ -102,7 +113,6 @@ class StateMachine(object):
 
             # Update every 2 seconds
             time.sleep(2) # seconds
-
 
  
     def reset_state(self):
@@ -123,6 +133,8 @@ class StateMachine(object):
 
     def load_config(self):
         """ Loads configuration. """
+
+        # TODO: get this from db
         self.config = json.load(open('device/data/config.json'))
         # TODO: validate config
 
@@ -163,9 +175,40 @@ class StateMachine(object):
         return True
 
 
-    def log_all(self):
+    def get_log_summary(self):
+        """ Gets device log summary and logs it to logger. """
         with threading.Lock():
-            log = self.env.get_log()
-            log += self.sys.get_log()
-            self.logger.info(log)
+            self.log_summary = self.env.get_log()
+            self.log_summary += self.sys.get_log()
+        
+        # Log the summary to logger
+        self.logger.info(self.log_summary)
+
+
+    def store_device_state(self):
+        """ Stores device state in local database. If device does not exist 
+            in database, create it. Local device will always be first
+            primary key. """
+
+        if not DeviceModel.objects.filter(pk=1).exists():
+            DeviceModel.objects.create(
+                id=1,
+                configuration_json = json.dumps(self.config),
+                recipe_json = json.dumps(self.sys.recipe_dict),
+                system_state = json.dumps(self.sys.system_state),
+                recipe_state = json.dumps(self.sys.recipe_state),
+                peripheral_state = json.dumps(self.sys.peripheral_state),
+                controller_state = json.dumps(self.sys.controller_state),
+                log_summary = self.log_summary
+            )
+        else:
+            DeviceModel.objects.filter(pk=1).update(
+                configuration_json = json.dumps(self.config),
+                recipe_json = json.dumps(self.sys.recipe_dict),
+                system_state = json.dumps(self.sys.system_state),
+                recipe_state = json.dumps(self.sys.recipe_state),
+                peripheral_state = json.dumps(self.sys.peripheral_state),
+                controller_state = json.dumps(self.sys.controller_state),
+                log_summary = self.log_summary
+            )
 
