@@ -14,12 +14,10 @@ class RecipeTransition(models.Model):
         verbose_name_plural = "Recipe Transitions"
 
 
-class Device(models.Model):
+class State(models.Model):
 	id = models.IntegerField(primary_key=True)
-	configuration_json = JSONField()
-	recipe_json = JSONField()
-	system_state = JSONField()
-	recipe_state = JSONField()
-	peripheral_state = JSONField()
-	controller_state = JSONField()
-	log_summary = models.TextField()
+	device = JSONField()
+	recipe = JSONField()
+	environment = JSONField()
+	peripherals = JSONField()
+	controllers = JSONField()

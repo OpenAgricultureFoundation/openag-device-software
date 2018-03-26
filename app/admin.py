@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from app.models import RecipeTransition
-from app.models import Device
+from app.models import State
 
 
 class RecipeTransitionAdmin(admin.ModelAdmin):
@@ -10,7 +10,6 @@ class RecipeTransitionAdmin(admin.ModelAdmin):
 admin.site.register(RecipeTransition, RecipeTransitionAdmin)
 
 
-class DeviceAdmin(admin.ModelAdmin):
-	list_display = ("log_summary", "configuration_json", "recipe_json", "system_state", 
-		"recipe_state", "peripheral_state", "controller_state")
-admin.site.register(Device, DeviceAdmin)
+class StateAdmin(admin.ModelAdmin):
+	list_display = ("device", "recipe", "environment", "peripherals", "controllers")
+admin.site.register(State, StateAdmin)

@@ -2,9 +2,9 @@
 	"peripherals": {
 		"sht25_1": {
 			"verbose_name": "SHT25",
-			"class_file": "sensor.sht25", 
-			"class_name": "SHT25", 
-			"comms": {
+			"module": "sensor.sht25", 
+			"class": "SHT25", 
+			"communication": {
 				"type": "i2c",
 				"bus": "2", 
 				"mux": "7", 
@@ -18,29 +18,6 @@
 				"humidity": {
 					"name": "air_humidity_percent"
 				}
-			}
-		},
-		"light_panel_taurus_1": {
-			"verbose_name": "Light Panel",
-			"class_file": "actuator.light_panel_taurus", 
-			"class_name": "LightPanelTaurus", 
-			"comms": {
-				"type": "i2c",
-				"bus": "2", 
-				"mux": "7", 
-				"channel": "6", 
-				"address": "0x3c"
-			},
-			"variables": {
-				"spectrum": {
-					"name": "light_spectrum_taurus"
-				},
-				"intensity": {
-					"name": "light_intensity_par"
-				}
-			},
-			"options": {
-				"pseudo_sensor_enabled": true
 			}
 		}
 	}

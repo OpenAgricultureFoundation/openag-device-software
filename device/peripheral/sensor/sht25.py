@@ -4,6 +4,10 @@ import threading
 # Import peripheral parent class
 from device.peripheral.utility.sensor.temperature_humidity import TemperatureHumidity
 
+# Import device modes and errors
+from device.utility.mode import Mode
+from device.utility.error import Error
+
 
 class SHT25(TemperatureHumidity):
     """ A temperature and humidity sensor. """
@@ -16,8 +20,8 @@ class SHT25(TemperatureHumidity):
             self.logger.debug("Got temperature: {}".format(self.temperature))
         except:
             self.logger.exception("Unable to get temperature")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
+            self.mode = Mode.ERROR
+            self.error = Error.UNKNOWN
 
 
     def get_humidity(self):
@@ -27,5 +31,5 @@ class SHT25(TemperatureHumidity):
             self.logger.debug("Got humidity: {}".format(self.humidity))
         except:
             self.logger.exception("Unable to get humidity")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
+            self.mode = Mode.ERROR
+            self.error = Error.UNKNOWN

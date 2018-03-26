@@ -1,3 +1,66 @@
+    # def load_stored_recipe_state(self):
+    #     """ Load recipe state stored in database. """
+    #     dev = DeviceModel.objects.filter(pk=1).first()
+    #     with threading.Lock():
+    #         self.sys.recipe_state = json.loads(dev.recipe_state)
+
+,
+        "light_panel_taurus_1": {
+            "name": "light_panel_taurus_1",
+            "verbose_name": "Light Panel",
+            "module": "actuator.light_panel_taurus", 
+            "class": "LightPanelTaurus", 
+            "comms": {
+                "type": "i2c",
+                "bus": "2", 
+                "mux": "7", 
+                "channel": "6", 
+                "address": "0x3c"
+            },
+            "variables": {
+                "spectrum": {
+                    "name": "light_spectrum_taurus"
+                },
+                "intensity": {
+                    "name": "light_intensity_par"
+                }
+            },
+            "options": {
+                "pseudo_sensor_enabled": true
+            }
+        }
+    }
+
+
+
+if not DeviceModel.objects.filter(pk=1).exists():
+            DeviceModel.objects.create(
+                id=1,
+                configuration_json = json.dumps(self.config),
+                recipe_json = json.dumps(self.sys.recipe_dict),
+                system_state = json.dumps(self.sys.system_state),
+                recipe_state = json.dumps(self.sys.recipe_state),
+                peripheral_state = json.dumps(self.sys.peripheral_state),
+                controller_state = json.dumps(self.sys.controller_state),
+                environment_state = json.dumps(environment_state),
+                log_summary = self.log_summary
+            )
+        else:
+            DeviceModel.objects.filter(pk=1).update(
+                configuration_json = json.dumps(self.config),
+                recipe_json = json.dumps(self.sys.recipe_dict),
+                system_state = json.dumps(self.sys.system_state),
+                recipe_state = json.dumps(self.sys.recipe_state),
+                peripheral_state = json.dumps(self.sys.peripheral_state),
+                controller_state = json.dumps(self.sys.controller_state),
+                environment_state = json.dumps(environment_state),
+                log_summary = self.log_summary
+            )
+
+
+
+
+
     # def timestamp_minutes(self):
     #     """ Get timestamp in minutes. """
     #     return int(time.time() / 60

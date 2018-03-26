@@ -3,15 +3,8 @@ sensors, setting actuators, managing control loops, syncing data, and managing
 external events. 
 
 Main starts a state machine which spawns threads to do the above tasks.
-Threads comminicate with each other via shared memory objects for the system
-and environment.
-
-The `system` shared memory object is used to manage the state machines in each 
-thread and signal events.
-
-The `environment` shared memory object is used to report sensor data, set 
-desired setpoints, and command actuators. """
-
+Threads comminicate with each other via the shared memory `state` object`.
+"""
 
 # Import state machine
 from device.device import Device

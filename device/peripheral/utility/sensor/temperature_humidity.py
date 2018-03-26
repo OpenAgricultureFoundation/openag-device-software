@@ -7,14 +7,10 @@ from ..peripheral import Peripheral
 
 class TemperatureHumidity(Peripheral):
     """ Parent class for temperature and humidity sensors. """
+    
+    # Initialize environment variables
     _temperature = None
     _humidity = None
-
-
-    def initialize_peripheral_config(self):
-        """ Initializes peripheral specific config. """
-        self.temperature_name = self.config["variables"]["temperature"]["name"]
-        self.humidity_name = self.config["variables"]["humidity"]["name"]
 
 
     @property
@@ -29,8 +25,8 @@ class TemperatureHumidity(Peripheral):
             it is changed. """
         self._temperature = value
         with threading.Lock():
-            self.env.report_sensor_value(self.name, self.temperature_name, 
-                                        self._temperature)
+            self.report_sensor_value(self.name, self.temperature_name, 
+                                            self._temperature)
 
     @property
     def humidity(self):
@@ -44,25 +40,29 @@ class TemperatureHumidity(Peripheral):
             it is changed. """
         self._humidity = value
         with threading.Lock():
-            self.env.report_sensor_value(self.name, self.humidity_name, 
-                                        self._humidity)
-
-    def setup_peripheral(self):
-        """ Setup peripheral. """
-
-        self._temperature = None
-        self._humidity = None
-        with threading.Lock():
-            self.env.report_sensor_value(self.name, self.temperature_name, self._temperature, simple=True)
-            self.env.report_sensor_value(self.name, self.humidity_name, self._humidity, simple=True)
+            self.report_sensor_value(self.name, self.humidity_name, 
+                                            self._humidity)
 
 
     def initialize_peripheral(self):
-        """ Initializes peripheral. """
+        """ Initializes peripheral specific config. """
+        config = self.state.device["config"]["peripherals"][self.name]
+        self.bus = config["communication"]["bus"]
+        self.mux = config["communication"]["mux"]
+        self.channel = config["communication"]["channel"]
+        self.address = config["communication"]["address"]
+        self.temperature_name = config["variables"]["temperature"]["name"]
+        self.humidity_name = config["variables"]["humidity"]["name"]
+        self.temperature = None
+        self.humidity = None
+
+
+    def setup_peripheral(self):
+        """ Sets up peripheral. """
         try:
-            self.logger.debug("Sensor initialized")
+            self.logger.debug("Sensor setup")
         except:
-            self.logger.exception("Unable to initialize")
+            self.logger.exception("Unable to setup")
             self.state = self.states.ERROR
             self.error = self.errors.UNKNOWN
 
@@ -75,5 +75,11 @@ class TemperatureHumidity(Peripheral):
 
     def reset_peripheral(self):
         """ Reset peripheral. """
+        self.temperature = None
+        self.humidity = None
+
+
+    def errorize_peripheral(self):
+        """ Errorizes perpheral. """
         self.temperature = None
         self.humidity = None

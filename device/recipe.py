@@ -1,16 +1,15 @@
 # Import python modules
 import logging, time, threading, os, datetime, json
 
-# Import all possible states & errors
-from device.utility.states import States
-from device.utility.errors import Errors
+# Import device modes and errors
+from device.utility.mode import Mode
+from device.utility.error import Error
 
 # Import database models
 import django, os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 django.setup()
 from app.models import RecipeTransition
-from app.models import Device as DeviceModel
 
 
 class Recipe:
@@ -20,57 +19,33 @@ class Recipe:
     # Initialize logger
     logger = logging.getLogger(__name__)
 
-    # Initialize state and error lists
-    states = States()
-    errors = Errors()
-
-    # Initialize state & error variables
-    _state = None
+    # Initialize mode & error variables
+    _mode = None
     _error = None
 
-    # Initialize recipe file
-    recipe = None
+    # Initialize thread object
+    thread = None
 
 
-    def __init__(self, env, sys):
+    def __init__(self, state):
         """ Initializes recipe handler """
-        self.env = env
-        self.sys = sys
-
-        # Set state & error values
-        self.state = self.states.SETUP
-        self.error = self.errors.NONE
-
-        # Initialize thread object
-        self.thread = None
-
-        # Initialize recipe timing
-        if "last_update_minute" not in self.sys.recipe_state:
-            with threading.Lock():
-                self.sys.recipe_state["last_update_minute"] = 0
-
+        self.state = state
+        self.mode = Mode.INIT
+        self.error = Error.NONE
+        self.nullify_recipe_state()
 
     @property
-    def state(self):
-        """ Gets state value. """
-        return self._state
+    def mode(self):
+        """ Gets mode value. """
+        return self._mode
 
 
-    @state.setter
-    def state(self, value):
-        """ Safely updates recipe state in system object each time
-            it is changed. """
-        self._state = value
+    @mode.setter
+    def mode(self, value):
+        """ Safely updates recipe mode in device state. """
+        self._mode = value
         with threading.Lock():
-            self.sys.recipe_state["state"] = self._state
-
-
-    def commanded_state(self):
-        """ Gets the recipe's commanded state. """
-        if "commanded_state" in self.sys.recipe_state:
-            return self.sys.recipe_state["commanded_state"]
-        else:
-            return None
+            self.state.recipe["mode"] = self._mode
 
 
     @property
@@ -81,157 +56,229 @@ class Recipe:
 
     @error.setter
     def error(self, value):
-        """ Safely updates recipe error in system object each time
-            it is changed. """
+        """ Safely updates recipe error in device state. """
         self._error= value
         with threading.Lock():
-            self.sys.recipe_state["error"] = self._error
+            self.state.recipe["error"] = self._error
+
+
+    def commanded_mode(self):
+        """ Gets the recipe's commanded mode. """
+        if "commanded_mode" in self.state.recipe:
+            return self.state.recipe["commanded_mode"]
+        else:
+            return None
+
+
+    def commanded_recipe(self):
+        """ Gets the recipe's commanded mode. """
+        if "commanded_recipe" in self.state.recipe:
+            return self.state.recipe["commanded_recipe"]
+        else:
+            return None
+
+
+    def commanded_start_timestamp_minutes(self):
+        """ Gets the recipe's commanded mode. """
+        if "commanded_start_timestamp_minutes" in self.state.recipe:
+            return self.state.recipe["commanded_start_timestamp_minutes"]
+        else:
+            return None
 
 
     def spawn(self):
         """ Spawns recipe thread. """
-        self.thread = threading.Thread(target=self.state_machine)
+        self.thread = threading.Thread(target=self.run_state_machine)
         self.thread.daemon = True
         self.thread.start()
 
 
-    def state_machine(self):
-        """ Runs state machine. """
-        self.logger.debug("Starting state machine")
+    def run_state_machine(self):
+        """ Runs recipe state machine. """
+        self.logger.debug("Starting recipe state machine")
         while True:
-            if self.state == self.states.SETUP:
-                self.setup_state()
-            elif self.state == self.states.START:
-                self.start_state()
-            elif self.state == self.states.RUN:
-                self.run_state()
-            elif self.state == self.states.PAUSE:
-                self.pause_state()
-            elif self.state == self.states.STOP:
-                self.stop_state()
-            elif self.state == self.states.ERROR:
-                self.error_state()
-            elif self.state == self.states.RESET:
-                self.reset_state()
+            if self.mode == Mode.INIT:
+                self.run_init_mode()
+            elif self.mode == Mode.LOAD:
+                self.run_load_mode()
+            elif self.mode == Mode.WAIT:
+                self.run_wait_mode()        
+            elif self.mode == Mode.NOM:
+                self.run_nom_mode()
+            elif self.mode == Mode.PAUSE:
+                self.run_pause_mode()
+            elif self.mode == Mode.RESUME:
+                self.run_resume_mode()
+            elif self.mode == Mode.STOP:
+                self.run_stop_mode()
+            elif self.mode == Mode.ERROR:
+                self.run_error_mode()
+            elif self.mode == Mode.RESET:
+                self.run_reset_mode()
 
 
-    def setup_state(self):
-        """ Runs setup state. Loads stored recipe state and transitions 
-            accordingly. """
-        self.logger.info("Entered SETUP state")
+    def run_init_mode(self):
+        """ Runs initialization mode. Waits for load command then 
+            transitions to LOAD. """
+        self.logger.info("Entered INIT")
+        time.sleep(2)
 
-        # Initialize recipe state
-        self.set_null_recipe_state()
-
-        # Load stored state 
-        self.load_stored_recipe_state()
-
-        # Pretend we loaded in START state
-        # self._state = self.states.START
-
-        # Wait for transition out of setup
-        while self.state == self.states.SETUP:
-            time.sleep(0.1)
+        # Wait for load command
+        while True:
+            self.logger.info("mode: {}".format(self.mode))
+            if self.commanded_mode() == Mode.LOAD:
+                self.mode = self.commanded_mode()
+                break
+            time.sleep(0.5)
 
 
+    def run_load_mode(self):
+        """ Runs load mode. Nullifies recipe state and desired sensor state,
+        loads recipe start time, if not set, starts recipe immediately, loads 
+        recipe and start timestamp into device state, loads recipe transitions 
+        into database, then transitions to WAIT. """
+        self.logger.info("Entered LOAD")
 
-    def start_state(self):
-        """ Runs start state. Loads recipe dict into recipe transition table 
-            in database. Updates recipe start timestamp in `system` shared 
-            memory object. """
-        self.logger.info("Entered START state")
-        try:
-            self.load_recipe_dict(self.sys.recipe_dict)
-            self.state = self.states.RUN
-        except:
-            self.logger.exception("Unable to load recipe dict.")
-            self.state = self.states.ERROR
-            self.error = self.errors.RECIPE_LOAD_ERROR
+        # Nullify recipe state and desired sensor state
+        self.nullify_recipe_state()
+        self.nullify_desired_sensor_state()
+
+        # Load recipe start time, if not set, start recipe immediately
+        if self.commanded_start_timestamp_minutes() != None:
+            start_timestamp_minutes = commanded_start_timestamp_minutes()
+        else:
+            start_timestamp_minutes = self.timestamp_minutes()
+
+        # Load recipe and start timestamp into device state and clear commanded states
+        with threading.Lock(): 
+            self.state.recipe["recipe"] = self.commanded_recipe()
+            self.state.recipe["start_timestamp_minutes"] = start_timestamp_minutes
+            self.state.recipe["commanded_recipe"] = None
+            self.state.recipe["commanded_start_timestamp_minutes"] = None
+            self.state.recipe["commanded_mode"] = None
+
+        # Load recipe transitions into database
+        self.load_recipe_transitions()
+
+        # Transition to WAIT
+        self.mode = Mode.WAIT
 
 
-    def run_state(self):
-        """ Runs run state. """
-        self.logger.info("Entered RUN state")
+    def run_wait_mode(self):
+        """ Runs wait mode. Waits for recipe start timestamp to be greater than
+        or equal to current timestamp then transitions to NOM. """
+        while True:
+            if self.state.recipe["start_timestamp_minutes"] >= self.timestamp_minutes():
+                self.mode = Mode.NOM
+                break
+
+
+    def run_nom_mode(self):
+        """ Runs normal operation mode. Updates recipe and environment states 
+        every minute. Transitions to PAUSE, RESET, or STOP if commanded. """
+
+        self.logger.info("Entered NOM")
         self.update_recipe_environment()
 
         while True:
-            # Update recipe environment every minute
+            # Update recipe and environment states every minute
             if self.new_minute():
                 self.update_recipe_environment()
+
+            # Check for transition to PAUSE
+            if self.commanded_mode() == Mode.PAUSE:
+                self.mode = Mode.PAUSE
+                break
+
+            # Check for transition to STOP
+            if self.commanded_mode() == Mode.STOP:
+                self.mode = Mode.STOP
+                break
                 
-            # Check for transition to reset
-            if self.commanded_state() == self.states.RESET:
-                self.state = self.states.RESET
-                continue
+            # Check for transition to RESET
+            if self.commanded_mode() == Mode.RESET:
+                self.mode = Mode.RESET
+                break
 
             # Update thread every 100ms
             time.sleep(0.1) 
 
 
-    def pause_state(self):
-        """ Runs pause state. """
-        self.logger.info("Entered PAUSE state")
-
-
-    def stop_state(self):
-        """ Runs run state. """
-        self.logger.info("Entered STOP state")
-
-
-    def error_state(self):
-        """ Runs error state. Waits for commanded state to be set to reset,
-            then transitions to reset state. """
-        self.logger.info("Entered ERROR state")
-        self.set_null_recipe_state()
-
-        # TODO: How to update desired sensor values in error state?
-
-        while (self.commanded_state() != self.states.RESET):
+    def run_pause_mode(self):
+        """ Runs pause mode. """
+        self.logger.info("Entered PAUSE")
+        while True:
             time.sleep(0.1) # 100ms
-        self.state = self.states.RESET
 
 
-    def reset_state(self):
-        """ Runs reset state. Resets device state then transitions to 
-            initialization state. """
-        self.logger.info("Entered RESET state")
-        self.set_null_recipe_state()
-
-        # TODO: How to handle resetting desired sensor values?
-
-        self.error = self.errors.NONE
-        self.state = self.state.INIT
+    def run_resume_mode(self):
+        """ Runs resume mode. """
+        self.logger.info("Entered RESUME")
+        while True:
+            time.sleep(0.1) # 100ms
 
 
-    def get_recipe_environment_obj(self, minute):
-        """ Gets environment object from database for provided minute. Returns 
-            most recent transition state. """
+    def run_stop_mode(self):
+        """ Runs stop mode. """
+        self.logger.info("Entered STOP")
+
+
+    def run_error_mode(self):
+        """ Runs error mode. Nullifies recipe state and desired sensor state,
+            waits for reset mode command then transitions to RESET. """
+        self.logger.info("Entered ERROR")
+        
+        # Nullify recipe state and desired sensor state
+        self.nullify_recipe_state()
+        self.nullify_desired_sensor_state()
+
+        # Wait for reset mode command
+        while True:
+            if self.commanded_mode() == Mode.RESET:
+                self.mode == self.commanded_mode()
+                break
+            time.sleep(0.1) # 100ms
+
+        # Transition to reset mode
+        self.mode = Mode.RESET
+
+
+    def run_reset_mode(self):
+        """ Runs reset mode. Nullifies recipe state and desired sensor state,
+            clears error, then transitions to INIT. """
+        self.logger.info("Entered RESET")
+
+        # Nullify recipe state and desired sensor state
+        self.nullify_recipe_state()
+        self.nullify_desired_sensor_state()
+
+        # Clear error
+        self.error = Error.NONE
+
+        # Transition to INIT
+        self.mode = Mode.INIT
+
+
+    def get_recipe_environment(self, minute):
+        """ Gets environment object from database for provided minute. """
         return RecipeTransition.objects.filter(minute__lte=minute).order_by('-minute').first()
 
 
-    def load_stored_recipe_state(self):
-        """ Load recipe state stored in database. """
-        dev = DeviceModel.objects.filter(pk=1).first()
-        with threading.Lock():
-            self.sys.recipe_state = json.loads(dev.recipe_state)
+    def load_recipe_transitions(self):
+        """ Loads recipe transitions into database. """
 
-
-    def load_recipe_dict(self, recipe):
-        """ Loads recipe file into database. Parses phased recipe into
-            time-banded environment states"""
-
-        # Clear parsed recipe table in database
+        # Clear recipe transition table in database
         RecipeTransition.objects.all().delete()
 
-        # Parse recipe file into database
+        # Parse recipe into database
         minute_counter = 0
-        for phase in recipe["phases"]:
+        for phase in self.state.recipe["recipe"]["phases"]:
             phase_name = phase["name"]
             for i in range(phase["repeat"]):
                 for cycle in phase["cycles"]:
                     # Get environment name and state + cycle name
                     environment_name = cycle["environment"]
-                    environment_state = recipe["environments"][environment_name]
+                    environment_state = self.state.recipe["recipe"]["environments"][environment_name]
                     cycle_name = cycle["name"]
 
                     # Get duration
@@ -243,7 +290,7 @@ class Recipe:
                     else:
                         raise KeyError("Could not find 'duration_minutes' or 'duration_hours' in cycle")
 
-                    # Write time-banded environment states to the database
+                    # Write recipe transition to database
                     RecipeTransition.objects.create(
                         minute = minute_counter,
                         phase = phase_name,
@@ -262,12 +309,6 @@ class Recipe:
             environment_state = {}
         )
 
-        # Update recipe state
-        self.update_recipe_state(
-            name=recipe["name"],
-            duration_min = minute_counter,
-            start_timestamp_min=self.timestamp_minutes())
-
 
     def timestamp_minutes(self):
         """ Get timestamp in minutes. """
@@ -276,8 +317,8 @@ class Recipe:
 
     def update_recipe_environment(self):
         """ Updates recipe environment. """
-        current_minute = self.timestamp_minutes() - self.sys.recipe_state["start_timestamp_minutes"]
-        environment = self.get_recipe_environment_obj(current_minute)
+        current_minute = self.timestamp_minutes() - self.state.recipe["start_timestamp_minutes"]
+        environment = self.get_recipe_environment(current_minute)
     
         self.update_recipe_state(
             phase=environment.phase, 
@@ -287,8 +328,15 @@ class Recipe:
             last_update_min=current_minute)
 
 
-    def set_null_recipe_state(self):
-        """ Clears recipe state. """
+    def nullify_desired_sensor_state(self):
+        """ Sets desired sensor state to null values. """
+        with threading.Lock():
+            for variable in self.state.environment["sensor"]["desired"]:
+                self.state.environment["sensor"]["desired"][variable] = None
+
+
+    def nullify_recipe_state(self):
+        """ Sets recipe state to null values """
         self.update_recipe_state(
             name=None, 
             phase=None, 
@@ -306,67 +354,65 @@ class Recipe:
 
         with threading.Lock():
             if name is not None:
-                self.sys.recipe_state["name"] = name
+                self.state.recipe["name"] = name
             if phase is not None:
-                self.sys.recipe_state["phase"] = phase
+                self.state.recipe["phase"] = phase
             if cycle is not None:
-                self.sys.recipe_state["cycle"] = cycle
+                self.state.recipe["cycle"] = cycle
             if env_name is not None:
-                self.sys.recipe_state["environment_name"] = env_name
+                self.state.recipe["environment_name"] = env_name
             if env_state is not None:
-                self.sys.recipe_state["environment_state"] = env_state
+                self.state.recipe["environment_state"] = env_state
                 for variable in env_state:
-                    self.env.set_desired_sensor_values(env_state)
+                    self.set_desired_sensor_values(env_state)
             if last_update_min is not None:
-                self.sys.recipe_state["last_update_minute"] = last_update_min
+                self.state.recipe["last_update_minute"] = last_update_min
                 if last_update_min == -1:
-                    self.sys.recipe_state["percent_complete"] = None
-                    self.sys.recipe_state["percent_complete_string"] = None
-                    self.sys.recipe_state["time_remaining_minutes"] = None
-                    self.sys.recipe_state["time_remaining_string"] = None
-                    self.sys.recipe_state["time_elapsed_string"] = None
-
+                    self.state.recipe["percent_complete"] = None
+                    self.state.recipe["percent_complete_string"] = None
+                    self.state.recipe["time_remaining_minutes"] = None
+                    self.state.recipe["time_remaining_string"] = None
+                    self.state.recipe["time_elapsed_string"] = None
                 else:
                     # Update duration minutes
-                    duration_min = self.sys.recipe_state["duration_minutes"]
+                    duration_min = self.state.recipe["duration_minutes"]
 
                     # Update percent complete
                     percent_complete = float(last_update_min) / duration_min * 100
-                    self.sys.recipe_state["percent_complete"] = percent_complete
+                    self.state.recipe["percent_complete"] = percent_complete
                     
                     # Update percent complete string
                     percent_complete_string = "{0:.2f}".format(percent_complete)
-                    self.sys.recipe_state["percent_complete_string"] = percent_complete_string
+                    self.state.recipe["percent_complete_string"] = percent_complete_string
                     
                     # Update time remaining minutes
                     time_remaining_minutes = duration_min - last_update_min
-                    self.sys.recipe_state["time_remaining_minutes"] = time_remaining_minutes
+                    self.state.recipe["time_remaining_minutes"] = time_remaining_minutes
                     
                     # Update time remaining string
                     time_remaining_string = self.get_duration_string(time_remaining_minutes)
-                    self.sys.recipe_state["time_remaining_string"] = time_remaining_string
+                    self.state.recipe["time_remaining_string"] = time_remaining_string
 
                     # Update time elapsed string
                     time_elapsed_string = self.get_duration_string(last_update_min)
-                    self.sys.recipe_state["time_elapsed_string"] = time_elapsed_string
-
+                    self.state.recipe["time_elapsed_string"] = time_elapsed_string
 
             if start_timestamp_min is not None:
-                self.sys.recipe_state["start_timestamp_minutes"] = start_timestamp_min
+                self.state.recipe["start_timestamp_minutes"] = start_timestamp_min
                 started = datetime.datetime.fromtimestamp(start_timestamp_min*60).strftime('%Y-%m-%d %H:%M:%S') + " UTC"
-                self.sys.recipe_state["start_datestring"] = started
+                self.state.recipe["start_datestring"] = started
             if duration_min is not None:
-                self.sys.recipe_state["duration_minutes"] = duration_min
+                self.state.recipe["duration_minutes"] = duration_min
                 if duration_min == -1:
-                    self.sys.recipe_state["duration_string"] = None 
+                    self.state.recipe["duration_string"] = None 
                 else:
-                    self.sys.recipe_state["duration_string"] = self.get_duration_string(duration_min)
+                    self.state.recipe["duration_string"] = self.get_duration_string(duration_min)
 
 
     def new_minute(self):
         """ Check if system clock is on a new minute. """
-        current_minute = self.timestamp_minutes() - self.sys.recipe_state["start_timestamp_minutes"] 
-        last_update_minute = self.sys.recipe_state["last_update_minute"]
+        current_minute = self.timestamp_minutes() - self.state.recipe["start_timestamp_minutes"] 
+        last_update_minute = self.state.recipe["last_update_minute"]
         if current_minute > last_update_minute:
             return True
         else:
@@ -382,3 +428,8 @@ class Recipe:
         return string
 
 
+    def set_desired_sensor_values(self, environment_dict):
+        """ Sets desired sensor values from provided environment dict. """
+        with threading.Lock():
+            for variable in environment_dict:
+                self.state.environment["sensor"]["desired"][variable] = environment_dict[variable]
