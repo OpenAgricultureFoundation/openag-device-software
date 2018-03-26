@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, threading, os, datetime
+import logging, time, threading, os, datetime, json
 
 # Import all possible states & errors
 from device.utility.states import States
@@ -10,6 +10,7 @@ import django, os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
 django.setup()
 from app.models import RecipeTransition
+from app.models import Device as DeviceModel
 
 
 class Recipe:
@@ -122,11 +123,11 @@ class Recipe:
         # Initialize recipe state
         self.set_null_recipe_state()
 
-        # TODO: Load stored state from system
-
+        # Load stored state 
+        self.load_stored_recipe_state()
 
         # Pretend we loaded in START state
-        self._state = self.states.START
+        # self._state = self.states.START
 
         # Wait for transition out of setup
         while self.state == self.states.SETUP:
@@ -206,6 +207,13 @@ class Recipe:
         """ Gets environment object from database for provided minute. Returns 
             most recent transition state. """
         return RecipeTransition.objects.filter(minute__lte=minute).order_by('-minute').first()
+
+
+    def load_stored_recipe_state(self):
+        """ Load recipe state stored in database. """
+        dev = DeviceModel.objects.filter(pk=1).first()
+        with threading.Lock():
+            self.sys.recipe_state = json.loads(dev.recipe_state)
 
 
     def load_recipe_dict(self, recipe):
@@ -372,3 +380,5 @@ class Recipe:
         minutes = duration_minutes - days*60*24 - hours*60
         string = "{} Days {} Hours {} Minutes".format(days, hours, minutes)
         return string
+
+

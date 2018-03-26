@@ -30,6 +30,15 @@ class Environment(object):
     }
 
 
+    def environment_state(self):
+        """ Get environment state from environment object. """
+        environment_state = {}
+        environment_state["actuator"] = self.actuator
+        environment_state["sensor"] = self.sensor
+        environment_state["reported_sensor_stats"] = self.reported_sensor_stats
+        return environment_state
+
+
     def set_desired_sensor_values(self, environment_dict):
         """ Sets desired sensor values from provided environment dict. """
         for variable in environment_dict:
@@ -152,3 +161,5 @@ class Environment(object):
         """ Returns a log line string for a reported --> desired value. """
         line = "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
         return line
+
+

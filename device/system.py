@@ -25,7 +25,7 @@ class System(object):
     recipe_dict = None
 
     # Initialize state objects
-    system_state = {"reset": False}
+    system_state = {}
     peripheral_state = {}
     controller_state = {}
     recipe_state = {}

@@ -6,6 +6,8 @@ from device.utility.states import States
 from device.utility.errors import Errors
 
 # Import shared memory objects
+from device.state import State
+
 from device.system import System
 from device.environment import Environment
 
@@ -95,12 +97,15 @@ class Device(object):
         self.logger.info("Entered NOS state")
 
         while True:
-            # Log environment data to console
+            # Update periodically
+            time.sleep(2) # seconds
+
+
+            # Log device summary
             self.get_log_summary()
 
             # Store device state in database
             self.store_device_state()
-
 
             # Check for system reset
             if self.sys.reset:
@@ -110,9 +115,6 @@ class Device(object):
             # Check for system error
             if self.sys.state == self.states.ERROR:
                 continue
-
-            # Update every 2 seconds
-            time.sleep(2) # seconds
 
  
     def reset_state(self):
@@ -185,10 +187,15 @@ class Device(object):
         self.logger.info(self.log_summary)
 
 
+
     def store_device_state(self):
         """ Stores device state in local database. If device does not exist 
             in database, create it. Local device will always be first
             primary key. """
+
+        # Get environment state (TODO: make env state a dict in env...sooner than later)
+        with threading.Lock():
+            environment_state = self.env.environment_state()
 
         if not DeviceModel.objects.filter(pk=1).exists():
             DeviceModel.objects.create(
@@ -199,6 +206,7 @@ class Device(object):
                 recipe_state = json.dumps(self.sys.recipe_state),
                 peripheral_state = json.dumps(self.sys.peripheral_state),
                 controller_state = json.dumps(self.sys.controller_state),
+                environment_state = json.dumps(environment_state),
                 log_summary = self.log_summary
             )
         else:
@@ -209,6 +217,7 @@ class Device(object):
                 recipe_state = json.dumps(self.sys.recipe_state),
                 peripheral_state = json.dumps(self.sys.peripheral_state),
                 controller_state = json.dumps(self.sys.controller_state),
+                environment_state = json.dumps(environment_state),
                 log_summary = self.log_summary
             )
 
