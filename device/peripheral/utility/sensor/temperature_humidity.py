@@ -46,7 +46,7 @@ class TemperatureHumidity(Peripheral):
                                             self._humidity)
 
 
-    def initialize_peripheral(self):
+    def initialize_state(self):
         """ Initializes peripheral specific config. """
         config = self.state.device["config"]["peripherals"][self.name]
         self.bus = config["communication"]["bus"]
@@ -57,16 +57,7 @@ class TemperatureHumidity(Peripheral):
         self.humidity_name = config["variables"]["humidity"]["name"]
         self.temperature = None
         self.humidity = None
-
-
-    def setup_peripheral(self):
-        """ Sets up peripheral. """
-        try:
-            self.logger.debug("Sensor setup")
-        except:
-            self.logger.exception("Unable to setup")
-            self.mode = self.states.ERROR
-            self.error = self.errors.UNKNOWN
+        self.quickly_check_hardware_state()
 
 
     def update_peripheral(self):
@@ -75,13 +66,7 @@ class TemperatureHumidity(Peripheral):
         self.get_humidity()
 
 
-    def reset_peripheral(self):
-        """ Reset peripheral. """
-        self.temperature = None
-        self.humidity = None
-
-
-    def errorize_peripheral(self):
-        """ Errorizes perpheral. """
+    def clear_reported_values(self):
+        """ Clears reported values. """
         self.temperature = None
         self.humidity = None

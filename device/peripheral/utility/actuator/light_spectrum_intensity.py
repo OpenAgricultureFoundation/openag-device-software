@@ -10,12 +10,10 @@ from device.utility.variable import Variable
 from ..peripheral import Peripheral
 
 
-
 class LightSpectrumIntensity(Peripheral):
     """ Parent class for light spectrum and intensity actuator """
     _spectrum = None
     _intensity = None
-    # _sampling_interval_sec = 0.2 # 200ms
 
 
     @property
@@ -52,8 +50,8 @@ class LightSpectrumIntensity(Peripheral):
                 self.report_sensor_value(self.name, self.intensity_name, self.intensity)
 
 
-    def initialize_peripheral(self):
-        """ Initializes peripheral. """
+    def initialize_state(self):
+        """ Initializes peripheral state. """
         config = self.state.device["config"]["peripherals"][self.name]
         self.bus = config["communication"]["bus"]
         self.mux = config["communication"]["mux"]
@@ -65,16 +63,6 @@ class LightSpectrumIntensity(Peripheral):
 
         self.spectrum = None
         self.intensity = None
-
-
-    def setup_peripheral(self):
-        """ Sets up peripheral. """
-        try:
-            self.logger.debug("Sensor actuator")
-        except:
-            self.logger.exception("Unable to setup")
-            self.mode = Mode.ERROR
-            self.error = Error.UNKNOWN
 
 
     def update_peripheral(self):
@@ -93,13 +81,7 @@ class LightSpectrumIntensity(Peripheral):
                 self.set_intensity(desired_intensity)
 
 
-    def reset_peripheral(self):
-        """ Reset peripheral. """
-        self.spectrum = None
-        self.intensity = None
-
-
-    def errorize_peripheral(self):
-        """ Errorizes perpheral. """
+    def clear_reported_values(self):
+        """ Clears reported values. """
         self.spectrum = None
         self.intensity = None

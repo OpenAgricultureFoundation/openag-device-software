@@ -14,6 +14,15 @@ class LightPanelTaurus(LightSpectrumIntensity):
     """ A light panel with six independently controlled channels that can 
     create the Taurus light spectrum. """
 
+    def quickly_check_hardware_state(self):
+        """ Quickly check hardware state. """
+        pass
+
+
+    def initialize_hardware(self):
+        """ Initialize hardware. """
+        pass
+
 
     def set_spectrum(self, spectrum):
         """ Set light spectrum. """

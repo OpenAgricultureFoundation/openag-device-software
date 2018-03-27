@@ -13,8 +13,7 @@ from app.models import RecipeTransition
 
 
 class Recipe:
-    """ Recipe handler. Manages recipe state machine and interactions
-        with recipe table in database. """
+    """ Manages recipe state machine. """
 
     # Initialize logger
     logger = logging.getLogger(__name__)
@@ -340,11 +339,7 @@ class Recipe:
             self.set_desired_sensor_values(value)
 
 
-
-
-
-
-
+    ######################## End of Getters / Setters #########################
 
 
     def spawn(self):
@@ -356,7 +351,6 @@ class Recipe:
 
     def run_state_machine(self):
         """ Runs recipe state machine. """
-        self.logger.debug("Starting recipe state machine")
         while True:
             if self.mode == Mode.INIT:
                 self.run_init_mode()
@@ -388,7 +382,7 @@ class Recipe:
         """ Runs initialization mode. Transitions to stored recipe mode 
             or NORECIPE if no stored mode. """
         self.error = Error.NONE
-        # self.nullify_recipe_state()
+        # self.clear_recipe_state()
 
         # Transition to recipe stored mode
         if "stored_mode" in self.state.recipe and \
@@ -403,7 +397,7 @@ class Recipe:
             transitions to LOAD. """
         self.logger.info("Entered NORECIPE")
 
-        self.nullify_recipe_state()
+        self.clear_recipe_state()
 
         # Wait for load command
         while True:
@@ -414,15 +408,16 @@ class Recipe:
 
 
     def run_load_mode(self):
-        """ Runs load mode. Nullifies recipe state and desired sensor state,
-        loads recipe start time, if not set, starts recipe immediately, loads 
-        recipe and start timestamp into device state, loads recipe transitions 
-        into database, then transitions to WAIT. """
+        """ Runs load mode. Loads recipe transitions into database, loads 
+            recipe start time, signals start of experiment, then 
+            transitions to QUEUED. """
         self.logger.info("Entered LOAD")
 
-        # Nullify recipe state and desired sensor state
-        self.nullify_recipe_state()
-        self.nullify_desired_sensor_state()
+        # Load recipe into shared state
+        self.recipe = self.commanded_recipe
+
+        # Load recipe transitions into database
+        self.load_recipe_transitions()
 
         # Load recipe start time, if not set, start recipe immediately
         if self.commanded_start_timestamp_minutes != None:
@@ -430,16 +425,10 @@ class Recipe:
         else:
             self.start_timestamp_minutes = self.current_timestamp_minutes
 
-        # Load recipe and start timestamp into device state
-        self.recipe = self.commanded_recipe
-
         # Clear commanded states
         self.commanded_mode = None
         self.commanded_recipe = None
         self.commanded_start_timestamp_minutes = None
-
-        # Load recipe transitions into database
-        self.load_recipe_transitions()
 
         # Transition to QUEUED
         self.mode = Mode.QUEUED
@@ -456,7 +445,7 @@ class Recipe:
 
     def run_normal_mode(self):
         """ Runs normal operation mode. Updates recipe and environment states 
-        every minute. Transitions to PAUSE, RESET, or STOP if commanded. """
+        every minute. Transitions to PAUSE or STOP if commanded. """
 
         self.logger.info("Entered NORMAL")
         self.update_recipe_environment()
@@ -475,43 +464,56 @@ class Recipe:
             if self.commanded_mode == Mode.STOP:
                 self.mode = Mode.STOP
                 break
-                
-            # Check for transition to RESET
-            if self.commanded_mode == Mode.RESET:
-                self.mode = Mode.RESET
-                break
 
             # Update thread every 100ms
             time.sleep(0.1) 
 
 
     def run_pause_mode(self):
-        """ Runs pause mode. """
+        """ Runs pause mode. Clears recipe and desired sensor state, waits 
+            for resume or stop command"""
         self.logger.info("Entered PAUSE")
-        while True:
-            time.sleep(0.1) # 100ms
 
+        # Clear recipe and desired sensor state
+        self.clear_recipe_state()
+        self.clear_desired_sensor_state()
 
-    def run_resume_mode(self):
-        """ Runs resume mode. """
-        self.logger.info("Entered RESUME")
         while True:
+            # Check for transition to NORMAL
+            if self.commanded_mode == Mode.NORMAL:
+                self.mode = Mode.NORMAL
+                break
+
+            # Check for transition to STOP
+            if self.commanded_mode == Mode.STOP:
+                self.mode = Mode.STOP
+                break
+
+            # Update every 100ms
             time.sleep(0.1) # 100ms
 
 
     def run_stop_mode(self):
-        """ Runs stop mode. """
+        """ Runs stop mode. Clears recipe and desired sensor state, signals 
+            end of recipe, then transitions to NORECIPE. """
         self.logger.info("Entered STOP")
+
+        # Clear recipe and desired sensor states
+        self.clear_recipe_state()
+        self.clear_desired_sensor_state()
+
+        # Transition to NORECIPE
+        self.mode = NORECIPE
 
 
     def run_error_mode(self):
-        """ Runs error mode. Nullifies recipe state and desired sensor state,
+        """ Runs error mode. Clears recipe state and desired sensor state,
             waits for reset mode command then transitions to RESET. """
         self.logger.info("Entered ERROR")
         
         # Nullify recipe state and desired sensor state
-        self.nullify_recipe_state()
-        self.nullify_desired_sensor_state()
+        self.clear_recipe_state()
+        self.clear_desired_sensor_state()
 
         # Wait for reset mode command
         while True:
@@ -525,13 +527,8 @@ class Recipe:
 
 
     def run_reset_mode(self):
-        """ Runs reset mode. Nullifies recipe state and desired sensor state,
-            clears error, then transitions to INIT. """
+        """ Runs reset mode. Clears error state then transitions to INIT. """
         self.logger.info("Entered RESET")
-
-        # Nullify recipe state and desired sensor state
-        self.nullify_recipe_state()
-        self.nullify_desired_sensor_state()
 
         # Clear error
         self.error = Error.NONE
@@ -606,14 +603,14 @@ class Recipe:
         self.current_environment_state = environment.environment_state
 
 
-    def nullify_desired_sensor_state(self):
+    def clear_desired_sensor_state(self):
         """ Sets desired sensor state to null values. """
         with threading.Lock():
             for variable in self.state.environment["sensor"]["desired"]:
                 self.state.environment["sensor"]["desired"][variable] = None
 
 
-    def nullify_recipe_state(self):
+    def clear_recipe_state(self):
         """ Sets recipe state to null values """
         self.duration_minutes = None
         self.last_update_min = None

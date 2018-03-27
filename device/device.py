@@ -65,8 +65,7 @@ class Device(object):
 
 
     def __init__(self):
-        """ Initializes device. Loads stored state from database. """
-        self.load_state()
+        """ Initializes device. """
         self.mode = Mode.INIT
         self.error = Error.NONE
 
@@ -109,16 +108,17 @@ class Device(object):
 
     def run(self):
         """ Runs device state machine. """
-        self.logger.info("Starting state machine")
         while True:
             if self.mode == Mode.INIT:
                 self.run_init_mode()
+            elif self.mode == Mode.CONFIG:
+                self.run_config_mode()
             elif self.mode == Mode.SETUP:
                 self.run_setup_mode()
             elif self.mode == Mode.NORMAL:
                 self.run_normal_mode()
-            elif self.mode == Mode.CONFIG:
-                self.run_config_mode()
+            elif self.mode == Mode.LOAD:
+                self.run_load_mode()
             elif self.mode == Mode.ERROR:
                 self.run_error_mode()
             elif self.mode == Mode.RESET:
@@ -126,28 +126,55 @@ class Device(object):
 
 
     def run_init_mode(self):
-        """ Runs initialization mode. Creates and spawns recipe, peripheral, and 
-            controller threads, then transitions to SETUP. """
+        """ Runs initialization mode. Loads stored state from database then 
+            transitions to CONFIG. """
         self.logger.info("Entered INIT")
-        self.initialize_recipe()
-        self.initialize_peripherals()
-        self.initialize_controllers()
+
+        # Load stored state from database
+        self.load_state()
+
+        # Transition to CONFIG
+        self.mode = Mode.CONFIG
+
+
+    def run_config_mode(self):
+        """ Runs configuration mode. Tries to load config from stored state. 
+            If config not in stored state, loads config from local file then
+            transitions to SETUP. """
+        self.logger.info("Entered CONFIG")
+
+        # Load config from local file if not in stored state
+        if self.state.device["config"] == None:
+            self.load_config_from_local_file()
+
+        # Transition to SETUP
         self.mode = Mode.SETUP
 
 
     def run_setup_mode(self):
-        """ Runs setup mode. Waits for all threads to initialize then 
+        """ Runs setup mode. Creates and spawns recipe, peripheral, and 
+            controller threads, waits for all threads to initialize then 
             transitions to NORMAL. """
         self.logger.info("Entered SETUP")
+
+        # Spawn recipe
+        self.recipe.spawn()
+
+        # Create and spawn peripherals
+        self.create_peripherals()
+        self.spawn_peripherals()
+
+        # Create and spawn controllers
+        self.create_controllers()
+        self.spawn_controllers()
 
         # Wait for all threads to initialize
         while not self.all_threads_initialized():
             time.sleep(0.2)
 
         # Load in recipe from file (TEMPORARY)
-        with threading.Lock():
-            self.state.recipe["commanded_recipe"] = json.load(open('device/data/recipe.json'))
-            self.state.recipe["commanded_mode"] = Mode.LOAD
+        self.recipe.commanded_recipe = json.load(open('device/data/recipe.json'))
+        self.recipe.commanded_mode = Mode.LOAD
 
         # Transition to NORMAL
         self.mode = Mode.NORMAL
@@ -155,8 +182,8 @@ class Device(object):
 
     def run_normal_mode(self):
         """ Runs normal operation mode. Updates device state summary and 
-            stores device state in database. Transitions to RESET if 
-            commanded. Transitions to ERROR on error."""
+            stores device state in database, waits for new config command then
+            transitions to CONFIG. Transitions to ERROR on error."""
         self.logger.info("Entered NORMAL")
 
         while True:
@@ -165,11 +192,6 @@ class Device(object):
 
             # Store system state in database
             self.store_state()
-
-            # Check for reset signal
-            if self.commanded_mode() == Mode.RESET:
-                self.mode = Mode.RESET
-                break
             
             # Check for system error
             if self.mode == Mode.ERROR:
@@ -179,26 +201,46 @@ class Device(object):
             time.sleep(1) # seconds
 
 
-    def run_config_mode(self):
-        """ Runs configuration mode. Loads config from local file then 
-            transitions to INIT. """
-        self.logger.info("Entered CONFIG")
-        self.load_config_from_local_file()
-        self.mode = Mode.INIT
+    def run_load_mode(self):
+        """ Runs load mode. Stops all threads, loads config into stored state,
+            transitions to CONFIG. """
+        self.logger.info("Entered LOAD")
+
+        # Stop all threads
+        self.stop_all_threads()
+
+        # Load config into stored state
+        self.error = Error.NONE
+
+        # Transition to CONFIG
+        self.mode = Mode.CONFIG
 
  
     def run_reset_mode(self):
-        """ Runs reset mode. Stops all threads then transitions to SETUP. """
+        """ Runs reset mode. Clears error state then transitions to INIT. """
         self.logger.info("Entered RESET")
-        # TODO: Stop threads
-        self.mode = Mode.SETUP
+
+        # Clear errors
+        self.error = Error.NONE
+
+        # Transition to INIT
+        self.mode = Mode.INIT
 
 
     def run_error_mode(self):
-        """ Runs error mode. Waits for reset signal then transitions
-            to RESET. """
+        """ Runs error mode. Stops all threads, waits for reset signal then 
+            transitions to RESET. """
         self.logger.info("Entered ERROR")
-        while self.mode != Mode.RESET:
+
+        # Stop all threads
+        self.stop_all_threads()
+
+        # Wait for reset
+        while True:
+            if self.mode == Mode.RESET:
+                break
+
+            # Update every 100ms
             time.sleep(0.1) # 100ms
 
 
@@ -236,8 +278,11 @@ class Device(object):
                     self.state.controllers[controller_name] = {}
                     self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
         else:
-            # Load config from local file
-            self.load_config_from_local_file()
+            # Set device state
+            self.state.device["config"] = None
+
+            # Set recipe state
+            self.recipe.recipe = None
 
 
     def store_state(self):
@@ -266,27 +311,6 @@ class Device(object):
     def load_config_from_local_file(self):
         """ Loads config file into device state. """
         self.state.device["config"] = json.load(open('device/data/config.json'))
-
-
-    def initialize_recipe(self):
-        """ Initializes recipe. Creates recipe object then 
-            spawns recipe thread."""
-        #self.recipe = Recipe(self.state)
-        self.recipe.spawn()
-
-
-    def initialize_peripherals(self):
-        """ Initializes peripherals. Creates peripheral objects from stored
-            config then spawns peripheral threads. """
-        self.create_peripherals()
-        self.spawn_peripherals()
-
-
-    def initialize_controllers(self):
-        """ Initializes controllers. Creates controller objects from stored
-            config then spawns controller threads. """
-        self.create_controllers()
-        self.spawn_controllers()
 
 
     def create_peripherals(self):
@@ -367,6 +391,12 @@ class Device(object):
         return True
 
 
+    def stop_all_threads(self):
+        """ Stops all threads. """
+        # TODO: stop all threads
+        pass
+
+
     def update_device_state_summary(self, sensors=True, actuators=True, recipe=True, thread_modes=True):
         """ Updates device state summary. """
 
@@ -414,8 +444,6 @@ class Device(object):
         self.logger.info(summary)
 
 
-
-
     def get_environment_summary(self, environment):
         """ Gets summary of current reported --> desired value for each variable. """
         summary = ""
@@ -429,7 +457,7 @@ class Device(object):
                 desired = str(environment["desired"][variable])
             else:
                 desired = "None"
-            summary += self.get_summary_line(name, unit, reported, desired)
+            summary += "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
 
         # Log remaining variables in desired
         for variable in environment["desired"]:
@@ -438,15 +466,10 @@ class Device(object):
                 unit = Variable[variable]["unit"]
                 desired = str(environment["desired"][variable])
                 reported = "None"
-                summary += self.get_summary_line(name, unit, reported, desired)
+                summary += "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
 
         # Check for empty log
         if summary == "":
             summary = "\n        None"
 
         return summary
-
-    def get_summary_line(self, name, unit, reported, desired):
-        """ Returns a summary line string for a reported --> desired value. """
-        line = "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
-        return line

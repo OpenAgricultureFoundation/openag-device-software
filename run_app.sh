@@ -1,1 +1,0 @@
-sudo -H python manage.py runserver

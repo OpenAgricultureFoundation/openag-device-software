@@ -12,6 +12,15 @@ from device.utility.error import Error
 class SHT25(TemperatureHumidity):
     """ A temperature and humidity sensor. """
 
+    def quickly_check_hardware_state(self):
+        """ Quickly check hardware state. """
+        pass
+
+
+    def initialize_hardware(self):
+        """ Initialize hardware. """
+        pass
+
 
     def get_temperature(self):
         """ Get sensor temperature. """

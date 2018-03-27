@@ -1,3 +1,25 @@
+       # def update_recipe_state(self, name=None, phase=None, cycle=None, 
+    #     env_name=None, env_state=None, last_update_min=None, 
+    #     start_timestamp_min=None, recipe=None):
+    #     """ Safely update recipe state with provided parameters. """
+
+    #     with threading.Lock():
+    #         if recipe is not None:
+    #             self.state.recipe["recipe"] = recipe
+    #         if name is not None:
+    #             self.state.recipe["name"] = name
+    #         if phase is not None:
+    #             self.state.recipe["phase"] = phase
+    #         if cycle is not None:
+    #             self.state.recipe["cycle"] = cycle
+    #         if env_name is not None:
+    #             self.state.recipe["environment_name"] = env_name
+    #         if env_state is not None:
+    #             self.state.recipe["environment_state"] = env_state
+    #             for variable in env_state:
+    #                 self.set_desired_sensor_values(env_state)
+
+
     # def load_stored_recipe_state(self):
     #     """ Load recipe state stored in database. """
     #     dev = DeviceModel.objects.filter(pk=1).first()
