@@ -72,16 +72,30 @@ class Device(object):
 
     @property
     def mode(self):
-        """ Gets device mode. """
+        """ Gets mode. """
         return self._mode
 
 
     @mode.setter
     def mode(self, value):
-        """ Safely updates device mode in state object. """
+        """ Safely updates mode in state object. """
         self._mode = value
         with threading.Lock():
             self.state.device["mode"] = value
+
+    @property
+    def commanded_mode(self):
+        """ Gets commanded mode from shared state object. """
+        if "commanded_mode" in self.state.device:
+            return self.state.device["commanded_mode"]
+        else:
+            return None
+
+    @commanded_mode.setter
+    def commanded_mode(self, value):
+        """ Safely updates commanded mode in state object. """
+        with threading.Lock():
+            self.state.device["commanded_mode"] = value
 
 
     @property
@@ -92,19 +106,27 @@ class Device(object):
 
     @error.setter
     def error(self, value):
-        """ Safely updates device error in state object. """
+        """ Safely updates error in shared state object. """
         self._error = value
         with threading.Lock():
             self.state.device["error"] = value
 
 
-    def commanded_mode(self):
-        """ Checks for commanded mode in device state then returns 
-            mode or None. """
-        if "commanded_mode" in self.state.device:
-            return self.state.device["commanded_mode"]
+    @property
+    def config(self):
+        """ Gets config from shared state object. """
+        if "config" in self.state.device:
+            return self.state.device["config"]
         else:
             return None
+
+
+    @config.setter
+    def config(self, value):
+        """ Safely updates config in state object. """
+        with threading.Lock():
+            self.state.device["config"] = value
+
 
     def run(self):
         """ Runs device state machine. """
@@ -140,11 +162,11 @@ class Device(object):
     def run_config_mode(self):
         """ Runs configuration mode. Tries to load config from stored state. 
             If config not in stored state, loads config from local file then
-            transitions to SETUP. """
+             transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
         # Load config from local file if not in stored state
-        if self.state.device["config"] == None:
+        if self.config == None:
             self.load_config_from_local_file()
 
         # Transition to SETUP
@@ -247,6 +269,7 @@ class Device(object):
     def load_state(self):
         """ Loads stored state from database if it exists. If not, loads
             config from local file. """
+        self.logger.debug("Loading stored state from database")
 
         # Load stored state from database if exists
         if StateModel.objects.filter(pk=1).exists():
@@ -254,7 +277,7 @@ class Device(object):
 
             # Load device state
             stored_device_state = json.loads(stored_state.device)
-            self.state.device["config"] = stored_device_state["config"]
+            self.config = stored_device_state["config"]
 
             # Load recipe state
             stored_recipe_state = json.loads(stored_state.recipe)
@@ -262,7 +285,7 @@ class Device(object):
             self.recipe.duration_minutes = stored_recipe_state["duration_minutes"]
             self.recipe.start_timestamp_minutes = stored_recipe_state["start_timestamp_minutes"]
             self.recipe.last_update_minute = stored_recipe_state["last_update_minute"]
-            self.state.recipe["stored_mode"] = stored_recipe_state["mode"]
+            self.recipe.stored_mode = stored_recipe_state["mode"]
 
             # Load peripherals state
             stored_peripherals_state = json.loads(stored_state.peripherals)
@@ -279,7 +302,7 @@ class Device(object):
                     self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
         else:
             # Set device state
-            self.state.device["config"] = None
+            self.config = None
 
             # Set recipe state
             self.recipe.recipe = None
@@ -310,18 +333,16 @@ class Device(object):
 
     def load_config_from_local_file(self):
         """ Loads config file into device state. """
-        self.state.device["config"] = json.load(open('device/data/config.json'))
+        self.config = json.load(open('device/data/config.json'))
 
 
     def create_peripherals(self):
         """ Creates peripheral objects. """
-        config = self.state.device["config"]
-        
-        if "peripherals" in config:
-            for peripheral_name in config["peripherals"]:
+        if "peripherals" in self.config:
+            for peripheral_name in self.config["peripherals"]:
                 # Get peripheral module and class name
-                module_name = "device.peripheral." + config["peripherals"][peripheral_name]["module"]
-                class_name = config["peripherals"][peripheral_name]["class"]
+                module_name = "device.peripheral." + self.config["peripherals"][peripheral_name]["module"]
+                class_name = self.config["peripherals"][peripheral_name]["class"]
 
                 # Import peripheral library
                 module_instance= __import__(module_name, fromlist=[class_name])
@@ -339,13 +360,11 @@ class Device(object):
 
     def create_controllers(self):
         """ Creates controller objects. """
-        config = self.state.device["config"]
-        
-        if "controllers" in config:
+        if "controllers" in self.config:
             for controller_name in config["controllers"]:
                 # Get controller module and class name
-                module_name = "device.controller." + config["controllers"][controller_name]["module"]
-                class_name = config["controllers"][controller_name]["class"]
+                module_name = "device.controller." + self.config["controllers"][controller_name]["module"]
+                class_name = self.config["controllers"][controller_name]["class"]
 
                 # Import controller library
                 module_instance= __import__(module_name, fromlist=[class_name])
@@ -377,7 +396,7 @@ class Device(object):
         """ Checks that all peripheral threads have transitioned from INIT. """
         for peripheral_name in self.state.peripherals:
             peripheral_state = self.state.peripherals[peripheral_name]
-            if peripheral_state["mode"] == Mode.INIT:
+            if peripheral_state["mode"] == Mode.INIT or peripheral_state["mode"] == Mode.WARMING:
                 return False
         return True
 
@@ -433,7 +452,7 @@ class Device(object):
             summary += "\n        Device: {}".format(self.mode)
             summary += "\n        Recipe: {}".format(self.state.recipe["mode"])
             for peripheral_name in self.state.peripherals:
-                verbose_name = self.state.device["config"]["peripherals"][peripheral_name]["verbose_name"]
+                verbose_name = self.config["peripherals"][peripheral_name]["verbose_name"]
                 mode = self.state.peripherals[peripheral_name]["mode"]
                 summary += "\n        {}: {}".format(verbose_name, mode)
 

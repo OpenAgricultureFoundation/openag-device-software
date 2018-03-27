@@ -16,19 +16,19 @@ class LightPanelTaurus(LightSpectrumIntensity):
 
     def quickly_check_hardware_state(self):
         """ Quickly check hardware state. """
-        pass
+        self.logger.debug("{}: Quickly checking hardware state".format(self.name))
 
 
     def initialize_hardware(self):
         """ Initialize hardware. """
-        pass
+        self.logger.debug("{}: Initializing hardware".format(self.name))
 
 
     def set_spectrum(self, spectrum):
         """ Set light spectrum. """
         try:
             self.spectrum = spectrum
-            self.logger.debug("Set spectrum: {}".format(self.spectrum))
+            self.logger.debug("{}: Set spectrum: {}".format(self.name, self.spectrum))
         except:
             self.logger.exception("Unable to set spectrum")
             self.mode = Mode.ERROR
@@ -39,7 +39,7 @@ class LightPanelTaurus(LightSpectrumIntensity):
         """ Set light intensity. """
         try:
             self.intensity = intensity
-            self.logger.debug("Set intensity: {}".format(self.intensity))
+            self.logger.debug("{}: Set intensity: {}".format(self.name, self.intensity))
         except:
             self.logger.exception("Unable to set intensity")
             self.mode = Mode.ERROR

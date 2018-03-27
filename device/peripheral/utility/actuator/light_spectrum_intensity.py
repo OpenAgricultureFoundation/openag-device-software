@@ -52,6 +52,7 @@ class LightSpectrumIntensity(Peripheral):
 
     def initialize_state(self):
         """ Initializes peripheral state. """
+        self.logger.debug("{}: Initializing state".format(self.name))
         config = self.state.device["config"]["peripherals"][self.name]
         self.bus = config["communication"]["bus"]
         self.mux = config["communication"]["mux"]
@@ -83,5 +84,6 @@ class LightSpectrumIntensity(Peripheral):
 
     def clear_reported_values(self):
         """ Clears reported values. """
+        self.logger.debug("{}: Clearing reported values".format(self.name))
         self.spectrum = None
         self.intensity = None

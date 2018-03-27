@@ -49,7 +49,7 @@ class Recipe:
 
     @property
     def commanded_mode(self):
-        """ Gets the recipe's commanded mode. """
+        """ Gets commanded mode from shared state. """
         if "commanded_mode" in self.state.recipe:
             return self.state.recipe["commanded_mode"]
         else:
@@ -60,6 +60,21 @@ class Recipe:
         """ Safely updates commanded mode in shared state. """
         with threading.Lock():
             self.state.recipe["commanded_mode"] = value
+
+
+    @property
+    def stored_mode(self):
+        """ Gets the stored mode from shared state. """
+        if "stored_mode" in self.state.recipe:
+            return self.state.recipe["stored_mode"]
+        else:
+            return None
+
+    @stored_mode.setter
+    def stored_mode(self, value):
+        """ Safely updates stored mode in shared state. """
+        with threading.Lock():
+            self.state.recipe["stored_mode"] = value
 
 
     @property
