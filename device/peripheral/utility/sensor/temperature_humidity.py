@@ -5,6 +5,8 @@ import threading
 from ..peripheral import Peripheral
 
 
+
+
 class TemperatureHumidity(Peripheral):
     """ Parent class for temperature and humidity sensors. """
     
@@ -63,7 +65,7 @@ class TemperatureHumidity(Peripheral):
             self.logger.debug("Sensor setup")
         except:
             self.logger.exception("Unable to setup")
-            self.state = self.states.ERROR
+            self.mode = self.states.ERROR
             self.error = self.errors.UNKNOWN
 
 

@@ -1,6 +1,11 @@
 # Import python modules
 import threading
 
+# Import device modes, errors, and variables
+from device.utility.mode import Mode
+from device.utility.error import Error
+from device.utility.variable import Variable
+
 # Import peripheral parent class
 from device.peripheral.utility.actuator.light_spectrum_intensity import LightSpectrumIntensity
 
@@ -17,8 +22,8 @@ class LightPanelTaurus(LightSpectrumIntensity):
             self.logger.debug("Set spectrum: {}".format(self.spectrum))
         except:
             self.logger.exception("Unable to set spectrum")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
+            self.mode = Mode.ERROR
+            self.error = Error.UNKNOWN
     
 
     def set_intensity(self, intensity):
@@ -28,5 +33,5 @@ class LightPanelTaurus(LightSpectrumIntensity):
             self.logger.debug("Set intensity: {}".format(self.intensity))
         except:
             self.logger.exception("Unable to set intensity")
-            self.state = self.states.ERROR
-            self.error = self.errors.UNKNOWN
+            self.mode = Mode.ERROR
+            self.error = Error.UNKNOWN

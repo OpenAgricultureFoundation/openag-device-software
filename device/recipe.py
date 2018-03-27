@@ -647,7 +647,3 @@ class Recipe:
         with threading.Lock():
             for variable in environment_dict:
                 self.state.environment["sensor"]["desired"][variable] = environment_dict[variable]
-
-
-    def summary(self):
-        pass

@@ -1,9 +1,10 @@
 # Import python modules
 import logging, time, json, threading
 
-# Import device modes and errors
+# Import device modes, errors, and variables
 from device.utility.mode import Mode
 from device.utility.error import Error
+from device.utility.variable import Variable
 
 # Import device state manager
 from device.state import State
@@ -366,10 +367,20 @@ class Device(object):
         return True
 
 
-    def update_device_state_summary(self, recipe=True, thread_modes=True):
+    def update_device_state_summary(self, sensors=True, actuators=True, recipe=True, thread_modes=True):
         """ Updates device state summary. """
 
         summary = ""
+
+        # Create sensor summary
+        if sensors:
+            summary += "\n    Sensors:"
+            summary += self.get_environment_summary(self.state.environment["sensor"])
+
+        # Create actuator summary
+        if actuators:
+            summary += "\n    Actuators:"
+            summary += self.get_environment_summary(self.state.environment["actuator"])
 
         # Create recipe summary
         if recipe:
@@ -382,9 +393,9 @@ class Device(object):
                 summary += "\n        Progress: {} %".format(self.recipe.percent_complete_string)
                 summary += "\n        Time Elapsed: {}".format(self.recipe.time_elapsed_string)
                 summary += "\n        Time Remaining: {}".format(self.recipe.time_remaining_string)
-                summary += "\n        Phase: {}".format(self.recipe.current_phase)
-                summary += "\n        Cycle: {}".format(self.recipe.current_cycle)
-                summary += "\n        Environment: {}".format(self.recipe.current_environment_name)
+                summary += "\n        Current Phase: {}".format(self.recipe.current_phase)
+                summary += "\n        Current Cycle: {}".format(self.recipe.current_cycle)
+                summary += "\n        Current Environment: {}".format(self.recipe.current_environment_name)
         
         # Create thread modes summary
         if thread_modes:
@@ -396,8 +407,46 @@ class Device(object):
                 mode = self.state.peripherals[peripheral_name]["mode"]
                 summary += "\n        {}: {}".format(verbose_name, mode)
 
-
+        # Update summary in shared state
         with threading.Lock():
             self.state.device["summary"] = summary
         
         self.logger.info(summary)
+
+
+
+
+    def get_environment_summary(self, environment):
+        """ Gets summary of current reported --> desired value for each variable. """
+        summary = ""
+
+        # Log all variables in reported
+        for variable in environment["reported"]:
+            name = Variable[variable]["name"]
+            unit = Variable[variable]["unit"]
+            reported = str(environment["reported"][variable])
+            if variable in environment["desired"]:
+                desired = str(environment["desired"][variable])
+            else:
+                desired = "None"
+            summary += self.get_summary_line(name, unit, reported, desired)
+
+        # Log remaining variables in desired
+        for variable in environment["desired"]:
+            if variable not in environment["reported"]:
+                name = Variable[variable]["name"]
+                unit = Variable[variable]["unit"]
+                desired = str(environment["desired"][variable])
+                reported = "None"
+                summary += self.get_summary_line(name, unit, reported, desired)
+
+        # Check for empty log
+        if summary == "":
+            summary = "\n        None"
+
+        return summary
+
+    def get_summary_line(self, name, unit, reported, desired):
+        """ Returns a summary line string for a reported --> desired value. """
+        line = "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
+        return line
