@@ -58,7 +58,7 @@ class Device(object):
     }
 
     # Initialize thread objects
-    recipe = None
+    recipe = Recipe(state)
     peripherals = {}
     controllers = {}
 
@@ -68,7 +68,6 @@ class Device(object):
         self.load_state()
         self.mode = Mode.INIT
         self.error = Error.NONE
-
 
 
     @property
@@ -115,8 +114,8 @@ class Device(object):
                 self.run_init_mode()
             elif self.mode == Mode.SETUP:
                 self.run_setup_mode()
-            elif self.mode == Mode.NOM:
-                self.run_nom_mode()
+            elif self.mode == Mode.NORMAL:
+                self.run_normal_mode()
             elif self.mode == Mode.CONFIG:
                 self.run_config_mode()
             elif self.mode == Mode.ERROR:
@@ -136,35 +135,30 @@ class Device(object):
 
 
     def run_setup_mode(self):
-        """ Runs setup mode. Waits for all peripheral threads to
-            enter NOM, WARMING, or ERROR, then transitions to NOM. """
-
-        # TODO: wait for recipe thread as well...
-
+        """ Runs setup mode. Waits for all threads to initialize then 
+            transitions to NORMAL. """
         self.logger.info("Entered SETUP")
-        while not self.all_peripherals_ready():
+
+        # Wait for all threads to initialize
+        while not self.all_threads_initialized():
             time.sleep(0.2)
 
-
-        # Remove this
+        # Load in recipe from file (TEMPORARY)
         with threading.Lock():
             self.state.recipe["commanded_recipe"] = json.load(open('device/data/recipe.json'))
             self.state.recipe["commanded_mode"] = Mode.LOAD
 
+        # Transition to NORMAL
+        self.mode = Mode.NORMAL
 
-        self.mode = Mode.NOM
 
-
-    def run_nom_mode(self):
+    def run_normal_mode(self):
         """ Runs normal operation mode. Updates device state summary and 
             stores device state in database. Transitions to RESET if 
             commanded. Transitions to ERROR on error."""
-        self.logger.info("Entered NOM")
+        self.logger.info("Entered NORMAL")
 
         while True:
-            # Update periodically
-            time.sleep(4) # seconds
-
             # Update device state summary
             self.update_device_state_summary()
 
@@ -174,11 +168,14 @@ class Device(object):
             # Check for reset signal
             if self.commanded_mode() == Mode.RESET:
                 self.mode = Mode.RESET
-                continue
+                break
             
             # Check for system error
             if self.mode == Mode.ERROR:
-                continue
+                break
+
+            # Update periodically
+            time.sleep(1) # seconds
 
 
     def run_config_mode(self):
@@ -218,9 +215,11 @@ class Device(object):
 
             # Load recipe state
             stored_recipe_state = json.loads(stored_state.recipe)
-            self.state.recipe["recipe"] = stored_recipe_state["recipe"]
-            self.state.recipe["start_timestamp_minutes"] = stored_recipe_state["start_timestamp_minutes"]
-            self.state.recipe["last_update_minute"] = stored_recipe_state["last_update_minute"]
+            self.recipe.recipe = stored_recipe_state["recipe"]
+            self.recipe.duration_minutes = stored_recipe_state["duration_minutes"]
+            self.recipe.start_timestamp_minutes = stored_recipe_state["start_timestamp_minutes"]
+            self.recipe.last_update_minute = stored_recipe_state["last_update_minute"]
+            self.state.recipe["stored_mode"] = stored_recipe_state["mode"]
 
             # Load peripherals state
             stored_peripherals_state = json.loads(stored_state.peripherals)
@@ -271,7 +270,7 @@ class Device(object):
     def initialize_recipe(self):
         """ Initializes recipe. Creates recipe object then 
             spawns recipe thread."""
-        self.recipe = Recipe(self.state)
+        #self.recipe = Recipe(self.state)
         self.recipe.spawn()
 
 
@@ -337,55 +336,68 @@ class Device(object):
             self.controllers[controller_name].spawn()
 
 
-    def all_peripherals_ready(self):
-        """ Check that all peripheral threads are either in NOM, WARMING, or 
-            ERROR modes. """
+    def all_threads_initialized(self):
+        """ Checks that all recipe, peripheral, and controller 
+            theads are initialized. """
+        if self.state.recipe["mode"] == Mode.INIT:
+            return False
+        elif not self.all_peripherals_initialized():
+            return False
+        elif not self.all_controllers_initialized():
+            return False
+        return True
+
+
+    def all_peripherals_initialized(self):
+        """ Checks that all peripheral threads have transitioned from INIT. """
         for peripheral_name in self.state.peripherals:
             peripheral_state = self.state.peripherals[peripheral_name]
-            if peripheral_state["mode"] != Mode.NOM and \
-                peripheral_state["mode"] != Mode.WARMING and \
-                peripheral_state["mode"] != Mode.ERROR:
-                    self.logger.info("Waiting for peripherals to be ready")
-                    return False
+            if peripheral_state["mode"] == Mode.INIT:
+                return False
+        return True
+
+
+    def all_controllers_initialized(self):
+        """ Checks that all controller threads have transitioned from INIT. """
+        for controller_name in self.state.controllers:
+            controller_state = self.state.controllers[controller_name]
+            if controller_state["mode"] == Mode.INIT:
+                return False
         return True
 
 
     def update_device_state_summary(self, recipe=True, thread_modes=True):
-        """ Updates device state summary. Optionally logs summary. """
+        """ Updates device state summary. """
 
         summary = ""
 
-
         # Create recipe summary
         if recipe:
-            pass
-            # summary += "\n    Recipe: {}".format(self.state.recipe)
-            # summary += "\n        Name: {}".format(self.state.recipe["name"])
-            # summary += "\n        Started: {}".format(self.state.recipe["start_datestring"])
-            # summary += "\n        Progress: {} %".format(self.state.recipe["percent_complete_string"])
-            # summary += "\n        Time Elapsed: {}".format(self.state.recipe["time_elapsed_string"])
-            # summary += "\n        Time Remaining: {}".format(self.state.recipe["time_remaining_string"])
-            # summary += "\n        Phase: {}".format(self.state.recipe["phase"])
-            # summary += "\n        Cycle: {}".format(self.state.recipe["cycle"])
-            # summary += "\n        Environment: {}".format(self.state.recipe["environment_name"])
+            if self.state.recipe["recipe"] == None:
+                summary += "\n    Recipe: None"
+            else:
+                summary += "\n    Recipe:"
+                summary += "\n        Name: {}".format(self.state.recipe["recipe"]["name"])
+                summary += "\n        Started: {}".format(self.recipe.start_datestring)
+                summary += "\n        Progress: {} %".format(self.recipe.percent_complete_string)
+                summary += "\n        Time Elapsed: {}".format(self.recipe.time_elapsed_string)
+                summary += "\n        Time Remaining: {}".format(self.recipe.time_remaining_string)
+                summary += "\n        Phase: {}".format(self.recipe.current_phase)
+                summary += "\n        Cycle: {}".format(self.recipe.current_cycle)
+                summary += "\n        Environment: {}".format(self.recipe.current_environment_name)
         
-        # Create thread states summary
-        # if thread_modes:
-        #     summary += "\n    States:"
-        #     summary += "\n        System: {}".format(self.mode)
-        #     summary += "\n        Recipe: {}".format(self.state.recipe["mode"])
-        #     for periph in self.peripheral_state:
-        #         verbose_name = self.peripheral_state[periph]["verbose_name"]
-        #         mode = self.peripheral_state[periph]["mode"]
-        #         summary += "\n        {}: {}".format(verbose_name, mode)
+        # Create thread modes summary
+        if thread_modes:
+            summary += "\n    Modes:"
+            summary += "\n        Device: {}".format(self.mode)
+            summary += "\n        Recipe: {}".format(self.state.recipe["mode"])
+            for peripheral_name in self.state.peripherals:
+                verbose_name = self.state.device["config"]["peripherals"][peripheral_name]["verbose_name"]
+                mode = self.state.peripherals[peripheral_name]["mode"]
+                summary += "\n        {}: {}".format(verbose_name, mode)
 
 
         with threading.Lock():
             self.state.device["summary"] = summary
         
         self.logger.info(summary)
-
-
-
-
-

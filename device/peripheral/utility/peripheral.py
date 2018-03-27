@@ -87,8 +87,8 @@ class Peripheral:
                 self.run_init_mode()
             elif self.mode == Mode.SETUP:
                 self.run_setup_mode()
-            elif self.mode == Mode.NOM:
-                self.run_nom_mode()
+            elif self.mode == Mode.NORMAL:
+                self.run_NORMAL_mode()
             elif self.mode == Mode.ERROR:
                 self.run_error_mode()
             elif self.mode == Mode.RESET:
@@ -100,7 +100,7 @@ class Peripheral:
             normal operating mode. Transitions to error mode on error. """
         self.logger.info("{} entered INIT".format(self.name))
         self.initialize_peripheral()
-        self.mode = Mode.NOM
+        self.mode = Mode.NORMAL
 
 
     def run_setup_mode(self):
@@ -113,11 +113,11 @@ class Peripheral:
         self.mode = Mode.INIT
 
 
-    def run_nom_mode(self):
+    def run_NORMAL_mode(self):
         """ Runs normal operation mode. Gets temperature and humidity reading
             every <sampling_rate> seconds. Transitions to reset if commanded. 
             Transitions to error mode on error. """
-        self.logger.info("{} entered NOM".format(self.name))
+        self.logger.info("{} entered NORMAL".format(self.name))
         self.last_update_time_sec = time.time()
         while True:
             if self.sampling_interval_sec < time.time() - self.last_update_time_sec:
@@ -128,9 +128,9 @@ class Peripheral:
 
             if self.commanded_mode() == Mode.RESET:
                 self.mode = self.commanded_mode()
-                continue
+                break
             elif self.mode == Mode.ERROR:
-                continue
+                break
 
 
     def run_error_mode(self):
@@ -143,7 +143,7 @@ class Peripheral:
         while True:
             if self.commanded_mode == Mode.RESET:
                 self.mode == commanded_mode
-                continue
+                break
             time.sleep(0.1) # 100ms
 
 
