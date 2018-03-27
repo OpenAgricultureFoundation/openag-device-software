@@ -1,5 +1,5 @@
 # Import python modules
-import threading
+import threading, logging
 
 # Import peripheral parent class
 from ..peripheral import Peripheral
@@ -7,6 +7,9 @@ from ..peripheral import Peripheral
 
 class TemperatureHumidity(Peripheral):
     """ Parent class for temperature and humidity sensors. """
+
+    # Initialize logger
+    logger = logging.getLogger(__name__)
     
     # Initialize environment variables
     _temperature = None
@@ -58,10 +61,15 @@ class TemperatureHumidity(Peripheral):
         self.quickly_check_hardware_state()
 
 
-    def update_peripheral(self):
+    def update(self):
         """ Updates peripheral. """
         self.get_temperature()
         self.get_humidity()
+
+
+    def shutdown(self):
+        """ Shuts down peripheral. """
+        self.clear_reported_values(self)
 
 
     def clear_reported_values(self):

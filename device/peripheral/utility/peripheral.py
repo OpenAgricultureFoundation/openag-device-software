@@ -16,6 +16,9 @@ class Peripheral:
     _mode = None
     _error = None
 
+    # Initialize thread terminator
+    thread_is_active = True
+
     # Initialize timing variables
     sampling_interval_sec = 2
     last_update_time = None
@@ -81,10 +84,10 @@ class Peripheral:
 
     def run_state_machine(self):
         """ Runs peripheral state machine. """
-        while True:
+        while self.thread_is_active:
             if self.mode == Mode.INIT:
                 self.run_init_mode()
-            if self.mode == Mode.WARMING:
+            elif self.mode == Mode.WARMING:
                 self.run_warming_mode()
             elif self.mode == Mode.NORMAL:
                 self.run_normal_mode()
@@ -92,12 +95,17 @@ class Peripheral:
                 self.run_error_mode()
             elif self.mode == Mode.RESET:
                 self.run_reset_mode()
+            elif self.mode == Mode.SHUTDOWN:
+                self.run_shutdown_mode
+            else:
+                self.error = Error.INVALID_MODE
+                self.logger.critical("Entered invalid mode")
 
 
     def run_init_mode(self):
         """ Runs initialization mode. Initializes peripheral state then 
             transitions to WARMING. Transitions to ERROR on error. """
-        self.logger.info("{}: Entered INIT".format(self.name))
+        self.logger.info("Entered INIT")
 
         # Initialize peripheral state
         self.initialize_state()
@@ -110,7 +118,7 @@ class Peripheral:
     def run_warming_mode(self):
         """ Runs warming mode. Initializes peripheral hardware then 
             transitions to NORMAL. Transitions to ERROR on error. """
-        self.logger.info("{}: Entered WARMING".format(self.name))
+        self.logger.info("Entered WARMING")
 
         # Initialize peripheral hardware
         self.initialize_hardware()
@@ -123,13 +131,13 @@ class Peripheral:
         """ Runs normal operation mode. Every sampling interval gets reported 
             sensor / actuator state, and sets desired actuator state. 
             Transitions to ERROR on error. """
-        self.logger.info("{}: Entered NORMAL".format(self.name))
+        self.logger.info("Entered NORMAL")
         
         self.last_update_time_sec = time.time()
-        while True:
+        while self.thread_is_active:
             # Update every sampling interval
             if self.sampling_interval_sec < time.time() - self.last_update_time_sec:
-                self.update_peripheral()
+                self.update()
                 self.last_update_time_sec = time.time()
 
             # Update every 100ms
@@ -143,22 +151,23 @@ class Peripheral:
     def run_error_mode(self):
         """ Runs error mode. Clears reported values, waits for reset mode 
             command then transitions to RESET. """
-        self.logger.info("{}: Entered ERROR".format(self.name))
+        self.logger.info("Entered ERROR")
 
         # Clear reported values
         self.clear_reported_values()
         
         # Wait for reset mode command
-        while True:
+        while self.thread_is_active:
             if self.commanded_mode == Mode.RESET:
-                self.mode == commanded_mode
+                self.mode == self.commanded_mode
+                self.commanded_mode = None
                 break
             time.sleep(0.1) # 100ms
 
 
     def run_reset_mode(self):
         """ Runs reset mode. Clears error state then transitions to INIT. """
-        self.logger.info("{}: Entered RESET".format(self.name))
+        self.logger.info("Entered RESET")
 
         # Clear error state
         self.error = Error.NONE
@@ -167,10 +176,29 @@ class Peripheral:
         self.mode = Mode.INIT
 
 
+    def run_shutdown_mode(self):
+        """ Runs shutdown mode. Shuts down peripheral, waits for 
+            initialize command"""
+        self.logger.info("Entered SHUTDOWN")
+
+        # Shutdown peripheral
+        self.shutdown()
+
+        # Wait for initialize mode command
+        while self.thread_is_active:
+            if self.commanded_mode == Mode.INIT:
+                self.mode = self.commanded_mode
+                self.commanded_mode = None
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+
     def report_sensor_value(self, sensor, variable, value, simple=False):
         """ Report sensor value to environment sensor dict and reported sensor 
             stats dict. """
-        self.logger.debug("{}: Reporting sensor value".format(self.name))
+        self.logger.debug("Reporting sensor value")
 
         # Force simple if value is None (don't want to try averaging `None`)
         if value == None:
@@ -232,6 +260,6 @@ class Peripheral:
 
     def report_actuator_value(self, actuator, variable, value):
         """ Report an actuator value. """
-        self.logger.debug("{}: Reporting actuator value".format(self.name))
+        self.logger.debug("Reporting actuator value")
 
         self.state.environment["actuator"]["reported"][variable] = value

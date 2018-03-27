@@ -1,5 +1,5 @@
 # Import python modules
-import threading
+import logging
 
 # Import device modes, errors, and variables
 from device.utility.mode import Mode
@@ -14,21 +14,24 @@ class LightPanelTaurus(LightSpectrumIntensity):
     """ A light panel with six independently controlled channels that can 
     create the Taurus light spectrum. """
 
+    # Initialize logger
+    logger = logging.getLogger(__name__)
+
     def quickly_check_hardware_state(self):
         """ Quickly check hardware state. """
-        self.logger.debug("{}: Quickly checking hardware state".format(self.name))
+        self.logger.debug("Quickly checking hardware state")
 
 
     def initialize_hardware(self):
         """ Initialize hardware. """
-        self.logger.debug("{}: Initializing hardware".format(self.name))
+        self.logger.debug("Initializing hardware")
 
 
     def set_spectrum(self, spectrum):
         """ Set light spectrum. """
         try:
             self.spectrum = spectrum
-            self.logger.debug("{}: Set spectrum: {}".format(self.name, self.spectrum))
+            self.logger.debug("Set spectrum: {}".format(self.spectrum))
         except:
             self.logger.exception("Unable to set spectrum")
             self.mode = Mode.ERROR
@@ -39,8 +42,12 @@ class LightPanelTaurus(LightSpectrumIntensity):
         """ Set light intensity. """
         try:
             self.intensity = intensity
-            self.logger.debug("{}: Set intensity: {}".format(self.name, self.intensity))
+            self.logger.debug("Set intensity: {}".format(self.intensity))
         except:
             self.logger.exception("Unable to set intensity")
             self.mode = Mode.ERROR
             self.error = Error.UNKNOWN
+
+    def shutdown(self):
+        """ Shutdown light panel. """
+        self.set_intensity(0) # Turn off

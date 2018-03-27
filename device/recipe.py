@@ -33,6 +33,7 @@ class Recipe:
         self.mode = Mode.INIT
         self.error = Error.NONE
 
+
     @property
     def mode(self):
         """ Gets mode value. """

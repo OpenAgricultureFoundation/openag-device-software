@@ -1,7 +1,6 @@
 class Mode(object):
 	""" State machine modes """
 
-	BOOT = "BOOT"
 	CONFIG = "CONFIG"
 	SETUP = "SETUP"
 	INIT = "INIT"
@@ -15,4 +14,5 @@ class Mode(object):
 	RESUME = "RESUME"
 	STOP = "STOP"
 	NORECIPE= "NORECIPE"
+	SHUTDOWN = "SHUTDOWN"
 	INVALID = "INVALID"

@@ -83,6 +83,7 @@ class Device(object):
         with threading.Lock():
             self.state.device["mode"] = value
 
+
     @property
     def commanded_mode(self):
         """ Gets commanded mode from shared state object. """
@@ -90,6 +91,7 @@ class Device(object):
             return self.state.device["commanded_mode"]
         else:
             return None
+
 
     @commanded_mode.setter
     def commanded_mode(self, value):
@@ -224,12 +226,13 @@ class Device(object):
 
 
     def run_load_mode(self):
-        """ Runs load mode. Stops all threads, loads config into stored state,
-            transitions to CONFIG. """
+        """ Runs load mode. Stops peripheral and controller threads, loads 
+            config into stored state, transitions to CONFIG. """
         self.logger.info("Entered LOAD")
 
-        # Stop all threads
-        self.stop_all_threads()
+        # Stop peripheral and controller threads
+        self.stop_peripheral_threads()
+        self.stop_controller_threads()
 
         # Load config into stored state
         self.error = Error.NONE
@@ -239,8 +242,13 @@ class Device(object):
 
  
     def run_reset_mode(self):
-        """ Runs reset mode. Clears error state then transitions to INIT. """
+        """ Runs reset mode. Kills peripheral and controller threads, clears 
+            error state, then transitions to INIT. """
         self.logger.info("Entered RESET")
+
+        # Kills peripheral and controller threads
+        self.kill_peripheral_threads()
+        self.kill_controller_threads()
 
         # Clear errors
         self.error = Error.NONE
@@ -250,12 +258,13 @@ class Device(object):
 
 
     def run_error_mode(self):
-        """ Runs error mode. Stops all threads, waits for reset signal then 
-            transitions to RESET. """
+        """ Runs error mode. Shuts down peripheral and controller threads, 
+            waits for reset signal then transitions to RESET. """
         self.logger.info("Entered ERROR")
 
-        # Stop all threads
-        self.stop_all_threads()
+        # Shuts down peripheral and controller threads
+        self.shutdown_peripheral_threads()
+        self.shutdown_controller_threads()
 
         # Wait for reset
         while True:
@@ -410,10 +419,28 @@ class Device(object):
         return True
 
 
-    def stop_all_threads(self):
-        """ Stops all threads. """
-        # TODO: stop all threads
-        pass
+    def kill_peripheral_threads(self):
+        """ Kills all peripheral threads. """
+        for peripheral_name in self.peripherals:
+            self.peripherals[peripheral_name].thread_is_active = False
+
+
+    def kill_controller_threads(self):
+        """ Kills all controller threads. """
+        for controller_name in self.controller:
+            self.controller[controller_name].thread_is_active = False
+
+
+    def shutdown_peripheral_threads(self):
+        """ Shuts down peripheral threads. """
+        for peripheral_name in self.peripherals:
+            self.periphrals[peripheral_name].commanded_mode = Mode.SHUTDOWN
+
+
+    def shutdown_controller_threads(self):
+        """ Shuts down controller threads. """
+        for controller_name in self.controllers:
+            self.controllers[controller_name].commanded_mode = Mode.SHUTDOWN
 
 
     def update_device_state_summary(self, sensors=True, actuators=True, recipe=True, thread_modes=True):
@@ -460,7 +487,7 @@ class Device(object):
         with threading.Lock():
             self.state.device["summary"] = summary
         
-        self.logger.info(summary)
+        # self.logger.info(summary)
 
 
     def get_environment_summary(self, environment):

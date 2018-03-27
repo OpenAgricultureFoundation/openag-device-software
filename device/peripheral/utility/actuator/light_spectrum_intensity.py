@@ -1,5 +1,5 @@
 # Import python modules
-import threading
+import threading, logging
 
 # Import device modes, errors, and variables
 from device.utility.mode import Mode
@@ -15,6 +15,8 @@ class LightSpectrumIntensity(Peripheral):
     _spectrum = None
     _intensity = None
 
+    # Initialize logger
+    logger = logging.getLogger(__name__)
 
     @property
     def spectrum(self):
@@ -52,7 +54,7 @@ class LightSpectrumIntensity(Peripheral):
 
     def initialize_state(self):
         """ Initializes peripheral state. """
-        self.logger.debug("{}: Initializing state".format(self.name))
+        self.logger.debug("Initializing state")
         config = self.state.device["config"]["peripherals"][self.name]
         self.bus = config["communication"]["bus"]
         self.mux = config["communication"]["mux"]
@@ -66,7 +68,7 @@ class LightSpectrumIntensity(Peripheral):
         self.intensity = None
 
 
-    def update_peripheral(self):
+    def update(self):
         """ Updates peripheral. """
 
         # Check for new desired spectrum and update if so
