@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, json, threading
+import logging, time, json, threading, os, sys
 
 # Import device modes, errors, and variables
 from device.utility.mode import Mode
@@ -16,11 +16,6 @@ from device.event import Event
 # Import django modules
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
-# Initialize connection with django app
-# import django, os
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
-# django.setup()
 
 # Import database models
 from app.models import State as StateModel

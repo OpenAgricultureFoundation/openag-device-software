@@ -1,14 +1,9 @@
 # Import python modules
-import logging, time, threading, os, datetime, json
+import logging, time, threading, os, sys, datetime, json
 
 # Import device modes and errors
 from device.utility.mode import Mode
 from device.utility.error import Error
-
-# Import django 
-# import django, os
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
-# django.setup()
 
 # Import database models
 from app.models import RecipeTransition

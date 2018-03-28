@@ -1,3 +1,10 @@
+# Setup connection to djando app
+import django, os
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
+django.setup()
+
+
+
        # def update_recipe_state(self, name=None, phase=None, cycle=None, 
     #     env_name=None, env_state=None, last_update_min=None, 
     #     start_timestamp_min=None, recipe=None):

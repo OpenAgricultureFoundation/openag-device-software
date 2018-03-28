@@ -11,7 +11,7 @@ admin.site.register(State, StateAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
-	list_display = ("request", "response")
+	list_display = ("timestamp", "request", "response")
 admin.site.register(Event, EventAdmin)
 
 
