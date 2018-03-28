@@ -1,5 +1,8 @@
+# Import python modules
+import os, logging, time
+
+# Import django modules
 from django.apps import AppConfig
-import os
 
 
 class CoreConfig(AppConfig):
@@ -9,5 +12,10 @@ class CoreConfig(AppConfig):
     	# Ensure startup code only runs once
         if os.environ.get('RUN_MAIN') != 'true':
         	return
-     
-        # Startup code here
+
+        # Spawn device thread
+        from device.device import Device
+        self.device = Device()
+        self.device.spawn(delay=1)
+
+

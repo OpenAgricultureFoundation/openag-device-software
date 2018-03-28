@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'app',
+    'device'
 ]
 
 MIDDLEWARE = [
@@ -76,16 +77,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'app.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -95,6 +86,62 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard_console': {
+            'format' : "%(levelname)s %(name)s: %(message)s",
+        },
+        'standard_file': {
+            'format' : "[%(asctime)s] %(levelname)s %(name)s: %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        'device_console': {
+            'format' : "%(levelname)s %(console_name)s: %(message)s",
+        },
+        'device_file': {
+            'format' : "[%(asctime)s] %(levelname)s %(file_name)s: %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'app_console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard_console',
+        },
+        'app_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.dirname(BASE_DIR) + "/log/app.log",
+            'formatter': 'standard_file',
+        },
+        'device_console': { 
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'device_console',
+        },
+        'device_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.dirname(BASE_DIR) + "/log/device.log",
+            'formatter': 'device_file',
+        },
+
+    },
+    'loggers': {
+        'app': {
+            'handlers': ['app_console', 'app_file'],
+            'level': 'INFO',
+        },
+        'device': {
+            'handlers': ['device_console', 'device_file'],
+            'level': 'INFO',
+        },
+    },
 }
 
 

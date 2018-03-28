@@ -14,9 +14,6 @@ class LightPanelTaurus(LightSpectrumIntensity):
     """ A light panel with six independently controlled channels that can 
     create the Taurus light spectrum. """
 
-    # Initialize logger
-    logger = logging.getLogger(__name__)
-
     def quickly_check_hardware_state(self):
         """ Quickly check hardware state. """
         self.logger.debug("Quickly checking hardware state")

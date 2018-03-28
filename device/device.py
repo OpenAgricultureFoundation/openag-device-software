@@ -6,17 +6,25 @@ from device.utility.mode import Mode
 from device.utility.error import Error
 from device.utility.variable import Variable
 
-# Import device state manager
+# Import `state` shared memory object
 from device.state import State
 
-# Import recipe handler
+# Import recipe and event objects
 from device.recipe import Recipe
+from device.event import Event
+
+# Import django modules
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+# Initialize connection with django app
+# import django, os
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
+# django.setup()
 
 # Import database models
-import django, os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
-django.setup()
 from app.models import State as StateModel
+from app.models import Event as EventModel
 
 
 class Device(object):
@@ -24,7 +32,9 @@ class Device(object):
     actuators, manage control loops, sync data, and manage external events. """
 
     # Initialize logger
+    extra = {"console_name":"Device", "file_name": "device"}
     logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
 
     # Initialize device mode and error
     _mode = None
@@ -58,8 +68,15 @@ class Device(object):
         "last_update_minute": -1
     }
 
-    # Initialize thread objects
+    # Initialize recipe object
     recipe = Recipe(state)
+
+    # Intialize event object
+    event = Event(state)
+    post_save.connect(event.process, sender=EventModel)
+
+
+    # Initialize peripheral and controller objects
     peripherals = {}
     controllers = {}
 
@@ -130,8 +147,38 @@ class Device(object):
             self.state.device["config"] = value
 
 
-    def run(self):
+    @property
+    def summary(self):
+        """ Gets summary from shared state object. """
+        if "summary" in self.state.device:
+            return self.state.device["summary"]
+        else:
+            return None
+
+
+    @summary.setter
+    def summary(self, value):
+        """ Safely updates config in state object. """
+        with threading.Lock():
+            self.state.device["summary"] = value
+
+
+    def spawn(self, delay=None):
+        """ Spawns device thread. """
+        self.thread = threading.Thread(target=self.run_state_machine, args=(delay,))
+        self.thread.daemon = True
+        self.thread.start()
+
+
+    def run_state_machine(self, delay=None):
         """ Runs device state machine. """
+        
+        # Wait for optional delay
+        if delay != None:
+            time.sleep(delay)
+
+        # Start state machine
+        self.logger.info("Started device")
         while True:
             if self.mode == Mode.INIT:
                 self.run_init_mode()
@@ -484,11 +531,12 @@ class Device(object):
                 summary += "\n        {}: {}".format(verbose_name, mode)
 
         # Update summary in shared state
-        with threading.Lock():
-            self.state.device["summary"] = summary
-        
-        # self.logger.info(summary)
+        self.summary = summary
 
+        # Log summary
+        # self.logger.info(summary)
+        
+        
 
     def get_environment_summary(self, environment):
         """ Gets summary of current reported --> desired value for each variable. """

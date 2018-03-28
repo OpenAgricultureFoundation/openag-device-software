@@ -12,13 +12,9 @@ from device.utility.error import Error
 class SHT25(TemperatureHumidity):
     """ A temperature and humidity sensor. """
 
-    # Initialize logger
-    logger = logging.getLogger(__name__)
-
-
     def quickly_check_hardware_state(self):
         """ Quickly check hardware state. """
-        self.logger.debug("Quickly checking hardware state")
+        self.logger.debug("Quickly checking hardware state", extra={'peripheral_name' : 'sht25'})
 
 
     def initialize_hardware(self):

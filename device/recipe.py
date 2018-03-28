@@ -5,10 +5,12 @@ import logging, time, threading, os, datetime, json
 from device.utility.mode import Mode
 from device.utility.error import Error
 
+# Import django 
+# import django, os
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
+# django.setup()
+
 # Import database models
-import django, os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "app.settings")
-django.setup()
 from app.models import RecipeTransition
 
 
@@ -16,12 +18,13 @@ class Recipe:
     """ Manages recipe state machine. """
 
     # Initialize logger
+    extra = {"console_name":"Recipe", "file_name": "device"}
     logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
 
     # Initialize mode & error variables
     _mode = None
     _error = None
-
 
     # Initialize thread object
     thread = None

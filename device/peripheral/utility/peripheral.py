@@ -9,9 +9,6 @@ from device.utility.error import Error
 class Peripheral:
     """ Parent class for peripheral devices e.g. sensors and actuators. """
 
-    # Initialize logger
-    logger = logging.getLogger(__name__)
-
     # Initialize peripheral mode and error
     _mode = None
     _error = None
@@ -19,7 +16,7 @@ class Peripheral:
     # Initialize thread terminator
     thread_is_active = True
 
-    # Initialize timing variables
+    # Initialize timing variabless
     sampling_interval_sec = 2
     last_update_time = None
 
@@ -28,6 +25,13 @@ class Peripheral:
         """ Initializes peripheral. """
         self.name = name
         self.state = state
+
+        # Initialize logger
+        extra = {'console_name':self.verbose_name, 'file_name': self.name}
+        logger = logging.getLogger(__name__)
+        self.logger = logging.LoggerAdapter(logger, extra)
+
+        # Initialize remaining state
         self.mode = Mode.INIT
         self.error = Error.NONE
         self.initialize_state()
@@ -50,6 +54,23 @@ class Peripheral:
 
 
     @property
+    def commanded_mode(self):
+        """ Gets commanded mode from shared state object. """
+        if self.name in self.state.peripherals and \
+            "commanded_mode" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["commanded_mode"]
+        else:
+            return None
+
+
+    @commanded_mode.setter
+    def commanded_mode(self, value):
+        """ Safely updates commanded mode in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["commanded_mode"] = value
+
+
+    @property
     def error(self):
         """ Gets error value. """
         return self._error
@@ -57,8 +78,7 @@ class Peripheral:
 
     @error.setter
     def error(self, value):
-        """ Safely updates peripheral error in system object each time
-            it is changed. """
+        """ Safely updates peripheral in shared state. """
         self._error= value
         with threading.Lock():
             if self.name not in self.state.peripherals:
@@ -66,13 +86,14 @@ class Peripheral:
             self.state.peripherals[self.name]["error"] = value
 
 
-    def commanded_mode(self):
-        """ Gets the peripheral's commanded mode. """
-        if self.name in self.state.peripherals and \
-            "commanded_mode" in self.state.peripherals[self.name]:
-            return self.state.peripherals[self.name]["commanded_mode"]
+    @property
+    def verbose_name(self):
+        """ Gets verbose name from shared state object. """
+        if self.name in self.state.device["config"]["peripherals"] and \
+            "verbose_name" in self.state.device["config"]["peripherals"][self.name]:
+            return self.state.device["config"]["peripherals"][self.name]["verbose_name"]
         else:
-            return None
+            return None       
 
 
     def spawn(self):

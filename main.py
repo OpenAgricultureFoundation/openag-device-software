@@ -23,4 +23,4 @@ django.setup()
 # Run main
 if __name__ == "__main__":
 	device = Device()
-	device.run()
+	device.run_state_machine()

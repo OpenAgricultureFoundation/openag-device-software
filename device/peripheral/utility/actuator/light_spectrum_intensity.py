@@ -15,9 +15,6 @@ class LightSpectrumIntensity(Peripheral):
     _spectrum = None
     _intensity = None
 
-    # Initialize logger
-    logger = logging.getLogger(__name__)
-
     @property
     def spectrum(self):
         """ Gets spectrum value. """

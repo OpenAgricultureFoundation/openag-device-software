@@ -7,9 +7,6 @@ from ..peripheral import Peripheral
 
 class TemperatureHumidity(Peripheral):
     """ Parent class for temperature and humidity sensors. """
-
-    # Initialize logger
-    logger = logging.getLogger(__name__)
     
     # Initialize environment variables
     _temperature = None

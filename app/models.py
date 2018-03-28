@@ -21,3 +21,8 @@ class State(models.Model):
 	environment = JSONField()
 	peripherals = JSONField()
 	controllers = JSONField()
+
+
+class Event(models.Model):
+    request = JSONField()
+    response = JSONField()
