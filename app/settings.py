@@ -91,7 +91,7 @@ DATABASES = {
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'standard_console': {
             'format' : "%(levelname)s %(name)s: %(message)s",
@@ -141,7 +141,7 @@ LOGGING = {
         'device': {
             'handlers': ['device_console', 'device_file'],
             'level': 'INFO',
-        },
+        }
     },
 }
 

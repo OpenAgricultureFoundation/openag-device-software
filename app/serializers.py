@@ -1,26 +1,28 @@
 # Import rest framework modules
 from rest_framework import serializers
 
-# Import django modules
-from django.contrib.auth.models import User, Group
-
 # Import app modules
+from app.models import State
 from app.models import Event
+from app.models import RecipeTransition
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class StateSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'groups')
-
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ('url', 'name')
+        model = State
+        fields = ("device", "recipe", "environment", "peripherals",
+        			"controllers")
 
 
 class EventSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Event
         fields = ("timestamp", "request", "response")
+
+
+
+class RecipeTransitionSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = RecipeTransition
+        fields = ("minute", "phase", "cycle", "environment_name",
+        			"environment_state")

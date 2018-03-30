@@ -1,3 +1,40 @@
+# from django.contrib.auth.models import User, Group
+
+# class UserSerializer(serializers.HyperlinkedModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ('url', 'username', 'groups')
+
+
+# class GroupSerializer(serializers.HyperlinkedModelSerializer):
+#     class Meta:
+#         model = Group
+#         fields = ('url', 'name')
+
+
+# router.register(r"users", views.UserViewSet, base_name="users")
+# router.register(r"groups", views.GroupViewSet, base_name="groups")
+
+
+# from app.serializers import UserSerializer
+# from app.serializers import GroupSerializer
+
+# class UserViewSet(viewsets.ModelViewSet):
+#     """ API endpoint that allows users to be viewed."""
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
+#     view_name='users',
+
+
+# class GroupViewSet(viewsets.ReadOnlyModelViewSet):
+#     """ API endpoint that allows groups to be viewed. """
+#     queryset = Group.objects.all()
+#     serializer_class = GroupSerializer
+
+
+
+
 from app.models import *
 
 # from django.contrib.auth.models import User

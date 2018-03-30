@@ -17,9 +17,10 @@ from app import views
 
 # Setup rest framework routes
 router = routers.DefaultRouter()
-router.register(r"users", views.UserViewSet, base_name="api-users")
-router.register(r"groups", views.GroupViewSet, base_name="api-groups")
+router.register(r"state", views.StateViewSet, base_name="api-state")
 router.register(r"event", views.EventViewSet, base_name="api-event")
+router.register(r"recipe-transition", views.RecipeTransitionViewSet, 
+                base_name="api-recipe-transition")
 
 
 # Setup url patterns
@@ -30,12 +31,13 @@ urlpatterns = [
     # Rest API
     url(r"^api/", include(router.urls, namespace='api')),
 
-    # User authentication
+    # User management
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
-    url(r'^logout/$', auth_views.logout, {'next_page': '/'}, name='logout'),
-    
+    url(r'^logout/$', auth_views.logout, {'next_page': 'home/'}, name='logout'),
+
     # App specific
-    url(r"^", views.home),
-    url(r"^event/", views.EventList.as_view()),
+    url(r"^home/", views.Home.as_view(), name="home"),
+    url(r"^recipe/", views.RecipeDashboard.as_view(), name="recipe-dashboard"),
+
 ]
  
