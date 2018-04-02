@@ -4,6 +4,7 @@ from rest_framework import serializers
 # Import app modules
 from app.models import State
 from app.models import Event
+from app.models import Recipe
 from app.models import RecipeTransition
 
 
@@ -19,6 +20,12 @@ class EventSerializer(serializers.HyperlinkedModelSerializer):
         model = Event
         fields = ("timestamp", "request", "response")
 
+
+
+class RecipeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ("guid", "json")
 
 
 class RecipeTransitionSerializer(serializers.HyperlinkedModelSerializer):

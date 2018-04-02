@@ -1,7 +1,9 @@
 {
 	"name": "Behind These Basil Eyes", 
-	"guid": "1231-243265-2363-3453",
-	"format": "phased-environment",
+	"format": {
+		"type": "phased-environment",
+		"version": "v1"
+	},
 	"date_created": "2018-03-23",
 	"author": "Jake Rye",
 	"instructions": "Start recipe from 2 in. seedlings.",

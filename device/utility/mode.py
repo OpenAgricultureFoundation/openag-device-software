@@ -1,6 +1,6 @@
 class Mode(object):
 	""" State machine modes """
-
+	NONE = "NONE"
 	CONFIG = "CONFIG"
 	SETUP = "SETUP"
 	INIT = "INIT"

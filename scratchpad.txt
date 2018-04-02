@@ -1,3 +1,113 @@
+<!-- <!DOCTYPE html> -->
+<!-- <html lang="en"> -->
+<!--   <head>
+    <meta charset="utf-8">
+    <title>{% block title %}OpenAg Brain{% endblock %}</title>
+  </head>
+  <body>
+    <header>
+      <h1>My Site</h1>
+      {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}">logout</a>
+      {% else %}
+        <a href="{% url 'login' %}">login</a>
+      {% endif %}
+      <hr>
+    </header>
+    <main>
+      {% block content %}
+      {% endblock %}
+    </main>
+  </body>
+</html> -->
+
+
+
+
+
+<!-- 
+{% extends 'base.html' %}
+
+{% block javascript %}
+  <script>
+    function stop_recipe() {
+      // var phone_number = $("#id_phone_number").val();
+      $.ajax({
+        url: '/api/stop-recipe/',
+        type: "POST",
+        data: {
+          // 'phone_number': phone_number,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'},
+        dataType: 'json'
+      });
+    }
+  </script>
+
+  <script>
+    $("form").submit(function(event) {
+      event.preventDefault(); 
+      var form = this,
+      var phone_number = $("#id_phone_number").val();
+      var code = $("#code").val();
+
+      $.ajax({
+        url: '/ajax/verify_code/',
+        type: "POST",
+        data: {
+          'phone_number': phone_number, 
+          'code': code,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'},
+        dataType: 'json',
+        success: function(data) {
+          console.log("Data:", data)
+          if(data.is_valid) {
+            form.submit()
+          }
+          else {
+            alert("Invalid code.")
+          }
+        }
+      });
+
+  });
+  </script>
+{% endblock %}
+
+
+{% block content %}
+  <h2>Register Phone Number</h2>
+  <form method="post">
+    {% csrf_token %}
+    <p>
+      {{ form.phone_number }}
+      <button class="btn" type="button" onClick="send_code()"><i class="icon-share"></i> Send Code </button>
+    </p>
+    <p>
+      <input type="text" id="code" name="code" placeholder='Enter code here' required>
+      <input type="submit" value="Register">
+    </p>
+  </form>
+{% endblock %}
+ -->
+
+
+
+# url(r'^signup/$', views.signup, name='signup'),
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'signup.html', {'form': form})
+
 # from django.contrib.auth.models import User, Group
 
 # class UserSerializer(serializers.HyperlinkedModelSerializer):

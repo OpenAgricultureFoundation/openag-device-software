@@ -1,22 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <title>{% block title %}OpenAg Brain{% endblock %}</title>
+    {% block stylesheet %}{% endblock %}
   </head>
   <body>
     <header>
-      <h1>My Site</h1>
+      <h1>OpenAg Brain</h1>
       {% if user.is_authenticated %}
         <a href="{% url 'logout' %}">logout</a>
       {% else %}
         <a href="{% url 'login' %}">login</a>
       {% endif %}
-      <hr>
+
     </header>
     <main>
       {% block content %}
       {% endblock %}
     </main>
+    <footer>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    {% block javascript %}{% endblock %}
   </body>
 </html>

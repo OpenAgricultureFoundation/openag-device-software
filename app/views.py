@@ -1,3 +1,6 @@
+# Import standard python modules
+import json
+
 # Import django modules
 from django.shortcuts import render
 
@@ -10,14 +13,25 @@ from rest_framework import viewsets
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import JSONRenderer
 
-# Import app models and serializers
+# Import app models
 from app.models import State
-from app.serializers import StateSerializer
 from app.models import Event
-from app.serializers import EventSerializer
+from app.models import Recipe
 from app.models import RecipeTransition
+
+# Import app serializers
+from app.serializers import StateSerializer
+from app.serializers import EventSerializer
+from app.serializers import RecipeSerializer
 from app.serializers import RecipeTransitionSerializer
+
+# Import app viewers
+from app.viewers import Recipe as RecipeViewer
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -36,6 +50,22 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = Event.objects.all()
         return queryset
+
+
+class RecipeViewSet(viewsets.ModelViewSet):
+    """ API endpoint that allows recipes to be viewed. """
+    serializer_class = RecipeSerializer
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+        return queryset
+
+    def create(self, request):
+        recipe_viewer = RecipeViewer()
+        # myDict = dict(queryDict.iterlists())
+        response, status = recipe_viewer.create(request.data.dict())
+
+        return Response(response, status)
 
 
 class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -59,8 +89,19 @@ class Home(APIView):
 class RecipeDashboard(APIView):
     """ UI page for recipe dashboard. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'recipe_dashboard.html'  
+    template_name = 'recipe_dashboard.html'
+    recipe = RecipeViewer()
 
     def get(self, request):
-        state = State.objects.filter(pk=1).first()
-        return Response({'recipe': state.recipe})   
+        return Response({'recipe': self.recipe}) 
+
+
+@api_view(["POST"])
+@permission_classes((IsAuthenticated, ))
+def stop_recipe(request):  
+    """ API endpoint to stop a recipe. """
+    recipe = RecipeViewer()
+    response, status = recipe.stop(request)
+    return Response(response, status)
+
+

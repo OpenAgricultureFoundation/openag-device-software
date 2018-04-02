@@ -1,6 +1,43 @@
-<html><body>
-<h1>Recipe</h1>
-<ul>
-    {{ recipe }}
-</ul>
-</body></html>
+{% extends 'base.html' %}
+
+
+{% block javascript %}
+  <script>
+    function stop_recipe() {
+      $.ajax({
+        url: '/api/recipe/stop/',
+        type: "POST",
+        data: {
+          'csrfmiddlewaretoken': '{{ csrf_token }}'},
+        dataType: 'json',
+        success: function(data) {
+            alert(data.message)
+        },
+        error: function(data) {
+            alert(data.responseText)
+        }
+      });
+    }
+  </script>
+{% endblock %}
+
+
+{% block content %}
+ <html>
+    <h2>Recipe</h2>
+        {% csrf_token %}
+        <p>
+        <b>Name:</b> {{ recipe.name }} </br>
+        <b>Started:</b> {{ recipe.started }} </br>
+        <b>Progress:</b> {{ recipe.progress }} % </br>
+        <b>Time Elapsed:</b> {{ recipe.time_elapsed }} </br>
+        <b>Time Remaining:</b> {{ recipe.time_remaining }} </br>
+        <b>Current Phase:</b> {{ recipe.current_phase }} </br>
+        <b>Current Cycle:</b> {{ recipe.current_cycle }} </br>
+        <b>Current Environment:</b> {{ recipe.current_environment }}
+        </p>
+        <p>
+        <button class="btn" type="button" onClick="stop_recipe()"><i class="icon-share"></i> Stop Recipe </button>
+        </p>
+</html>
+{% endblock %}

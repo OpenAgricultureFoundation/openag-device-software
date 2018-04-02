@@ -12,7 +12,7 @@ from app.models import RecipeTransition
 class Recipe:
     """ Manages recipe state machine. """
 
-    # Initialize logger
+    # Initialize loggercommanded_mode
     extra = {"console_name":"Recipe", "file_name": "device"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
@@ -417,6 +417,7 @@ class Recipe:
         while True:
             if self.commanded_mode == Mode.LOAD:
                 self.mode = self.commanded_mode
+                self.commanded_mode = Mode.NONE
                 break
             time.sleep(0.1) # 100ms
 
@@ -471,12 +472,15 @@ class Recipe:
 
             # Check for transition to PAUSE
             if self.commanded_mode == Mode.PAUSE:
-                self.mode = Mode.PAUSE
+                self.mode = self.commanded_mode
+                self.commanded_mode = Mode.NONE
                 break
 
             # Check for transition to STOP
             if self.commanded_mode == Mode.STOP:
-                self.mode = Mode.STOP
+                self.mode = self.commanded_mode
+                self.commanded_mode = Mode.NONE
+
                 break
 
             # Update thread every 100ms
@@ -495,12 +499,14 @@ class Recipe:
         while True:
             # Check for transition to NORMAL
             if self.commanded_mode == Mode.NORMAL:
-                self.mode = Mode.NORMAL
+                self.mode = self.commanded_mode
+                self.commanded_mode = Mode.NONE
                 break
 
             # Check for transition to STOP
             if self.commanded_mode == Mode.STOP:
-                self.mode = Mode.STOP
+                self.mode = self.commanded_mode
+                self.commanded_mode = Mode.NONE
                 break
 
             # Update every 100ms
@@ -533,11 +539,9 @@ class Recipe:
         while True:
             if self.commanded_mode == Mode.RESET:
                 self.mode == self.commanded_mode
+                self.commanded_mode = Mode.NONE
                 break
             time.sleep(0.1) # 100ms
-
-        # Transition to reset mode
-        self.mode = Mode.RESET
 
 
     def run_reset_mode(self):
@@ -594,7 +598,6 @@ class Recipe:
 
                     # Update duration minutes
                     self.duration_minutes = minute_counter
-
 
         # Set recipe end
         RecipeTransition.objects.create(
