@@ -226,7 +226,7 @@ class Recipe:
         # Generate values
         if value != None and self.duration_minutes != None:
             percent_complete = float(value) / self.duration_minutes * 100
-            percent_complete_string = "{0:.2f}".format(percent_complete)
+            percent_complete_string = "{0:.2f} %".format(percent_complete)
             time_remaining_minutes = self.duration_minutes - value
             time_remaining_string = self.get_duration_string(time_remaining_minutes)
             time_elapsed_string = self.get_duration_string(value)
@@ -353,9 +353,6 @@ class Recipe:
             self.set_desired_sensor_values(value)
 
 
-    ######################## End of Getters / Setters #########################
-
-
     def spawn(self):
         """ Spawns recipe thread. """
         self.thread = threading.Thread(target=self.run_state_machine)
@@ -370,8 +367,8 @@ class Recipe:
                 self.run_init_mode()
             if self.mode == Mode.NORECIPE:
                 self.run_norecipe_mode()  
-            elif self.mode == Mode.LOAD:
-                self.run_load_mode()
+            elif self.mode == Mode.START:
+                self.run_start_mode()
             elif self.mode == Mode.QUEUED:
                 self.run_queued_mode()        
             elif self.mode == Mode.NORMAL:
@@ -407,26 +404,26 @@ class Recipe:
 
 
     def run_norecipe_mode(self):
-        """ Runs no recipe mode. Waits for load command then 
-            transitions to LOAD. """
+        """ Runs no recipe mode. Waits for start command then 
+            transitions to START. """
         self.logger.info("Entered NORECIPE")
 
         self.clear_recipe_state()
 
-        # Wait for load command
+        # Wait for start command
         while True:
-            if self.commanded_mode == Mode.LOAD:
+            if self.commanded_mode == Mode.START:
                 self.mode = self.commanded_mode
                 self.commanded_mode = Mode.NONE
                 break
             time.sleep(0.1) # 100ms
 
 
-    def run_load_mode(self):
-        """ Runs load mode. Loads recipe transitions into database, loads 
+    def run_start_mode(self):
+        """ Runs start mode. Loads recipe transitions into database, loads 
             recipe start time, signals start of experiment, then 
             transitions to QUEUED. """
-        self.logger.info("Entered LOAD")
+        self.logger.info("Entered START")
 
         # Load recipe into shared state
         self.recipe = self.commanded_recipe

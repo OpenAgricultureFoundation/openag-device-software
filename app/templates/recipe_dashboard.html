@@ -27,9 +27,10 @@
     <h2>Recipe</h2>
         {% csrf_token %}
         <p>
+        <b>Mode:</b> {{ recipe.mode }} </br>   
         <b>Name:</b> {{ recipe.name }} </br>
         <b>Started:</b> {{ recipe.started }} </br>
-        <b>Progress:</b> {{ recipe.progress }} % </br>
+        <b>Progress:</b> {{ recipe.progress }} </br>
         <b>Time Elapsed:</b> {{ recipe.time_elapsed }} </br>
         <b>Time Remaining:</b> {{ recipe.time_remaining }} </br>
         <b>Current Phase:</b> {{ recipe.current_phase }} </br>

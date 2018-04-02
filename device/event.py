@@ -81,6 +81,8 @@ class Event:
         # Handle event
         if event.request["type"] == EventRequest.CREATE_RECIPE:
             self.create_recipe(event)
+        elif event.request["type"] == EventRequest.START_RECIPE:
+            self.start_recipe(event)
         elif event.request["type"] == EventRequest.STOP_RECIPE:
             self.stop_recipe(event)
         else:
@@ -91,7 +93,7 @@ class Event:
     def create_recipe(self, event):
         """ Creates recipe. Validates json, creates entry in database, then 
             returns response. """
-        self.logger.info("Received create recipe event")
+        self.logger.info("Received CREATE_RECIPE")
 
         # Get recipe json
         if "recipe_json" not in event.request:
@@ -127,17 +129,66 @@ class Event:
             return
 
 
-    def stop_recipe(self, event):
-        """ Stops recipe. """
-        self.logger.info("Received stop recipe event")
+    def start_recipe(self, event, timeout_seconds=2, update_interval_seconds=0.1):
+        """ Starts recipe. Gets recipe uuid and start timestamp from event
+            request, checks recipe is in a mode that can be started, sends
+            start recipe command, waits for recipe to start, then 
+            returns response  """
+        self.logger.info("Received START_RECIPE")
 
-        # Set default timeout
-        timeout_seconds = 2
+        # Get recipe uuid
+        if "uuid" not in event.request:
+            event.response["status"] = 400
+            event.response["message"] = "Request does not contain `uuid`"
+            event.save()
+            return
+        else:
+            uuid = event.request["uuid"]
+
+        # Get recipe start timestamp
+        if "start_timestamp_minutes" not in event.request:
+            event.response["status"] = 400
+            event.response["message"] = "Request does not contain `start_timestamp_minutes`"
+            event.save()
+            return
+        else:
+            start_timestamp_minutes = event.request["start_timestamp_minutes"]
+
+        # Check recipe is in a mode that can be started
+        mode = self.recipe_mode
+        if mode != Mode.NORECIPE:
+            event.response["status"] = 400
+            event.response["message"] = "Recipe cannot be started from {} mode".format(mode)
+            event.save()
+            return
+
+         # Send start recipe command
+        self.commanded_recipe_mode = Mode.START
+
+        # Wait for recipe to start
+        start_time_seconds = time.time()
+        while time.time() - start_time_seconds < timeout_seconds:
+            if self.recipe_mode == Mode.QUEUED or self.recipe_mode == Mode.NORMAL:
+                event.response["status"] = 200
+                event.response["message"] = "Recipe started!"
+                event.save()
+                return
+            time.sleep(update_interval_seconds)
+
+        # Return timeout error
+        event.response["status"] = 500
+        event.response["message"] = "Start recipe event timed out"
+        event.save()
+
+
+    def stop_recipe(self, event, timeout_seconds=2, update_interval_seconds=0.1):
+        """ Stops recipe. Checks recipe is in a mode that can be stopped, sends 
+            stop command, waits for recipe to stop, returns event response. """
+        self.logger.info("Received STOP_RECIPE")
 
         # Check recipe in a mode that can be stopped
         mode = self.recipe_mode
         self.logger.debug("Recipe currently in {} mode".format(mode))
-
         if mode != Mode.NORMAL and mode != Mode.PAUSE and mode != Mode.QUEUED:
             event.response["status"] = 400
             event.response["message"] = "Recipe cannot be stopped from {} mode".format(mode)
@@ -155,6 +206,7 @@ class Event:
                 event.response["message"] = "Recipe stopped!"
                 event.save()
                 return
+            time.sleep(update_interval_seconds)
 
         # Return timeout error
         event.response["status"] = 500

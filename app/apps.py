@@ -1,5 +1,5 @@
 # Import python modules
-import os, logging, time
+import os, logging, time, sys
 
 # Import django modules
 from django.apps import AppConfig
@@ -13,9 +13,10 @@ class CoreConfig(AppConfig):
         if os.environ.get('RUN_MAIN') != 'true':
         	return
 
-        # Spawn device thread
-        from device.device import Device
-        self.device = Device()
-        self.device.spawn(delay=1)
-
-
+        # Spawn device thread if enabled
+        if os.environ.get('NO_DEVICE') == 'true':
+        	print("\n~~~Running app without device~~~\n")
+        else:
+	        from device.device import Device
+	        self.device = Device()
+	        self.device.spawn(delay=1)

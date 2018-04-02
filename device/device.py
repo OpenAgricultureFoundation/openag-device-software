@@ -59,8 +59,8 @@ class Device(object):
     # Initialize recipe state dict
     state.recipe = {
         "recipe": None,
-        "start_timestamp_minutes": -1,
-        "last_update_minute": -1
+        "start_timestamp_minutes": None,
+        "last_update_minute": None
     }
 
     # Initialize recipe object
@@ -172,8 +172,10 @@ class Device(object):
         if delay != None:
             time.sleep(delay)
 
+        self.logger.info("Spawing device thread")
+
         # Start state machine
-        self.logger.info("Started device")
+        self.logger.info("Started state machine")
         while True:
             if self.mode == Mode.INIT:
                 self.run_init_mode()
@@ -238,9 +240,9 @@ class Device(object):
         while not self.all_threads_initialized():
             time.sleep(0.2)
 
-        # Load in recipe from file (TEMPORARY)
-        self.recipe.commanded_recipe = json.load(open('device/data/recipe.json'))
-        self.recipe.commanded_mode = Mode.LOAD
+        # # Load in recipe from file (TEMPORARY)
+        # self.recipe.commanded_recipe = json.load(open('device/data/recipe.json'))
+        # self.recipe.commanded_mode = Mode.START
 
         # Transition to NORMAL
         self.mode = Mode.NORMAL

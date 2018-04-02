@@ -31,7 +31,6 @@ urlpatterns = [
 
     # Rest API
     url(r"^api/", include(router.urls, namespace='api')),
-    # url(r"^api/recipe/stop", views.stop_recipe, name="api-recipe-stop"),
 
     # User management
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
@@ -40,6 +39,4 @@ urlpatterns = [
     # App specific
     url(r"^home/", views.Home.as_view(), name="home"),
     url(r"^recipe/", views.RecipeDashboard.as_view(), name="recipe-dashboard"),
-    
 ]
- 
