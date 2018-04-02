@@ -19,7 +19,7 @@ admin.site.register(Event, EventAdmin)
 
 
 class RecipeAdmin(admin.ModelAdmin):
-	list_display = ("guid", "json")
+	list_display = ("uuid", "recipe_json")
 admin.site.register(Recipe, RecipeAdmin)
 
 

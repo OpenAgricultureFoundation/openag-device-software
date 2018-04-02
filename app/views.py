@@ -62,9 +62,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         recipe_viewer = RecipeViewer()
-        # myDict = dict(queryDict.iterlists())
         response, status = recipe_viewer.create(request.data.dict())
-
         return Response(response, status)
 
 

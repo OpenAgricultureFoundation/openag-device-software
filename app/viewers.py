@@ -1,5 +1,6 @@
 # Import standard python modules
 import json, threading, logging, time, json
+import uuid as uuid_module
 
 # Import app models
 from app.models import State
@@ -68,13 +69,13 @@ class Recipe():
         # Validate json
         response, status = self.validate(request)
         if status != 200:
-            self.logger.info("Recipe is invalid") #. Response: {}".format(response))
+            self.logger.info("Recipe is invalid")
             self.logger.info("{}".format(response))
             return response, status
 
         # Create entry in database
         self.logger.info("Creating recipe in database")
-        # RecipeModel.objects.create(json=request["json"])
+        RecipeModel.objects.create(recipe_json=request["recipe_json"])
 
         # Return success response
         response = {"message": "Created recipe!"}
@@ -86,55 +87,67 @@ class Recipe():
         """ Validates recipe json. """
         self.logger.info("Validating recipe")
 
-        # Get recipe json
-        if "json" not in request:
+        # Get recipe json and create recipe dict
+        if "recipe_json" not in request:
             status = 400
-            response = {"message": "Request does not contain `json` key"}
+            response = {"message": "Request does not contain `recipe_json` key"}
             return response, status 
         else:
-            recipe_json = json.loads(request["json"])
+            recipe_dict = json.loads(request["recipe_json"])
+
+        # Verify uuid uniqueness if supplied
+        if "uuid" in recipe_dict and self.uuid_exists(recipe_dict["uuid"]):
+            status = 400
+            response = {"message": "Recipe uuid already exists"}
+            return response, status
+
+        """ TODO: Verify values and/or value types (e.g. date is formatted 
+            properly, name is a string and not a list) """
 
         # Verify format key
-        if "format" not in recipe_json or recipe_json["format"] == None:
+        if "format" not in recipe_dict or recipe_dict["format"] == None:
+            status = 400
             response = {"message": "Recipe json does not contain `format`"}
             return response, status
         
         # Get format type
-        if "type" not in recipe_json["format"] or recipe_json["format"]["type"] == None:
+        if "type" not in recipe_dict["format"] or recipe_dict["format"]["type"] == None:
+            status = 400
             response = {"message": "Recipe json does not contain `type`"}
             return response, status
         else:
-            format_type = recipe_json["format"]["type"]
+            format_type = recipe_dict["format"]["type"]
 
         # Get format version 
-        if "version" not in recipe_json["format"] or recipe_json["format"]["version"] == None:
+        if "version" not in recipe_dict["format"] or recipe_dict["format"]["version"] == None:
+            status = 400
             response = {"message": "Recipe json does not contain `version`"}
             return response, status
         else:
-            format_version = recipe_json["format"]["version"]
+            format_version = recipe_dict["format"]["version"]
 
         # Verify format specific parameters
-        if format_type == "phased-environment" and format_version == "v1":
-            # Verify phased-environment v1.0 keys 
-            if "name" not in recipe_json or recipe_json["name"] == None:
+        if format_type == "phased-environment" and format_version == Format.VERSION_1:
+            # Verify phased-environment v1 keys 
+            if "name" not in recipe_dict or recipe_dict["name"] == None:
                 status = 400
                 response = {"message": "Recipe json does not contain `name`"}
                 return response, status
-            if "date_created" not in recipe_json or recipe_json["date_created"] == None:
+            if "date_created" not in recipe_dict or recipe_dict["date_created"] == None:
                 status = 400
                 response = {"message": "Recipe json does not contain `date_created`"}
                 return response, status
-            if "author" not in recipe_json or recipe_json["author"] == None:
+            if "author" not in recipe_dict or recipe_dict["author"] == None:
                 status = 400
                 response = {"message": "Request json does not contain `author`"}
                 return response, status
-            if "seeds" not in recipe_json or recipe_json["seeds"] == None:
+            if "seeds" not in recipe_dict or recipe_dict["seeds"] == None:
                 status = 400
                 response = {"message": "Request json does not contain `seeds`"}
                 return response, status
 
             # Verify able to generate phased-environment v1.0 phase transitions
-            phase_transitions, error_message = self.generate_transitions_phased_environment_v1(recipe_json)
+            phase_transitions, error_message = self.generate_transitions_phased_environment_v1(recipe_dict)
             if phase_transitions == None:
                 status = 400
                 response = {"message": error_message}
@@ -151,19 +164,25 @@ class Recipe():
         return response, status
 
 
-    def generate_transitions_phased_environment_v1(self, recipe_json):
+    def uuid_exists(self, uuid):
+        """ Checks if uuid is unique. """
+        self.logger.info("Checking if uuid is unique")
+        return RecipeModel.objects.filter(uuid=uuid).exists()
+
+
+    def generate_transitions_phased_environment_v1(self, recipe_dict):
         """ Tries to generate phase transitions for phased-environment v1,
             returns phase transitions and error message. """
         try: 
             phase_transitions = []
             minute_counter = 0
-            for phase in recipe_json["phases"]:
+            for phase in recipe_dict["phases"]:
                 phase_name = phase["name"]
                 for i in range(phase["repeat"]):
                     for cycle in phase["cycles"]:
                         # Get environment name and state + cycle name
                         environment_name = cycle["environment"]
-                        environment_state = recipe_json["environments"][environment_name]
+                        environment_state = recipe_dict["environments"][environment_name]
                         cycle_name = cycle["name"]
 
                         # Get duration

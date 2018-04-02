@@ -25,7 +25,7 @@ class EventSerializer(serializers.HyperlinkedModelSerializer):
 class RecipeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Recipe
-        fields = ("guid", "json")
+        fields = ("uuid", "recipe_json")
 
 
 class RecipeTransitionSerializer(serializers.HyperlinkedModelSerializer):
