@@ -12,6 +12,14 @@ from device.utility.event import EventRequest
 from app.models import Event as EventModel
 
 
+
+class SimpleRecipe:
+    def __init__(self, recipe_object):
+        recipe_dict = json.loads(recipe_object.recipe_json)
+        self.uuid = recipe_dict["uuid"]
+        self.name = recipe_dict["name"]
+
+
 class Recipe():
     # Initialize logger
     extra = {"console_name":"Recipe Viewer", "file_name": "recipe_viewer"}

@@ -447,47 +447,52 @@ class Recipe:
             retrieves recipe json from recipe table, generates recipe 
             transitions, stores them in the recipe transition table, extracts
             recipe duration and start time then transitions to QUEUED. """
-        self.logger.info("Entered START")
+        try:
+            self.logger.info("Entered START")
 
-        # Load commanded recipe uuid into shared state
-        self.recipe_uuid = self.commanded_recipe_uuid
-        self.commanded_recipe_uuid = None
+            # Load commanded recipe uuid into shared state
+            self.recipe_uuid = self.commanded_recipe_uuid
+            self.commanded_recipe_uuid = None
 
-        # Get recipe json from recipe uuid
-        recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).recipe_json
-        recipe_dict = json.loads(recipe_json)
+            # Get recipe json from recipe uuid
+            recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).recipe_json
+            recipe_dict = json.loads(recipe_json)
 
-        # Generate recipe transitions
-        common = Common()
-        transitions, error_message = common.generate_recipe_transitions(recipe_dict)
-        
-        # Handle recipe generation error case
-        if error_message != None:
-            self.mode = Mode.ERROR
-            self.error = error_message # TODO: break out error types and messages
-            return
+            # Generate recipe transitions
+            common = Common()
+            transitions, error_message = common.generate_recipe_transitions(recipe_dict)
+            
+            # Handle recipe generation error case
+            if error_message != None:
+                self.mode = Mode.ERROR
+                self.error = error_message # TODO: break out error types and messages
+                return
 
-        # Store recipe transitions in database
-        self.store_recipe_transitions(transitions)
+            # Store recipe transitions in database
+            self.store_recipe_transitions(transitions)
 
-        # Set recipe duration
-        self.duration_minutes = transitions[-1]["minute"]
+            # Set recipe duration
+            self.duration_minutes = transitions[-1]["minute"]
 
-        # Set recipe name
-        self.recipe_name = recipe_dict["name"]
+            # Set recipe name
+            self.recipe_name = recipe_dict["name"]
 
-        # Load recipe start time, if not set, start recipe immediately
-        if self.commanded_start_timestamp_minutes != None:
-            self.start_timestamp_minutes = commanded_start_timestamp_minutes
-            self.commanded_start_timestamp_minutes = None
-        else:
-            self.start_timestamp_minutes = self.current_timestamp_minutes
+            # Load recipe start time, if not set, start recipe immediately
+            if self.commanded_start_timestamp_minutes != None:
+                self.start_timestamp_minutes = commanded_start_timestamp_minutes
+                self.commanded_start_timestamp_minutes = None
+            else:
+                self.start_timestamp_minutes = self.current_timestamp_minutes
 
-        # Clear commanded mode
-        self.commanded_mode = None
+            # Clear commanded mode
+            self.commanded_mode = None
 
-        # Transition to QUEUED
-        self.mode = Mode.QUEUED
+            # Transition to QUEUED
+            self.mode = Mode.QUEUED
+        except:
+            self.logger.exception("Unable to start recipe")
+            self.mode = Mode.NORECIPE # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
+            self.error = "Unable to start recipe"
 
 
     def run_queued_mode(self):
@@ -640,6 +645,7 @@ class Recipe:
     def clear_recipe_state(self):
         """ Sets recipe state to null values """
         self.recipe_name = None
+        self.recipe_uuid = None
         self.duration_minutes = None
         self.last_update_minute = None
         self.start_timestamp_minutes = None

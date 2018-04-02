@@ -8,6 +8,11 @@ from django.contrib import admin
 # Import user authentication modules
 from django.contrib.auth import views as auth_views
 
+# Import standard django
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
+
 # Import rest framework modules
 from rest_framework import routers
 
@@ -23,6 +28,9 @@ router.register(r"event", views.EventViewSet, base_name="api-event")
 router.register(r"recipe", views.RecipeViewSet, base_name="api-recipe")
 router.register(r"recipe/transitions", views.RecipeTransitionViewSet, base_name="api-recipe-transition")
 
+# Setup dashboard redirect
+def redirect_to_dashboard(request):
+    return HttpResponseRedirect(reverse('dashboard'))
 
 # Setup url patterns
 urlpatterns = [
@@ -30,12 +38,16 @@ urlpatterns = [
     url(r"^admin/", admin.site.urls),
 
     # Rest API
-    url(r"^api/", include(router.urls, namespace='api')),
+    url(r"^api/", include(router.urls, namespace="api")),
 
     # User management
-    url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
-    url(r'^logout/$', auth_views.logout, {'next_page': 'home/'}, name='logout'),
+    url(r"^login/$", auth_views.login, {"template_name": "login.html"}, name="login"),
+    url(r"^logout/$", auth_views.logout, {"next_page": "home/"}, name="logout"),
 
     # App specific
-    url(r"^dashboard/", views.Dashboard.as_view(), name="dashboard"),
+    url(r'^$', redirect_to_dashboard, name="root"),
+    url(r'^dashboard/$', views.Dashboard.as_view(), name="dashboard"),
 ]
+
+
+

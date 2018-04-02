@@ -34,7 +34,7 @@ from app.serializers import RecipeTransitionSerializer
 
 # Import app viewers
 from app.viewers import Recipe as RecipeViewer
-
+from app.viewers import SimpleRecipe as SimpleRecipeViewer
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows state to be viewed. """
@@ -92,25 +92,6 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-# class Home(APIView):
-#     """ UI home page. """
-#     renderer_classes = [TemplateHTMLRenderer]
-#     template_name = 'home.html'
-
-#     def get(self, request):
-#         return Response({'data': None})
-
-
-# class StartRecipe(APIView):
-#     """ UI page for starting a recipe. """
-#     renderer_classes = [TemplateHTMLRenderer]
-#     template_name = 'start_recipe.html'
-
-#     def get(self, request):
-#         recipes = Recipe.objects.all()
-#         return Response({'recipes': recipes})
-
-
 class Dashboard(APIView):
     """ UI page for recipe dashboard. """
     renderer_classes = [TemplateHTMLRenderer]
@@ -118,5 +99,9 @@ class Dashboard(APIView):
     
     def get(self, request):
         current_recipe = RecipeViewer()
-        recipes = Recipe.objects.all()
-        return Response({'recipe': current_recipe, 'recipes': recipes}) 
+        recipe_objects = Recipe.objects.all()
+        recipes = []
+        for recipe_object in recipe_objects:
+            recipes.append(SimpleRecipeViewer(recipe_object))
+
+        return Response({'current_recipe': current_recipe, 'recipes': recipes}) 

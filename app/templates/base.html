@@ -8,10 +8,13 @@
   <body>
     <header>
       <h1>OpenAg Brain</h1>
+      <a href="{% url 'root' %}"> home </a> /
+      <a href="{% url 'admin:index' %}"> admin </a> /
+      <a href="/api"> api </a> /
       {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">logout</a>
+        <a href="{% url 'logout' %}"> logout </a>
       {% else %}
-        <a href="{% url 'login' %}">login</a>
+        <a href="{% url 'login' %}"> login </a>
       {% endif %}
 
     </header>
