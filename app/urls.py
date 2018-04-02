@@ -37,6 +37,5 @@ urlpatterns = [
     url(r'^logout/$', auth_views.logout, {'next_page': 'home/'}, name='logout'),
 
     # App specific
-    url(r"^home/", views.Home.as_view(), name="home"),
-    url(r"^recipe/", views.RecipeDashboard.as_view(), name="recipe-dashboard"),
+    url(r"^dashboard/", views.Dashboard.as_view(), name="dashboard"),
 ]

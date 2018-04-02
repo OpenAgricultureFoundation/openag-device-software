@@ -58,7 +58,7 @@ class Device(object):
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe": None,
+        "recipe_uuid": None,
         "start_timestamp_minutes": None,
         "last_update_minute": None
     }
@@ -334,7 +334,8 @@ class Device(object):
 
             # Load recipe state
             stored_recipe_state = json.loads(stored_state.recipe)
-            self.recipe.recipe = stored_recipe_state["recipe"]
+            self.recipe.recipe_uuid = stored_recipe_state["recipe_uuid"]
+            self.recipe.recipe_name = stored_recipe_state["recipe_name"]
             self.recipe.duration_minutes = stored_recipe_state["duration_minutes"]
             self.recipe.start_timestamp_minutes = stored_recipe_state["start_timestamp_minutes"]
             self.recipe.last_update_minute = stored_recipe_state["last_update_minute"]
@@ -356,9 +357,6 @@ class Device(object):
         else:
             # Set device state
             self.config = None
-
-            # Set recipe state
-            self.recipe.recipe = None
 
 
     def store_state(self):
@@ -504,11 +502,11 @@ class Device(object):
 
         # Create recipe summary
         if recipe:
-            if self.state.recipe["recipe"] == None:
+            if self.state.recipe["recipe_uuid"] == None:
                 summary += "\n    Recipe: None"
             else:
                 summary += "\n    Recipe:"
-                summary += "\n        Name: {}".format(self.state.recipe["recipe"]["name"])
+                summary += "\n        Name: {}".format(self.recipe.recipe_name)
                 summary += "\n        Started: {}".format(self.recipe.start_datestring)
                 summary += "\n        Progress: {} %".format(self.recipe.percent_complete_string)
                 summary += "\n        Time Elapsed: {}".format(self.recipe.time_elapsed_string)
@@ -521,7 +519,8 @@ class Device(object):
         if thread_modes:
             summary += "\n    Modes:"
             summary += "\n        Device: {}".format(self.mode)
-            summary += "\n        Recipe: {}".format(self.state.recipe["mode"])
+            summary += "\n        Recipe: {}".format(self.recipe.mode)
+
             for peripheral_name in self.state.peripherals:
                 verbose_name = self.config["peripherals"][peripheral_name]["verbose_name"]
                 mode = self.state.peripherals[peripheral_name]["mode"]

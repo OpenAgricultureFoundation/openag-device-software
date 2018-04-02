@@ -22,8 +22,8 @@ class Recipe():
     def __init__(self):
         """ Initialize recipe viewer. """
         self.mode = self.get_recipe_state_value("mode")
-        self.json = self.get_recipe_state_value("recipe")
-        self.name = self.get_recipe_state_value("name")
+        self.name = self.get_recipe_state_value("recipe_name")
+        self.uuid = self.get_recipe_state_value("recipe_uuid")
         self.started = self.get_recipe_state_value("start_datestring")
         self.progress = self.get_recipe_state_value("percent_complete_string")
         self.time_elapsed = self.get_recipe_state_value("time_elapsed_string")
@@ -31,8 +31,6 @@ class Recipe():
         self.current_phase = self.get_recipe_state_value("current_phase")
         self.current_cycle = self.get_recipe_state_value("current_cycle")
         self.current_environment = self.get_recipe_state_value("current_environment_name")
-        self.progress = self.get_recipe_state_value("recipe")
-
 
     def create(self, request_dict):
         """ Creates a recipe. Gets recipe json, makes event request,  then

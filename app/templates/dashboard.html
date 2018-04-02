@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+
+{% block javascript %}
+  <script>
+    function stop_recipe() {
+      $.ajax({
+        url: '/api/recipe/stop/',
+        type: "POST",
+        data: {
+          'csrfmiddlewaretoken': '{{ csrf_token }}'},
+        dataType: 'json',
+        success: function(data) {
+            alert(data.message)
+        },
+        error: function(data) {
+            alert(data.responseText)
+        }
+      });
+    }
+  </script>
+
+  <script>
+    function start_recipe() {
+        var uuid = $('#recipe_uuid').val();
+
+        $.ajax({
+            url: '/api/recipe/' + uuid + '/start/',
+            type: "POST",
+            data: {
+              'csrfmiddlewaretoken': '{{ csrf_token }}'},
+            dataType: 'json',
+            success: function(data) {
+                alert(data.message)
+            },
+            error: function(data) {
+                alert(data.responseText)
+            }
+        });
+    }
+</script>
+{% endblock %}
+
+
+{% block content %}
+ <html>
+    <h2> Current Recipe </h2>
+        {% csrf_token %}
+        <p>
+        <b>Mode:</b> {{ recipe.mode }} </br>   
+        <b>Name:</b> {{ recipe.name }} </br>
+        <b>UUID:</b> {{ recipe.uuid }} </br>
+        <b>Started:</b> {{ recipe.started }} </br>
+        <b>Progress:</b> {{ recipe.progress }} </br>
+        <b>Time Elapsed:</b> {{ recipe.time_elapsed }} </br>
+        <b>Time Remaining:</b> {{ recipe.time_remaining }} </br>
+        <b>Current Phase:</b> {{ recipe.current_phase }} </br>
+        <b>Current Cycle:</b> {{ recipe.current_cycle }} </br>
+        <b>Current Environment:</b> {{ recipe.current_environment }}
+        </p>
+        <p>
+        <button class="btn" type="button" onClick="stop_recipe()"><i class="icon-share"></i> Stop Recipe </button>
+        </p>
+
+    <h2> Start Recipe </h2>
+        {% csrf_token %}
+        <p>
+        <select id="recipe_uuid">
+            {% for recipe in recipes %}
+                {% ifequal recipe.uuid selected_recipe.uuid %}
+                    <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.uuid}}</option>
+                {% else %}
+                    <option value="{{recipe.uuid}}">Recipe: {{recipe.uuid}}</option>              
+                {% endifequal %}
+            {% endfor %}
+        </select>
+        </p>
+        <p>
+        <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Start Recipe </button>
+        </p>
+</html>
+{% endblock %}

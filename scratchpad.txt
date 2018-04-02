@@ -1,3 +1,56 @@
+{% block content %}
+ <html>
+    <h2>Start Recipe</h2>
+        {% csrf_token %}
+        <p>
+        <select name="recipe">
+            {% for recipe in recipes %}
+                {% ifequal recipe.uuid selected_recipe.uuid %}
+                    <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.uuid}}</option>
+                    <input type="hidden" name="recipe_uuid" value="{{recipe.uuid}}" />
+                    console.log()
+                {% else %}
+                    <option value="{{recipe.uuid}}">Recipe: {{recipe.uuid}}</option>
+<!--                     <input type="hidden" name="recipe_uuid" value="{{recipe.uuid}}" />
+ -->                    
+                {% endifequal %}
+            {% endfor %}
+        </select>
+        </p>
+        <p>
+        <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Start Recipe </button>
+        </p>
+</html>
+{% endblock %}
+
+
+
+
+<!-- {% for org in organisation %}
+   <option value="{{org.id}}"
+       {% if org == current_org %}selected="selected"{% endif %}>
+       {{org.name|capfirst}}
+   </option>
+{% endfor %} -->
+
+
+<!--  <select name="recipe">
+            {% for recipe in recipes %}
+                {% if recipe == current_recipe %} selected="selected" {% endif %}>
+                    <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.uuid}}</option>
+                    <input type="hidden" name="recipe_uuid" value="{{recipe.uuid}}" />
+                    console.log()
+                {% else %}
+                    <option value="{{recipe.uuid}}">Recipe: {{recipe.uuid}}</option>
+                    <input type="hidden" name="recipe_uuid" value="{{recipe.uuid}}" />
+                    
+                {% endifequal %}
+            {% endfor %}
+        </select> -->
+
+
+
+
 <!-- <!DOCTYPE html> -->
 <!-- <html lang="en"> -->
 <!--   <head>

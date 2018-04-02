@@ -6,13 +6,17 @@ from device.utility.mode import Mode
 from device.utility.error import Error
 
 # Import database models
+from app.models import Recipe as RecipeModel
 from app.models import RecipeTransition
+
+# Import common functions
+from device.common import Common
 
 
 class Recipe:
     """ Manages recipe state machine. """
 
-    # Initialize loggercommanded_mode
+    # Initialize logger
     extra = {"console_name":"Recipe", "file_name": "device"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
@@ -33,8 +37,23 @@ class Recipe:
 
 
     @property
+    def error(self):
+        """ Gets error value. Keep this local? """
+        return self._error
+
+
+    @error.setter
+    def error(self, value):
+        """ Safely updates recipe error in shared state. """
+        self._error= value
+        with threading.Lock():
+            self.state.recipe["error"] = value
+
+
+    @property
     def mode(self):
-        """ Gets mode value. """
+        """ Gets mode value. Important to keep this local so all
+            state transitions only occur from within thread. """
         return self._mode
 
 
@@ -77,49 +96,51 @@ class Recipe:
 
 
     @property
-    def recipe(self):
-        """ Gets the recipe's recipe mode. """
-        if "recipe" in self.state.recipe:
-            return self.state.recipe["recipe"]
+    def recipe_uuid(self):
+        """ Gets recipe uuid from shared state. """
+        if "recipe_uuid" in self.state.recipe:
+            return self.state.recipe["recipe_uuid"]
         else:
             return None
 
 
-    @recipe.setter
-    def recipe(self, value):
-        """ Safely updates recipe in shared state. """
+    @recipe_uuid.setter
+    def recipe_uuid(self, value):
+        """ Safely updates recipe uuid in shared state. """
         with threading.Lock():
-            self.state.recipe["recipe"] = value
+            self.state.recipe["recipe_uuid"] = value
 
 
     @property
-    def commanded_recipe(self):
-        """ Gets the recipe's commanded mode. """
-        if "commanded_recipe" in self.state.recipe:
-            return self.state.recipe["commanded_recipe"]
+    def commanded_recipe_uuid(self):
+        """ Gets commanded recipe uuid from shared state. """
+        if "commanded_recipe_uuid" in self.state.recipe:
+            return self.state.recipe["commanded_recipe_uuid"]
         else:
             return None
 
 
-    @commanded_recipe.setter
-    def commanded_recipe(self, value):
-        """ Safely updates commanded recipe in shared state. """
+    @commanded_recipe_uuid.setter
+    def commanded_recipe_uuid(self, value):
+        """ Safely updates commanded recipe uuid in shared state. """
         with threading.Lock():
-            self.state.recipe["commanded_recipe"] = value
+            self.state.recipe["commanded_recipe_uuid"] = value
 
 
     @property
-    def error(self):
-        """ Gets error value. """
-        return self._error
+    def recipe_name(self):
+        """ Gets recipe name from shared state. """
+        if "recipe_name" in self.state.recipe:
+            return self.state.recipe["recipe_name"]
+        else:
+            return None
 
 
-    @error.setter
-    def error(self, value):
-        """ Safely updates recipe error in shared state. """
-        self._error= value
+    @recipe_name.setter
+    def recipe_name(self, value):
+        """ Safely updates recipe name in shared state. """
         with threading.Lock():
-            self.state.recipe["error"] = value
+            self.state.recipe["recipe_name"] = value
 
 
     @property
@@ -408,7 +429,9 @@ class Recipe:
             transitions to START. """
         self.logger.info("Entered NORECIPE")
 
+        # Clear state
         self.clear_recipe_state()
+        self.clear_desired_sensor_state()
 
         # Wait for start command
         while True:
@@ -420,27 +443,48 @@ class Recipe:
 
 
     def run_start_mode(self):
-        """ Runs start mode. Loads recipe transitions into database, loads 
-            recipe start time, signals start of experiment, then 
-            transitions to QUEUED. """
+        """ Runs start mode. Loads commanded recipe uuid into shared state, 
+            retrieves recipe json from recipe table, generates recipe 
+            transitions, stores them in the recipe transition table, extracts
+            recipe duration and start time then transitions to QUEUED. """
         self.logger.info("Entered START")
 
-        # Load recipe into shared state
-        self.recipe = self.commanded_recipe
+        # Load commanded recipe uuid into shared state
+        self.recipe_uuid = self.commanded_recipe_uuid
+        self.commanded_recipe_uuid = None
 
-        # Load recipe transitions into database
-        self.load_recipe_transitions()
+        # Get recipe json from recipe uuid
+        recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).recipe_json
+        recipe_dict = json.loads(recipe_json)
+
+        # Generate recipe transitions
+        common = Common()
+        transitions, error_message = common.generate_recipe_transitions(recipe_dict)
+        
+        # Handle recipe generation error case
+        if error_message != None:
+            self.mode = Mode.ERROR
+            self.error = error_message # TODO: break out error types and messages
+            return
+
+        # Store recipe transitions in database
+        self.store_recipe_transitions(transitions)
+
+        # Set recipe duration
+        self.duration_minutes = transitions[-1]["minute"]
+
+        # Set recipe name
+        self.recipe_name = recipe_dict["name"]
 
         # Load recipe start time, if not set, start recipe immediately
         if self.commanded_start_timestamp_minutes != None:
             self.start_timestamp_minutes = commanded_start_timestamp_minutes
+            self.commanded_start_timestamp_minutes = None
         else:
             self.start_timestamp_minutes = self.current_timestamp_minutes
 
-        # Clear commanded states
+        # Clear commanded mode
         self.commanded_mode = None
-        self.commanded_recipe = None
-        self.commanded_start_timestamp_minutes = None
 
         # Transition to QUEUED
         self.mode = Mode.QUEUED
@@ -467,9 +511,7 @@ class Recipe:
         while True:
             # Update recipe and environment states every minute
             if self.new_minute():
-                # TODO: self.store_environment() - Stores environment in Environment table
-                self.update_recipe_environment() # TODO: unclear name, get recipe environment? - gets recipe env from recipe transitions
-                # update_desired_environment()
+                self.update_recipe_environment()
 
             # Check for transition to PAUSE
             if self.commanded_mode == Mode.PAUSE:
@@ -522,7 +564,6 @@ class Recipe:
         # Clear recipe and desired sensor states
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
-        self.update_recipe_environment()
 
         # Transition to NORECIPE
         self.mode = Mode.NORECIPE
@@ -533,7 +574,7 @@ class Recipe:
             waits for reset mode command then transitions to RESET. """
         self.logger.info("Entered ERROR")
         
-        # Nullify recipe state and desired sensor state
+        # Clear recipe and desired sensor states
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
 
@@ -562,53 +603,20 @@ class Recipe:
         return RecipeTransition.objects.filter(minute__lte=minute).order_by('-minute').first()
 
 
-    def load_recipe_transitions(self):
-        """ Loads recipe transitions into database. """
+    def store_recipe_transitions(self, recipe_transitions):
+        """ Stores recipe transitions in database. """
 
         # Clear recipe transition table in database
         RecipeTransition.objects.all().delete()
 
-        # Parse recipe into database
-        minute_counter = 0
-        for phase in self.state.recipe["recipe"]["phases"]:
-            phase_name = phase["name"]
-            for i in range(phase["repeat"]):
-                for cycle in phase["cycles"]:
-                    # Get environment name and state + cycle name
-                    environment_name = cycle["environment"]
-                    environment_state = self.state.recipe["recipe"]["environments"][environment_name]
-                    cycle_name = cycle["name"]
-
-                    # Get duration
-                    if "duration_hours" in cycle:
-                        duration_hours = cycle["duration_hours"]
-                        duration_minutes = duration_hours * 60
-                    elif "duration_minutes" in cycle:
-                        duration_minutes = cycle["duration_minutes"]
-                    else:
-                        raise KeyError("Could not find 'duration_minutes' or 'duration_hours' in cycle")
-
-                    # Write recipe transition to database
-                    RecipeTransition.objects.create(
-                        minute = minute_counter,
-                        phase = phase_name,
-                        cycle = cycle_name,
-                        environment_name = environment_name,
-                        environment_state = environment_state
-                    )
-                    minute_counter += duration_minutes
-
-                    # Update duration minutes
-                    self.duration_minutes = minute_counter
-
-        # Set recipe end
-        RecipeTransition.objects.create(
-            minute = minute_counter,
-            phase = "End",
-            cycle = "End",
-            environment_name = "End",
-            environment_state = {}
-        )
+        # Create recipe transition entries
+        for transition in recipe_transitions:
+            RecipeTransition.objects.create(
+                minute = transition["minute"],
+                phase = transition["phase"],
+                cycle = transition["cycle"],
+                environment_name = transition["environment_name"],
+                environment_state = transition["environment_state"])
 
 
     def update_recipe_environment(self):
@@ -631,9 +639,10 @@ class Recipe:
 
     def clear_recipe_state(self):
         """ Sets recipe state to null values """
-        self.name = None
+        self.recipe_name = None
         self.duration_minutes = None
-        self.last_update_min = None
+        self.last_update_minute = None
+        self.start_timestamp_minutes = None
         self.current_phase = None
         self.current_cycle = None
         self.current_environment_name = None

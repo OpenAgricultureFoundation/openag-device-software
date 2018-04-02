@@ -92,20 +92,31 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-class Home(APIView):
-    """ UI home page. """
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'home.html'
+# class Home(APIView):
+#     """ UI home page. """
+#     renderer_classes = [TemplateHTMLRenderer]
+#     template_name = 'home.html'
 
-    def get(self, request):
-        return Response({'data': None})
+#     def get(self, request):
+#         return Response({'data': None})
 
 
-class RecipeDashboard(APIView):
+# class StartRecipe(APIView):
+#     """ UI page for starting a recipe. """
+#     renderer_classes = [TemplateHTMLRenderer]
+#     template_name = 'start_recipe.html'
+
+#     def get(self, request):
+#         recipes = Recipe.objects.all()
+#         return Response({'recipes': recipes})
+
+
+class Dashboard(APIView):
     """ UI page for recipe dashboard. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'recipe_dashboard.html'
-    recipe = RecipeViewer()
-
+    template_name = 'dashboard.html'
+    
     def get(self, request):
-        return Response({'recipe': self.recipe}) 
+        current_recipe = RecipeViewer()
+        recipes = Recipe.objects.all()
+        return Response({'recipe': current_recipe, 'recipes': recipes}) 

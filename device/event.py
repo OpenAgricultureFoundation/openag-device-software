@@ -12,6 +12,9 @@ from device.utility.event import EventResponse
 from app.models import Event as EventModel
 from app.models import Recipe as RecipeModel
 
+# Import common functions
+from device.common import Common
+
 
 class Event:
     """ Manages events. """
@@ -60,6 +63,22 @@ class Event:
         with threading.Lock():
             self.state.recipe["commanded_mode"] = value
 
+
+    @property
+    def commanded_recipe_uuid(self):
+        """ Gets commanded recipe uuid from shared state. """
+        if "commanded_uuid" in self.state.recipe:
+            return self.state.recipe["commanded_recipe_uuid"]
+        else:
+            return None
+
+
+    @commanded_recipe_uuid.setter
+    def commanded_recipe_uuid(self, value):
+        """ Safely updates commanded recipe uuid in shared state. """
+        with threading.Lock():
+            self.state.recipe["commanded_recipe_uuid"] = value
+            
 
     def process(self, sender, instance, **kwargs):
         """ Processes event when new model is saved in Event table. """
@@ -162,7 +181,8 @@ class Event:
             event.save()
             return
 
-         # Send start recipe command
+        # Send start recipe command
+        self.commanded_recipe_uuid = uuid
         self.commanded_recipe_mode = Mode.START
 
         # Wait for recipe to start
@@ -272,8 +292,9 @@ class Event:
                 response = {"message": "Request json does not contain `seeds`"}
                 return response, status
 
-            # Verify able to generate phased-environment v1.0 phase transitions
-            phase_transitions, error_message = self.generate_transitions_phased_environment_v1(recipe_dict)
+            # Verify able to generate transitions
+            phase_transitions, error_message = Common.generate_transitions(recipe_dict, 
+                                format_type=format_type, format_version=format_version)
             if phase_transitions == None:
                 status = 400
                 response = {"message": error_message}
@@ -294,58 +315,4 @@ class Event:
         """ Checks if uuid is unique. """
         self.logger.debug("Checking if uuid is unique")
         return RecipeModel.objects.filter(uuid=uuid).exists()
-
-
-    def generate_transitions_phased_environment_v1(self, recipe_dict):
-        """ Tries to generate phase transitions for phased-environment v1,
-            returns phase transitions and error message. """
-        try: 
-            phase_transitions = []
-            minute_counter = 0
-            for phase in recipe_dict["phases"]:
-                phase_name = phase["name"]
-                for i in range(phase["repeat"]):
-                    for cycle in phase["cycles"]:
-                        # Get environment name and state + cycle name
-                        environment_name = cycle["environment"]
-                        environment_state = recipe_dict["environments"][environment_name]
-                        cycle_name = cycle["name"]
-
-                        # Get duration
-                        if "duration_hours" in cycle:
-                            duration_hours = cycle["duration_hours"]
-                            duration_minutes = duration_hours * 60
-                        elif "duration_minutes" in cycle:
-                            duration_minutes = cycle["duration_minutes"]
-                        else:
-                            raise KeyError("Could not find 'duration_minutes' or 'duration_hours' in cycle")
-
-                        # Write recipe transition to database
-                        phase_transitions.append({
-                            "minute": minute_counter,
-                            "phase": phase_name,
-                            "cycle": cycle_name,
-                            "environment_name": environment_name,
-                            "environment_state": environment_state})
-
-                        # Increment minute counter
-                        minute_counter += duration_minutes
-
-            # Set recipe end
-            phase_transitions.append({
-                "minute": minute_counter,
-                "phase": "End",
-                "cycle": "End",
-                "environment_name": "End",
-                "environment_state": {}})
-
-            # Successfully generate phase transitions
-            error_message = None
-            return phase_transitions, error_message
-        
-        except:
-            # TODO: Handle multiple exception types
-            phase_transitions = None
-            error_message = "Unable to generate transitions. "
-            return phase_transitions, error_message
         
