@@ -28,7 +28,6 @@ class LightPanelTaurus(LightSpectrumIntensity):
         """ Set light spectrum. """
         try:
             self.spectrum = spectrum
-            self.logger.debug("Set spectrum: {}".format(self.spectrum))
         except:
             self.logger.exception("Unable to set spectrum")
             self.mode = Mode.ERROR
@@ -39,7 +38,6 @@ class LightPanelTaurus(LightSpectrumIntensity):
         """ Set light intensity. """
         try:
             self.intensity = intensity
-            self.logger.debug("Set intensity: {}".format(self.intensity))
         except:
             self.logger.exception("Unable to set intensity")
             self.mode = Mode.ERROR

@@ -224,7 +224,7 @@ class Recipe:
             values in shared state. """
         
         # Generate values
-        if value != None:
+        if value != None and self.duration_minutes != None:
             percent_complete = float(value) / self.duration_minutes * 100
             percent_complete_string = "{0:.2f}".format(percent_complete)
             time_remaining_minutes = self.duration_minutes - value
@@ -395,8 +395,8 @@ class Recipe:
     def run_init_mode(self):
         """ Runs initialization mode. Transitions to stored recipe mode 
             or NORECIPE if no stored mode. """
+        self.logger.info("Entered INIT")
         self.error = Error.NONE
-        # self.clear_recipe_state()
 
         # Transition to recipe stored mode
         if "stored_mode" in self.state.recipe and \
@@ -452,6 +452,7 @@ class Recipe:
     def run_queued_mode(self):
         """ Runs queued mode. Waits for recipe start timestamp to be greater than
         or equal to current timestamp then transitions to NORMAL. """
+        self.logger.info("Entered QUEUED")
         while True:
             if self.start_timestamp_minutes >= self.current_timestamp_minutes:
                 self.mode = Mode.NORMAL
@@ -461,14 +462,17 @@ class Recipe:
     def run_normal_mode(self):
         """ Runs normal operation mode. Updates recipe and environment states 
         every minute. Transitions to PAUSE or STOP if commanded. """
-
         self.logger.info("Entered NORMAL")
+
+        # Update recipe environment on first entry
         self.update_recipe_environment()
 
         while True:
             # Update recipe and environment states every minute
             if self.new_minute():
-                self.update_recipe_environment()
+                # TODO: self.store_environment() - Stores environment in Environment table
+                self.update_recipe_environment() # TODO: unclear name, get recipe environment? - gets recipe env from recipe transitions
+                # update_desired_environment()
 
             # Check for transition to PAUSE
             if self.commanded_mode == Mode.PAUSE:
@@ -478,9 +482,9 @@ class Recipe:
 
             # Check for transition to STOP
             if self.commanded_mode == Mode.STOP:
+                self.logger.info("Recipe received request to transition from NORMAL to STOP")
                 self.mode = self.commanded_mode
                 self.commanded_mode = Mode.NONE
-
                 break
 
             # Update thread every 100ms
@@ -521,9 +525,10 @@ class Recipe:
         # Clear recipe and desired sensor states
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
+        self.update_recipe_environment()
 
         # Transition to NORECIPE
-        self.mode = NORECIPE
+        self.mode = Mode.NORECIPE
 
 
     def run_error_mode(self):
@@ -629,6 +634,7 @@ class Recipe:
 
     def clear_recipe_state(self):
         """ Sets recipe state to null values """
+        self.name = None
         self.duration_minutes = None
         self.last_update_min = None
         self.current_phase = None

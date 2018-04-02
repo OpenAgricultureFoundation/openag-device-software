@@ -1,7 +1,7 @@
 class EventRequest:
-    LOAD_RECIPE = "Load Recipe"
-    STOP_RECIPE = "Stop Recipe"
-    LOAD_CONFIG = "Load Config"
+    CREATE_RECIPE = "CREATE_RECIPE"
+    STOP_RECIPE = "STOP_RECIPE"
+    LOAD_CONFIG = "LOAD_CONFIG"
 
 
 class EventResponse:

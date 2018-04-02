@@ -121,7 +121,7 @@ LOGGING = {
             'formatter': 'standard_file',
         },
         'device_console': { 
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'device_console',
         },
@@ -140,7 +140,7 @@ LOGGING = {
         },
         'device': {
             'handlers': ['device_console', 'device_file'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         }
     },
 }

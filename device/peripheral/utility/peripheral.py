@@ -219,7 +219,6 @@ class Peripheral:
     def report_sensor_value(self, sensor, variable, value, simple=False):
         """ Report sensor value to environment sensor dict and reported sensor 
             stats dict. """
-        self.logger.debug("Reporting sensor value")
 
         # Force simple if value is None (don't want to try averaging `None`)
         if value == None:
@@ -281,6 +280,4 @@ class Peripheral:
 
     def report_actuator_value(self, actuator, variable, value):
         """ Report an actuator value. """
-        self.logger.debug("Reporting actuator value")
-
         self.state.environment["actuator"]["reported"][variable] = value

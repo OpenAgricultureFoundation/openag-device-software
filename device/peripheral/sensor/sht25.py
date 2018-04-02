@@ -14,7 +14,8 @@ class SHT25(TemperatureHumidity):
 
     def quickly_check_hardware_state(self):
         """ Quickly check hardware state. """
-        self.logger.debug("Quickly checking hardware state", extra={'peripheral_name' : 'sht25'})
+        # self.logger.debug("Quickly checking hardware state", extra={'peripheral_name' : 'sht25'})
+        self.logger.debug("Quickly checking hardware state!!")
 
 
     def initialize_hardware(self):
@@ -26,7 +27,6 @@ class SHT25(TemperatureHumidity):
         """ Get sensor temperature. """
         try:
             self.temperature = 22.0
-            self.logger.debug("Got temperature: {}".format(self.temperature))
         except:
             self.logger.exception("Unable to get temperature")
             self.mode = Mode.ERROR
@@ -37,7 +37,6 @@ class SHT25(TemperatureHumidity):
         """ Get sensor humidity. """
         try:
             self.humidity = 23
-            self.logger.debug("Got humidity: {}".format(self.humidity))
         except:
             self.logger.exception("Unable to get humidity")
             self.mode = Mode.ERROR

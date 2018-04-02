@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.decorators import permission_classes
+from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 
@@ -61,8 +62,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return queryset
 
     def create(self, request):
+        """ API endpoint to create a recipe. """
         recipe_viewer = RecipeViewer()
         response, status = recipe_viewer.create(request.data.dict())
+        return Response(response, status)
+
+    @list_route(methods=["post"])
+    def stop(self, request):
+        """ API endpoint to stop a recipe. """
+        recipe_viewer = RecipeViewer()
+        response, status = recipe_viewer.stop()
         return Response(response, status)
 
 
@@ -93,13 +102,9 @@ class RecipeDashboard(APIView):
     def get(self, request):
         return Response({'recipe': self.recipe}) 
 
+# @permission_classes((IsAuthenticated, ))
+# @api_view(["POST"])
+# def stop_recipe(request):  
 
-@api_view(["POST"])
-@permission_classes((IsAuthenticated, ))
-def stop_recipe(request):  
-    """ API endpoint to stop a recipe. """
-    recipe = RecipeViewer()
-    response, status = recipe.stop(request)
-    return Response(response, status)
 
 
