@@ -152,9 +152,21 @@ class DeviceViewer:
 
 
     def get_thread_modes(self):
+
+        # Initialize thread modes dict
         thread_modes = {}
+
+        # Get device and recipe modes
         thread_modes["Device Mode"] = common.get_device_state_value("mode")
         thread_modes["Recipe Mode"] = common.get_recipe_state_value("mode")
+
+        # Get peripheral modes
+        peripheral_dict = common.get_peripheral_dict()
+        for peripheral_name in peripheral_dict:
+            individual_peripheral_dict = peripheral_dict[peripheral_name]
+            thread_modes[peripheral_name] = individual_peripheral_dict["mode"]
+
+
         return thread_modes
 
 

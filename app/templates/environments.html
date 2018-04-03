@@ -7,7 +7,14 @@
 			{% for environment in environments %}
 				<b>{{ environment.timestamp }}</b>
 					<ul>
-						<li>State: {{ environment.state }}</li>
+						{% for key, value in environment.state.items %}
+						<li><b>{{ key }}:</b></li>
+							<ul>
+								{% for k, v in value.items %}
+									<li>{{ k }}: {{ v }} </li>
+								{% endfor %}
+							</ul>
+						{% endfor %}
 					</ul>
 			{% endfor %}
 	</body>

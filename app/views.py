@@ -171,7 +171,7 @@ class Environments(APIView):
     template_name = 'environments.html'
     
     def get(self, request):
-        environments = EnvironmentModel.objects.all()
+        environments = EnvironmentModel.objects.all().order_by("-timestamp")
         return Response({'environments': environments})
 
 

@@ -49,6 +49,15 @@ def get_environment_dict():
         return json.loads(state.environment)
 
 
+def get_peripheral_dict():
+    """ Gets peripheral dict from state table in database. """
+    if not StateModel.objects.filter(pk=1).exists():
+        return None
+    else:
+        state = StateModel.objects.get(pk=1)
+        return json.loads(state.peripherals)
+
+
 def manage_event(event_request, timeout_seconds=3, update_interval_seconds=0.1):
     """ Manages an event request. Creates new event in database, waits for 
         event response, returns event response or timeout error. """
