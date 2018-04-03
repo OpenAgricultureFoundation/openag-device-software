@@ -2,8 +2,8 @@
 import json, time
 
 # Import app models
-from app.models import State as StateModel
-from app.models import Event as EventModel
+from app.models import StateModel
+from app.models import EventModel
 
 
 def get_device_state_value(key):

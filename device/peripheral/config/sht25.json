@@ -1,0 +1,60 @@
+{
+	"name": "SHT25",
+	"module_name": "sht25",
+	"class_name": "SHT25",
+	"uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+	"parameters": {
+		"version": "int",
+		"variables": {
+			"sensors": {
+				"temperature": {
+					"name": "string", 
+					"uuid": "string"
+				},
+				"humidity": {
+					"name": "string", 
+					"uuid": "string"
+				}
+			},
+			"actuator": null
+		},	
+		"communication": {
+			"bus": "int",
+			"mux": "int",
+			"channel": "int",
+			"address": "int"
+		}
+	},
+	"info": {
+		"variables": {
+			"sensors":{
+				"temperature": {
+					"range": [-40, 125],
+			        "accuracy": {
+			            "typical": 0.2,
+			            "plot": [[-40, 0.5],[5,0.2],[60,0.2],
+			            	[100,0.5],[120,0.7]]   
+			        },
+			        "repeatability": 0.1,
+			        "response_time_seconds": 15,
+			        "yearly_drift": 0.02
+				},
+				"humidity": {
+					"name": "air_humidity_percent",
+                    "range": [0, 100],
+                    "accuracy": {
+                        "typical": 1.8,
+                        "plot": [[0,3],[10,2],[90,2],[100,3]]
+                    },
+                    "repeatability": 0.1,
+                    "response_time_seconds": 8,
+                    "yearly_drift": 0.25
+				}
+			},
+			"actuators": null
+		},
+		"communication": {
+
+		}
+	}
+}

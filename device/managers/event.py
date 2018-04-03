@@ -9,14 +9,14 @@ from device.utility.event import EventRequest
 from device.utility.event import EventResponse
 
 # Import database models
-from app.models import Event as EventModel
-from app.models import Recipe as RecipeModel
+from app.models import EventModel
+from app.models import RecipeModel
 
 # Import common functions
-from device.common import Common
+from device.managers.utilities.common import Common
 
 
-class Event:
+class EventManager:
     """ Manages events. """
 
     # Initialize logger

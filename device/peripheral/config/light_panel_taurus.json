@@ -1,0 +1,7 @@
+{
+	"name": "Light Panel Taurus",
+	"module_name": "light_panel_taurus",
+	"uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+	"actuator": null,
+	"sensor": null,
+}

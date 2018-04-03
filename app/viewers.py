@@ -2,7 +2,7 @@
 import json, threading, logging, time, json
 
 # Import app models
-from app.models import State
+# from app.models import StateModel
 
 # Import device utilities
 from device.utility.mode import Mode
@@ -13,14 +13,7 @@ from device.utility.variable import Variable
 from app import common
 
 # Import app models
-from app.models import Event as EventModel
-
-
-class SimpleRecipeViewer:
-    def __init__(self, recipe_object):
-        self.recipe_dict = json.loads(recipe_object.recipe_json)
-        self.uuid = self.recipe_dict["uuid"]
-        self.name = self.recipe_dict["name"]
+from app.models import EventModel
 
 
 class RecipeViewer:
@@ -90,6 +83,20 @@ class RecipeViewer:
         self.logger.info("Received stop recipe request")
         event_request = {"type": EventRequest.STOP_RECIPE}
         return common.manage_event(event_request)
+
+
+class SimpleRecipeViewer:
+    def __init__(self, recipe_object):
+        self.recipe_dict = json.loads(recipe_object.recipe_json)
+        self.uuid = self.recipe_dict["uuid"]
+        self.name = self.recipe_dict["name"]
+
+
+class DeviceConfigurationViewer:
+    def __init__(self, device_configuration_object):
+        self.dict = json.loads(device_configuration_object.json)
+        self.uuid = self.dict["uuid"]
+        self.name = self.dict["name"]
 
 
 class EnvironmentViewer:

@@ -17,6 +17,6 @@ class CoreConfig(AppConfig):
         if os.environ.get('NO_DEVICE') == 'true':
         	print("\n~~~Running app without device~~~\n")
         else:
-	        from device.device import Device
-	        self.device = Device()
-	        self.device.spawn(delay=1)
+	        from device.managers.device import DeviceManager
+	        self.device_manager = DeviceManager()
+	        self.device_manager.spawn(delay=1)

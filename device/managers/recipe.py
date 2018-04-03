@@ -6,14 +6,14 @@ from device.utility.mode import Mode
 from device.utility.error import Error
 
 # Import database models
-from app.models import Recipe as RecipeModel
-from app.models import RecipeTransition
+from app.models import RecipeModel
+from app.models import RecipeTransitionModel
 
 # Import common functions
-from device.common import Common
+from device.managers.utilities import common
 
 
-class Recipe:
+class RecipeManager:
     """ Manages recipe state machine. """
 
     # Initialize logger
@@ -459,7 +459,6 @@ class Recipe:
             recipe_dict = json.loads(recipe_json)
 
             # Generate recipe transitions
-            common = Common()
             transitions, error_message = common.generate_recipe_transitions(recipe_dict)
             
             # Handle recipe generation error case
@@ -605,18 +604,18 @@ class Recipe:
 
     def get_recipe_environment(self, minute):
         """ Gets environment object from database for provided minute. """
-        return RecipeTransition.objects.filter(minute__lte=minute).order_by('-minute').first()
+        return RecipeTransitionModel.objects.filter(minute__lte=minute).order_by('-minute').first()
 
 
     def store_recipe_transitions(self, recipe_transitions):
         """ Stores recipe transitions in database. """
 
         # Clear recipe transition table in database
-        RecipeTransition.objects.all().delete()
+        RecipeTransitionModel.objects.all().delete()
 
         # Create recipe transition entries
         for transition in recipe_transitions:
-            RecipeTransition.objects.create(
+            RecipeTransitionModel.objects.create(
                 minute = transition["minute"],
                 phase = transition["phase"],
                 cycle = transition["cycle"],

@@ -23,11 +23,12 @@ from rest_framework.decorators import detail_route
 from rest_framework.renderers import JSONRenderer
 
 # Import app models
-from app.models import State as StateModel
-from app.models import Event as EventModel
-from app.models import Environment as EnvironmentModel
-from app.models import Recipe as RecipeModel
-from app.models import RecipeTransition as RecipeTransactionModel
+from app.models import StateModel
+from app.models import EventModel
+from app.models import DeviceConfigurationModel
+from app.models import EnvironmentModel
+from app.models import RecipeModel
+from app.models import RecipeTransitionModel
 
 # Import app serializers
 from app.serializers import StateSerializer
@@ -151,8 +152,22 @@ class Events(APIView):
         return Response({'events': events})
 
 
+class DeviceConfigurationList(APIView):
+    """ UI page for device configurations. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "device_configuration_list.html"
+    
+    def get(self, request):
+        device_configuration_objects = DeviceConfigurationModel.objects.all()
+        device_configuration_viewers = []
+        for device_configuration_object in device_configuration_objects:
+            device_configuration_viewers.append(DeviceConfigurationViewer(device_configuration_object))
+
+        return Response({"device_configuration_viewers": device_configuration_viewers})
+
+
 class Recipes(APIView):
-    """ UI page for recipe dashboard. """
+    """ UI page for recipes. """
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'recipes.html'
     

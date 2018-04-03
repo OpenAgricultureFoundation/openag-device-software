@@ -6,24 +6,24 @@ from device.utility.mode import Mode
 from device.utility.error import Error
 from device.utility.variable import Variable
 
-# Import `state` shared memory object
+# Import shared memory
 from device.state import State
 
-# Import recipe and event objects
-from device.recipe import Recipe
-from device.event import Event
+# Import device managers
+from device.managers.recipe import RecipeManager
+from device.managers.event import EventManager
 
 # Import django modules
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # Import database models
-from app.models import State as StateModel
-from app.models import Event as EventModel
-from app.models import Environment as EnvironmentModel
+from app.models import StateModel
+from app.models import EventModel
+from app.models import EnvironmentModel
 
 
-class Device(object):
+class DeviceManager:
     """ A state machine that spawns threads to run recipes, read sensors, set 
     actuators, manage control loops, sync data, and manage external events. """
 
@@ -65,10 +65,10 @@ class Device(object):
     }
 
     # Initialize recipe object
-    recipe = Recipe(state)
+    recipe = RecipeManager(state)
 
     # Intialize event object
-    event = Event(state)
+    event = EventManager(state)
     post_save.connect(event.process, sender=EventModel)
 
 
@@ -223,13 +223,13 @@ class Device(object):
         # Spawn recipe
         self.recipe.spawn()
 
-        # Create and spawn peripherals
-        self.create_peripherals()
-        self.spawn_peripherals()
+        # # Create and spawn peripherals
+        # self.create_peripherals()
+        # self.spawn_peripherals()
 
-        # Create and spawn controllers
-        self.create_controllers()
-        self.spawn_controllers()
+        # # Create and spawn controllers
+        # self.create_controllers()
+        # self.spawn_controllers()
 
         # Wait for all threads to initialize
         while not self.all_threads_initialized():
