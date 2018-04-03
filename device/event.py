@@ -78,7 +78,7 @@ class Event:
         """ Safely updates commanded recipe uuid in shared state. """
         with threading.Lock():
             self.state.recipe["commanded_recipe_uuid"] = value
-            
+
 
     def process(self, sender, instance, **kwargs):
         """ Processes event when new model is saved in Event table. """
@@ -293,8 +293,8 @@ class Event:
                 return response, status
 
             # Verify able to generate transitions
-            phase_transitions, error_message = Common.generate_transitions(recipe_dict, 
-                                format_type=format_type, format_version=format_version)
+            common = Common()
+            phase_transitions, error_message = common.generate_recipe_transitions(recipe_dict)
             if phase_transitions == None:
                 status = 400
                 response = {"message": error_message}

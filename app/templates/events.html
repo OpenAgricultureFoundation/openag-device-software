@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<html>
+	<body>
+		<h2>Events</h2>
+			{% for event in events %}
+				<b>{{ event.timestamp }}</b>
+					<ul>
+						<li>Request: {{ event.request }}</li>
+						<li>Response: {{ event.response }}</li>
+					</ul>
+			{% endfor %}
+	</body>
+</html>
+{% endblock %}

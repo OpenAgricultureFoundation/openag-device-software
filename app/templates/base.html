@@ -8,7 +8,10 @@
   <body>
     <header>
       <h1>OpenAg Brain</h1>
-      <a href="{% url 'root' %}"> home </a> /
+      <a href="{% url 'dashboard' %}"> dashboard </a> /
+      <a href="{% url 'events' %}"> events </a> /
+      <a href="{% url 'recipes' %}"> recipes </a> /
+      <a href="{% url 'environments' %}"> environments </a> /
       <a href="{% url 'admin:index' %}"> admin </a> /
       <a href="/api"> api </a> /
       {% if user.is_authenticated %}

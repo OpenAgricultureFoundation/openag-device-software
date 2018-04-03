@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 
 {% block javascript %}
@@ -71,17 +70,7 @@
 
 {% block content %}
  <html>
- 	{% csrf_token %}
- 	<h2> Device </h2>
-	    <p>
-	    	{% for key, value in current_device.thread_modes.items %}
-	    		<b>{{ key }}:</b> {{ value }} </br>
-			{% endfor %}
-    	</p>
-
-
-
-
+    {% csrf_token %}
     <h2> Recipe </h2>
         <p>
             <b>Mode:</b> {{ current_recipe.mode }} </br>   
@@ -116,19 +105,5 @@
             <button class="btn" type="button" onClick="stop_recipe()"><i class="icon-share"></i> Stop Recipe </button>              
         {% endif %}
 
-    <h2> Sensor </h2>
-    <p>
-    	{% for key, value in current_environment.sensor_summary.items %}
-    		<b>{{ key }}:</b> {{ value }} </br>
-		{% endfor %}
-    </p>
-
-
-    <h2> Actuator </h2>
-    <p>
-    	{% for key, value in current_environment.actuator_summary.items %}
-    		<b>{{ key }}:</b> {{ value }} </br>
-		{% endfor %}
-    </p>
 </html>
 {% endblock %}

@@ -12,7 +12,6 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
-
 # Import rest framework modules
 from rest_framework import routers
 
@@ -42,11 +41,16 @@ urlpatterns = [
 
     # User management
     url(r"^login/$", auth_views.login, {"template_name": "login.html"}, name="login"),
-    url(r"^logout/$", auth_views.logout, {"next_page": "home/"}, name="logout"),
+    url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
 
     # App specific
-    url(r'^$', redirect_to_dashboard, name="root"),
+    url(r'^$', redirect_to_dashboard, name="home"),
     url(r'^dashboard/$', views.Dashboard.as_view(), name="dashboard"),
+    url(r'^events/$', views.Events.as_view(), name="events"),
+    url(r'^recipes/$', views.Recipes.as_view(), name="recipes"),
+    url(r'^environments/$', views.Environments.as_view(), name="environments"),
+    url(r'^manual/$', views.Manual.as_view(), name="manual"),
+    url(r'^entry/$', views.Entry.as_view(), name="entry"),
 ]
 
 

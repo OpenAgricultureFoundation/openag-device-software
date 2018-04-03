@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<html>
+	<body>
+		<h2>Environments</h2>
+			{% for environment in environments %}
+				<b>{{ environment.timestamp }}</b>
+					<ul>
+						<li>State: {{ environment.state }}</li>
+					</ul>
+			{% endfor %}
+	</body>
+</html>
+{% endblock %}

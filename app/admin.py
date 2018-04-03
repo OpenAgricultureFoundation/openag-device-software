@@ -4,6 +4,7 @@ from django.contrib import admin
 # Import app models
 from app.models import State
 from app.models import Event
+from app.models import Environment
 from app.models import Recipe
 from app.models import RecipeTransition
 
@@ -16,6 +17,11 @@ admin.site.register(State, StateAdmin)
 class EventAdmin(admin.ModelAdmin):
 	list_display = ("timestamp", "request", "response")
 admin.site.register(Event, EventAdmin)
+
+
+class EnvironmentAdmin(admin.ModelAdmin):
+	list_display = ("timestamp", "state")
+admin.site.register(Environment, EnvironmentAdmin)
 
 
 class RecipeAdmin(admin.ModelAdmin):

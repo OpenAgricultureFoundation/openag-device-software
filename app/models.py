@@ -28,6 +28,14 @@ class Event(models.Model):
         get_latest_by="timestamp"
 
 
+class Environment(models.Model):
+    timestamp = models.DateTimeField(auto_now_add=True)
+    state = JSONField()
+
+    class Meta:
+        get_latest_by="timestamp"
+
+
 class Recipe(models.Model):
     uuid = models.UUIDField(primary_key=True, editable=False)
     recipe_json = JSONField()

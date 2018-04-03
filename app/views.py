@@ -8,40 +8,47 @@ from django.shortcuts import render
 from django.contrib.auth import login
 from django.contrib.auth import authenticate
 
-# Import django rest modules
+# Import django rest permissions modules
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
+
+# Import standard django rest modules
 from rest_framework import viewsets
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-# from rest_framework.decorators import api_view
-from rest_framework.decorators import permission_classes
 from rest_framework.decorators import list_route
 from rest_framework.decorators import detail_route
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 
 # Import app models
-from app.models import State
-from app.models import Event
-from app.models import Recipe
-from app.models import RecipeTransition
+from app.models import State as StateModel
+from app.models import Event as EventModel
+from app.models import Environment as EnvironmentModel
+from app.models import Recipe as RecipeModel
+from app.models import RecipeTransition as RecipeTransactionModel
 
 # Import app serializers
 from app.serializers import StateSerializer
 from app.serializers import EventSerializer
+from app.serializers import EnvironmentSerializer
 from app.serializers import RecipeSerializer
 from app.serializers import RecipeTransitionSerializer
 
 # Import app viewers
-from app.viewers import Recipe as RecipeViewer
-from app.viewers import SimpleRecipe as SimpleRecipeViewer
+from app.viewers import DeviceViewer
+from app.viewers import RecipeViewer
+from app.viewers import SimpleRecipeViewer
+from app.viewers import EnvironmentViewer
+
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows state to be viewed. """
     serializer_class = StateSerializer
 
     def get_queryset(self):
-        queryset = State.objects.all()
+        queryset = StateModel.objects.all()
         return queryset
 
 
@@ -50,7 +57,16 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = EventSerializer
 
     def get_queryset(self):
-        queryset = Event.objects.all()
+        queryset = EventModel.objects.all()
+        return queryset
+
+
+class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
+    """ API endpoint that allows events to be viewed. """
+    serializer_class = EnvironmentSerializer
+
+    def get_queryset(self):
+        queryset = EnvironmentModel.objects.all()
         return queryset
 
 
@@ -59,23 +75,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
 
     def get_queryset(self):
-        queryset = Recipe.objects.all()
+        queryset = RecipeModel.objects.all()
         return queryset
 
+    @permission_classes((IsAuthenticated, IsAdminUser,))
     def create(self, request):
         """ API endpoint to create a recipe. """
         recipe_viewer = RecipeViewer()
         response, status = recipe_viewer.create(request.data.dict())
         return Response(response, status)
 
-    @detail_route(methods=["post"])
+    # @permission_classes((IsAuthenticated, IsAdminUser,))
+    @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def start(self, request, pk=None):
         """ API endpoint to start a recipe. """
         recipe_viewer = RecipeViewer()
         response, status = recipe_viewer.start(request.data.dict(), pk)
         return Response(response, status)
 
-    @list_route(methods=["post"])
+    @list_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def stop(self, request):
         """ API endpoint to stop a recipe. """
         recipe_viewer = RecipeViewer()
@@ -93,15 +111,83 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class Dashboard(APIView):
-    """ UI page for recipe dashboard. """
+    """ UI page for dashboard. """
     renderer_classes = [TemplateHTMLRenderer]
     template_name = 'dashboard.html'
-    
+
     def get(self, request):
+
+        # Get current device state object
+        current_device = DeviceViewer()
+
+        # Get current environment state object
+        current_environment = EnvironmentViewer()
+
+        # Get current recipe state object
         current_recipe = RecipeViewer()
-        recipe_objects = Recipe.objects.all()
+
+        # Get stored recipe objects
+        recipe_objects = RecipeModel.objects.all()
         recipes = []
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
 
-        return Response({'current_recipe': current_recipe, 'recipes': recipes}) 
+        # Build and return response
+        response = {
+            "current_device": current_device,
+            "current_environment": current_environment,
+            "current_recipe": current_recipe,
+            "recipes": recipes}
+        return Response(response)
+
+
+class Events(APIView):
+    """ UI page for events. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'events.html'
+    
+    def get(self, request):
+        events = EventModel.objects.all().order_by("-timestamp")
+        return Response({'events': events})
+
+
+class Recipes(APIView):
+    """ UI page for recipe dashboard. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'recipes.html'
+    
+    def get(self, request):
+        recipe_objects = RecipeModel.objects.all()
+        recipes = []
+        for recipe_object in recipe_objects:
+            recipes.append(SimpleRecipeViewer(recipe_object))
+
+        return Response({'recipes': recipes})
+
+
+class Environments(APIView):
+    """ UI page for environments. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'environments.html'
+    
+    def get(self, request):
+        environments = EnvironmentModel.objects.all()
+        return Response({'environments': environments})
+
+
+class Manual(APIView):
+    """ UI page for manual controls. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'manual.html'
+    
+    def get(self, request):
+        return Response({'manual': 'data'})
+
+
+class Entry(APIView):
+    """ UI page for data entry. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'entry.html'
+    
+    def get(self, request):
+        return Response({'entry': 'data'})

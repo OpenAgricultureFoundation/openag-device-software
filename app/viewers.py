@@ -7,38 +7,43 @@ from app.models import State
 # Import device utilities
 from device.utility.mode import Mode
 from device.utility.event import EventRequest
+from device.utility.variable import Variable
+
+# Import common app funcitons
+from app import common
 
 # Import app models
 from app.models import Event as EventModel
 
 
-
-class SimpleRecipe:
+class SimpleRecipeViewer:
     def __init__(self, recipe_object):
-        recipe_dict = json.loads(recipe_object.recipe_json)
-        self.uuid = recipe_dict["uuid"]
-        self.name = recipe_dict["name"]
+        self.recipe_dict = json.loads(recipe_object.recipe_json)
+        self.uuid = self.recipe_dict["uuid"]
+        self.name = self.recipe_dict["name"]
 
 
-class Recipe():
+class RecipeViewer:
     # Initialize logger
     extra = {"console_name":"Recipe Viewer", "file_name": "recipe_viewer"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
-
     
     def __init__(self):
         """ Initialize recipe viewer. """
-        self.mode = self.get_recipe_state_value("mode")
-        self.name = self.get_recipe_state_value("recipe_name")
-        self.uuid = self.get_recipe_state_value("recipe_uuid")
-        self.started = self.get_recipe_state_value("start_datestring")
-        self.progress = self.get_recipe_state_value("percent_complete_string")
-        self.time_elapsed = self.get_recipe_state_value("time_elapsed_string")
-        self.time_remaining = self.get_recipe_state_value("time_remaining_string")
-        self.current_phase = self.get_recipe_state_value("current_phase")
-        self.current_cycle = self.get_recipe_state_value("current_cycle")
-        self.current_environment = self.get_recipe_state_value("current_environment_name")
+        self.mode = common.get_recipe_state_value("mode")
+        self.recipe_name = common.get_recipe_state_value("recipe_name")
+        self.recipe_uuid = common.get_recipe_state_value("recipe_uuid")
+        self.start_datestring = common.get_recipe_state_value("start_datestring")
+        self.percent_complete_string = common.get_recipe_state_value("percent_complete_string")
+        self.time_elapsed_string = common.get_recipe_state_value("time_elapsed_string")
+        self.time_elapsed_minutes = common.get_recipe_state_value("last_update_minute")
+        self.time_remaining_string = common.get_recipe_state_value("time_remaining_string")
+        self.time_remaining_minutes = common.get_recipe_state_value("time_remaining_minutes")
+        self.current_phase = common.get_recipe_state_value("current_phase")
+        self.current_cycle = common.get_recipe_state_value("current_cycle")
+        self.current_environment_name = common.get_recipe_state_value("current_environment_name")
+
 
     def create(self, request_dict):
         """ Creates a recipe. Gets recipe json, makes event request,  then
@@ -76,7 +81,7 @@ class Recipe():
             "type": EventRequest.START_RECIPE,
             "uuid": pk,
             "start_timestamp_minutes": start_timestamp_minutes}
-        return self.manage_event(event_request)      
+        return common.manage_event(event_request)      
 
 
     def stop(self):
@@ -84,46 +89,79 @@ class Recipe():
             recipe to stop, then returns response. """
         self.logger.info("Received stop recipe request")
         event_request = {"type": EventRequest.STOP_RECIPE}
-        return self.manage_event(event_request)
+        return common.manage_event(event_request)
 
 
-    def manage_event(self, event_request, timeout_seconds=3, update_interval_seconds=0.1):
-        """ Manages an event request. Creates new event in database, waits for 
-            event response, returns event response or timeout error. """
+class EnvironmentViewer:
+    # Initialize logger
+    extra = {"console_name":"Environment Viewer", "file_name": "environment_viewer"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
 
-        # Create event in database
-        event = EventModel.objects.create(request=event_request)
-
-        # Wait for response
-        start_time_seconds = time.time()
-        while time.time() - start_time_seconds < timeout_seconds:
-            event_response = EventModel.objects.get(pk=event.id).response
-            if event_response != None:
-                status = event_response["status"]
-                response = {"message": event_response["message"]}
-                return response, status
-            # Check for response every 100ms
-            time.sleep(update_interval_seconds)
-
-        # Return timeout error
-        status=500
-        response = {"message": "Event response timed out"}
-        return response, status
+    def __init__(self):
+        self.sensor_summary = self.get_environment_summary("sensor")
+        self.actuator_summary = self.get_environment_summary("actuator")
 
 
-    def get_recipe_state_value(self, key):
-        """ Gets recipe state value for key current recipe state. """
-
-        # Get recipe state dict
-        if not State.objects.filter(pk=1).exists():
-            return None
-        else:
-            state = State.objects.get(pk=1)
-            recipe_state_dict = json.loads(state.recipe)
+    def get_environment_summary(self, peripheral_type):
+        """ Gets environment summary of current reported --> desired value 
+            for each variable in shared state. """
         
-        # Get value for key
-        if key in recipe_state_dict:
-            return recipe_state_dict[key]
-        else:
-            return None
+        # Initialize summary dict
+        summary = {}
+
+        # Get environment dict
+        environment_dict = common.get_environment_dict()
+        if environment_dict == None:
+            return summary
+
+        # Log all variables in reported
+        for variable in environment_dict[peripheral_type]["reported"]:
+            name = Variable[variable]["name"]
+            unit = Variable[variable]["unit"]
+            reported = str(environment_dict[peripheral_type]["reported"][variable])
+            if variable in environment_dict[peripheral_type]["desired"]:
+                desired = str(environment_dict[peripheral_type]["desired"][variable])
+            else:
+                desired = "None"
+
+            name_string = name + " (" + unit + ")"
+            summary[name_string] = reported + " --> " + desired
+
+        # Log remaining variables in desired
+        for variable in environment_dict[peripheral_type]["desired"]:
+            if variable not in environment_dict[peripheral_type]["reported"]:
+                name = Variable[variable]["name"]
+                unit = Variable[variable]["unit"]
+                desired = str(environment_dict[peripheral_type]["desired"][variable])
+                reported = "None"
+                name_string = name + " (" + unit + ")"
+                summary[name_string] = reported + " --> " + desired
+        
+        return summary
+
+
+class DeviceViewer:
+    # Initialize logger
+    extra = {"console_name":"Device Viewer", "file_name": "device_viewer"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
+    def __init__(self):
+        self.thread_modes = self.get_thread_modes()
+
+
+    def get_thread_modes(self):
+        thread_modes = {}
+        thread_modes["Device Mode"] = common.get_device_state_value("mode")
+        thread_modes["Recipe Mode"] = common.get_recipe_state_value("mode")
+        return thread_modes
+
+
+
+
+            # for peripheral_name in self.state.peripherals:
+            #     verbose_name = self.config["peripherals"][peripheral_name]["verbose_name"]
+            #     mode = self.state.peripherals[peripheral_name]["mode"]
+            #     summary += "\n        {}: {}".format(verbose_name, mode)
 

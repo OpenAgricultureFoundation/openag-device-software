@@ -20,6 +20,7 @@ from django.dispatch import receiver
 # Import database models
 from app.models import State as StateModel
 from app.models import Event as EventModel
+from app.models import Environment as EnvironmentModel
 
 
 class Device(object):
@@ -143,19 +144,13 @@ class Device(object):
 
 
     @property
-    def summary(self):
-        """ Gets summary from shared state object. """
-        if "summary" in self.state.device:
-            return self.state.device["summary"]
+    def latest_environment_timestamp(self):
+        """ Gets latest environment timestamp from environment table. """
+        if not EnvironmentModel.objects.all():
+            return 0
         else:
-            return None
-
-
-    @summary.setter
-    def summary(self, value):
-        """ Safely updates config in state object. """
-        with threading.Lock():
-            self.state.device["summary"] = value
+            environment = EnvironmentModel.objects.latest()
+            return environment.timestamp.timestamp()
 
 
     def spawn(self, delay=None):
@@ -240,10 +235,6 @@ class Device(object):
         while not self.all_threads_initialized():
             time.sleep(0.2)
 
-        # # Load in recipe from file (TEMPORARY)
-        # self.recipe.commanded_recipe = json.load(open('device/data/recipe.json'))
-        # self.recipe.commanded_mode = Mode.START
-
         # Transition to NORMAL
         self.mode = Mode.NORMAL
 
@@ -255,18 +246,19 @@ class Device(object):
         self.logger.info("Entered NORMAL")
 
         while True:
-            # Update device state summary
-            self.update_device_state_summary()
+            # Overwrite system state in database every 100ms
+            self.update_state()
 
-            # Store system state in database
-            self.store_state()
+            # Store environment state in every 10 minutes 
+            if time.time() - self.latest_environment_timestamp > 60*10:
+                self.store_environment()
             
             # Check for system error
             if self.mode == Mode.ERROR:
                 break
 
-            # Update periodically
-            time.sleep(1) # seconds
+            # Update every 100ms
+            time.sleep(0.1)
 
 
     def run_load_mode(self):
@@ -359,9 +351,8 @@ class Device(object):
             self.config = None
 
 
-    def store_state(self):
-        """ Stores system state in local database. If state does not exist 
-            in database, creates it. """
+    def update_state(self):
+        """ Updates stored state in database. If state does not exist, creates it. """
 
         if not StateModel.objects.filter(pk=1).exists():
             StateModel.objects.create(
@@ -380,6 +371,11 @@ class Device(object):
                 peripherals = json.dumps(self.state.peripherals),
                 controllers = json.dumps(self.state.controllers),
             )
+
+
+    def store_environment(self):
+        """ Stores current environment state in environment table. """
+        EnvironmentModel.objects.create(state=self.state.environment)
 
 
     def load_config_from_local_file(self):
@@ -483,83 +479,3 @@ class Device(object):
         """ Shuts down controller threads. """
         for controller_name in self.controllers:
             self.controllers[controller_name].commanded_mode = Mode.SHUTDOWN
-
-
-    def update_device_state_summary(self, sensors=True, actuators=True, recipe=True, thread_modes=True):
-        """ Updates device state summary. """
-
-        summary = ""
-
-        # Create sensor summary
-        if sensors:
-            summary += "\n    Sensors:"
-            summary += self.get_environment_summary(self.state.environment["sensor"])
-
-        # Create actuator summary
-        if actuators:
-            summary += "\n    Actuators:"
-            summary += self.get_environment_summary(self.state.environment["actuator"])
-
-        # Create recipe summary
-        if recipe:
-            if self.state.recipe["recipe_uuid"] == None:
-                summary += "\n    Recipe: None"
-            else:
-                summary += "\n    Recipe:"
-                summary += "\n        Name: {}".format(self.recipe.recipe_name)
-                summary += "\n        Started: {}".format(self.recipe.start_datestring)
-                summary += "\n        Progress: {} %".format(self.recipe.percent_complete_string)
-                summary += "\n        Time Elapsed: {}".format(self.recipe.time_elapsed_string)
-                summary += "\n        Time Remaining: {}".format(self.recipe.time_remaining_string)
-                summary += "\n        Current Phase: {}".format(self.recipe.current_phase)
-                summary += "\n        Current Cycle: {}".format(self.recipe.current_cycle)
-                summary += "\n        Current Environment: {}".format(self.recipe.current_environment_name)
-        
-        # Create thread modes summary
-        if thread_modes:
-            summary += "\n    Modes:"
-            summary += "\n        Device: {}".format(self.mode)
-            summary += "\n        Recipe: {}".format(self.recipe.mode)
-
-            for peripheral_name in self.state.peripherals:
-                verbose_name = self.config["peripherals"][peripheral_name]["verbose_name"]
-                mode = self.state.peripherals[peripheral_name]["mode"]
-                summary += "\n        {}: {}".format(verbose_name, mode)
-
-        # Update summary in shared state
-        self.summary = summary
-
-        # Log summary
-        # self.logger.info(summary)
-        
-        
-
-    def get_environment_summary(self, environment):
-        """ Gets summary of current reported --> desired value for each variable. """
-        summary = ""
-
-        # Log all variables in reported
-        for variable in environment["reported"]:
-            name = Variable[variable]["name"]
-            unit = Variable[variable]["unit"]
-            reported = str(environment["reported"][variable])
-            if variable in environment["desired"]:
-                desired = str(environment["desired"][variable])
-            else:
-                desired = "None"
-            summary += "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
-
-        # Log remaining variables in desired
-        for variable in environment["desired"]:
-            if variable not in environment["reported"]:
-                name = Variable[variable]["name"]
-                unit = Variable[variable]["unit"]
-                desired = str(environment["desired"][variable])
-                reported = "None"
-                summary += "\n        " + name + " (" + unit + "): " + reported + " --> " + desired
-
-        # Check for empty log
-        if summary == "":
-            summary = "\n        None"
-
-        return summary

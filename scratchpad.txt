@@ -1,3 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<html>
+    <body>
+        <h2>Dashboard</h2>
+        <em> This page is reserved for a dashboard. </em></br>
+        <h3>Content Ideas</h3>
+        <ul>
+            <li> Display most recent photo(s) / timelapse(s) </li>
+            <li> There will be multiple cameras -- visible, thermal -- top, side </li>
+            <li> Display current recipe name and progress </li>
+            <li> Dislay an `all systems good` indicator </li>
+            <li> Display current sensor / actuator values </li>
+            <li> Display charts for the current sensor / actuator values</li>
+        </ul>
+    </body>
+</html>
+{% endblock %}
+
+
+
+
+
+
+
+
+
 {% block content %}
  <html>
     <h2>Start Recipe</h2>

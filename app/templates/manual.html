@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<html>
+	<body>
+		<h2>Manual</h2>
+		<em> This page is reserved for manual control over actuators and setpoints. </em></br>
+		<h3>Actuators</h3>
+		<em> This space is reserved for manual control over actuators. </em></br>
+		<h3>Setpoints</h3>
+		<em> This space is reserved for manual control over setpoints. </em></br>
+		<h3>Notes</h3>
+		<ul>
+			<li> Need to set device into manual mode (e.g. toggle button) </li>
+			<li> Can autodiscover what actuation control is possible </li>
+			<li> Then set actuator controls in a fun way </li>
+			<li> Actuator interface (e.g. buttons, sliders, etc.) depends on variable type</li>
+			<li> Can also do the same thing for setpoints </li>
+			<li> This will be useful to test our control loops </li>
+			<li> At first, don't worry too much about autodiscovery for both</li>
+			<li> Obviously not all of this needs to be in here...</li>
+		</ul>
+	</body>
+</html>
+{% endblock %}
