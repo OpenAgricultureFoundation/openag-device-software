@@ -62,7 +62,7 @@ class RecipeViewer:
         event_request = {
             "type": EventRequest.CREATE_RECIPE,
             "recipe_json": recipe_json}
-        return self.manage_event(event_request)
+        return common.manage_event(event_request)
 
 
     def start(self, request_dict, pk):
