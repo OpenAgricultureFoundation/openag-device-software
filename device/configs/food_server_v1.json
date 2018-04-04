@@ -1,0 +1,29 @@
+{	
+    "format": "openag-standard-v1",
+    "name": "Food Server Rack",
+    "version": "1",
+    "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
+    "peripherals": [
+        {
+            "name": "SHT25-Top",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "temperature": "air_temperature_celcius",
+                        "humidity": "air_humidity_percent"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": 7, 
+                    "channel": 0, 
+                    "address": 64
+                }
+            }
+        }
+    ],
+    "controllers": null
+}

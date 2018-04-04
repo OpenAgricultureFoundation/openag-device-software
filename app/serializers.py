@@ -5,7 +5,7 @@ from rest_framework import serializers
 from app.models import StateModel
 from app.models import EventModel
 from app.models import EnvironmentModel
-from app.models import DeviceConfigurationModel
+from app.models import DeviceConfigModel
 from app.models import RecipeModel
 from app.models import RecipeTransitionModel
 
@@ -29,9 +29,9 @@ class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):
         fields = ("timestamp", "state")
 
 
-class DeviceConfigurationSerializer(serializers.HyperlinkedModelSerializer):
+class DeviceConfigSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = DeviceConfigurationModel
+        model = DeviceConfigModel
         fields = ("uuid", "json")
 
 

@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, json, threading, os, sys
+import logging, time, json, threading, os, sys, glob
 
 # Import django modules
 from django.db.models.signals import post_save
@@ -9,6 +9,11 @@ from django.dispatch import receiver
 from device.utilities.mode import Mode
 from device.utilities.error import Error
 from device.utilities.variable import Variable
+
+# Import device validators
+from device.utilities.validators import PeripheralSetupValidator
+from device.utilities.validators import DeviceConfigValidator
+from device.utilities.validators import RecipeValidator
 
 # Import shared memory
 from device.state import State
@@ -21,6 +26,9 @@ from device.managers.event import EventManager
 from app.models import StateModel
 from app.models import EventModel
 from app.models import EnvironmentModel
+from app.models import PeripheralSetupModel
+from app.models import DeviceConfigModel
+
 
 
 class DeviceManager:
@@ -72,9 +80,9 @@ class DeviceManager:
     post_save.connect(event.process, sender=EventModel)
 
 
-    # Initialize peripheral and controller objects
-    peripherals = {}
-    controllers = {}
+    # Initialize peripheral and controller managers
+    peripheral_managers = None
+    controller_managers = None
 
 
     def __init__(self):
@@ -121,26 +129,50 @@ class DeviceManager:
 
     @error.setter
     def error(self, value):
-        """ Safely updates error in shared state object. """
+        """ Safely updates error in shared state. """
         self._error = value
         with threading.Lock():
             self.state.device["error"] = value
 
 
     @property
-    def config(self):
-        """ Gets config from shared state object. """
-        if "config" in self.state.device:
-            return self.state.device["config"]
+    def config_uuid(self):
+        """ Gets config uuid from shared state. """
+        if "config_uuid" in self.state.device:
+            return self.state.device["config_uuid"]
         else:
             return None
 
 
-    @config.setter
-    def config(self, value):
-        """ Safely updates config in state object. """
+    @config_uuid.setter
+    def config_uuid(self, value):
+        """ Safely updates config uuid in state. """
         with threading.Lock():
-            self.state.device["config"] = value
+            self.state.device["config_uuid"] = value
+
+    @property
+    def commanded_config_uuid(self):
+        """ Gets commanded config uuid from shared state. """
+        if "commanded_config_uuid" in self.state.device:
+            return self.state.device["commanded_config_uuid"]
+        else:
+            return None
+
+
+    @commanded_config_uuid.setter
+    def commanded_config_uuid(self, value):
+        """ Safely updates commanded config uuid in state. """
+        with threading.Lock():
+            self.state.device["commanded_config_uuid"] = value
+
+
+    @property
+    def config_dict(self):
+        """ Gets config dict for config uuid in device config table. """
+        if self.config_uuid == None:
+            return None
+        config = DeviceConfigModel.objects.get(uuid=self.config_uuid)
+        return json.loads(config.json)
 
 
     @property
@@ -193,6 +225,14 @@ class DeviceManager:
             transitions to CONFIG. """
         self.logger.info("Entered INIT")
 
+        # Introspet and load peripheral setups into database
+        setup_dicts = self.introspect_peripheral_setups()
+        self.store_peripheral_setups(setup_dicts)
+
+        # Introspect and load device configs into database
+        config_dicts = self.introspect_device_configs()
+        self.store_device_configs(config_dicts)
+
         # Load stored state from database
         self.load_state()
 
@@ -201,14 +241,24 @@ class DeviceManager:
 
 
     def run_config_mode(self):
-        """ Runs configuration mode. Tries to load config from stored state. 
-            If config not in stored state, loads config from local file then
-             transitions to SETUP. """
+        """ Runs configuration mode. If device config is not set, waits for 
+            config command then transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
-        # Load config from local file if not in stored state
-        if self.config == None:
-            self.load_config_from_local_file()
+        # If device config is not set, wait for config command
+        if self.config_uuid == None:
+            self.logger.info("Waiting for config command")
+
+            # Fake config command during development
+            self.commanded_config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126"
+
+            while True:
+                if self.commanded_config_uuid != None:
+                    self.config_uuid = self.commanded_config_uuid
+                    self.commanded_config_uuid = None
+                    break
+                # Update every 100ms
+                time.sleep(0.1)
 
         # Transition to SETUP
         self.mode = Mode.SETUP
@@ -223,13 +273,13 @@ class DeviceManager:
         # Spawn recipe
         self.recipe.spawn()
 
-        # # Create and spawn peripherals
-        # self.create_peripherals()
-        # self.spawn_peripherals()
+        # Create peripheral managers and spawn threads
+        self.create_peripheral_managers()
+        self.spawn_peripheral_threads()
 
-        # # Create and spawn controllers
-        # self.create_controllers()
-        # self.spawn_controllers()
+        # Create controller managers and spawn threads
+        self.create_controller_managers()
+        self.spawn_controller_threads()
 
         # Wait for all threads to initialize
         while not self.all_threads_initialized():
@@ -311,48 +361,9 @@ class DeviceManager:
             time.sleep(0.1) # 100ms
 
 
-    def load_state(self):
-        """ Loads stored state from database if it exists. If not, loads
-            config from local file. """
-        self.logger.debug("Loading stored state from database")
-
-        # Load stored state from database if exists
-        if StateModel.objects.filter(pk=1).exists():
-            stored_state = StateModel.objects.filter(pk=1).first()
-
-            # Load device state
-            stored_device_state = json.loads(stored_state.device)
-            self.config = stored_device_state["config"]
-
-            # Load recipe state
-            stored_recipe_state = json.loads(stored_state.recipe)
-            self.recipe.recipe_uuid = stored_recipe_state["recipe_uuid"]
-            self.recipe.recipe_name = stored_recipe_state["recipe_name"]
-            self.recipe.duration_minutes = stored_recipe_state["duration_minutes"]
-            self.recipe.start_timestamp_minutes = stored_recipe_state["start_timestamp_minutes"]
-            self.recipe.last_update_minute = stored_recipe_state["last_update_minute"]
-            self.recipe.stored_mode = stored_recipe_state["mode"]
-
-            # Load peripherals state
-            stored_peripherals_state = json.loads(stored_state.peripherals)
-            for peripheral_name in stored_peripherals_state:
-                if "stored" in stored_peripherals_state[peripheral_name]:
-                    self.state.peripherals[peripheral_name] = {}
-                    self.state.peripherals[peripheral_name]["stored"] = stored_peripherals_state[peripheral_name]["stored"]
-
-            # Load controllers state
-            stored_controllers_state = json.loads(stored_state.controllers)
-            for controller_name in stored_controllers_state:
-                if "stored" in stored_controllers_state[controller_name]:
-                    self.state.controllers[controller_name] = {}
-                    self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
-        else:
-            # Set device state
-            self.config = None
-
-
     def update_state(self):
-        """ Updates stored state in database. If state does not exist, creates it. """
+        """ Updates stored state in database. If state does not exist, 
+            creates it. """
 
         if not StateModel.objects.filter(pk=1).exists():
             StateModel.objects.create(
@@ -373,58 +384,228 @@ class DeviceManager:
             )
 
 
+    def load_state(self):
+        """ Loads stored state from database if it exists. """
+        self.logger.info("Loading state")
+
+        # Get stored state from database
+        if not StateModel.objects.filter(pk=1).exists():
+            self.logger.debug("No stored state in database")
+            self.config_uuid = None
+            return
+        stored_state = StateModel.objects.filter(pk=1).first()
+
+        # Load device state
+        stored_device_state = json.loads(stored_state.device)
+        self.config_uuid = stored_device_state["config_uuid"]
+
+        # Load recipe state
+        stored_recipe_state = json.loads(stored_state.recipe)
+        self.recipe.recipe_uuid = stored_recipe_state["recipe_uuid"]
+        self.recipe.recipe_name = stored_recipe_state["recipe_name"]
+        self.recipe.duration_minutes = stored_recipe_state["duration_minutes"]
+        self.recipe.start_timestamp_minutes = stored_recipe_state["start_timestamp_minutes"]
+        self.recipe.last_update_minute = stored_recipe_state["last_update_minute"]
+        self.recipe.stored_mode = stored_recipe_state["mode"]
+
+        # Load peripherals state
+        stored_peripherals_state = json.loads(stored_state.peripherals)
+        for peripheral_name in stored_peripherals_state:
+            if "stored" in stored_peripherals_state[peripheral_name]:
+                self.state.peripherals[peripheral_name] = {}
+                self.state.peripherals[peripheral_name]["stored"] = stored_peripherals_state[peripheral_name]["stored"]
+
+        # Load controllers state
+        stored_controllers_state = json.loads(stored_state.controllers)
+        for controller_name in stored_controllers_state:
+            if "stored" in stored_controllers_state[controller_name]:
+                self.state.controllers[controller_name] = {}
+                self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
+
+
+   
     def store_environment(self):
         """ Stores current environment state in environment table. """
         EnvironmentModel.objects.create(state=self.state.environment)
 
 
-    def load_config_from_local_file(self):
-        """ Loads config file into device state. """
-        self.config = json.load(open('device/data/config.json'))
+    def introspect_peripheral_setups(self):
+        """ Looks through peripheral setup files in codebase to generate 
+        peripheral setup dicts. """
+        self.logger.info("Introspecting peripheral setups")
+
+        # Load peripheral setup filepaths
+        setup_filepaths = []
+        base_dir = "device/peripherals/setups/"
+        for filepath in glob.glob(base_dir + "*.json"):
+            setup_filepaths.append(filepath)
+
+        # Verify peripheral setup files and build config dicts
+        setup_dicts = []
+        peripheral_setup_validator = PeripheralSetupValidator()
+        for setup_filepath in setup_filepaths:
+            error_message = peripheral_setup_validator.validate(setup_filepath, filepath=True)
+            if error_message != None:
+                raise Exception(error_message)
+            else:
+                setup_dicts.append(json.load(open(setup_filepath)))
+
+        # Return peripheral setup dicts
+        return setup_dicts
 
 
-    def create_peripherals(self):
-        """ Creates peripheral objects. """
-        if "peripherals" in self.config:
-            for peripheral_name in self.config["peripherals"]:
-                # Get peripheral module and class name
-                module_name = "device.peripheral." + self.config["peripherals"][peripheral_name]["module"]
-                class_name = self.config["peripherals"][peripheral_name]["class"]
+    def store_peripheral_setups(self, setup_dicts):
+        """ Stores peripheral setup dicts in database after deleting 
+            existing entries. """
 
-                # Import peripheral library
-                module_instance= __import__(module_name, fromlist=[class_name])
-                class_instance = getattr(module_instance, class_name)
+        # Delete all peripheral setup entries
+        PeripheralSetupModel.objects.all().delete()
 
-                # Create peripheral objects
-                self.peripherals[peripheral_name] = class_instance(peripheral_name, self.state)
+        # Create peripheral setup entries
+        for setup_dict in setup_dicts:
+            PeripheralSetupModel.objects.create(json=json.dumps(setup_dict))
 
 
-    def spawn_peripherals(self):
+    def introspect_device_configs(self):
+        """ Looks through device config files in codebase to generate 
+        device config dicts. """
+        self.logger.info("Introspecting device configs")
+
+        # Load device config filepaths
+        config_filepaths = []
+        base_dir = "device/configs/"
+        for filepath in glob.glob(base_dir + "*.json"):
+            config_filepaths.append(filepath)
+
+        # Verify device config files and build config dicts
+        config_dicts = []
+        device_config_validator = DeviceConfigValidator()
+        for config_filepath in config_filepaths:
+
+            error_message = device_config_validator.validate(config_filepath, filepath=True)
+            if error_message != None:
+                raise Exception(error_message)
+            else:
+                config_dicts.append(json.load(open(config_filepath)))
+
+        # Return device config dicts
+        return config_dicts  
+
+
+    def store_device_configs(self, config_dicts):
+        """ Stores device config dicts in database by creating entry if new or
+            updating existing. """
+
+        # Create device config entry if new or update existing
+        for config_dict in config_dicts:
+            uuid = config_dict["uuid"]
+            if DeviceConfigModel.objects.filter(uuid=uuid).exists():
+                DeviceConfigModel.objects.update(uuid=uuid, json=json.dumps(config_dict))
+            else:
+                DeviceConfigModel.objects.create(json=json.dumps(config_dict))
+
+
+    def create_peripheral_managers(self):
+        """ Creates peripheral managers. """
+        self.logger.info("Creating peripheral managers")
+
+        # Verify peripherals are configured
+        if self.config_dict["peripherals"] == None:
+            self.logger.info("No peripherals configured")
+            return
+
+        # Create peripheral managers
+        self.peripheral_managers = {}
+        for peripheral_config_dict in self.config_dict["peripherals"]:
+            self.logger.debug("Creating {}".format(peripheral_config_dict["name"]))
+            
+            # Get peripheral setup dict
+            peripheral_uuid = peripheral_config_dict["uuid"]
+            peripheral_setup_dict = self.get_peripheral_setup_dict(peripheral_uuid)
+
+            # Verify valid peripheral config dict
+            if peripheral_setup_dict == None:
+                self.logger.critical("Invalid peripheral uuid in device "
+                    "config. Validator should have caught this.")
+                continue
+
+            # Get peripheral module and class name
+            module_name = "device.peripherals.drivers." + peripheral_setup_dict["module_name"]
+            class_name = peripheral_setup_dict["class_name"]
+
+            # Import peripheral library
+            module_instance= __import__(module_name, fromlist=[class_name])
+            class_instance = getattr(module_instance, class_name)
+
+            # Create peripheral manager
+            peripheral_name = peripheral_config_dict["name"]
+            peripheral_manager = class_instance(peripheral_name, self.state, peripheral_config_dict)
+            self.peripheral_managers[peripheral_name] = peripheral_manager
+
+
+    def get_peripheral_setup_dict(self, uuid):
+        """ Gets peripheral setup dict for uuid in peripheral setup table. """
+        if not PeripheralSetupModel.objects.filter(uuid=uuid).exists():
+            return None
+        return json.loads(PeripheralSetupModel.objects.get(uuid=uuid).json)
+
+
+    def spawn_peripheral_threads(self):
         """ Spawns peripheral threads. """
-        for peripheral_name in self.peripherals:
-            self.peripherals[peripheral_name].spawn()
+        if self.peripheral_managers == None:
+            self.logger.info("No peripheral threads to spawn")
+        else:
+            self.logger.info("Spawning peripheral threads")
+            for peripheral_name in self.peripheral_managers:
+                self.peripheral_managers[peripheral_name].spawn()
 
 
-    def create_controllers(self):
-        """ Creates controller objects. """
-        if "controllers" in self.config:
-            for controller_name in config["controllers"]:
-                # Get controller module and class name
-                module_name = "device.controller." + self.config["controllers"][controller_name]["module"]
-                class_name = self.config["controllers"][controller_name]["class"]
+    def create_controller_managers(self):
+        """ Creates controller managers. """
+        self.logger.info("Creating controller managers")
 
-                # Import controller library
-                module_instance= __import__(module_name, fromlist=[class_name])
-                class_instance = getattr(module_instance, class_name)
+        # Verify controllers are configured
+        if self.config_dict["controllers"] == None:
+            self.logger.info("No controllers configured")
+            return
 
-                # Create controller objects
-                self.controllers[controller_name] = class_instance(controller_name, self.state)
+        # Create controller managers
+        self.controller_managers = {}
+        for controller_config_dict in self.config_dict["controllers"]:
+            self.logger.debug("Creating {}".format(controller_config_dict["name"]))
+            
+            # Get controller setup dict
+            controller_uuid = controller_config_dict["uuid"]
+            controller_setup_dict = self.get_controller_setup_dict(controller_uuid)
+
+            # Verify valid controller config dict
+            if controller_setup_dict == None:
+                self.logger.critical("Invalid controller uuid in device "
+                    "config. Validator should have caught this.")
+                continue
+
+            # Get controller module and class name
+            module_name = "device.controllers.drivers." + controller_setup_dict["module_name"]
+            class_name = controller_setup_dict["class_name"]
+
+            # Import controller library
+            module_instance= __import__(module_name, fromlist=[class_name])
+            class_instance = getattr(module_instance, class_name)
+
+            # Create controller manager
+            controller_name = controller_config_dict["name"]
+            controller_manager = class_instance(controller_name, self.state, controller_config_dict)
+            self.controller_managers[controller_name] = controller_manager
 
 
-    def spawn_controllers(self):
+    def spawn_controller_threads(self):
         """ Spawns controller threads. """
-        for controller_name in self.controllers:
-            self.controllers[controller_name].spawn()
+        if self.controller_managers == None:
+            self.logger.info("No controller threads to spawn")
+        else:
+            self.logger.info("Spawning controller threads")
+            for controller_name in self.controller_managers:
+                self.controller_managers[controller_name].spawn()
 
 
     def all_threads_initialized(self):

@@ -8,32 +8,165 @@ from device.utilities.parsers import RecipeParser
 from app.models import RecipeModel
 
 
-class RecipeValidator:
-    """ Validates recipe. """
+class PeripheralSetupValidator:
+    """ Validates peripheral setup dict. """
 
     # Initialize logger
-    extra = {"console_name":"Recipe", "file_name": "device"}
+    extra = {"console_name":"Validator", "file_name": "validator"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
 
-    def validate(self, recipe_json):
-        """ Validates recipe. Returns message on error or None on success. """
-        self.logger.info("Validating recipe")
-            
-        # Initialize parsed recipe dict    
-        parsed_recipe = {}
+    def validate(self, setup_json, filepath=False):
+        """ Validates peripheral config. Returns message on error, 
+            none on success. """
+        self.logger.debug("Validating {}".format(setup_json))
 
         # Validate json
         try:
-            recipe_dict = json.loads(recipe_json)
+            if filepath:
+                setup_dict = json.load(open(setup_json))
+            else:
+                setup_dict = json.loads(setup_json)
         except json.decoder.JSONDecodeError:
             return "Invalid JSON"
-
+        
         # Validate keys
-        error_message = self.validate_keys(recipe_dict)
+        error_message = self.validate_keys(setup_dict)
         if error_message != None:
             return error_message
+
+        # TODO: Validate variables
+
+
+    def validate_keys(self, setup_dict):
+        """ Validates keys in peripheral setup dict. """
+       
+        try:
+            # Verify top level keys
+            parent_key = ""
+            setup_dict["name"]
+            setup_dict["uuid"]
+            setup_dict["module_name"]
+            setup_dict["class_name"]
+            setup_dict["parameters"]
+            setup_dict["info"]
+            
+            # Verify nested parameters keys
+            parent_key = "parameters "
+            setup_dict["parameters"]["variables"]
+            setup_dict["parameters"]["communication"]
+
+            # Verify nested parameters variables keys
+            parent_key = "parameters variables "
+            setup_dict["parameters"]["variables"]["sensors"]
+            setup_dict["parameters"]["variables"]["actuators"]
+
+            # Verify nested info keys
+            parent_key = "info "
+            setup_dict["info"]["variables"]
+
+            # Verify nested description keys
+            parent_key = "info variables "
+            setup_dict["info"]["variables"]["sensors"]
+            setup_dict["info"]["variables"]["actuators"]
+
+        except KeyError as e:
+            error_message = "Peripheral setup " + parent_key + "`{}` key is required".format(e.args[0])
+            return error_message
+
+
+
+class DeviceConfigValidator:
+    """ Validates peripheral config dict. """
+
+    # Initialize logger
+    extra = {"console_name":"Validator", "file_name": "validator"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
+
+    def validate(self, config_json, filepath=False):
+        """ Validates device config. Returns message on error, 
+            none on success. """
+        self.logger.debug("Validating ")
+
+        # Validate json
+        try:
+            if filepath:
+                config_dict = json.load(open(config_json))
+            else:
+                config_dict = json.loads(config_json)
+        except json.decoder.JSONDecodeError:
+            return "Invalid JSON"
+        
+        # Validate keys
+        error_message = self.validate_keys(config_dict)
+        if error_message != None:
+            return error_message
+
+        # TODO: Validate variables
+
+
+    def validate_keys(self, config_dict):
+        """ Validates keys in device configuration dict. """
+       
+        try:
+            # Verify top level keys
+            parent_key = ""
+            config_dict["format"]
+            config_dict["name"]
+            config_dict["version"]
+            config_dict["uuid"]
+            config_dict["peripherals"]
+            config_dict["controllers"]
+
+            # Verify nested peripherals keys
+            if config_dict["peripherals"] != None:
+                parent_key = "peripherals "
+                for peripheral in config_dict["peripherals"]:
+                    peripheral["name"]
+                    peripheral["uuid"]
+                    peripheral["type"]
+                    peripheral["parameters"]
+
+            # Verify nested controllers keys
+            if config_dict["controllers"] != None:
+                parent_key = "controllers "
+                for controller in config_dict["controllers"]:
+                    controller["name"]
+                    controller["uuid"]
+                    controller["type"]
+                    controller["parameters"]
+
+
+        except KeyError as e:
+            error_message = "Device config " + parent_key + "`{}` key is required".format(e.args[0])
+            return error_message
+
+
+
+class RecipeValidator:
+    """ Validates recipe. """
+
+    # Initialize logger
+    extra = {"console_name":"Validator", "file_name": "validator"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
+
+    def validate(self, recipe_json, filepath=False):
+        """ Validates recipe. Returns message on error or None on success. """
+        self.logger.info("Validating recipe")
+            
+        # Validate json
+        try:
+            if filepath:
+                recipe_dict = json.load(open(recipe_json))
+            else:
+                recipe_dict = json.loads(recipe_json)
+        except json.decoder.JSONDecodeError:
+            return "Invalid JSON"
 
         # Validate recipe is parsable
         try:
@@ -44,11 +177,14 @@ class RecipeValidator:
             self.logger.exception(error_message)
             return error_message
 
-
         # Validate recipe uuid is not none and is unique
         error_message = self.validate_uuid(recipe_dict["uuid"])
         if error_message != None:
             return error_message
+
+        # TODO: Validate value types
+
+        # TODO: Validate variables
 
         # Recipe is valid!
         return None
@@ -119,6 +255,3 @@ class RecipeValidator:
 
 
 
-
-
-        

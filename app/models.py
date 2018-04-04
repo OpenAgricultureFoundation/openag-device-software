@@ -41,8 +41,10 @@ class EnvironmentModel(models.Model):
         get_latest_by="timestamp"
 
 
-class DeviceConfigurationModel(models.Model):
-    uuid = models.UUIDField(primary_key=True, editable=False)
+class DeviceConfigModel(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False, unique=True)
+    name = models.TextField()
+    version = models.TextField()
     json = JSONField()
 
     class Meta:
@@ -50,17 +52,29 @@ class DeviceConfigurationModel(models.Model):
         verbose_name_plural = "Device Configurations"
 
     def save(self, *args, **kwargs):
-        """ Checks if uuid already exists in json. If not creates model uuid, appends uuid to json, then saves model. """
+        """ Extracts uuid, name, and version from json on save. """
         dict_ = json.loads(self.json)
+        self.uuid = dict_["uuid"]
+        self.name = dict_["name"]
+        self.version = dict_["version"]
+        super(DeviceConfigModel, self).save(*args, **kwargs)
 
-        if "uuid" in dict_ and dict_["uuid"] != None:
-            self.uuid = dict_["uuid"]
-        else:
-            self.uuid = uuid_module.uuid4()
-            dict_["uuid"] = str(self.uuid)
-            self.dict_ = json.dumps(dict_)
 
-        super(DeviceConfigurationModel, self).save(*args, **kwargs)
+class PeripheralSetupModel(models.Model):
+    uuid = models.UUIDField(primary_key=True, editable=False, unique=True)
+    name = models.TextField()
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Peripheral Setup"
+        verbose_name_plural = "Peripheral Setups"
+
+    def save(self, *args, **kwargs):
+        """ Extracts uuid and name from json on save. """
+        dict_ = json.loads(self.json)
+        self.uuid = dict_["uuid"]
+        self.name = dict_["name"]
+        super(PeripheralSetupModel, self).save(*args, **kwargs)
 
 
 class RecipeModel(models.Model):

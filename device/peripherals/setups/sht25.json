@@ -1,10 +1,10 @@
 {
-	"name": "SHT25",
+	"name":  "SHT25 Temperature / Humidity Sensor",
+	"version": "1",
+	"uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
 	"module_name": "sht25",
 	"class_name": "SHT25",
-	"uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
 	"parameters": {
-		"version": "int",
 		"variables": {
 			"sensors": {
 				"temperature": {
@@ -16,7 +16,7 @@
 					"uuid": "string"
 				}
 			},
-			"actuator": null
+			"actuators": null
 		},	
 		"communication": {
 			"bus": "int",
@@ -52,9 +52,6 @@
 				}
 			},
 			"actuators": null
-		},
-		"communication": {
-
 		}
 	}
 }

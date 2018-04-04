@@ -7,7 +7,6 @@ from device.utilities.error import Error
 from device.utilities.event import EventRequest
 from device.utilities.event import EventResponse
 from device.utilities.validators import RecipeValidator
-# from device.utilities.parsers import RecipeParser
 
 # Import database models
 from app.models import EventModel

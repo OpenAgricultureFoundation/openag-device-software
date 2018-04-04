@@ -2,11 +2,11 @@
 import logging
 
 # Import peripheral parent class
-from device.peripheral.utility.sensor.temperature_humidity import TemperatureHumidity
+from device.peripherals.utilities.temperature_humidity import TemperatureHumidity
 
 # Import device modes and errors
-from device.utility.mode import Mode
-from device.utility.error import Error
+from device.utilities.mode import Mode
+from device.utilities.error import Error
 
 
 class SHT25(TemperatureHumidity):
@@ -14,8 +14,7 @@ class SHT25(TemperatureHumidity):
 
     def quickly_check_hardware_state(self):
         """ Quickly check hardware state. """
-        # self.logger.debug("Quickly checking hardware state", extra={'peripheral_name' : 'sht25'})
-        self.logger.debug("Quickly checking hardware state!!")
+        self.logger.debug("Quickly checking hardware state")
 
 
     def initialize_hardware(self):

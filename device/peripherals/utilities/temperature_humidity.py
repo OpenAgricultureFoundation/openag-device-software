@@ -1,8 +1,8 @@
 # Import python modules
-import threading, logging
+import threading, logging, time
 
 # Import peripheral parent class
-from ..peripheral import Peripheral
+from ..utilities.peripheral import Peripheral
 
 
 class TemperatureHumidity(Peripheral):
@@ -46,13 +46,13 @@ class TemperatureHumidity(Peripheral):
 
     def initialize_state(self):
         """ Initializes peripheral specific config. """
-        config = self.state.device["config"]["peripherals"][self.name]
-        self.bus = config["communication"]["bus"]
-        self.mux = config["communication"]["mux"]
-        self.channel = config["communication"]["channel"]
-        self.address = config["communication"]["address"]
-        self.temperature_name = config["variables"]["temperature"]["name"]
-        self.humidity_name = config["variables"]["humidity"]["name"]
+        parameters = self.config_dict["parameters"]
+        self.bus = parameters["communication"]["bus"]
+        self.mux = parameters["communication"]["mux"]
+        self.channel = parameters["communication"]["channel"]
+        self.address = parameters["communication"]["address"]
+        self.temperature_name = parameters["variables"]["sensor"]["temperature"]
+        self.humidity_name = parameters["variables"]["sensor"]["humidity"]
         self.temperature = None
         self.humidity = None
         self.quickly_check_hardware_state()

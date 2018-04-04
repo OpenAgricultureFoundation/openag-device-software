@@ -2,8 +2,8 @@
 import logging, time, threading
 
 # Import device modes and errors
-from device.utility.mode import Mode
-from device.utility.error import Error
+from device.utilities.mode import Mode
+from device.utilities.error import Error
 
 
 class Peripheral:
@@ -21,13 +21,14 @@ class Peripheral:
     last_update_time = None
 
 
-    def __init__(self, name, state):
+    def __init__(self, name, state, config_dict):
         """ Initializes peripheral. """
         self.name = name
         self.state = state
+        self.config_dict = config_dict
 
         # Initialize logger
-        extra = {'console_name':self.verbose_name, 'file_name': self.name}
+        extra = {'console_name':self.name, 'file_name': self.name}
         logger = logging.getLogger(__name__)
         self.logger = logging.LoggerAdapter(logger, extra)
 
@@ -84,16 +85,6 @@ class Peripheral:
             if self.name not in self.state.peripherals:
                 self.state.peripherals[self.name] = {}
             self.state.peripherals[self.name]["error"] = value
-
-
-    @property
-    def verbose_name(self):
-        """ Gets verbose name from shared state object. """
-        if self.name in self.state.device["config"]["peripherals"] and \
-            "verbose_name" in self.state.device["config"]["peripherals"][self.name]:
-            return self.state.device["config"]["peripherals"][self.name]["verbose_name"]
-        else:
-            return None       
 
 
     def spawn(self):

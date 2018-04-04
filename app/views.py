@@ -25,9 +25,10 @@ from rest_framework.renderers import JSONRenderer
 # Import app models
 from app.models import StateModel
 from app.models import EventModel
-from app.models import DeviceConfigurationModel
-from app.models import EnvironmentModel
 from app.models import RecipeModel
+from app.models import EnvironmentModel
+from app.models import DeviceConfigModel
+from app.models import PeripheralSetupModel
 from app.models import RecipeTransitionModel
 
 # Import app serializers
@@ -152,18 +153,18 @@ class Events(APIView):
         return Response({'events': events})
 
 
-class DeviceConfigurationList(APIView):
+class DeviceConfigList(APIView):
     """ UI page for device configurations. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = "device_configuration_list.html"
+    template_name = "device_config_list.html"
     
     def get(self, request):
-        device_configuration_objects = DeviceConfigurationModel.objects.all()
-        device_configuration_viewers = []
-        for device_configuration_object in device_configuration_objects:
-            device_configuration_viewers.append(DeviceConfigurationViewer(device_configuration_object))
+        device_config_objects = DeviceConfignModel.objects.all()
+        device_config_viewers = []
+        for device_config_object in device_config_objects:
+            device_config_viewers.append(DeviceConfigViewer(device_config_object))
 
-        return Response({"device_configuration_viewers": device_configuration_viewers})
+        return Response({"device_config_viewers": device_config_viewers})
 
 
 class Recipes(APIView):

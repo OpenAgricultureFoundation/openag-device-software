@@ -4,9 +4,10 @@ from django.contrib import admin
 # Import app models
 from app.models import StateModel
 from app.models import EventModel
-from app.models import EnvironmentModel
-from app.models import DeviceConfigurationModel
 from app.models import RecipeModel
+from app.models import EnvironmentModel
+from app.models import DeviceConfigModel
+from app.models import PeripheralSetupModel
 from app.models import RecipeTransitionModel
 
 
@@ -25,9 +26,14 @@ class EnvironmentAdmin(admin.ModelAdmin):
 admin.site.register(EnvironmentModel, EnvironmentAdmin)
 
 
-class DeviceConfigurationAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "json")
-admin.site.register(DeviceConfigurationModel, DeviceConfigurationAdmin)
+class DeviceConfigAdmin(admin.ModelAdmin):
+	list_display = ("uuid", "name", "version", "json")
+admin.site.register(DeviceConfigModel, DeviceConfigAdmin)
+
+
+class PeripheralSetupAdmin(admin.ModelAdmin):
+	list_display = ("uuid", "name", "json")
+admin.site.register(PeripheralSetupModel, PeripheralSetupAdmin)
 
 
 class RecipeAdmin(admin.ModelAdmin):

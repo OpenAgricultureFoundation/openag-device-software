@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<html>
+	<body>
+		<h2>Device Configuration List</h2>
+			{% for device_config_viewer in device_config_viewers %}
+				<b>{{ device_config_viewer.name }}</b>
+					<ul>
+						<li>{{ device_config_viewer.dict }}</li>
+					</ul>
+			{% endfor %}
+	</body>
+</html>
+{% endblock %}
