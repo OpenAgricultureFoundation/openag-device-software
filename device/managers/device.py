@@ -1,10 +1,14 @@
 # Import python modules
 import logging, time, json, threading, os, sys
 
-# Import device modes, errors, and variables
-from device.utility.mode import Mode
-from device.utility.error import Error
-from device.utility.variable import Variable
+# Import django modules
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+# Import device utilities
+from device.utilities.mode import Mode
+from device.utilities.error import Error
+from device.utilities.variable import Variable
 
 # Import shared memory
 from device.state import State
@@ -12,10 +16,6 @@ from device.state import State
 # Import device managers
 from device.managers.recipe import RecipeManager
 from device.managers.event import EventManager
-
-# Import django modules
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 # Import database models
 from app.models import StateModel

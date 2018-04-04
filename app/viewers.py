@@ -1,13 +1,10 @@
 # Import standard python modules
 import json, threading, logging, time, json
 
-# Import app models
-# from app.models import StateModel
-
 # Import device utilities
-from device.utility.mode import Mode
-from device.utility.event import EventRequest
-from device.utility.variable import Variable
+from device.utilities.mode import Mode
+from device.utilities.event import EventRequest
+from device.utilities.variable import Variable
 
 # Import common app funcitons
 from app import common
@@ -117,33 +114,33 @@ class EnvironmentViewer:
         # Initialize summary dict
         summary = {}
 
-        # Get environment dict
-        environment_dict = common.get_environment_dict()
-        if environment_dict == None:
-            return summary
+        # # Get environment dict
+        # environment_dict = common.get_environment_dict()
+        # if environment_dict == None:
+        #     return summary
 
-        # Log all variables in reported
-        for variable in environment_dict[peripheral_type]["reported"]:
-            name = Variable[variable]["name"]
-            unit = Variable[variable]["unit"]
-            reported = str(environment_dict[peripheral_type]["reported"][variable])
-            if variable in environment_dict[peripheral_type]["desired"]:
-                desired = str(environment_dict[peripheral_type]["desired"][variable])
-            else:
-                desired = "None"
+        # # Log all variables in reported
+        # for variable in environment_dict[peripheral_type]["reported"]:
+        #     name = Variable[variable]["name"]
+        #     unit = Variable[variable]["unit"]
+        #     reported = str(environment_dict[peripheral_type]["reported"][variable])
+        #     if variable in environment_dict[peripheral_type]["desired"]:
+        #         desired = str(environment_dict[peripheral_type]["desired"][variable])
+        #     else:
+        #         desired = "None"
 
-            name_string = name + " (" + unit + ")"
-            summary[name_string] = reported + " --> " + desired
+        #     name_string = name + " (" + unit + ")"
+        #     summary[name_string] = reported + " --> " + desired
 
-        # Log remaining variables in desired
-        for variable in environment_dict[peripheral_type]["desired"]:
-            if variable not in environment_dict[peripheral_type]["reported"]:
-                name = Variable[variable]["name"]
-                unit = Variable[variable]["unit"]
-                desired = str(environment_dict[peripheral_type]["desired"][variable])
-                reported = "None"
-                name_string = name + " (" + unit + ")"
-                summary[name_string] = reported + " --> " + desired
+        # # Log remaining variables in desired
+        # for variable in environment_dict[peripheral_type]["desired"]:
+        #     if variable not in environment_dict[peripheral_type]["reported"]:
+        #         name = Variable[variable]["name"]
+        #         unit = Variable[variable]["unit"]
+        #         desired = str(environment_dict[peripheral_type]["desired"][variable])
+        #         reported = "None"
+        #         name_string = name + " (" + unit + ")"
+        #         summary[name_string] = reported + " --> " + desired
         
         return summary
 

@@ -2,18 +2,16 @@
 import logging, time, threading, json, os, sys
 
 # Import device utilities
-from device.utility.mode import Mode
-from device.utility.error import Error
-from device.utility.format import Format
-from device.utility.event import EventRequest
-from device.utility.event import EventResponse
+from device.utilities.mode import Mode
+from device.utilities.error import Error
+from device.utilities.event import EventRequest
+from device.utilities.event import EventResponse
+from device.utilities.validators import RecipeValidator
+# from device.utilities.parsers import RecipeParser
 
 # Import database models
 from app.models import EventModel
 from app.models import RecipeModel
-
-# Import common functions
-from device.managers.utilities.common import Common
 
 
 class EventManager:
@@ -107,7 +105,7 @@ class EventManager:
         else:
             event.response["type"] = EventResponse.INVALID_EVENT
             event.save()
-        
+
 
     def create_recipe(self, event):
         """ Creates recipe. Validates json, creates entry in database, then 
@@ -123,12 +121,13 @@ class EventManager:
         else:
             recipe_json = event.request["recipe_json"]
 
-        # Validate json
-        message, status = self.validate(recipe_json)
-        if status != 200:
-            self.logger.info("Recipe is invalid: {}".format(message))
-            event.response["status"] = status
-            event.response["message"] = message
+        # Validate recipe
+        recipe_validator = RecipeValidator()
+        error_message = recipe_validator.validate(recipe_json)
+        if error_message != None:
+            self.logger.info("Recipe is invalid: {}".format(error_message))
+            event.response["status"] = 400
+            event.response["message"] = error_message
             event.save()
             return
 
@@ -232,87 +231,3 @@ class EventManager:
         event.response["status"] = 500
         event.response["message"] = "Stop recipe event timed out"
         event.save()
-
-
-    def validate(self, recipe_json):
-        """ Validates recipe json. """
-        self.logger.info("Validating recipe")
-
-        # Create recipe dict
-        recipe_dict = json.loads(recipe_json)
-
-        # Verify uuid uniqueness if supplied
-        if "uuid" in recipe_dict and self.uuid_exists(recipe_dict["uuid"]):
-            status = 400
-            response = {"message": "Recipe uuid already exists"}
-            return response, status
-
-        """ TODO: Verify values and/or value types (e.g. date is formatted 
-            properly, name is a string and not a list) """
-
-        # Verify format key
-        if "format" not in recipe_dict or recipe_dict["format"] == None:
-            status = 400
-            response = {"message": "Recipe json does not contain `format`"}
-            return response, status
-        
-        # Get format type
-        if "type" not in recipe_dict["format"] or recipe_dict["format"]["type"] == None:
-            status = 400
-            response = {"message": "Recipe json does not contain `type`"}
-            return response, status
-        else:
-            format_type = recipe_dict["format"]["type"]
-
-        # Get format version 
-        if "version" not in recipe_dict["format"] or recipe_dict["format"]["version"] == None:
-            status = 400
-            response = {"message": "Recipe json does not contain `version`"}
-            return response, status
-        else:
-            format_version = recipe_dict["format"]["version"]
-
-        # Verify format specific parameters
-        if format_type == "phased-environment" and format_version == Format.VERSION_1:
-            # Verify phased-environment v1 keys 
-            if "name" not in recipe_dict or recipe_dict["name"] == None:
-                status = 400
-                response = {"message": "Recipe json does not contain `name`"}
-                return response, status
-            if "date_created" not in recipe_dict or recipe_dict["date_created"] == None:
-                status = 400
-                response = {"message": "Recipe json does not contain `date_created`"}
-                return response, status
-            if "author" not in recipe_dict or recipe_dict["author"] == None:
-                status = 400
-                response = {"message": "Request json does not contain `author`"}
-                return response, status
-            if "seeds" not in recipe_dict or recipe_dict["seeds"] == None:
-                status = 400
-                response = {"message": "Request json does not contain `seeds`"}
-                return response, status
-
-            # Verify able to generate transitions
-            common = Common()
-            phase_transitions, error_message = common.generate_recipe_transitions(recipe_dict)
-            if phase_transitions == None:
-                status = 400
-                response = {"message": error_message}
-                return response, status
-        else: 
-            # Unsupported format / version
-            status = 400
-            response = {"message": "Recipe format / version not supported"}
-            return response, status
-
-        # Return valid recipe format
-        status = 200
-        response = {"message": "Recipe is valid!"}
-        return response, status
-
-
-    def uuid_exists(self, uuid):
-        """ Checks if uuid is unique. """
-        self.logger.debug("Checking if uuid is unique")
-        return RecipeModel.objects.filter(uuid=uuid).exists()
-        

@@ -1,16 +1,14 @@
 # Import python modules
 import logging, time, threading, os, sys, datetime, json
 
-# Import device modes and errors
-from device.utility.mode import Mode
-from device.utility.error import Error
+# Import device utilities
+from device.utilities.mode import Mode
+from device.utilities.error import Error
+from device.utilities.parsers import RecipeParser
 
 # Import database models
 from app.models import RecipeModel
 from app.models import RecipeTransitionModel
-
-# Import common functions
-from device.managers.utilities import common
 
 
 class RecipeManager:
@@ -458,14 +456,9 @@ class RecipeManager:
             recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).recipe_json
             recipe_dict = json.loads(recipe_json)
 
-            # Generate recipe transitions
-            transitions, error_message = common.generate_recipe_transitions(recipe_dict)
-            
-            # Handle recipe generation error case
-            if error_message != None:
-                self.mode = Mode.ERROR
-                self.error = error_message # TODO: break out error types and messages
-                return
+            # Parse recipe transitions
+            recipe_parser = RecipeParser()
+            transitions = recipe_parser.parse(recipe_dict)
 
             # Store recipe transitions in database
             self.store_recipe_transitions(transitions)
