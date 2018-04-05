@@ -83,7 +83,7 @@ python manage.py migrate
 
 ### Run software
 ```
-./run
+./run.sh
 ```
 
 ## Next steps
