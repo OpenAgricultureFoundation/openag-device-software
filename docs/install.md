@@ -65,3 +65,24 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+
+## Provision database (from inside venv)
+### Create superuser
+```
+python manage.py createsuperuser
+```
+
+### Migrate database
+```
+python manage.py migrate
+```
+
+### Run software
+```
+./run
+```
+
+### Open UI (from web browser)
+```
+http://localhost:8000
+```
