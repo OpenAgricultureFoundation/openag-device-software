@@ -1,5 +1,5 @@
 # OpenAg Brain Quartz
 
 ## Contents
- - [Install Instructions](doc/install.md)
- - [Running Instructions](doc/running.md)
+ - [Install Instructions](docs/install.md)
+ - [Running Instructions](docs/running.md)
