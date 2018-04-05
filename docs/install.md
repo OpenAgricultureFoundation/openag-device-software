@@ -1,6 +1,5 @@
 # Installation Instructions
 
-
 ## Device
 ### Get os onto device
 ```
@@ -11,7 +10,7 @@ Currently tested:
 
 ### Clone repo
 ```
-https://github.com/jakerye/openag-brain-quartz.git
+git clone https://github.com/jakerye/openag-brain-quartz.git
 ```
 
 ### Go to repo directory
@@ -25,11 +24,6 @@ sudo ./install.sh
 ```
 
 ## Database
-### Start postgres service
-```
-sudo systemctl start postgresql
-```
-
 ### Login as postgres user
 ```
 sudo -i -u postgres
@@ -50,6 +44,16 @@ CREATE USER openag WITH PASSWORD 'openag';
 CREATE DATABASE openag_brain OWNER openag;
 ```
 
+## Logout of postgres shell
+```
+\q
+```
+
+## Logout of postgres user
+```
+ctrl + d
+```
+
 ## Virtual Environment
 ### Create virtual environment
 ```
@@ -61,7 +65,7 @@ virtualenv -p python3 venv
 source venv/bin/activate
 ```
 
-### Install python modules
+### Install python modules (from inside venv)
 ```
 pip install -r requirements.txt
 ```
@@ -82,7 +86,5 @@ python manage.py migrate
 ./run
 ```
 
-### Open UI (from web browser)
-```
-http://localhost:8000
-```
+## Next steps
+See [Running Instructions](running.md)
