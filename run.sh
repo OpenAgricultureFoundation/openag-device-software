@@ -26,4 +26,4 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 export NO_DEVICE
 
 # Run app
-python manage.py runserver
+python3 manage.py runserver

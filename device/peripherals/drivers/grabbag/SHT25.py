@@ -46,6 +46,6 @@ humidity = data0 * 256 + data1
 humidity = -6 + ((humidity * 125.0) / 65536.0)
 
 # Output data to screen
-print "Relative Humidity is : %.2f %%" %humidity
-print "Temperature in Celsius is : %.2f C" %cTemp
-print "Temperature in Fahrenheit is : %.2f F" %fTemp
+print("Relative Humidity is : %.2f %%" %humidity)
+print("Temperature in Celsius is : %.2f C" %cTemp)
+# print "Temperature in Fahrenheit is : %.2f F" %fTemp
