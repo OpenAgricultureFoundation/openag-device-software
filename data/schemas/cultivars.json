@@ -1,0 +1,37 @@
+{
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"uuid": {"type": "string"},
+			"name": {"type": "string"},
+			"info": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "object",
+						"properties": {
+							"brief": {"type": "string"},
+							"verbose": {"type": "string"}
+						},
+						"required": ["brief", "verbose"]
+					},
+					"link": {"type": "string"},
+					"average_height_centimeters": {"type": "integer"},
+					"average_width_centimeters": {"type": "integer"},
+					"average_duration_days": {"type": "integer"},
+					"duration_start_stage": {"type": "string"}
+				},
+				"required": [
+					"description", 
+					"link",
+					"average_height_centimeters",
+					"average_width_centimeters",
+					"average_duration_days",
+					"duration_start_stage"
+				]
+			}
+		},
+		"required": ["uuid", "name", "info"]
+	}
+}

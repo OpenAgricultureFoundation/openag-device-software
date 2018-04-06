@@ -15,6 +15,9 @@ from device.utilities.validators import PeripheralSetupValidator
 from device.utilities.validators import DeviceConfigValidator
 from device.utilities.validators import RecipeValidator
 
+# Import json validators
+from jsonschema import validate
+
 # Import shared memory
 from device.state import State
 
@@ -26,6 +29,11 @@ from device.managers.event import EventManager
 from app.models import StateModel
 from app.models import EventModel
 from app.models import EnvironmentModel
+from app.models import SensorVariableModel
+from app.models import ActuatorVariableModel
+from app.models import CultivarModel
+from app.models import CultivationMethodModel
+from app.models import RecipeModel
 from app.models import PeripheralSetupModel
 from app.models import DeviceConfigModel
 
@@ -225,16 +233,11 @@ class DeviceManager:
             transitions to CONFIG. """
         self.logger.info("Entered INIT")
 
-        # Introspet and load peripheral setups into database
-        setup_dicts = self.introspect_peripheral_setups()
-        self.store_peripheral_setups(setup_dicts)
-
-        # Introspect and load device configs into database
-        config_dicts = self.introspect_device_configs()
-        self.store_device_configs(config_dicts)
+        # Load local data files
+        self.load_local_data_files()
 
         # Load stored state from database
-        self.load_state()
+        self.load_database_stored_state()
 
         # Transition to CONFIG
         self.mode = Mode.CONFIG
@@ -384,13 +387,215 @@ class DeviceManager:
             )
 
 
-    def load_state(self):
+    def load_local_data_files(self):
+        """ Loads local data files. """
+        self.logger.info("Loading local data files")
+
+        # Load files with no verification dependencies first
+        self.load_sensor_variables_file()
+        self.load_actuator_variables_file()
+        self.load_cultivars_file()
+        self.load_cultivation_methods_file()
+
+        # Load recipe files after sensor/actuator variables, cultivars, and 
+        # cultivation methods since verification depends on them
+        self.load_recipe_files()
+
+        # Load peripherals after sensor/actuator variable since verification
+        # depends on them
+        self.load_peripheral_setup_files()
+
+        # Load device config after peripheral setups since verification
+        # depends on  them
+        self.load_device_config_files()
+
+
+    def load_sensor_variables_file(self):
+        """ Loads sensor variables file into database after removing all 
+            existing entries. """
+        self.logger.debug("Loading sensor variables file")
+
+        # Get sensor variables
+        sensor_variables = json.load(open("data/variables/sensor_variables.json"))
+
+        # Get sensor variables schema
+        sensor_variables_schema = json.load(open("data/schemas/sensor_variables.json"))
+
+        # Validate sensor variables with schema
+        validate(sensor_variables, sensor_variables_schema)
+
+        # Delete sensor variables tables
+        SensorVariableModel.objects.all().delete()
+
+        # Create sensor variables table
+        for sensor_variable in sensor_variables:
+           SensorVariableModel.objects.create(json=json.dumps(sensor_variable))
+
+
+    def load_actuator_variables_file(self):
+        """ Loads actuator variables file into database after removing all 
+            existing entries. """
+        self.logger.debug("Loading actuator variables file")
+
+        # Get sensor variables
+        actuator_variables = json.load(open("data/variables/actuator_variables.json"))
+
+        # Get sensor variables schema
+        actuator_variables_schema = json.load(open("data/schemas/actuator_variables.json"))
+
+        # Validate sensor variables with schema
+        validate(actuator_variables, actuator_variables_schema)
+
+        # Delete sensor variables tables
+        ActuatorVariableModel.objects.all().delete()
+
+        # Create sensor variables table
+        for actuator_variable in actuator_variables:
+           ActuatorVariableModel.objects.create(json=json.dumps(actuator_variable))
+
+
+    def load_cultivars_file(self):
+        """ Loads cultivars file into database after removing all 
+            existing entries."""
+        self.logger.debug("Loading cultivars file")
+
+        # Get cultivars
+        cultivars = json.load(open("data/cultivations/cultivars.json"))
+
+        # Get cultivars schema
+        cultivars_schema = json.load(open("data/schemas/cultivars.json"))
+
+        # Validate cultivars with schema
+        validate(cultivars, cultivars_schema)
+
+        # Delete cultivars tables
+        CultivarModel.objects.all().delete()
+
+        # Create cultivars table
+        for cultivar in cultivars:
+           CultivarModel.objects.create(json=json.dumps(cultivar))
+
+
+    def load_cultivation_methods_file(self):
+        """ Loads cultivation methods file into database after removing all 
+            existing entries. """
+        self.logger.debug("Loading cultivation methods file")
+
+        # Get cultivation methods
+        cultivation_methods = json.load(open("data/cultivations/cultivation_methods.json"))
+
+        # Get cultivation methods schema
+        cultivation_methods_schema = json.load(open("data/schemas/cultivation_methods.json"))
+
+        # Validate cultivation methods with schema
+        validate(cultivation_methods, cultivation_methods_schema)
+
+        # Delete cultivation methods tables
+        CultivationMethodModel.objects.all().delete()
+
+        # Create cultivation methods table
+        for cultivation_method in cultivation_methods:
+           CultivationMethodModel.objects.create(json=json.dumps(cultivation_method))
+
+
+    def load_recipe_files(self):
+        """ Loads recipe file into database by creating new entries if 
+            nonexistant or updating existing if existant. Verification depends
+            on sensor/actuator variables, cultivars, and cultivation 
+            methods. """
+        self.logger.debug("Loading recipe files")
+
+        # Get recipes
+        recipes = []
+        for filepath in glob.glob("data/recipes/*.json"):
+            recipes.append(json.load(open(filepath)))
+
+        # Get get recipe schema
+        recipe_schema = json.load(open("data/schemas/recipe.json"))
+
+        # Validate recipes with schema
+        for recipe in recipes:
+            validate(recipe, recipe_schema)
+
+        # TODO: Validate recipe variables with database variables
+        # TODO: Validate recipe cycle variables with recipe environments
+        # TODO: Validate recipe cultivars with database cultivars
+        # TODO: Validate recipe cultivation methods with database cultivation methods
+
+        # Create recipe entry if new or update existing
+        for recipe in recipes:
+            if RecipeModel.objects.filter(uuid=recipe["uuid"]).exists():
+                RecipeModel.objects.update(uuid=recipe["uuid"], json=json.dumps(recipe))
+            else:
+                RecipeModel.objects.create(json=json.dumps(recipe))
+
+
+    def load_peripheral_setup_files(self):
+        """ Loads peripheral setup files from codebase into database by 
+            creating new entries after deleting existing entries. Verification 
+            depends on sensor/actuator variables. """
+        self.logger.debug("Loading peripheral setup files")
+
+        # Get peripheral setups
+        peripheral_setups = []
+        for filepath in glob.glob("device/peripherals/setups/*.json"):
+            peripheral_setups.append(json.load(open(filepath)))
+
+        # Get get peripheral setup schema
+        # TODO: Finish schema
+        peripheral_setup_schema = json.load(open("data/schemas/peripheral_setup.json"))
+
+        # Validate peripheral setups with schema
+        for peripheral_setup in peripheral_setups:
+            validate(peripheral_setup, peripheral_setup_schema)
+
+        # Delete all peripheral setup entries from database
+        PeripheralSetupModel.objects.all().delete()
+
+        # TODO: Validate peripheral setup variables with database variables
+
+        # Create peripheral setup entries in database
+        for peripheral_setup in peripheral_setups:
+            PeripheralSetupModel.objects.create(json=json.dumps(peripheral_setup))
+
+
+    def load_device_config_files(self):
+        """ Loads device config files from codebase into database by creating 
+            new entries if nonexistant or updating existing if existant. 
+            Verification depends on peripheral setups. """
+        self.logger.debug("Loading device config files")
+
+        # Get devices
+        device_configs = []
+        for filepath in glob.glob("data/devices/*.json"):
+            device_configs.append(json.load(open(filepath)))
+
+        # Get get device config schema
+        # TODO: Finish schema (see optional objects)
+        device_config_schema = json.load(open("data/schemas/device_config.json"))
+
+        # Validate device configs with schema
+        for device_config in device_configs:
+            validate(device_config, device_config_schema)
+
+        # TODO: Validate device config with peripherals
+        # TODO: Validate device config with varibles
+
+        # Create device config entry if new or update existing
+        for device_config in device_configs:
+            if DeviceConfigModel.objects.filter(uuid=device_config["uuid"]).exists():
+                DeviceConfigModel.objects.update(uuid=device_config["uuid"], json=json.dumps(device_config))
+            else:
+                DeviceConfigModel.objects.create(json=json.dumps(device_config))
+
+
+    def load_database_stored_state(self):
         """ Loads stored state from database if it exists. """
-        self.logger.info("Loading state")
+        self.logger.info("Loading database stored state")
 
         # Get stored state from database
         if not StateModel.objects.filter(pk=1).exists():
-            self.logger.debug("No stored state in database")
+            self.logger.info("No stored state in database")
             self.config_uuid = None
             return
         stored_state = StateModel.objects.filter(pk=1).first()
@@ -422,87 +627,10 @@ class DeviceManager:
                 self.state.controllers[controller_name] = {}
                 self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
 
-
    
     def store_environment(self):
         """ Stores current environment state in environment table. """
         EnvironmentModel.objects.create(state=self.state.environment)
-
-
-    def introspect_peripheral_setups(self):
-        """ Looks through peripheral setup files in codebase to generate 
-        peripheral setup dicts. """
-        self.logger.info("Introspecting peripheral setups")
-
-        # Load peripheral setup filepaths
-        setup_filepaths = []
-        base_dir = "device/peripherals/setups/"
-        for filepath in glob.glob(base_dir + "*.json"):
-            setup_filepaths.append(filepath)
-
-        # Verify peripheral setup files and build config dicts
-        setup_dicts = []
-        peripheral_setup_validator = PeripheralSetupValidator()
-        for setup_filepath in setup_filepaths:
-            error_message = peripheral_setup_validator.validate(setup_filepath, filepath=True)
-            if error_message != None:
-                raise Exception(error_message)
-            else:
-                setup_dicts.append(json.load(open(setup_filepath)))
-
-        # Return peripheral setup dicts
-        return setup_dicts
-
-
-    def store_peripheral_setups(self, setup_dicts):
-        """ Stores peripheral setup dicts in database after deleting 
-            existing entries. """
-
-        # Delete all peripheral setup entries
-        PeripheralSetupModel.objects.all().delete()
-
-        # Create peripheral setup entries
-        for setup_dict in setup_dicts:
-            PeripheralSetupModel.objects.create(json=json.dumps(setup_dict))
-
-
-    def introspect_device_configs(self):
-        """ Looks through device config files in codebase to generate 
-        device config dicts. """
-        self.logger.info("Introspecting device configs")
-
-        # Load device config filepaths
-        config_filepaths = []
-        base_dir = "device/configs/"
-        for filepath in glob.glob(base_dir + "*.json"):
-            config_filepaths.append(filepath)
-
-        # Verify device config files and build config dicts
-        config_dicts = []
-        device_config_validator = DeviceConfigValidator()
-        for config_filepath in config_filepaths:
-
-            error_message = device_config_validator.validate(config_filepath, filepath=True)
-            if error_message != None:
-                raise Exception(error_message)
-            else:
-                config_dicts.append(json.load(open(config_filepath)))
-
-        # Return device config dicts
-        return config_dicts  
-
-
-    def store_device_configs(self, config_dicts):
-        """ Stores device config dicts in database by creating entry if new or
-            updating existing. """
-
-        # Create device config entry if new or update existing
-        for config_dict in config_dicts:
-            uuid = config_dict["uuid"]
-            if DeviceConfigModel.objects.filter(uuid=uuid).exists():
-                DeviceConfigModel.objects.update(uuid=uuid, json=json.dumps(config_dict))
-            else:
-                DeviceConfigModel.objects.create(json=json.dumps(config_dict))
 
 
     def create_peripheral_managers(self):

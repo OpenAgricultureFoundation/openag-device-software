@@ -2,7 +2,7 @@
 import threading, logging, time
 
 # Import peripheral parent class
-from ..utilities.peripheral import Peripheral
+from ..classes.peripheral import Peripheral
 
 
 class TemperatureHumidity(Peripheral):

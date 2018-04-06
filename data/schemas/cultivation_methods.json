@@ -1,0 +1,25 @@
+{
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"uuid": {"type": "string"},
+			"name": {"type": "string"},
+			"info": {
+				"type": "object",
+				"properties": {
+					"description": {
+						"type": "object",
+						"properties": {
+							"brief": {"type": "string"},
+							"verbose": {"type": "string"}
+						},
+						"required": ["brief", "verbose"]
+					}
+				},
+				"required": ["description"]
+			}
+		},
+		"required": ["uuid", "name", "info"]
+	}
+}

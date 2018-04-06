@@ -133,7 +133,7 @@ class EventManager:
         # Create entry in database and return
         self.logger.debug("Creating recipe in database")
         try:
-            RecipeModel.objects.create(recipe_json=recipe_json)
+            RecipeModel.objects.create(json=recipe_json)
             event.response["status"] = 200
             event.response["message"] = "Created recipe!"
             event.save()

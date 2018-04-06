@@ -2,7 +2,7 @@
 import logging
 
 # Import peripheral parent class
-from device.peripherals.utilities.temperature_humidity import TemperatureHumidity
+from device.peripherals.classes.temperature_humidity import TemperatureHumidity
 
 # Import device modes and errors
 from device.utilities.mode import Mode

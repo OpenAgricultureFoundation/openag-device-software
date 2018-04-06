@@ -1,0 +1,40 @@
+{
+	"type": "array",
+	"items": {
+		"type": "object",
+		"properties": {
+			"key": {"type": "string"},
+			"info": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "object",
+						"properties": {
+							"brief": {"type": "string"},
+							"verbose": {"type": "string"}
+						},
+						"required": ["brief", "verbose"]
+					},
+					"unit": {
+						"type": "object",
+						"properties": {
+							"brief": {"type": "string"},
+							"verbose": {"type": "string"},
+							"type": {
+								"type": "string",
+								"enum": [
+									"string", 
+									"number", 
+									"integer",
+									"normalized_percentage_array"]
+							}
+						},
+						"required": ["brief", "verbose", "type"]
+					}
+				},
+				"required": ["name", "unit"]
+			}
+		},
+		"required": ["key", "info"]
+	}
+}

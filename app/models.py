@@ -1,5 +1,5 @@
 # Import standard python modules
-import json
+import json as json_
 import uuid as uuid_module
 
 # Import django modules
@@ -42,7 +42,7 @@ class EnvironmentModel(models.Model):
 
 
 class DeviceConfigModel(models.Model):
-    uuid = models.UUIDField(primary_key=True, editable=False, unique=True)
+    uuid = models.UUIDField(primary_key=True, unique=True)
     name = models.TextField()
     version = models.TextField()
     json = JSONField()
@@ -53,7 +53,7 @@ class DeviceConfigModel(models.Model):
 
     def save(self, *args, **kwargs):
         """ Extracts uuid, name, and version from json on save. """
-        dict_ = json.loads(self.json)
+        dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
         self.name = dict_["name"]
         self.version = dict_["version"]
@@ -61,7 +61,7 @@ class DeviceConfigModel(models.Model):
 
 
 class PeripheralSetupModel(models.Model):
-    uuid = models.UUIDField(primary_key=True, editable=False, unique=True)
+    uuid = models.UUIDField(primary_key=True, unique=True)
     name = models.TextField()
     json = JSONField()
 
@@ -71,32 +71,92 @@ class PeripheralSetupModel(models.Model):
 
     def save(self, *args, **kwargs):
         """ Extracts uuid and name from json on save. """
-        dict_ = json.loads(self.json)
+        dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
         self.name = dict_["name"]
         super(PeripheralSetupModel, self).save(*args, **kwargs)
 
 
+class SensorVariableModel(models.Model):
+    key = models.TextField(unique=True)
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Sensor Variable"
+        verbose_name_plural = "Sensor Variables"
+
+    def save(self, *args, **kwargs):
+        """ Extracts key from json on save. """
+        dict_ = json_.loads(self.json)
+        self.key = dict_["key"]
+        super(SensorVariableModel, self).save(*args, **kwargs)
+
+
+class ActuatorVariableModel(models.Model):
+    key = models.TextField(unique=True)
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Actuator Variable"
+        verbose_name_plural = "Actuator Variables"
+
+    def save(self, *args, **kwargs):
+        """ Extracts key from json on save. """
+        dict_ = json_.loads(self.json)
+        self.key = dict_["key"]
+        super(ActuatorVariableModel, self).save(*args, **kwargs)
+
+
+class CultivarModel(models.Model):
+    uuid = models.UUIDField(primary_key=True, unique=True)
+    name = models.TextField()
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Cultivar"
+        verbose_name_plural = "Cultivars"
+
+    def save(self, *args, **kwargs):
+        """ Extracts uuid and name from json on save. """
+        dict_ = json_.loads(self.json)
+        self.uuid = dict_["uuid"]
+        self.name = dict_["name"]
+        super(CultivarModel, self).save(*args, **kwargs)
+
+
+class CultivationMethodModel(models.Model):
+    uuid = models.UUIDField(primary_key=True, unique=True)
+    name = models.TextField()
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Cultivation Method"
+        verbose_name_plural = "Cultivation Methods"
+
+    def save(self, *args, **kwargs):
+        """ Extracts uuid and name from json on save. """
+        dict_ = json_.loads(self.json)
+        self.uuid = dict_["uuid"]
+        self.name = dict_["name"]
+        super(CultivationMethodModel, self).save(*args, **kwargs)
+
+
 class RecipeModel(models.Model):
-    uuid = models.UUIDField(primary_key=True, editable=False)
-    recipe_json = JSONField()
+    uuid = models.UUIDField(primary_key=True, unique=True)
+    json = JSONField()
+    name = models.TextField()
+    version = models.TextField()
 
     class Meta:
         verbose_name = "Recipe"
         verbose_name_plural = "Recipes"
 
-
     def save(self, *args, **kwargs):
-        """ Checks if uuid already exists in recipe json. If not creates uuid,
-            appends to json, adds to model uuid field, then saves model. """
-        recipe_dict = json.loads(self.recipe_json)
-
-        if "uuid" in recipe_dict and recipe_dict["uuid"] != None:
-            self.uuid = recipe_dict["uuid"]
-        else:
-            self.uuid = uuid_module.uuid4()
-            recipe_dict["uuid"] = str(self.uuid)
-            self.recipe_json = json.dumps(recipe_dict)
+        """ Extracts uuid and name from json on save. """
+        dict_ = json_.loads(self.json)
+        self.uuid = dict_["uuid"]
+        self.name = dict_["name"]
+        self.version = dict_["version"]
 
         super(RecipeModel, self).save(*args, **kwargs)
 

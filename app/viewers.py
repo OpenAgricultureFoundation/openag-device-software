@@ -1,5 +1,6 @@
 # Import standard python modules
-import json, threading, logging, time, json
+import threading, logging, time
+import json as json_
 
 # Import device utilities
 from device.utilities.mode import Mode
@@ -41,17 +42,17 @@ class RecipeViewer:
         self.logger.info("Received create recipe request")
 
         # Get recipe json
-        if "recipe_json" not in request_dict:
+        if "json" not in request_dict:
             status=400
-            response = {"message": "Request does not contain `recipe_json`"}
+            response = {"message": "Request does not contain `json`"}
             return response, status
         else:
-            recipe_json = request_dict["recipe_json"]
+            json = request_dict["json"]
 
         # Make event request and return event response
         event_request = {
             "type": EventRequest.CREATE_RECIPE,
-            "recipe_json": recipe_json}
+            "json": json}
         return common.manage_event(event_request)
 
 
@@ -84,14 +85,14 @@ class RecipeViewer:
 
 class SimpleRecipeViewer:
     def __init__(self, recipe_object):
-        self.recipe_dict = json.loads(recipe_object.recipe_json)
+        self.recipe_dict = json_.loads(recipe_object.json)
         self.uuid = self.recipe_dict["uuid"]
         self.name = self.recipe_dict["name"]
 
 
 class DeviceConfigurationViewer:
     def __init__(self, device_configuration_object):
-        self.dict = json.loads(device_configuration_object.json)
+        self.dict = json_.loads(device_configuration_object.json)
         self.uuid = self.dict["uuid"]
         self.name = self.dict["name"]
 

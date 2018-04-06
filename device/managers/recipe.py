@@ -453,7 +453,7 @@ class RecipeManager:
             self.commanded_recipe_uuid = None
 
             # Get recipe json from recipe uuid
-            recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).recipe_json
+            recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).json
             recipe_dict = json.loads(recipe_json)
 
             # Parse recipe transitions

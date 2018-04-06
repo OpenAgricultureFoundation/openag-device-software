@@ -1,0 +1,35 @@
+{
+	"type": "object",
+	"properties": {
+		"name": {"type": "string"},
+		"version": {"type": "string"},
+		"uuid": {"type": "string"},
+		"module_name": {"type": "string"},
+		"class_name": {"type": "string"},
+		"parameters": {
+			"type": "object",
+			"properties": {
+				"variables": {
+					"type": "object",
+					"properties": {
+						"sensors": {"type": ["object", "null"]},
+						"actuators": {"type": ["object", "null"]}
+					},
+					"required": ["sensors", "actuators"]
+				},
+				"communication": {"type": ["object", "null"]}
+			},
+			"required": ["variables", "communication"]
+		},
+		"info": {"type": "object"}
+	},
+	"required": [
+		"name", 
+		"version", 
+		"uuid", 
+		"module_name", 
+		"class_name",
+		"parameters",
+		"info"
+	]
+}

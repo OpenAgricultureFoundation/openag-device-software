@@ -9,6 +9,10 @@ from app.models import EnvironmentModel
 from app.models import DeviceConfigModel
 from app.models import PeripheralSetupModel
 from app.models import RecipeTransitionModel
+from app.models import SensorVariableModel
+from app.models import ActuatorVariableModel
+from app.models import CultivarModel
+from app.models import CultivationMethodModel
 
 
 class StateAdmin(admin.ModelAdmin):
@@ -37,7 +41,7 @@ admin.site.register(PeripheralSetupModel, PeripheralSetupAdmin)
 
 
 class RecipeAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "recipe_json")
+	list_display = ("uuid", "name", "version", "json")
 admin.site.register(RecipeModel, RecipeAdmin)
 
 
@@ -45,3 +49,23 @@ class RecipeTransitionAdmin(admin.ModelAdmin):
 	list_display = ("minute", "phase", "cycle", "environment_name", 
 		"environment_state")
 admin.site.register(RecipeTransitionModel, RecipeTransitionAdmin)
+
+
+class SensorVariableAdmin(admin.ModelAdmin):
+	list_display = ("key", "json")
+admin.site.register(SensorVariableModel, SensorVariableAdmin)
+
+
+class ActuatorVariableAdmin(admin.ModelAdmin):
+	list_display = ("key", "json")
+admin.site.register(ActuatorVariableModel, ActuatorVariableAdmin)
+
+
+class CultivarAdmin(admin.ModelAdmin):
+	list_display = ("uuid", "name", "json")
+admin.site.register(CultivarModel, CultivarAdmin)
+
+
+class CultivationMethodAdmin(admin.ModelAdmin):
+	list_display = ("uuid", "name", "json")
+admin.site.register(CultivationMethodModel, CultivationMethodAdmin)

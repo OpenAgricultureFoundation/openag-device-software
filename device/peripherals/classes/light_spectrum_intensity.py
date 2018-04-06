@@ -2,12 +2,12 @@
 import threading, logging
 
 # Import device modes, errors, and variables
-from device.utility.mode import Mode
-from device.utility.error import Error
-from device.utility.variable import Variable
+from device.utilities.mode import Mode
+from device.utilities.error import Error
+from device.utilities.variable import Variable
 
 # Import peripheral parent class
-from ..peripheral import Peripheral
+from ..classes.peripheral import Peripheral
 
 
 class LightSpectrumIntensity(Peripheral):

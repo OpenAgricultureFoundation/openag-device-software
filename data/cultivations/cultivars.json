@@ -1,0 +1,18 @@
+[
+	{
+		"uuid": "d6d76ff9-b12e-47bb-8e83-f872c7870856",
+		"name": "Scarlet Kale",
+		"info": 
+		{
+			"description": {
+				"brief": "Red veined, tightly curled purple leaves.",
+				"verbose": "Remarkably attractive dark green kale with red veined, frilly, tightly curled leaves. A vigorous performer with good cold tolerance. Leaves darken to deep scarlet in late season. Begin harvesting leaves when young, and allow plant to grow well into the early winter. 24-36 inches tall by 24 inches wide, 60 days from transplant. ±11,000 seeds/oz."
+			},
+			"link": "https://www.seedsavers.org/scarlet-kale",
+			"average_height_centimeters": 80,
+			"average_width_centimeters": 60,
+			"average_duration_days": 60,
+			"duration_start_stage": "seedling"
+		}
+	}
+]

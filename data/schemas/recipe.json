@@ -1,0 +1,93 @@
+{
+	"type": "object",
+	"properties": {
+		"format": {
+			"type": "string",
+			"enum": ["openag-phased-environment-v1"]
+		},
+		"version": {"type": "string"},
+		"creation_timestamp_utc": {"type": "string"},
+		"name": {"type": "string"},
+		"uuid": {"type": "string"},
+		"parent_recipe_uuid": {"type": ["string", "null"]},
+		"support_recipe_uuids": {"type": "null"},
+		"description": {
+			"type": "object",
+			"parameters": {
+				"brief": {"type": "string"},
+				"verbose": {"type": "string"}
+			},
+			"required": ["brief", "verbose"]
+		},
+		"authors": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"parameters": {
+					"name": {"type": "string"},
+					"email": {"type": ["string", "null"]},
+					"uuid": {"type": "string"}
+				},
+				"required": ["name", "email", "uuid"]
+			}
+		},
+		"cultivars": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"parameters": {
+					"name": {"type": "string"},
+					"uuid": {"type": "string"}
+				},
+				"required": ["name", "uuid"]
+			}
+		},
+		"cultivation_methods": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"parameters": {
+					"name": {"type": "string"},
+					"uuid": {"type": "string"}
+				},
+				"required": ["name", "uuid"]
+			}
+		},
+		"environments": {"type": "object"},
+		"phases": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"parameters": {
+					"name": {"type": "string"},
+					"repeat": {"type": "string"},
+					"cycles": {
+						"type": "array",
+						"parameters": {
+							"name": {"type": "string"},
+							"environment": {"type": "string"},
+							"duration_hours": {"type": "integer"}
+						},
+						"required": ["name", "environment", "duration_hours"]
+					}
+				},
+				"required": ["name", "repeat", "cycles"]
+			}
+		}
+	},
+	"required": [
+		"format", 
+		"version", 
+		"creation_timestamp_utc",
+		"name",
+		"uuid",
+		"parent_recipe_uuid",
+		"support_recipe_uuids",
+		"description",
+		"authors",
+		"cultivars",
+		"cultivation_methods",
+		"environments",
+		"phases"
+	]
+}

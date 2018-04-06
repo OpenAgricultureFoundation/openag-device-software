@@ -8,6 +8,17 @@ from device.utilities.parsers import RecipeParser
 from app.models import RecipeModel
 
 
+
+class Validator:
+    """ Parent class for validators. """
+    extra = {"console_name":"Validator", "file_name": "validator"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
+
+
+
+
 class PeripheralSetupValidator:
     """ Validates peripheral setup dict. """
 
@@ -158,7 +169,8 @@ class RecipeValidator:
     def validate(self, recipe_json, filepath=False):
         """ Validates recipe. Returns message on error or None on success. """
         self.logger.info("Validating recipe")
-            
+        self.logger.warning(recipe_json)
+
         # Validate json
         try:
             if filepath:
@@ -168,6 +180,12 @@ class RecipeValidator:
         except json.decoder.JSONDecodeError:
             return "Invalid JSON"
 
+        # Validate format
+
+
+        # Validate keys
+        self.validate_keys(recipe_dict)
+
         # Validate recipe is parsable
         try:
             recipe_parser = RecipeParser()
@@ -175,11 +193,6 @@ class RecipeValidator:
         except:
             error_message = "Recipe is unparsable"
             self.logger.exception(error_message)
-            return error_message
-
-        # Validate recipe uuid is not none and is unique
-        error_message = self.validate_uuid(recipe_dict["uuid"])
-        if error_message != None:
             return error_message
 
         # TODO: Validate value types

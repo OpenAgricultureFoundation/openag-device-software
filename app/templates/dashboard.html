@@ -52,7 +52,7 @@
             type: "POST",
             data: {
                 "csrfmiddlewaretoken": "{{ csrf_token }}",
-                "recipe_json": recipe_json},
+                "json": recipe_json},
             dataType: "json",
             success: function(data) {
                 alert(data.message)

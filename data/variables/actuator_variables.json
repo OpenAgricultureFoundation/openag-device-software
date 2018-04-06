@@ -1,0 +1,30 @@
+[
+	{
+		"key": "on_off",
+		"info": {
+			"name": {
+				"brief": "On/Off",
+				"verbose": "On/Off"
+			},
+			"unit": {
+				"brief": "On/Off",
+				"verbose": "On/Off",
+				"type": "boolean"
+			}
+		}
+	},
+	{
+		"key": "percent",
+		"info": {
+			"name": {
+				"brief": "Percent",
+				"verbose": "Percentage"
+			},
+			"unit": {
+				"brief": "%",
+				"verbose": "%",
+				"type": "number"
+			}
+		}
+	}
+]
