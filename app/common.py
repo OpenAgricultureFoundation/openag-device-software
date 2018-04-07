@@ -4,6 +4,8 @@ import json, time
 # Import app models
 from app.models import StateModel
 from app.models import EventModel
+from app.models import SensorVariableModel
+from app.models import ActuatorVariableModel
 
 
 def get_device_state_value(key):
@@ -56,6 +58,26 @@ def get_peripheral_dict():
     else:
         state = StateModel.objects.get(pk=1)
         return json.loads(state.peripherals)
+
+
+def get_sensor_variable_info(variable_key):
+    """ Gets sensor variable info from sensor variable table in database. """
+    if not SensorVariableModel.objects.filter(key=variable_key).exists():
+        return None
+    else:
+        variable = SensorVariableModel.objects.get(key=variable_key)
+        variable_dict = json.loads(variable.json)
+        return variable_dict["info"]
+
+
+def get_actuator_variable_info(variable_key):
+    """ Gets actuator variable info from actuator variable table in database. """
+    if not ActuatorVariableModel.objects.filter(key=variable_key).exists():
+        return None
+    else:
+        variable = ActuatorVariableModel.objects.get(key=variable_key)
+        variable_dict = json.loads(variable.json)
+        return variable_dict["info"]
 
 
 def manage_event(event_request, timeout_seconds=3, update_interval_seconds=0.1):

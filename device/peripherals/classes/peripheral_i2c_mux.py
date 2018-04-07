@@ -5,8 +5,11 @@ import logging, time, threading
 from device.utilities.mode import Mode
 from device.utilities.error import Error
 
+# Import device comms
+from device.comms.mux_i2c import MuxI2C
 
-class Peripheral:
+
+class PeripheralI2CMux:
     """ Parent class for peripheral devices e.g. sensors and actuators. """
 
     # Initialize peripheral mode and error
@@ -21,21 +24,37 @@ class Peripheral:
     last_update_time = None
 
 
-    def __init__(self, name, state, config_dict):
+    def __init__(self, name, state, config, simulate=False):
         """ Initializes peripheral. """
+
+        # Initialize passed in arguments
         self.name = name
         self.state = state
-        self.config_dict = config_dict
+        self.config = config
+        self.simulate = simulate
+
+        # Log simulation mode if enabled
+        if self.simulate:
+            self.logger.info("Simulating sensor")
 
         # Initialize logger
         extra = {'console_name':self.name, 'file_name': self.name}
         logger = logging.getLogger(__name__)
         self.logger = logging.LoggerAdapter(logger, extra)
 
-        # Initialize remaining state
+        # Initialize i2c mux parameters
+        self.parameters = self.config["parameters"]
+        self.bus = int(self.parameters["communication"]["bus"])
+        self.mux = int(self.parameters["communication"]["mux"], 16)
+        self.channel = int(self.parameters["communication"]["channel"])
+        self.address = int(self.parameters["communication"]["address"], 16)
+        self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
+            self.bus, self.mux, self.channel, self.address))
+        self.i2c = MuxI2C(self.bus, self.mux, self.channel, self.address)
+
+        # Initialize modes and errors
         self.mode = Mode.INIT
         self.error = Error.NONE
-        self.initialize_state()
 
 
     @property

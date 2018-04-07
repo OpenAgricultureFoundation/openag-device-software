@@ -8,7 +8,7 @@ from device.utilities.event import EventRequest
 from device.utilities.variable import Variable
 
 # Import common app funcitons
-from app import common
+from app import common as Common
 
 # Import app models
 from app.models import EventModel
@@ -22,18 +22,18 @@ class RecipeViewer:
     
     def __init__(self):
         """ Initialize recipe viewer. """
-        self.mode = common.get_recipe_state_value("mode")
-        self.recipe_name = common.get_recipe_state_value("recipe_name")
-        self.recipe_uuid = common.get_recipe_state_value("recipe_uuid")
-        self.start_datestring = common.get_recipe_state_value("start_datestring")
-        self.percent_complete_string = common.get_recipe_state_value("percent_complete_string")
-        self.time_elapsed_string = common.get_recipe_state_value("time_elapsed_string")
-        self.time_elapsed_minutes = common.get_recipe_state_value("last_update_minute")
-        self.time_remaining_string = common.get_recipe_state_value("time_remaining_string")
-        self.time_remaining_minutes = common.get_recipe_state_value("time_remaining_minutes")
-        self.current_phase = common.get_recipe_state_value("current_phase")
-        self.current_cycle = common.get_recipe_state_value("current_cycle")
-        self.current_environment_name = common.get_recipe_state_value("current_environment_name")
+        self.mode = Common.get_recipe_state_value("mode")
+        self.recipe_name = Common.get_recipe_state_value("recipe_name")
+        self.recipe_uuid = Common.get_recipe_state_value("recipe_uuid")
+        self.start_datestring = Common.get_recipe_state_value("start_datestring")
+        self.percent_complete_string = Common.get_recipe_state_value("percent_complete_string")
+        self.time_elapsed_string = Common.get_recipe_state_value("time_elapsed_string")
+        self.time_elapsed_minutes = Common.get_recipe_state_value("last_update_minute")
+        self.time_remaining_string = Common.get_recipe_state_value("time_remaining_string")
+        self.time_remaining_minutes = Common.get_recipe_state_value("time_remaining_minutes")
+        self.current_phase = Common.get_recipe_state_value("current_phase")
+        self.current_cycle = Common.get_recipe_state_value("current_cycle")
+        self.current_environment_name = Common.get_recipe_state_value("current_environment_name")
 
 
     def create(self, request_dict):
@@ -53,7 +53,7 @@ class RecipeViewer:
         event_request = {
             "type": EventRequest.CREATE_RECIPE,
             "json": json}
-        return common.manage_event(event_request)
+        return Common.manage_event(event_request)
 
 
     def start(self, request_dict, pk):
@@ -72,7 +72,7 @@ class RecipeViewer:
             "type": EventRequest.START_RECIPE,
             "uuid": pk,
             "start_timestamp_minutes": start_timestamp_minutes}
-        return common.manage_event(event_request)      
+        return Common.manage_event(event_request)      
 
 
     def stop(self):
@@ -80,7 +80,7 @@ class RecipeViewer:
             recipe to stop, then returns response. """
         self.logger.info("Received stop recipe request")
         event_request = {"type": EventRequest.STOP_RECIPE}
-        return common.manage_event(event_request)
+        return Common.manage_event(event_request)
 
 
 class SimpleRecipeViewer:
@@ -111,38 +111,60 @@ class EnvironmentViewer:
     def get_environment_summary(self, peripheral_type):
         """ Gets environment summary of current reported --> desired value 
             for each variable in shared state. """
+        self.logger.debug("Getting environment summary")
         
         # Initialize summary dict
         summary = {}
 
-        # # Get environment dict
-        # environment_dict = common.get_environment_dict()
-        # if environment_dict == None:
-        #     return summary
+        # Get environment dict
+        environment_dict = Common.get_environment_dict()
+        if environment_dict == None:
+            return summary
 
-        # # Log all variables in reported
-        # for variable in environment_dict[peripheral_type]["reported"]:
-        #     name = Variable[variable]["name"]
-        #     unit = Variable[variable]["unit"]
-        #     reported = str(environment_dict[peripheral_type]["reported"][variable])
-        #     if variable in environment_dict[peripheral_type]["desired"]:
-        #         desired = str(environment_dict[peripheral_type]["desired"][variable])
-        #     else:
-        #         desired = "None"
+        # Log all variables in reported
+        for variable in environment_dict[peripheral_type]["reported"]:
+            # Get peripheral info
+            if peripheral_type == "sensor":
+                info = Common.get_sensor_variable_info(variable)
+            elif peripheral_type =="actuator":
+                info = Common.get_actuator_variable_info(variable)
+            else:
+                raise ValueError("`peripheral_type` must be either `sensor` or `actuator`")
 
-        #     name_string = name + " (" + unit + ")"
-        #     summary[name_string] = reported + " --> " + desired
+            # Get peripheral name and unit
+            name = info["name"]["verbose"]
+            unit = info["unit"]["brief"]
 
-        # # Log remaining variables in desired
-        # for variable in environment_dict[peripheral_type]["desired"]:
-        #     if variable not in environment_dict[peripheral_type]["reported"]:
-        #         name = Variable[variable]["name"]
-        #         unit = Variable[variable]["unit"]
-        #         desired = str(environment_dict[peripheral_type]["desired"][variable])
-        #         reported = "None"
-        #         name_string = name + " (" + unit + ")"
-        #         summary[name_string] = reported + " --> " + desired
-        
+            # Get reported and desired values
+            reported = str(environment_dict[peripheral_type]["reported"][variable])
+            if variable in environment_dict[peripheral_type]["desired"]:
+                desired = str(environment_dict[peripheral_type]["desired"][variable])
+            else:
+                desired = "None"
+
+            name_string = name + " (" + unit + ")"
+            summary[name_string] = reported + " --> " + desired
+
+        # Log remaining variables in desired
+        for variable in environment_dict[peripheral_type]["desired"]:
+            # Get peripheral info
+            if peripheral_type == "sensor":
+                info = Common.get_sensor_variable_info(variable)
+            elif peripheral_type =="actuator":
+                info = Common.get_actuator_variable_info(variable)
+            else:
+                raise ValueError("`peripheral_type` must be either `sensor` or `actuator`")
+
+            # Get peripheral name and unit
+            name = info["name"]["verbose"]
+            unit = info["unit"]["brief"]
+
+            # Get reported and desired values
+            desired = str(environment_dict[peripheral_type]["desired"][variable])
+            reported = "None"
+            name_string = name + " (" + unit + ")"
+            summary[name_string] = reported + " --> " + desired
+
         return summary
 
 
@@ -162,11 +184,11 @@ class DeviceViewer:
         thread_modes = {}
 
         # Get device and recipe modes
-        thread_modes["Device Mode"] = common.get_device_state_value("mode")
-        thread_modes["Recipe Mode"] = common.get_recipe_state_value("mode")
+        thread_modes["Device Mode"] = Common.get_device_state_value("mode")
+        thread_modes["Recipe Mode"] = Common.get_recipe_state_value("mode")
 
         # Get peripheral modes if they exist
-        peripheral_dict = common.get_peripheral_dict()
+        peripheral_dict = Common.get_peripheral_dict()
         if peripheral_dict != None:
             for peripheral_name in peripheral_dict:
                 individual_peripheral_dict = peripheral_dict[peripheral_name]

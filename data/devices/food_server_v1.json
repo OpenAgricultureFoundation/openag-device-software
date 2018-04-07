@@ -17,10 +17,10 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": 7, 
-                    "channel": 0, 
-                    "address": 64
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x40"
                 }
             }
         }

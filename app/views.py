@@ -80,9 +80,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         queryset = RecipeModel.objects.all()
         return queryset
 
-    @permission_classes((IsAuthenticated, IsAdminUser,))
+    # @permission_classes((IsAuthenticated, IsAdminUser,))
     def create(self, request):
         """ API endpoint to create a recipe. """
+        permission_classes=[IsAuthenticated, IsAdminUser]
         recipe_viewer = RecipeViewer()
         response, status = recipe_viewer.create(request.data.dict())
         return Response(response, status)

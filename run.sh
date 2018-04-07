@@ -2,6 +2,7 @@
 
 # Initialize command line arg default values
 NO_DEVICE="false"
+SIMULATE="false"
 
 # Get command line arguments
 POSITIONAL=()
@@ -10,20 +11,23 @@ do
 key="$1"
 
 case $key in
-    --nodevice)
-    NO_DEVICE="true"
-    shift # past argument
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
+    -nd | --nodevice)           shift               
+                                NO_DEVICE="true"
+                                ;;
+    -nd | --simulate)           shift               
+                                SIMULATE="true"
+                                ;;
+    *) 
+    POSITIONAL+=("$1")
+    shift
     ;;
 esac
 done
-set -- "${POSITIONAL[@]}" # restore positional parameters
+set -- "${POSITIONAL[@]}" 
 
 # Export command line arguments
 export NO_DEVICE
+export SIMULATE
 
 # Run app
 python3 manage.py runserver

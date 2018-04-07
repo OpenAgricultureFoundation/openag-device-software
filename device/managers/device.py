@@ -38,10 +38,10 @@ from app.models import PeripheralSetupModel
 from app.models import DeviceConfigModel
 
 
-
 class DeviceManager:
-    """ A state machine that spawns threads to run recipes, read sensors, set 
-    actuators, manage control loops, sync data, and manage external events. """
+    """ Manages device state machine thread that spawns child threads to run 
+        recipes, read sensors, set actuators, manage control loops, sync data, 
+        and manage external events. """
 
     # Initialize logger
     extra = {"console_name":"Device", "file_name": "device"}
@@ -667,7 +667,11 @@ class DeviceManager:
 
             # Create peripheral manager
             peripheral_name = peripheral_config_dict["name"]
-            peripheral_manager = class_instance(peripheral_name, self.state, peripheral_config_dict)
+            if os.environ.get('SIMULATE') == "true":
+                simulate = True
+            else:
+                simulate = False
+            peripheral_manager = class_instance(peripheral_name, self.state, peripheral_config_dict, simulate)
             self.peripheral_managers[peripheral_name] = peripheral_manager
 
 
