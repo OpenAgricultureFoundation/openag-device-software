@@ -4,3 +4,4 @@ class Error(object):
 	UNKNOWN = "Unknown"
 	RECIPE_LOAD_ERROR = "Recipe Load Error"
 	INVALID_MODE = "Invalid State Machine Mode"
+	FAILED_HEALTH_CHECK = "Failed Health Check"

@@ -2,28 +2,114 @@
 import logging, time, threading
 
 # Import peripheral parent class
-from device.peripherals.classes.temperature_humidity import TemperatureHumidity
+from device.peripherals.classes.peripheral import Peripheral
+
+# Import device comms
+from device.comms.mux_i2c import MuxI2C
 
 # Import device modes and errors
 from device.utilities.mode import Mode
 from device.utilities.error import Error
 
 
-class SHT25(TemperatureHumidity):
+class SHT25(Peripheral):
     """ Temperature and humidity sensor. """
 
-    def __init__(self, *args, **kwargs):
-        super(TemperatureHumidity, self).__init__(*args, **kwargs)
+    # Initialize environment variables
+    _temperature = None
+    _humidity = None
+
+
+    @property
+    def temperature(self):
+        """ Gets temperature value. """
+        return self._temperature
+
+
+    @temperature.setter
+    def temperature(self, value):
+        """ Safely updates temperature in environment state each time
+            it is changed. """       
+        self._temperature = value
+        with threading.Lock():
+            self.report_sensor_value(self.name, self.temperature_name, self._temperature)
+
+    @property
+    def humidity(self):
+        """ Gets humidity value. """
+        return self._humidity
+
+
+    @humidity.setter
+    def humidity(self, value):
+        """ Safely updates humidity in environment state each time 
+            it is changed. """
+        self._humidity = value
+        with threading.Lock():
+            self.report_sensor_value(self.name, self.humidity_name, self._humidity)
         
 
-    def quickly_check_hardware_state(self):
-        """ Quickly check hardware state. """
-        self.logger.debug("Quickly checking hardware state")
+    def __init__(self, *args, **kwargs):
+        """ Instantiates sensor. Instantiates parent class, initializes i2c 
+            mux parameters, and initializes sensor variable names. """
+
+        # Instantiate parent class
+        super().__init__(*args, **kwargs)
+
+        # Initialize i2c mux parameters
+        self.parameters = self.config["parameters"]
+        self.bus = int(self.parameters["communication"]["bus"])
+        self.mux = int(self.parameters["communication"]["mux"], 16)
+        self.channel = int(self.parameters["communication"]["channel"])
+        self.address = int(self.parameters["communication"]["address"], 16)
+        self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
+            self.bus, self.mux, self.channel, self.address))
+        self.i2c = MuxI2C(self.bus, self.mux, self.channel, self.address)
+
+        # Initialize sensor variable names
+        self.temperature_name = self.parameters["variables"]["sensor"]["temperature"]
+        self.humidity_name = self.parameters["variables"]["sensor"]["humidity"]
 
 
-    def initialize_hardware(self):
-        """ Initialize hardware. """
-        self.logger.debug("Initializing hardware")
+    def initialize(self):
+        """ Initializes sensor. Checks sensor is healthy. Finishes within 200ms.  """
+
+        # Initialize sensor
+        self.logger.debug("Initializing sensor")
+
+        # Initialize reported values
+        self.temperature = None
+        self.humidity = None
+
+        # Check sensor health
+        if not self.is_healthy():
+            self.error = Error.FAILED_HEALTH_CHECK
+            self.mode = Mode.ERROR
+
+
+    def is_healthy(self):
+        try:
+            self.logger.info("")
+            self.i2c.writeRaw8(0xF3)
+            return True
+        except Exception:
+            self.logger.exception("Failed health check".format(self.name))
+            return False
+
+
+    def warm(self):
+        """ Warms sensor. Useful for sensors with warm up times >200ms """
+        self.logger.debug("Warming sensor")
+
+
+    def update(self):
+        """ Updates peripheral. """
+        if self.simulate:
+            self.temperature = 33.3
+            self.humidity = 33.3
+        else:
+            self.get_temperature()
+            self.get_humidity()
 
 
     def get_temperature(self):
@@ -80,3 +166,14 @@ class SHT25(TemperatureHumidity):
         
         except:
             self.logger.exception("Bad humidity reading")
+
+
+    def shutdown(self):
+        """ Shuts down sensor. """
+        self.clear_reported_values(self)
+
+
+    def clear_reported_values(self):
+        """ Clears reported values. """
+        self.temperature = None
+        self.humidity = None

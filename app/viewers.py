@@ -151,6 +151,11 @@ class EnvironmentViewer:
 
         # Log remaining variables in desired
         for variable in environment_dict[peripheral_type]["desired"]:
+
+            # Skip over repeated variables
+            if variable in environment_dict[peripheral_type]["reported"]:
+                continue
+
             # Get peripheral info
             self.logger.debug("Getting peripheral info for `{}`".format(variable))
             if peripheral_type == "sensor":

@@ -5,11 +5,8 @@ import logging, time, threading
 from device.utilities.mode import Mode
 from device.utilities.error import Error
 
-# Import device comms
-from device.comms.mux_i2c import MuxI2C
 
-
-class PeripheralI2CMux:
+class Peripheral:
     """ Parent class for peripheral devices e.g. sensors and actuators. """
 
     # Initialize peripheral mode and error
@@ -41,16 +38,6 @@ class PeripheralI2CMux:
         extra = {'console_name':self.name, 'file_name': self.name}
         logger = logging.getLogger(__name__)
         self.logger = logging.LoggerAdapter(logger, extra)
-
-        # Initialize i2c mux parameters
-        self.parameters = self.config["parameters"]
-        self.bus = int(self.parameters["communication"]["bus"])
-        self.mux = int(self.parameters["communication"]["mux"], 16)
-        self.channel = int(self.parameters["communication"]["channel"])
-        self.address = int(self.parameters["communication"]["address"], 16)
-        self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-            self.bus, self.mux, self.channel, self.address))
-        self.i2c = MuxI2C(self.bus, self.mux, self.channel, self.address)
 
         # Initialize modes and errors
         self.mode = Mode.INIT
@@ -138,8 +125,8 @@ class PeripheralI2CMux:
             transitions to WARMING. Transitions to ERROR on error. """
         self.logger.info("Entered INIT")
 
-        # Initialize peripheral state
-        self.initialize_state()
+        # Initialize peripheral
+        self.initialize()
 
         # Transition to WARMING if not ERROR
         if self.mode != Mode.ERROR:
@@ -151,8 +138,8 @@ class PeripheralI2CMux:
             transitions to NORMAL. Transitions to ERROR on error. """
         self.logger.info("Entered WARMING")
 
-        # Initialize peripheral hardware
-        self.initialize_hardware()
+        # Warm peripheral
+        self.warm()
 
         # Transition to NORMAL
         self.mode = Mode.NORMAL

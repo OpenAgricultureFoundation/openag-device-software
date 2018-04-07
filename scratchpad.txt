@@ -1,3 +1,7 @@
+super(TemperatureHumidity, self).__init__(*args, **kwargs)
+
+
+
 {% extends 'base.html' %}
 
 {% block content %}
