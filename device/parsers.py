@@ -13,9 +13,9 @@ class RecipeParser:
             phase_name = phase["name"]
             for i in range(phase["repeat"]):
                 for cycle in phase["cycles"]:
-                    # Get environment name, environment state, and cycle name
-                    environment_name = cycle["environment"]
-                    environment_state = recipe_dict["environments"][environment_name]
+                    # Get environment object and cycle name
+                    environment_key = cycle["environment"]
+                    environment = recipe_dict["environments"][environment_key]
                     cycle_name = cycle["name"]
 
                     # Get duration
@@ -26,6 +26,12 @@ class RecipeParser:
                         duration_minutes = cycle["duration_minutes"]
                     else:
                         raise KeyError("Could not find 'duration_minutes' or 'duration_hours' in cycle")
+
+                    # Make shallow copy of env so we can pop a property locally
+                    environment_copy = dict(environment) 
+                    environment_name = environment_copy["name"]
+                    del environment_copy["name"]
+                    environment_state = environment_copy
 
                     # Write recipe transition to database
                     transitions.append({

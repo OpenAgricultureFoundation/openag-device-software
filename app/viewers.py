@@ -8,7 +8,7 @@ from device.utilities.event import EventRequest
 from device.utilities.variable import Variable
 
 # Import common app funcitons
-from app import common as Common
+from app.common import Common
 
 # Import app models
 from app.models import EventModel
@@ -112,6 +112,9 @@ class EnvironmentViewer:
         """ Gets environment summary of current reported --> desired value 
             for each variable in shared state. """
         self.logger.debug("Getting environment summary")
+
+        # Initialize class for common functions
+        common = Common()
         
         # Initialize summary dict
         summary = {}
@@ -121,13 +124,14 @@ class EnvironmentViewer:
         if environment_dict == None:
             return summary
 
-        # Log all variables in reported
+        # Log all variables in reported values
         for variable in environment_dict[peripheral_type]["reported"]:
             # Get peripheral info
+            self.logger.info("Getting peripheral info for `{}`".format(variable))
             if peripheral_type == "sensor":
-                info = Common.get_sensor_variable_info(variable)
+                info = common.get_sensor_variable_info(variable)
             elif peripheral_type =="actuator":
-                info = Common.get_actuator_variable_info(variable)
+                info = common.get_actuator_variable_info(variable)
             else:
                 raise ValueError("`peripheral_type` must be either `sensor` or `actuator`")
 
@@ -148,10 +152,11 @@ class EnvironmentViewer:
         # Log remaining variables in desired
         for variable in environment_dict[peripheral_type]["desired"]:
             # Get peripheral info
+            self.logger.debug("Getting peripheral info for `{}`".format(variable))
             if peripheral_type == "sensor":
-                info = Common.get_sensor_variable_info(variable)
+                info = common.get_sensor_variable_info(variable)
             elif peripheral_type =="actuator":
-                info = Common.get_actuator_variable_info(variable)
+                info = common.get_actuator_variable_info(variable)
             else:
                 raise ValueError("`peripheral_type` must be either `sensor` or `actuator`")
 

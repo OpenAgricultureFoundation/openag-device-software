@@ -4,7 +4,9 @@ import logging, time, threading, os, sys, datetime, json
 # Import device utilities
 from device.utilities.mode import Mode
 from device.utilities.error import Error
-from device.utilities.parsers import RecipeParser
+
+# Import device parsers
+from device.parsers import RecipeParser
 
 # Import database models
 from app.models import RecipeModel
@@ -618,9 +620,9 @@ class RecipeManager:
 
     def update_recipe_environment(self):
         """ Updates recipe environment. """
+        self.logger.debug("Updating recipe environment")
         self.last_update_minute = self.current_timestamp_minutes - self.start_timestamp_minutes
         environment = self.get_recipe_environment(self.last_update_minute)
-
         self.current_phase = environment.phase
         self.current_cycle = environment.cycle
         self.current_environment_name = environment.environment_name

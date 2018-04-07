@@ -110,12 +110,12 @@ LOGGING = {
     },
     'handlers': {
         'app_console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard_console',
         },
         'app_file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.dirname(BASE_DIR) + "/log/app.log",
             'formatter': 'standard_file',
@@ -126,7 +126,7 @@ LOGGING = {
             'formatter': 'device_console',
         },
         'device_file': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.dirname(BASE_DIR) + "/log/device.log",
             'formatter': 'device_file',
@@ -136,7 +136,7 @@ LOGGING = {
     'loggers': {
         'app': {
             'handlers': ['app_console', 'app_file'],
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
         'device': {
             'handlers': ['device_console', 'device_file'],
@@ -144,14 +144,6 @@ LOGGING = {
         }
     },
 }
-
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_RENDERER_CLASSES': (
-#         'rest_framework.renderers.JSONRenderer',
-#         'rest_framework.renderers.BrowsableAPIRenderer',
-#     )
-# }
 
 LOGIN_REDIRECT_URL = 'home'
 

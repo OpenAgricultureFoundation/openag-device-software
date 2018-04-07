@@ -20,7 +20,3 @@ class CoreConfig(AppConfig):
 	        from device.managers.device import DeviceManager
 	        self.device_manager = DeviceManager()
 	        self.device_manager.spawn(delay=1)
-
-
-        while True:
-            time.sleep(10)

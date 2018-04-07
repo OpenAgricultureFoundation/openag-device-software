@@ -2,7 +2,7 @@
 import json, logging
 
 # Import device parsers
-from device.utilities.parsers import RecipeParser
+from device.parsers import RecipeParser
 
 # Import app models
 from app.models import RecipeModel
