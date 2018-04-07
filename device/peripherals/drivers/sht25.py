@@ -19,6 +19,14 @@ class SHT25(Peripheral):
     _temperature = None
     _humidity = None
 
+    # Initialize health metrics
+    _health = None
+    _minimum_health = 80.0
+    _missed_readings = 0
+    _readings_count = 0
+    _readings_per_health_update = 4
+
+
 
     @property
     def temperature(self):
@@ -29,7 +37,8 @@ class SHT25(Peripheral):
     @temperature.setter
     def temperature(self, value):
         """ Safely updates temperature in environment state each time
-            it is changed. """       
+            it is changed. """   
+        self.logger.debug("Temperature: {}".format(value))    
         self._temperature = value
         with threading.Lock():
             self.report_sensor_value(self.name, self.temperature_name, self._temperature)
@@ -44,9 +53,29 @@ class SHT25(Peripheral):
     def humidity(self, value):
         """ Safely updates humidity in environment state each time 
             it is changed. """
+        self.logger.debug("Humidity: {}".format(value))
         self._humidity = value
         with threading.Lock():
             self.report_sensor_value(self.name, self.humidity_name, self._humidity)
+
+
+    @property
+    def health(self):
+        """ Gets health value. """
+        return self._health
+
+
+    @health.setter
+    def health(self, value):
+        """ Safely updates health in device state each time 
+            it is changed. """
+        self._health = value
+
+        # Remove me
+        self.logger.info("Health: {}".format(value))
+
+        # with threading.Lock():
+        #     self.report_sensor_health(self.name, self._health)
         
 
     def __init__(self, *args, **kwargs):
@@ -71,8 +100,10 @@ class SHT25(Peripheral):
         self.humidity_name = self.parameters["variables"]["sensor"]["humidity"]
 
 
+
     def initialize(self):
-        """ Initializes sensor. Checks sensor is healthy. Finishes within 200ms.  """
+        """ Initializes sensor. Performs initial health check.
+            Finishes within 200ms.  """
 
         # Initialize sensor
         self.logger.debug("Initializing sensor")
@@ -80,21 +111,24 @@ class SHT25(Peripheral):
         # Initialize reported values
         self.temperature = None
         self.humidity = None
+        self.health = 100
 
-        # Check sensor health
-        if not self.is_healthy():
-            self.error = Error.FAILED_HEALTH_CHECK
-            self.mode = Mode.ERROR
+        # Perform initial health check
+        self.perform_initial_health_check()
+            
 
-
-    def is_healthy(self):
+    def perform_initial_health_check(self):
+        """ Performs initial health check by trying to send a `get temperature
+            reading command` and verifying sensor acknowledges. Finishes 
+            within 200ms. """
         try:
             self.logger.info("")
             self.i2c.writeRaw8(0xF3)
-            return True
+            self.logger.info("Passed initial health check")
         except Exception:
-            self.logger.exception("Failed health check".format(self.name))
-            return False
+            self.logger.exception("Failed initial health check")
+            self.error = Error.FAILED_HEALTH_CHECK
+            self.mode = Mode.ERROR
 
 
     def warm(self):
@@ -103,18 +137,21 @@ class SHT25(Peripheral):
 
 
     def update(self):
-        """ Updates peripheral. """
+        """ Updates sensor. """
         if self.simulate:
             self.temperature = 33.3
             self.humidity = 33.3
+            self.health = 100
         else:
-            self.get_temperature()
-            self.get_humidity()
+            self.update_temperature()
+            self.update_humidity()
+            self.update_health()
 
 
-    def get_temperature(self):
-        """ Get sensor temperature. """
+    def update_temperature(self):
+        """ Updates sensor temperature. """
         self.logger.debug("Getting temperature")
+
         try:
             # Send read temperature command (no-hold master)
             with threading.Lock():
@@ -128,20 +165,24 @@ class SHT25(Peripheral):
                 data0 = self.i2c.readRaw8()
                 data1 = self.i2c.readRaw8()
 
-            # Convert temperature data
+            # Convert temperature data and set significant figures
             temperature = data0 * 256 + data1
             temperature = -46.85 + ((temperature * 175.72) / 65536.0)
+            temperature = float("%.1f"%(temperature))
 
-            # Set significant figures and update shared state
-            self.temperature = float("%.1f"%(temperature))
-            self.logger.debug("Temperature: {}".format(self.temperature))
-       
+
+            10/0
+
+            # Update temperature in shared state
+            self.temperature = temperature
+            
         except:
             self.logger.exception("Bad temperature reading")
+            self._missed_readings += 1
 
 
-    def get_humidity(self):
-        """ Get sensor humidity. """
+    def update_humidity(self):
+        """ Updates sensor humidity. """
         self.logger.debug("Getting humidity")
         try:
             # Send read humidity command (no-hold master)
@@ -156,24 +197,53 @@ class SHT25(Peripheral):
                 data0 = self.i2c.readRaw8()
                 data1 = self.i2c.readRaw8()
 
-            # Convert humidity data
+            # Convert humidity data and set significant figures
             humidity = data0 * 256 + data1
             humidity = -6 + ((humidity * 125.0) / 65536.0)
+            humidity = float("%.1f"%(humidity))
             
-            # Set significant figures and update shared state
-            self.humidity = float("%.1f"%(humidity))
-            self.logger.debug("Humidity: {}".format(self.humidity))
+            # Update humidity in shared state
+            self.humidity = humidity
         
         except:
             self.logger.exception("Bad humidity reading")
+            self._missed_readings += 1
+
+
+    def update_health(self):
+        """ Updates sensor health. """
+
+        # Increment readings count
+        self._readings_count += 1
+
+        # Update health after specified number of readings
+        if self._readings_count == self._readings_per_health_update:
+            good_readings = self._readings_per_health_update - self._missed_readings
+            health = float(good_readings) / self._readings_per_health_update * 100
+            self.health = int(health)
+
+            # Check health is satisfactory
+            if self.health < self._minimum_health:
+                self.logger.warning("Unacceptable sensor health")
+
+                # Set error
+                self.error = Error.FAILED_HEALTH_CHECK
+
+                # Transition to error mode
+                self.mode = Mode.ERROR
 
 
     def shutdown(self):
         """ Shuts down sensor. """
-        self.clear_reported_values(self)
+
+        # Clear reported values
+        self.temperature = None
+        self.humidity = None
+
+        # Set sensor health
+        self.health = 100
 
 
     def clear_reported_values(self):
-        """ Clears reported values. """
         self.temperature = None
         self.humidity = None
