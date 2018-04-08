@@ -1,0 +1,37 @@
+{
+	"name":  "Atlas pH Sensor",
+	"version": "1",
+	"uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
+	"module_name": "atlas_ph",
+	"class_name": "AtlasPH",
+	"parameters": {
+		"variables": {
+			"sensors": {
+				"ph": {
+					"name": "string", 
+					"uuid": "string"
+				}
+			},
+			"actuators": null
+		},	
+		"communication": {
+			"bus": "int",
+			"mux": "int",
+			"channel": "int",
+			"address": "int"
+		}
+	},
+	"info": {
+		"variables": {
+			"sensors":{
+				"ph": {
+					"range": [0.001, 14.000],
+			        "accuracy": {
+			            "typical": 0.002
+			        }
+				}
+			},
+			"actuators": null
+		}
+	}
+}

@@ -10,7 +10,7 @@ from device.comms.i2c import I2C
 
 # Run main
 if __name__ == "__main__":
-    """ Runs sht25 temperature and humidity sensor for hardware testing. """
+    """ Runs t6713 co2 sensor for hardware testing. """
 
     # Initialize command line args
     no_mux = False
@@ -23,19 +23,19 @@ if __name__ == "__main__":
         bus = 2
         mux =0x77
         channel = 1
-        address = 0x40
+        address = 0x15
     elif "--edu1" in sys.argv:
         print("Config: PFC-EDU v1")
         bus = 2
         mux =0x77
         channel = 1
-        address = 0x40
+        address = 0x15
     else:
         print("Config: Default")
         bus = 2
         mux =0x77
         channel = 1
-        address = 0x40
+        address = 0x15
 
     # Get run options from command line args
     if '--no-mux' in sys.argv:
@@ -55,36 +55,33 @@ if __name__ == "__main__":
     # Initialize i2c communication
     if set_mux:
         # Initialize i2c communication directly with mux
-        dev = I2C(bus=bus, address=mux)
+        i2c = I2C(bus=bus, address=mux)
     elif no_mux:
         # Initialize i2c communication directly with sensor
-        dev = I2C(bus=bus, address=address)
+        i2c = I2C(bus=bus, address=address)
     else:
         # Initialize i2c communication via mux with sensor
-        dev = I2C(bus=bus, mux=mux, channel=channel, address=address)
+        i2c = I2C(bus=bus, mux=mux, channel=channel, address=address)
 
     # Set mux then return if enabled
     if set_mux:
         # Set mux channel
-        dev.write([channel])
+        i2c.write([channel])
         sys.exit()
 
-    # Get temperature
-    if logging_enabled: print("Getting temperature")
-    dev.write([0xF3]) # Send get temperature command (no hold master)
-    time.sleep(0.5) # Wait for sensor to process
-    msb, lsb = dev.read(2) # Read sensor data
-    raw = msb * 256 + lsb  # Convert temperature data
-    temperature = -46.85 + ((raw * 175.72) / 65536.0)
-    temperature = float("{:.0f}".format(temperature)) # Set significant figures # Set significant figures
-    print("Temperature: {}".format(temperature))
+    # Get status
+    if logging_enabled: print("Getting status")
+    i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01]) # Send get status command
+    time.sleep(0.1) # Wait for sensor to process
+    xx, xx, msb, lsb = i2c.read(4) # Read sensor data
+    status = msb*256 + lsb # Convert sensor data
+    print("Status: 0x{:04X}".format(status))
 
-    # Get humidity
-    if logging_enabled: print("Getting humidity")
-    dev.write([0xF5]) # Send get humidity command (no hold master)
-    time.sleep(0.5) # Wait for sensor to process
-    msb, lsb = dev.read(2) # Read sensor data
-    raw = msb * 256 + lsb # Convert humidity data
-    humidity = -6 + ((raw * 125.0) / 65536.0)
-    humidity = float("{:.0f}".format(humidity)) # Set significant figures # Set significant figures
-    print("Humidity: {}".format(humidity))
+    # Get co2
+    if logging_enabled: print("Getting co2")
+    i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01])
+    time.sleep(0.1) # Wait for sensor to process
+    xx, xx, msb, lsb = i2c.read(4) # Read sensor data
+    co2 = msb*256 + lsb # Convert sensor data
+    co2 = int(co2) # Set significant figures
+    print("Co2: {}".format(co2))

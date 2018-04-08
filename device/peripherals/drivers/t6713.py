@@ -12,12 +12,12 @@ from device.utilities.mode import Mode
 from device.utilities.error import Error
 
 
-class SHT25(Peripheral):
-    """ Temperature and humidity sensor. """
+class T6713(Peripheral):
+    """ Co2 sensor. """
 
     # Initialize sensor parameters
-    _temperature = None
-    _humidity = None
+    _co2 = None
+    _status = None
 
     # Initialize health metrics
     _health = None
@@ -28,34 +28,19 @@ class SHT25(Peripheral):
 
 
     @property
-    def temperature(self):
-        """ Gets temperature value. """
-        return self._temperature
+    def co2(self):
+        """ Gets co2 value. """
+        return self._co2
 
 
-    @temperature.setter
-    def temperature(self, value):
-        """ Safely updates temperature in environment state each time
+    @co2.setter
+    def co2(self, value):
+        """ Safely updates co2 in environment state each time
             it is changed. """   
-        self.logger.debug("Temperature: {}".format(value))    
-        self._temperature = value
+        self.logger.debug("Co2: {}".format(value))    
+        self._co2 = value
         with threading.Lock():
-            self.report_sensor_value(self.name, self.temperature_name, self._temperature)
-
-    @property
-    def humidity(self):
-        """ Gets humidity value. """
-        return self._humidity
-
-
-    @humidity.setter
-    def humidity(self, value):
-        """ Safely updates humidity in environment state each time 
-            it is changed. """
-        self.logger.debug("Humidity: {}".format(value))
-        self._humidity = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.humidity_name, self._humidity)
+            self.report_sensor_value(self.name, self.co2_name, value)
 
 
     @property
@@ -92,8 +77,7 @@ class SHT25(Peripheral):
         self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
 
         # Initialize sensor variable names
-        self.temperature_name = self.parameters["variables"]["sensor"]["temperature"]
-        self.humidity_name = self.parameters["variables"]["sensor"]["humidity"]
+        self.co2_name = self.parameters["variables"]["sensor"]["co2"]
 
 
     def initialize(self):
@@ -104,8 +88,7 @@ class SHT25(Peripheral):
         self.logger.debug("Initializing sensor")
 
         # Initialize reported values
-        self.temperature = None
-        self.humidity = None
+        self.co2 = None
         self.health = 100
 
         # Perform initial health check
@@ -117,7 +100,7 @@ class SHT25(Peripheral):
             reading command` and verifying sensor acknowledges. Finishes 
             within 200ms. """
         try:
-            # self.i2c.write([0xF3])
+            # Do something
             self.logger.info("Passed initial health check")
         except Exception:
             self.logger.exception("Failed initial health check")
@@ -129,73 +112,71 @@ class SHT25(Peripheral):
         """ Warms sensor. Useful for sensors with warm up times >200ms """
         self.logger.debug("Warming sensor")
 
+        # TODO: Get sensor status and check for warming...this is important
+
 
     def update(self):
         """ Updates sensor. """
         if self.simulate:
-            self.temperature = 33.3
-            self.humidity = 33.3
+            self.co2 = 444
             self.health = 100
         else:
-            self.update_temperature()
-            self.update_humidity()
+            self.update_co2()
             self.update_health()
 
 
-    def update_temperature(self):
-        """ Updates sensor temperature. """
-        self.logger.debug("Getting temperature")
-
+    def update_co2(self):
+        """ Updates sensor co2. """
+        self.logger.debug("Getting co2")
         try:
-            # Send read temperature command (no-hold master)
+            # Send read status command
             with threading.Lock():
-                self.i2c.write([0xF3])
-                
+                self.i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01]) 
+            
             # Wait for sensor to process
-            time.sleep(0.5)
+            time.sleep(0.1) 
 
             # Read sensor data
             with threading.Lock():
-                msb, lsb = self.i2c.read(2)
+                xx, xx, msb, lsb = self.i2c.read(4) 
 
-            # Convert temperature data and set significant figures
-            raw = msb * 256 + lsb
-            temperature = -46.85 + ((raw * 175.72) / 65536.0)
-            temperature = float("{:.0f}".format(temperature))
+            # Convert sensor data
+            co2 = msb*256 + lsb 
 
-            # Update temperature in shared state
-            self.temperature = temperature
-            
+            # Set significant figures
+            co2 = int(co2)
+
+            # Update status in shared state
+            self.co2 = co2
+
         except:
-            self.logger.exception("Bad temperature reading")
+            self.logger.exception("Bad status reading")
             self._missed_readings += 1
 
 
-    def update_humidity(self):
-        """ Updates sensor humidity. """
-        self.logger.debug("Getting humidity")
+    def get_status(self):
+        """ Gets status of the sensor. """
+        self.logger.debug("Getting status")
         try:
-            # Send read humidity command (no-hold master)
+            # Send read status command
             with threading.Lock():
-                self.i2c.write([0xF5])
-
-            # Wait for sensor to process
-            time.sleep(0.5)
-
-            # Read sensor
-            with threading.Lock():
-                msb, lsb = self.i2c.read(2) # Read sensor data
-
-            # Convert humidity data and set significant figures
-            raw = msb * 256 + lsb
-            humidity = -6 + ((raw * 125.0) / 65536.0)
-            humidity = float("{:.0f}".format(humidity))
+                self.i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01]) 
             
-            # Update humidity in shared state
-            self.humidity = humidity
-        
+            # Wait for sensor to process
+            time.sleep(0.1) 
+
+            # Read sensor data
+            with threading.Lock():
+                xx, xx, msb, lsb = i2c.read(4) 
+
+            # Convert sensor data
+            status = msb*256 + lsb 
+
+            # Update status in shared state
+            self.status = status
+
         except:
-            self.logger.exception("Bad humidity reading")
+            self.logger.exception("Bad status reading")
             self._missed_readings += 1
 
 
@@ -233,5 +214,28 @@ class SHT25(Peripheral):
 
 
     def clear_reported_values(self):
-        self.temperature = None
-        self.humidity = None
+        self.co2 = None
+
+
+# TODO: use these or delete them...
+# # Initialize register addresses
+# REGISTER_FIRMWARE_REVISTION = 0x1389
+# REGISTER_STATUS = 0x138A
+# REGISTER_GAS_PPM = 0x138B
+# REGISTER_RESET_DEVICE = 0x03E8
+# REGISTER_START_SINGLE_POINT_CALIBRATION = 0x3EC
+# REGISTER_SLAVE_ADDRESS = 0x0FA5
+# REGISTER_ABC_LOGIC_ENABLE_DISABLE = 0x03EE
+
+# # Initialize function codes
+# FUNCTION_READ_INPUT_REGISTERS = 0x04
+# FUNCTION_WRITE_SINGLE_COIL = 0x05
+# FUNCTION_WRITE_SINGLE_REGISTER = 0x06
+
+# # Initialize status register bit breakout
+# STATUS_ERROR_CONDITION = 0x0001
+# STATUS_FLASH_ERROR = 0x0002
+# STATUS_CALIBRATION_ERROR = 0x0004
+# STATUS_I2C = 0x0200
+# STATUS_WARM_UP_MODE = 0x0400
+# STATUS_SINGLE_POINT_CALIBRATION = 0x0800

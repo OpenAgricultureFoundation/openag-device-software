@@ -5,7 +5,7 @@
     "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
     "peripherals": [
         {
-            "name": "SHT25-Top",
+            "name": "SHT25-1",
             "type": "SHT25",
             "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
             "parameters": {
@@ -21,6 +21,82 @@
                     "mux": "0x77", 
                     "channel": "1", 
                     "address": "0x40"
+                }
+            }
+        },
+        {
+            "name": "T6713-1",
+            "type": "T6713",
+            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "co2": "air_co2_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x15"
+                }
+            }
+        },
+        {
+            "name": "AtlasPH-1",
+            "type": "AtlasPH",
+            "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "ph": "water_ph"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x63"
+                }
+            }
+        },
+        {
+            "name": "AtlasEC-1",
+            "type": "AtlasEC",
+            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "ec": "water_electrical_conductivity_us/cm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x64"
+                }
+            }
+        },
+        {
+            "name": "AtlasDO-1",
+            "type": "AtlasDO",
+            "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "do": "water_dissolved_oxygen_mg/l"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x61"
                 }
             }
         }

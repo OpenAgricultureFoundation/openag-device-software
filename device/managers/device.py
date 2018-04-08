@@ -534,11 +534,12 @@ class DeviceManager:
         """ Loads peripheral setup files from codebase into database by 
             creating new entries after deleting existing entries. Verification 
             depends on sensor/actuator variables. """
-        self.logger.debug("Loading peripheral setup files")
+        self.logger.info("Loading peripheral setup files")
 
         # Get peripheral setups
         peripheral_setups = []
         for filepath in glob.glob("device/peripherals/setups/*.json"):
+            self.logger.debug("Loading peripheral setup file: {}".format(filepath))
             peripheral_setups.append(json.load(open(filepath)))
 
         # Get get peripheral setup schema
@@ -563,11 +564,12 @@ class DeviceManager:
         """ Loads device config files from codebase into database by creating 
             new entries if nonexistant or updating existing if existant. 
             Verification depends on peripheral setups. """
-        self.logger.debug("Loading device config files")
+        self.logger.info("Loading device config files")
 
         # Get devices
         device_configs = []
         for filepath in glob.glob("data/devices/*.json"):
+            self.logger.debug("Loading device config file: {}".format(filepath))
             device_configs.append(json.load(open(filepath)))
 
         # Get get device config schema

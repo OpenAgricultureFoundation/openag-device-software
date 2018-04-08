@@ -28,6 +28,62 @@
 		}
 	},
 	{
+		"key": "air_co2_ppm",
+		"info": {
+			"name": {
+				"brief": "Co2",
+				"verbose": "Air Carbon Dioxide"
+			},
+			"unit": {
+				"brief": "ppm",
+				"verbose": "Parts Per Million",
+				"type": "number"
+			}
+		}
+	},
+	{
+		"key": "water_ph",
+		"info": {
+			"name": {
+				"brief": "pH",
+				"verbose": "Water Potential Hydrogen"
+			},
+			"unit": {
+				"brief": "pH",
+				"verbose": "pH Scale",
+				"type": "number"
+			}
+		}
+	},
+	{
+		"key": "water_electrical_conductivity_us/cm",
+		"info": {
+			"name": {
+				"brief": "EC",
+				"verbose": "Electrical Conductivity"
+			},
+			"unit": {
+				"brief": "uS/cm",
+				"verbose": "Micro Siemens per Centimeter",
+				"type": "number"
+			}
+		}
+	},
+	{
+		"key": "water_dissolved_oxygen_mg/l",
+		"info": {
+			"name": {
+				"brief": "DO",
+				"verbose": "Dissolved Oxygen"
+			},
+			"unit": {
+				"brief": "mg/L",
+				"verbose": "Milligrams per Liter",
+				"type": "number"
+			}
+		}
+	},
+	{
 		"key": "light_intensity_par",
 		"info": {
 			"name": {

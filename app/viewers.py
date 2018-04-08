@@ -185,25 +185,28 @@ class DeviceViewer:
     logger = logging.LoggerAdapter(logger, extra)
 
     def __init__(self):
-        self.thread_modes = self.get_thread_modes()
+        self.modes, self.healths = self.get_thread_parameters()
 
 
-    def get_thread_modes(self):
+    def get_thread_parameters(self):
 
         # Initialize thread modes dict
-        thread_modes = {}
+        modes = {}
+        healths = {}
 
         # Get device and recipe modes
-        thread_modes["Device Mode"] = Common.get_device_state_value("mode")
-        thread_modes["Recipe Mode"] = Common.get_recipe_state_value("mode")
+        modes["Device Mode"] = Common.get_device_state_value("mode")
+        modes["Recipe Mode"] = Common.get_recipe_state_value("mode")
 
-        # Get peripheral modes if they exist
+        # Get peripherals mode and health if they exist
         peripheral_dict = Common.get_peripheral_dict()
         if peripheral_dict != None:
             for peripheral_name in peripheral_dict:
                 individual_peripheral_dict = peripheral_dict[peripheral_name]
-                thread_modes[peripheral_name] = individual_peripheral_dict["mode"]
+                modes[peripheral_name] = individual_peripheral_dict["mode"]
+                healths[peripheral_name] = individual_peripheral_dict["health"]
 
-
+        print("modes={}".format(modes))
+        print("healths={}".format(healths))
         # Return thread modes
-        return thread_modes
+        return modes, healths

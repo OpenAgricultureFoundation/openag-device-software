@@ -112,6 +112,7 @@ class SMBus(object):
         self.close()
         return False  # Don't suppress exceptions.
 
+
     def open(self, bus):
         """Open the smbus interface on the specified bus."""
         # Close the device if it's already open.
@@ -123,6 +124,7 @@ class SMBus(object):
         # TODO: Catch IOError and throw a better error message that describes
         # what's wrong (i.e. I2C may not be enabled or the bus doesn't exist).
 
+
     def close(self):
         """Close the smbus connection.  You cannot make any other function
         calls on the bus unless open is called!"""
@@ -130,15 +132,25 @@ class SMBus(object):
             self._device.close()
             self._device = None
 
+
     def _select_device(self, addr):
         """Set the address of the device to communicate with on the I2C bus."""
         ioctl(self._device.fileno(), I2C_SLAVE, addr & 0x7F)
+
 
     def read_byte(self, addr):
         """Read a single byte from the specified device."""
         assert self._device is not None, 'Bus must be opened before operations are made against it!'
         self._select_device(addr)
         return ord(self._device.read(1))
+
+
+    def read_bytes(self, addr, length):
+        """Read a single byte from the specified device."""
+        assert self._device is not None, 'Bus must be opened before operations are made against it!'
+        self._select_device(addr)
+        return self._device.read(length)
+
 
     def read_byte_data(self, addr, cmd):
         """Read a single byte from the specified cmd register of the device."""
@@ -184,6 +196,7 @@ class SMBus(object):
         # ioctl won't work.
         raise NotImplementedError()
 
+
     def read_i2c_block_data(self, addr, cmd, length=32):
         """Perform a read from the specified cmd register of device.  Length number
         of bytes (default of 32) will be read and returned as a bytearray.
@@ -201,6 +214,7 @@ class SMBus(object):
         ioctl(self._device.fileno(), I2C_RDWR, request)
         return bytearray(result.raw)  # Use .raw instead of .value which will stop at a null byte!
 
+
     def write_quick(self, addr):
         """Write a single byte to the specified device."""
         # What a strange function, from the python-smbus source this appears to
@@ -215,6 +229,7 @@ class SMBus(object):
         # Make ioctl call and return result data.
         ioctl(self._device.fileno(), I2C_RDWR, request)
 
+
     def write_byte(self, addr, val):
         """Write a single byte to the specified device."""
         assert self._device is not None, 'Bus must be opened before operations are made against it!'
@@ -222,6 +237,7 @@ class SMBus(object):
         data = bytearray(1)
         data[0] = val & 0xFF
         self._device.write(data)
+
 
     def write_byte_data(self, addr, cmd, val):
         """Write a byte of data to the specified cmd register of the device.
@@ -234,6 +250,7 @@ class SMBus(object):
         # Send the data to the device.
         self._select_device(addr)
         self._device.write(data)
+
 
     def write_word_data(self, addr, cmd, val):
         """Write a word (2 bytes) of data to the specified cmd register of the

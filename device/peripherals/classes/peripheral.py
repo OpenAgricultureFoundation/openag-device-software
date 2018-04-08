@@ -17,7 +17,7 @@ class Peripheral:
     thread_is_active = True
 
     # Initialize timing variabless
-    sampling_interval_sec = 2
+    sampling_interval_sec = 5
     last_update_time = None
 
 
@@ -278,3 +278,8 @@ class Peripheral:
     def report_actuator_value(self, actuator, variable, value):
         """ Report an actuator value. """
         self.state.environment["actuator"]["reported"][variable] = value
+
+
+    def report_health(self, value):
+        """ Report peripheral health. """
+        self.state.peripherals[self.name]["health"] = value

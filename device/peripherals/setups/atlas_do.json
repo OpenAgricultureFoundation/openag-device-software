@@ -1,0 +1,37 @@
+{
+	"name":  "Atlas Dissolved Oxygen Sensor",
+	"version": "1",
+	"uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
+	"module_name": "atlas_do",
+	"class_name": "AtlasDO",
+	"parameters": {
+		"variables": {
+			"sensors": {
+				"do": {
+					"name": "string", 
+					"uuid": "string"
+				}
+			},
+			"actuators": null
+		},	
+		"communication": {
+			"bus": "int",
+			"mux": "int",
+			"channel": "int",
+			"address": "int"
+		}
+	},
+	"info": {
+		"variables": {
+			"sensors":{
+				"do": {
+					"range": [0.01, 100],
+			        "accuracy": {
+			            "typical": 0.05
+			        }
+				}
+			},
+			"actuators": null
+		}
+	}
+}

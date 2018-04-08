@@ -12,12 +12,12 @@ from device.utilities.mode import Mode
 from device.utilities.error import Error
 
 
-class SHT25(Peripheral):
-    """ Temperature and humidity sensor. """
+class AtlasPH(Peripheral):
+    """ Atlas pH sensor. """
 
     # Initialize sensor parameters
-    _temperature = None
-    _humidity = None
+    _ph = None
+    _status = None
 
     # Initialize health metrics
     _health = None
@@ -28,34 +28,19 @@ class SHT25(Peripheral):
 
 
     @property
-    def temperature(self):
-        """ Gets temperature value. """
-        return self._temperature
+    def ph(self):
+        """ Gets pH value. """
+        return self._ph
 
 
-    @temperature.setter
-    def temperature(self, value):
-        """ Safely updates temperature in environment state each time
+    @ph.setter
+    def ph(self, value):
+        """ Safely updates ph in environment state each time
             it is changed. """   
-        self.logger.debug("Temperature: {}".format(value))    
-        self._temperature = value
+        self.logger.debug("pH: {}".format(value))    
+        self._ph = value
         with threading.Lock():
-            self.report_sensor_value(self.name, self.temperature_name, self._temperature)
-
-    @property
-    def humidity(self):
-        """ Gets humidity value. """
-        return self._humidity
-
-
-    @humidity.setter
-    def humidity(self, value):
-        """ Safely updates humidity in environment state each time 
-            it is changed. """
-        self.logger.debug("Humidity: {}".format(value))
-        self._humidity = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.humidity_name, self._humidity)
+            self.report_sensor_value(self.name, self.ph_name, value)
 
 
     @property
@@ -92,8 +77,10 @@ class SHT25(Peripheral):
         self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
 
         # Initialize sensor variable names
-        self.temperature_name = self.parameters["variables"]["sensor"]["temperature"]
-        self.humidity_name = self.parameters["variables"]["sensor"]["humidity"]
+        self.ph_name = self.parameters["variables"]["sensor"]["ph"]
+
+        # Remove me
+        self.simulate = True
 
 
     def initialize(self):
@@ -104,8 +91,7 @@ class SHT25(Peripheral):
         self.logger.debug("Initializing sensor")
 
         # Initialize reported values
-        self.temperature = None
-        self.humidity = None
+        self.ph = None
         self.health = 100
 
         # Perform initial health check
@@ -117,7 +103,7 @@ class SHT25(Peripheral):
             reading command` and verifying sensor acknowledges. Finishes 
             within 200ms. """
         try:
-            # self.i2c.write([0xF3])
+            # TODO: Do something
             self.logger.info("Passed initial health check")
         except Exception:
             self.logger.exception("Failed initial health check")
@@ -128,74 +114,55 @@ class SHT25(Peripheral):
     def warm(self):
         """ Warms sensor. Useful for sensors with warm up times >200ms """
         self.logger.debug("Warming sensor")
+        # TODO: Do something
 
 
     def update(self):
         """ Updates sensor. """
         if self.simulate:
-            self.temperature = 33.3
-            self.humidity = 33.3
+            self.ph = 7.77
             self.health = 100
         else:
-            self.update_temperature()
-            self.update_humidity()
+            self.update_ph()
             self.update_health()
 
 
-    def update_temperature(self):
-        """ Updates sensor temperature. """
-        self.logger.debug("Getting temperature")
-
+    def update_ph(self):
+        """ Updates sensor ph. """
+        self.logger.debug("Getting pH")
         try:
-            # Send read temperature command (no-hold master)
+            # Send read command
             with threading.Lock():
-                self.i2c.write([0xF3])
-                
+                bytes = bytearray("R\00", 'utf8') # Create byte array
+                self.i2c.write_raw(bytes) # Send get ph command
+            
             # Wait for sensor to process
-            time.sleep(0.5)
+            time.sleep(0.9) 
 
             # Read sensor data
             with threading.Lock():
-                msb, lsb = self.i2c.read(2)
+                data = self.i2c.read(8) 
+                if len(data) != 8:
+                    self.logger.critial("Requested 8 bytes but only received {}".format(len(data)))
+                # TODO: throw an error if we dont get 8 bytes back...
+                # Need to flush the bus...
+                # Extra laggard bytes will mess up other sensors...
+                # TODO: before each read, flush the bus...do this in i2c.py
 
-            # Convert temperature data and set significant figures
-            raw = msb * 256 + lsb
-            temperature = -46.85 + ((raw * 175.72) / 65536.0)
-            temperature = float("{:.0f}".format(temperature))
+            # Convert status data
+            status = data[0] 
 
-            # Update temperature in shared state
-            self.temperature = temperature
-            
+            # Convert ph data
+            raw = float(data[1:].decode('utf-8').strip("\x00"))
+
+            # Set significant figures
+            ph = float("{:.1f}".format(raw))
+
+            # Update status in shared state
+            self.ph = ph
+
         except:
-            self.logger.exception("Bad temperature reading")
-            self._missed_readings += 1
-
-
-    def update_humidity(self):
-        """ Updates sensor humidity. """
-        self.logger.debug("Getting humidity")
-        try:
-            # Send read humidity command (no-hold master)
-            with threading.Lock():
-                self.i2c.write([0xF5])
-
-            # Wait for sensor to process
-            time.sleep(0.5)
-
-            # Read sensor
-            with threading.Lock():
-                msb, lsb = self.i2c.read(2) # Read sensor data
-
-            # Convert humidity data and set significant figures
-            raw = msb * 256 + lsb
-            humidity = -6 + ((raw * 125.0) / 65536.0)
-            humidity = float("{:.0f}".format(humidity))
-            
-            # Update humidity in shared state
-            self.humidity = humidity
-        
-        except:
-            self.logger.exception("Bad humidity reading")
+            self.logger.exception("Bad pH reading")
             self._missed_readings += 1
 
 
@@ -233,5 +200,4 @@ class SHT25(Peripheral):
 
 
     def clear_reported_values(self):
-        self.temperature = None
-        self.humidity = None
+        self.ph = None

@@ -1,0 +1,37 @@
+{
+	"name":  "Atlas Electrical Conductivity Sensor",
+	"version": "1",
+	"uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
+	"module_name": "atlas_ec",
+	"class_name": "AtlasEC",
+	"parameters": {
+		"variables": {
+			"sensors": {
+				"ec": {
+					"name": "string", 
+					"uuid": "string"
+				}
+			},
+			"actuators": null
+		},	
+		"communication": {
+			"bus": "int",
+			"mux": "int",
+			"channel": "int",
+			"address": "int"
+		}
+	},
+	"info": {
+		"variables": {
+			"sensors":{
+				"ec": {
+					"range": [5, 200000],
+			        "accuracy": {
+			            "percentage": 2
+			        }
+				}
+			},
+			"actuators": null
+		}
+	}
+}

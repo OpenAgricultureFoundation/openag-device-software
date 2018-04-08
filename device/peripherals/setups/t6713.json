@@ -1,0 +1,38 @@
+{
+	"name":  "T6713 Co2 Sensor",
+	"version": "1",
+	"uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+	"module_name": "t6713",
+	"class_name": "T6713",
+	"parameters": {
+		"variables": {
+			"sensors": {
+				"co2": {
+					"name": "string", 
+					"uuid": "string"
+				}
+			},
+			"actuators": null
+		},	
+		"communication": {
+			"bus": "int",
+			"mux": "int",
+			"channel": "int",
+			"address": "int"
+		}
+	},
+	"info": {
+		"variables": {
+			"sensors":{
+				"co2": {
+					"range": [400, 2000],
+			        "accuracy": {
+			            "typical": 40
+			        },
+			        "response_time_seconds": 180
+				}
+			},
+			"actuators": null
+		}
+	}
+}

@@ -72,15 +72,19 @@
 {% block content %}
  <html>
  	{% csrf_token %}
- 	<h2> Device </h2>
+ 	<h2> Device Modes </h2>
 	    <p>
-	    	{% for key, value in current_device.thread_modes.items %}
+	    	{% for key, value in current_device.modes.items %}
 	    		<b>{{ key }}:</b> {{ value }} </br>
 			{% endfor %}
     	</p>
 
-
-
+    <h2> Device Healths </h2>
+        <p>
+            {% for key, value in current_device.healths.items %}
+                <b>{{ key }}:</b> {{ value }} %</br>
+            {% endfor %}
+        </p>
 
     <h2> Recipe </h2>
         <p>
