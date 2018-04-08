@@ -7,7 +7,7 @@ from device.peripherals.classes.peripheral import Peripheral
 # Import device comms
 from device.comms.i2c import I2C
 
-# Import device modes and errors
+
 from device.utilities.mode import Mode
 from device.utilities.error import Error
 

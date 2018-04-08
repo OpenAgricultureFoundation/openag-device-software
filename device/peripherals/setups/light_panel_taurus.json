@@ -1,0 +1,41 @@
+{
+	"name":  "Light Panel Taurus Actuator",
+	"version": "1",
+	"uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+	"module_name": "light_panel_taurus",
+	"class_name": "LightPanelTaurus",
+	"parameters": {
+		"variables": {
+			"sensors": null,
+			"actuators": {
+				"intensity": {
+					"name": "string", 
+					"uuid": "string"
+				},
+				"spectrum": {
+					"name": "string", 
+					"uuid": "string"
+				}
+			}
+		},	
+		"communication": {
+			"bus": "int",
+			"mux": "int",
+			"channel": "int",
+			"address": "int"
+		}
+	},
+	"info": {
+		"variables": {
+			"sensors": null,
+			"actuators":{
+				"intensity": {
+					"todo": true
+				},
+				"spectrum": {
+					"todo": true
+				}
+			}
+		}
+	}
+}

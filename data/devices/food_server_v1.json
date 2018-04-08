@@ -99,6 +99,26 @@
                     "address": "0x61"
                 }
             }
+        },
+        {
+            "name": "LightPanelTaurus-1",
+            "type": "LightPanelTaurus",
+            "uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+            "parameters": {
+                "variables": {
+                    "actuator": {
+                        "intensity": "light_intensity_par",
+                        "spectrum": "light_spectrum_taurus"
+                    },
+                    "sensor": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x3c"
+                }
+            }
         }
     ],
     "controllers": null

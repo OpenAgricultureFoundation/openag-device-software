@@ -26,5 +26,33 @@
 				"type": "number"
 			}
 		}
+	},
+	{
+		"key": "light_intensity_par",
+		"info": {
+			"name": {
+				"brief": "Light Intensity",
+				"verbose": "Light Itensity"
+			},
+			"unit": {
+				"brief": "PAR",
+				"verbose": "Photosynthetically Active Radiation",
+				"type": "number"
+			}
+		}
+	},
+	{
+		"key": "light_spectrum_taurus",
+		"info": {
+			"name": {
+				"brief": "Light Spectrum",
+				"verbose": "Light Spectrum Taurus"
+			},
+			"unit": {
+				"brief": "FR,R,G,B,CW,WW",
+				"verbose": "Far Red, Red, Green, Blue, Cool White, Warm White",
+				"type": "normalized_percentage_array"
+			}
+		}
 	}
 ]
