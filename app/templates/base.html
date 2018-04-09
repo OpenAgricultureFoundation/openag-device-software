@@ -30,30 +30,30 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item">
+            <li {% if 'dashboard' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'dashboard' %}">Dashboard<span class="sr-only">(current)</span></a>
             </li>
-            <li class="nav-item">
+            <li {% if 'events' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'events' %}">Events</a>
             </li>
-            <li class="nav-item">
+            <li {% if 'recipes' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'recipes' %}">Recipes</a>
             </li>
-            <li class="nav-item">
+            <li {% if 'environment' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'environments' %}">Environments</a>
             </li>
-            <li class="nav-item">
+            <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
             </li>
-            <li class="nav-item">
+            <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="/api">API</a>
             </li>
             {% if not user.is_authenticated %}
-            <li class="nav-item">
+            <li {% if 'login' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'login' %}">Login</a>
             </li>
             {% else %}
-            <li class="nav-item">
+            <li {% if 'logout' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
             {% endif %}
