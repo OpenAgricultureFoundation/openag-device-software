@@ -8,6 +8,8 @@ from app.models import EnvironmentModel
 from app.models import DeviceConfigModel
 from app.models import RecipeModel
 from app.models import RecipeTransitionModel
+from app.models import CultivarModel
+from app.models import CultivationMethodModel
 
 
 class StateSerializer(serializers.HyperlinkedModelSerializer):
@@ -46,3 +48,15 @@ class RecipeTransitionSerializer(serializers.HyperlinkedModelSerializer):
         model = RecipeTransitionModel
         fields = ("minute", "phase", "cycle", "environment_name",
         			"environment_state")
+
+
+class CultivarSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = RecipeModel
+        fields = ("uuid", "name", "json")
+
+
+class CultivationMethodSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = RecipeModel
+        fields = ("uuid", "name", "json")

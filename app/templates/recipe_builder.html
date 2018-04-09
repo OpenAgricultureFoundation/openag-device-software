@@ -1,0 +1,378 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+{% csrf_token %}
+<html>
+  <header>
+    <title>Recipe Builder</title>
+    {% load static %}
+    <link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAeElEQVQ4T7VTQQ7AIAya/3/0jGZNWgrDw7ZbWwSlbFz1u59yQD/KNs/AGAYYSeh8gZTqEaG6qnhBbwdBVnOkBcs8YKRLGvu7VkZlb7Kpr1vAVTHVJsre67ZSzjiCTEaJP/UAFVSQCs7lgF1b5oClz/1cLQdI8j/BBHcXIhCKVEksAAAAAElFTkSuQmCC" rel="icon" type="image/x-icon"/>
+    <meta charset="utf-8">
+    
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.9/js/all.js" integrity="sha384-8iPTk2s/jMVj81dnzb/iFR2sdA7u06vHJyyLlAd4snFpCl/SnyUjRrbdJsw1pGIl" crossorigin="anonymous"></script>
+
+    <script> var django_cultivars = JSON.parse('{{cultivars|escapejs}}'); </script>
+    <script> var django_cultivation_methods = JSON.parse('{{cultivation_methods|escapejs}}'); </script>
+    <script src="{% static "recipe_builder.js" %}"></script>
+    <script src="{% static "recipe_cults.js" %}"></script>
+    <script src="{% static "recipe_environments.js" %}"></script>
+    <script src="{% static "recipe_phases.js" %}"></script>
+  </header>
+  <body>
+      <h1>Recipe Builder</h1>
+      <div id="recipe">
+        <!-- Recipe Details -->
+        <div class="recipe-card">
+          <div class="recipe-card-header" id="detailsHeading">
+            <h5 class="mb-0">
+              <button class="btn btn-link" data-toggle="collapse" data-target="#details" aria-expanded="true" aria-controls="details">
+                Details
+              </button>
+            </h5>
+          </div>
+
+          <div id="details" class="collapse show" aria-labelledby="detailsHeading" data-parent="#accordion">
+            <div class="recipe-card-body">
+              <div class="form-group">
+                <label for="name">Name</label>
+                <input name="name" type="text" class="form-control" placeholder="If Looks Could Kale">
+              </div>
+
+              <div class="form-group">
+                <label for="briefDescription">Brief Description</label>
+                <input name="briefDescription" type="text" class="form-control" placeholder="Grows beautiful purple kale.">
+              </div>
+
+              <div class="form-group">
+                <label for="verboseDescription">Verbose Description</label>
+                <textarea name="verboseDescription" class="form-control" rows=4 placeholder="Grows beautiful purple kale in 30 days in a shallow water culture hydroponic system. The lights are on a balanced spectrum and follow a standard 24 hour light cycle with 18 hour days. Moderate temperatures are maintained throughout the grow until the final harvest phase when they are radically dropped over one night to simulate a frost which makes the leaves more tender."></textarea>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Cultivars -->
+        <div class="recipe-card">
+          <div class="recipe-card-header" id="cultivarsHeading">
+            <h5 class="mb-0">
+              <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#cultivars" aria-expanded="false" aria-controls="cultivars">
+                Cultivars
+              </button>
+            </h5>
+          </div>
+          <div id="cultivars" class="collapse" aria-labelledby="cultivarsHeading" data-parent="#accordion">
+            <div class="recipe-card-body">
+              <!-- Table -->
+              <h5>Selected Cultivars</h5>
+              <div class="table-responsive">
+                <table class="table table-striped selectedTable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Link</th>
+                      <th scope="col">Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Add to this table when something is selected above. -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Search Input -->
+              <br>
+              <h5>Search</h5>
+              <div class="form-group">
+                <label for="cultivarSearch">Search for a Cultivar</label>
+                <input type="text" class="form-control searchInput">
+              </div>
+
+              <!-- Search Results -->
+              <br>
+              <div class="table-responsive">
+                <table class="table table-striped searchResults">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Link</th>
+                      <th scope="col">Add</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Add search results to table -->
+                  </tbody>
+                </table>
+              </div>
+
+              <br>
+              <h6>Details</h6>
+              <div class="searchDetails">
+                <div class="row">
+                  <div class="form-group col-md-6">
+                    <label for="name">Name</label>
+                    <input name="name" type="text" readonly class="form-control">
+                  </div>
+
+                  <div class="form-group col-md-6">
+                    <label for="uuid">UUID</label>
+                    <input name="uuid" type="text" readonly class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="description">Description</label>
+                  <textarea name="description" readonly class="form-control" rows=2></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="link">Link</label>
+                  <input name="link" type="url" readonly class="form-control">
+                </div>
+
+                <div class="row">
+                  <div class="form-group col-md-6">
+                    <label for="average_height_centimeters">Height</label>
+                    <input name="average_height_centimeters" type="number" readonly class="form-control">
+                  </div>
+
+                  <div class="form-group col-md-6">
+                    <label for="average_width_centimeters">Width</label>
+                    <input name="average_width_centimeters" type="number" readonly class="form-control">
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="form-group col-md-6">
+                    <label for="average_duration_days">Duration (days)</label>
+                    <input name="average_duration_days" type="number" readonly class="form-control">
+                  </div>
+
+                  <div class="form-group col-md-6">
+                    <label for="duration_start_stage">Start Stage</label>
+                    <input name="duration_start_stage" type="text" readonly class="form-control">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Cultivation Methods -->
+        <!-- This is almost exactly the same as cultivars so clever people would use a for loop or something -->
+        <div class="recipe-card">
+          <div class="recipe-card-header" id="cultivationMethodsHeading">
+            <h5 class="mb-0">
+              <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#cultivationMethods" aria-expanded="false" aria-controls="cultivationMethods">
+                Cultivation Methods
+              </button>
+            </h5>
+          </div>
+          <div id="cultivationMethods" class="collapse" aria-labelledby="cultivationMethodsHeading" data-parent="#accordion">
+            <div class="recipe-card-body">
+              <!-- Table -->
+              <h5>Selected Cultivation Methods</h5>
+              <div class="table-responsive">
+                <table class="table table-striped selectedTable">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Add to this table when something is selected above. -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Search Input -->
+              <br>
+              <h5>Search</h5>
+              <div class="form-group">
+                <label for="cultivationMethodSearch">Search for a Cultivation Method</label>
+                <input type="text" class="form-control searchInput">
+              </div>
+
+              <!-- Search Results -->
+              <br>
+              <div class="table-responsive">
+                <table class="table table-striped searchResults">
+                  <thead>
+                    <tr>
+                      <th scope="col">Name</th>
+                      <th scope="col">Add</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Add search results to table -->
+                  </tbody>
+                </table>
+              </div>
+
+              <br>
+              <h6>Details</h6>
+              <div class="searchDetails">
+                <div class="row">
+                  <div class="form-group col-md-6">
+                    <label for="name">Name</label>
+                    <input name="name" type="text" readonly class="form-control">
+                  </div>
+
+                  <div class="form-group col-md-6">
+                    <label for="uuid">UUID</label>
+                    <input name="uuid" type="text" readonly class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="description">Description</label>
+                  <textarea name="description" readonly class="form-control" rows=2></textarea>
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+          <!-- Environments -->
+          <div class="recipe-card">
+            <div class="recipe-card-header" id="environmentsHeading">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#environments" aria-expanded="false" aria-controls="environments">
+                  Environments
+                </button>
+                <button class="float-right btn" id="addEnvironmentButton" disabled>Add</button>
+              </h5>
+            </div>
+            <div id="environments" class="collapse" aria-labelledby="environmentsHeading" data-parent="#accordion">
+              <div class="recipe-card-body">
+                <!-- Blank by default, added from template with button in header -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Phases -->
+          <div class="recipe-card">
+            <div class="recipe-card-header" id="phasesHeading">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#phases" aria-expanded="false" aria-controls="phases">
+                  Phases
+                </button>
+                <button class="float-right btn" id="addPhaseButton">Add</button>
+              </h5>
+            </div>
+            <div id="phases" class="collapse" aria-labelledby="phasesHeading" data-parent="#accordion">
+              <div class="recipe-card-body">
+                <!-- Blank by default, added from template with button in header -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Templates (no ids here!) -->
+        <div hidden id="templates">
+          <br><br><br>
+          <h2>Templates</h2>
+
+          <!-- Panel/recipe-card Template (for copy-paste, not programmatic copying)-->
+          <div class="recipe-card">
+            <div class="recipe-card-header" id="headingThree">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Collapsible Group Item #3
+                </button>
+              </h5>
+            </div>
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+              <div class="recipe-card-body">
+                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row environmentVariable">
+            <label for="variable" class="col-md-5 col-form-label">Variable</label>
+            <div class="col-md-7">
+              <input type="text" class="form-control" placeholder="Variable Value">
+            </div>
+          </div>
+
+          <div class="recipe-card environment">
+            <div class="recipe-card-header">
+              Environment
+            </div>
+            <div class="recipe-card-body">
+              <form>
+                <div class="form-group row">
+                  <label for="name" class="col-md-5 col-form-label">Name</label>
+                  <div class="col-md-7">
+                    <input type="text" name="name" class="form-control" placeholder="Standard Day">
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="recipe-card phase">
+            <div class="recipe-card-header">
+              Phase
+            </div>
+            <div class="recipe-card-body">
+              <form>
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="name">Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Standard Growth">
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="repeat">Repeat</label>
+                    <input type="number" name="repeat" class="form-control">
+                  </div>
+                </div>
+
+                <div>
+                  <table class="table table-sm table-striped" width="100%">
+                    <thead>
+                      <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Environment</th>
+                        <th scope="col">Duration (hours)</th>
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="cycle">
+                        <td><input name="name" type="text" placeholder="Day"></td>
+                        <td><select name="environment" class="environmentSelect"></select></td>
+                        <td><input name="duration_hours" type="number"></td>
+                        <td>TODO remove link</td>
+                      </tr>
+                      <tr>
+                        <td colspan=4>
+                          <button class="addCycleButton btn btn-sm btn-primary btn-block">
+                            Add Cycle
+                          </button>
+                        </td>
+                      </tr>
+
+                    </tbody>
+                  </table>
+                </div>
+
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+    </body>
+</html>
+{% endblock %}

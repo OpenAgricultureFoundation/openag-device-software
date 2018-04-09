@@ -15,6 +15,12 @@ from django.http import HttpResponseRedirect
 # Import rest framework modules
 from rest_framework import routers
 
+# Import django project settings
+from django.conf import settings
+
+# Import static files
+from django.conf.urls.static import static
+
 # Import app modules
 from app import views
 from app.router import Router
@@ -26,6 +32,8 @@ router.register(r"state", views.StateViewSet, base_name="api-state")
 router.register(r"event", views.EventViewSet, base_name="api-event")
 router.register(r"recipe", views.RecipeViewSet, base_name="api-recipe")
 router.register(r"recipe/transitions", views.RecipeTransitionViewSet, base_name="api-recipe-transition")
+router.register(r"cultivars", views.CultivarViewSet, base_name="api-cultivars")
+router.register(r"cultivation-methods", views.CultivationMethodViewSet, base_name="api-cultivation-methods")
 
 # Setup dashboard redirect
 def redirect_to_dashboard(request):
@@ -48,10 +56,9 @@ urlpatterns = [
     url(r'^dashboard/$', views.Dashboard.as_view(), name="dashboard"),
     url(r'^events/$', views.Events.as_view(), name="events"),
     url(r'^recipes/$', views.Recipes.as_view(), name="recipes"),
+    url(r'^recipe/build/$', views.RecipeBuilder.as_view(), name="recipe-builder"),
     url(r'^environments/$', views.Environments.as_view(), name="environments"),
     url(r'^manual/$', views.Manual.as_view(), name="manual"),
     url(r'^entry/$', views.Entry.as_view(), name="entry"),
-]
-
-
+]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

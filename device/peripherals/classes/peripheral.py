@@ -30,14 +30,14 @@ class Peripheral:
         self.config = config
         self.simulate = simulate
 
-        # Log simulation mode if enabled
-        if self.simulate:
-            self.logger.info("Simulating sensor")
-
         # Initialize logger
         extra = {'console_name':self.name, 'file_name': self.name}
         logger = logging.getLogger(__name__)
         self.logger = logging.LoggerAdapter(logger, extra)
+
+        # Log simulation mode if enabled
+        if self.simulate:
+            self.logger.info("Simulating sensor")
 
         # Initialize modes and errors
         self.mode = Mode.INIT

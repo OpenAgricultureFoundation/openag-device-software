@@ -30,6 +30,8 @@ from app.models import EnvironmentModel
 from app.models import DeviceConfigModel
 from app.models import PeripheralSetupModel
 from app.models import RecipeTransitionModel
+from app.models import CultivarModel
+from app.models import CultivationMethodModel
 
 # Import app serializers
 from app.serializers import StateSerializer
@@ -37,12 +39,16 @@ from app.serializers import EventSerializer
 from app.serializers import EnvironmentSerializer
 from app.serializers import RecipeSerializer
 from app.serializers import RecipeTransitionSerializer
+from app.serializers import CultivarSerializer
+from app.serializers import CultivationMethodSerializer
 
 # Import app viewers
 from app.viewers import DeviceViewer
 from app.viewers import RecipeViewer
 from app.viewers import SimpleRecipeViewer
 from app.viewers import EnvironmentViewer
+from app.viewers import CultivarsViewer
+from app.viewers import CultivationMethodsViewer
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -109,7 +115,25 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RecipeTransitionSerializer
 
     def get_queryset(self):
-        queryset = RecipeTransition.objects.all()
+        queryset = RecipeTransitionModel.objects.all()
+        return queryset
+
+
+class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
+    """ API endpoint that allows cultivars to be viewed. """
+    serializer_class = CultivarSerializer
+
+    def get_queryset(self):
+        queryset = CultivarModel.objects.all()
+        return queryset
+
+
+class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
+    """ API endpoint that allows cultivation methods to be viewed. """
+    serializer_class = CultivationMethodSerializer
+
+    def get_queryset(self):
+        queryset = CultivationMethodModel.objects.all()
         return queryset
 
 
@@ -142,6 +166,33 @@ class Dashboard(APIView):
             "current_recipe": current_recipe,
             "recipes": recipes}
         return Response(response)
+
+
+class RecipeBuilder(APIView):
+    """ UI page for building recipes. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'recipe_builder.html'
+
+
+    def get(self, request):
+        # Get recipes
+        recipe_objects = RecipeModel.objects.all()
+        recipes = []
+        for recipe_object in recipe_objects:
+            recipes.append(SimpleRecipeViewer(recipe_object))
+
+        # Get cultivars
+        cultivars_viewer = CultivarsViewer()
+        cultivars = cultivars_viewer.json
+
+        # Get cultivation methods
+        cultivation_methods_viewer= CultivationMethodsViewer()
+        cultivation_methods = cultivation_methods_viewer.json
+
+        return Response({
+            'recipes': recipes, 
+            'cultivars': cultivars,
+            'cultivation_methods': cultivation_methods})
 
 
 class Events(APIView):

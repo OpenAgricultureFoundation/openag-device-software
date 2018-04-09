@@ -12,7 +12,8 @@ from app.common import Common
 
 # Import app models
 from app.models import EventModel
-
+from app.models import CultivarModel
+from app.models import CultivationMethodModel
 
 class RecipeViewer:
     # Initialize logger
@@ -97,6 +98,24 @@ class DeviceConfigurationViewer:
         self.name = self.dict["name"]
 
 
+class CultivarsViewer:
+    def __init__(self):
+        cultivars = CultivarModel.objects.all()
+        cultivar_dict = []
+        for cultivar in cultivars:
+            cultivar_dict.append(json_.loads(cultivar.json))
+        self.json = json_.dumps(cultivar_dict)
+
+
+class CultivationMethodsViewer:
+    def __init__(self):
+        cultivation_methods = CultivationMethodModel.objects.all()
+        cultivation_methods_dict = []
+        for cultivation_method in cultivation_methods:
+            cultivation_methods_dict.append(json_.loads(cultivation_method.json))
+        self.json = json_.dumps(cultivation_methods_dict)
+
+
 class EnvironmentViewer:
     # Initialize logger
     extra = {"console_name":"Environment Viewer", "file_name": "environment_viewer"}
@@ -127,7 +146,6 @@ class EnvironmentViewer:
         # Log all variables in reported values
         for variable in environment_dict[peripheral_type]["reported"]:
             # Get peripheral info
-            self.logger.info("Getting peripheral info for `{}`".format(variable))
             if peripheral_type == "sensor":
                 info = common.get_sensor_variable_info(variable)
             elif peripheral_type =="actuator":
@@ -157,7 +175,6 @@ class EnvironmentViewer:
                 continue
 
             # Get peripheral info
-            self.logger.debug("Getting peripheral info for `{}`".format(variable))
             if peripheral_type == "sensor":
                 info = common.get_sensor_variable_info(variable)
             elif peripheral_type =="actuator":
@@ -206,7 +223,5 @@ class DeviceViewer:
                 modes[peripheral_name] = individual_peripheral_dict["mode"]
                 healths[peripheral_name] = individual_peripheral_dict["health"]
 
-        print("modes={}".format(modes))
-        print("healths={}".format(healths))
         # Return thread modes
         return modes, healths

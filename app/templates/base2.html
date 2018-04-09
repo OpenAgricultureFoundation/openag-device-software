@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OpenAg Brain{% endblock %}</title>
+    {% block stylesheet %}
+    <style type="text/css">
+        body {
+         background-color: #f1f1f1;
+        }
+    </style>
+    {% endblock %}
+  </head>
+  <body>
+    <header>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">OpenAg Brain</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li {% if 'dashboard' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'dashboard' %}">Dashboard<span class="sr-only">(current)</span></a>
+            </li>
+            <li {% if 'events' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'events' %}">Events</a>
+            </li>
+            <li {% if 'recipes' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'recipes' %}">Recipes</a>
+            </li>
+            <li {% if 'environment' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'environments' %}">Environments</a>
+            </li>
+            <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+            </li>
+            <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="/api">API</a>
+            </li>
+            {% if not user.is_authenticated %}
+            <li {% if 'login' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'login' %}">Login</a>
+            </li>
+            {% else %}
+            <li {% if 'logout' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <main>
+      {% block content %}
+      {% endblock %}
+    </main>
+  </body>
+</html>

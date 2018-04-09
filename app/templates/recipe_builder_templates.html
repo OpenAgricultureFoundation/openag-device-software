@@ -1,0 +1,98 @@
+        <!-- Templates (no ids here!) -->
+        <div hidden id="templates">
+          <br><br><br>
+          <h2>Templates</h2>
+
+          <!-- Panel/Card Template (for copy-paste, not programmatic copying)-->
+          <div class="card">
+            <div class="card-header" id="headingThree">
+              <h5 class="mb-0">
+                <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Collapsible Group Item #3
+                </button>
+              </h5>
+            </div>
+            <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
+              <div class="card-body">
+                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group row environmentVariable">
+            <label for="variable" class="col-md-5 col-form-label">Variable</label>
+            <div class="col-md-7">
+              <input type="text" class="form-control" placeholder="Variable Value">
+            </div>
+          </div>
+
+          <div class="card environment">
+            <div class="card-header">
+              Environment
+            </div>
+            <div class="card-body">
+              <form>
+                <div class="form-group row">
+                  <label for="name" class="col-md-5 col-form-label">Name</label>
+                  <div class="col-md-7">
+                    <input type="text" name="name" class="form-control" placeholder="Standard Day">
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card phase">
+            <div class="card-header">
+              Phase
+            </div>
+            <div class="card-body">
+              <form>
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="name">Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="Standard Growth">
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="repeat">Repeat</label>
+                    <input type="number" name="repeat" class="form-control">
+                  </div>
+                </div>
+
+                <div>
+                  <table class="table table-sm table-striped" width="100%">
+                    <thead>
+                      <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Environment</th>
+                        <th scope="col">Duration (hours)</th>
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="cycle">
+                        <td><input name="name" type="text" placeholder="Day"></td>
+                        <td><select name="environment" class="environmentSelect"></select></td>
+                        <td><input name="duration_hours" type="number"></td>
+                        <td>TODO remove link</td>
+                      </tr>
+                      <tr>
+                        <td colspan=4>
+                          <button class="addCycleButton btn btn-sm btn-primary btn-block">
+                            Add Cycle
+                          </button>
+                        </td>
+                      </tr>
+
+                    </tbody>
+                  </table>
+                </div>
+
+              </form>
+            </div>
+          </div>
+
+        </div>
+
+    </body>
+</html>
