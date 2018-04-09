@@ -1,25 +1,64 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <meta charset="utf-8">
     <title>{% block title %}OpenAg Brain{% endblock %}</title>
-    {% block stylesheet %}{% endblock %}
+    {% block stylesheet %}
+    <style type="text/css">
+        body {
+         background-color: #f1f1f1;
+        }
+       .dashboard, .events, .recipes, .environments {
+        padding: 20px;
+       }
+       .card {
+        background-color: #fff; 
+        padding: 20px;
+        margin-bottom: 20px;
+       }
+    </style>
+    {% endblock %}
   </head>
   <body>
     <header>
-      <h1>OpenAg Brain</h1>
-      <a href="{% url 'dashboard' %}"> dashboard </a> /
-      <a href="{% url 'events' %}"> events </a> /
-      <a href="{% url 'recipes' %}"> recipes </a> /
-      <a href="{% url 'environments' %}"> environments </a> /
-      <a href="{% url 'admin:index' %}"> admin </a> /
-      <a href="/api"> api </a> /
-      {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}"> logout </a>
-      {% else %}
-        <a href="{% url 'login' %}"> login </a>
-      {% endif %}
-
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">OpenAg Brain</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'dashboard' %}">Dashboard<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'events' %}">Events</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'recipes' %}">Recipes</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'environments' %}">Environments</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/api">API</a>
+            </li>
+            {% if not user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'login' %}">Login</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
     </header>
     <main>
       {% block content %}
@@ -28,6 +67,9 @@
     <footer>
     </footer>
     <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
     {% block javascript %}{% endblock %}
   </body>
 </html>

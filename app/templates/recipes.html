@@ -1,33 +1,38 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <html>
-	<body>
-		<h2>Recipes</h2>
-			{% for recipe in recipes %}
-				<b>{{ recipe.name }}</b>
-					<ul>
-						{% for key, value in recipe.recipe_dict.items %}
-							{% if key == "environments"%}
-								<li><b>{{ key }}:</b>
-									<ul>
-										{% for env_name, env_state in value.items %}
-											<li> {{ env_name }} : {{ env_state }} </li>
-										{% endfor %}
-									</ul>
-							{% elif key == "phases"%}
-								<li><b>{{ key }}:</b>
-									<ul>
-										{% for phase in value %}
-											<li> {{ phase }} </li>
-										{% endfor %}
-									</ul>
-							{% else %}
-	    						<li><b>{{ key }}:</b> {{ value }} </br></li>
-	    					{% endif %}
-						{% endfor %}
-					</ul>
-			{% endfor %}
-	</body>
+   <body>
+      <div class="recipes">
+         <h2>Recipes</h2>
+         {% for recipe in recipes %}
+         <div class="card">
+            <b>{{ recipe.name }}</b>
+            <ul>
+               {% for key, value in recipe.recipe_dict.items %}
+                  {% if key == "environments"%}
+                  <li>
+                     <b>{{ key }}:</b>
+                     <ul>
+                        {% for env_name, env_state in value.items %}
+                        <li> {{ env_name }} : {{ env_state }} </li>
+                        {% endfor %}
+                     </ul>
+                     {% elif key == "phases"%}
+                  <li>
+                     <b>{{ key }}:</b>
+                     <ul>
+                        {% for phase in value %}
+                        <li> {{ phase }} </li>
+                        {% endfor %}
+                     </ul>
+                     {% else %}
+                  <li><b>{{ key }}:</b> {{ value }} </br></li>
+                  {% endif %}
+               {% endfor %}
+            </ul>
+         </div>
+         {% endfor %}
+      </div>
+   </body>
 </html>
 {% endblock %}

@@ -1,22 +1,25 @@
 {% extends 'base.html' %}
-
 {% block content %}
 <html>
-	<body>
-		<h2>Environments</h2>
-			{% for environment in environments %}
-				<b>{{ environment.timestamp }}</b>
-					<ul>
-						{% for key, value in environment.state.items %}
-						<li><b>{{ key }}:</b></li>
-							<ul>
-								{% for k, v in value.items %}
-									<li>{{ k }}: {{ v }} </li>
-								{% endfor %}
-							</ul>
-						{% endfor %}
-					</ul>
-			{% endfor %}
-	</body>
+  <body>
+    <div class="environments">
+      <h2>Environments</h2>
+      {% for environment in environments %}
+      <div class="card">
+        <b>{{ environment.timestamp }}</b>
+        <ul>
+          {% for key, value in environment.state.items %}
+          <li><b>{{ key }}:</b></li>
+          <ul>
+            {% for k, v in value.items %}
+            <li>{{ k }}: {{ v }} </li>
+            {% endfor %}
+          </ul>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </body>
 </html>
 {% endblock %}
