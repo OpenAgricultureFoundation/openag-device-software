@@ -4,8 +4,8 @@ $(document).ready(function() {
     initPhases();
 
     // Debugging, test data
-    if (true) {
-        console.log("~~~Debugging!");
+    if (false) {
+        console.log("Debugging!");
         $(".collapse").collapse("show");
 
         $("#addEnvironmentButton").click();
