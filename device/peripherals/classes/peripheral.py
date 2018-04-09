@@ -13,6 +13,13 @@ class Peripheral:
     _mode = None
     _error = None
 
+    # Initialize health metrics
+    _health = None
+    _minimum_health = 80.0
+    _missed_readings = 0
+    _readings_count = 0
+    _readings_per_health_update = 20
+
     # Initialize thread terminator
     thread_is_active = True
 
@@ -91,6 +98,22 @@ class Peripheral:
             if self.name not in self.state.peripherals:
                 self.state.peripherals[self.name] = {}
             self.state.peripherals[self.name]["error"] = value
+
+
+    @property
+    def health(self):
+        """ Gets health value. """
+        return self._health
+
+
+    @health.setter
+    def health(self, value):
+        """ Safely updates health in device state each time 
+            it is changed. """
+        self._health = value
+        self.logger.debug("Health: {}".format(value))
+        with threading.Lock():
+            self.report_health(self._health)
 
 
     def spawn(self):
@@ -283,3 +306,26 @@ class Peripheral:
     def report_health(self, value):
         """ Report peripheral health. """
         self.state.peripherals[self.name]["health"] = value
+
+
+    def update_health(self):
+        """ Updates sensor health. """
+
+        # Increment readings count
+        self._readings_count += 1
+
+        # Update health after specified number of readings
+        if self._readings_count == self._readings_per_health_update:
+            good_readings = self._readings_per_health_update - self._missed_readings
+            health = float(good_readings) / self._readings_per_health_update * 100
+            self.health = int(health)
+
+            # Check health is satisfactory
+            if self.health < self._minimum_health:
+                self.logger.warning("Unacceptable sensor health")
+
+                # Set error
+                self.error = Error.FAILED_HEALTH_CHECK
+
+                # Transition to error mode
+                self.mode = Mode.ERROR

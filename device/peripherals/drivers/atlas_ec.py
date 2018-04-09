@@ -1,8 +1,8 @@
 # Import python modules
 import logging, time, threading
 
-# Import peripheral parent class
-from device.peripherals.classes.peripheral import Peripheral
+# Import atlas device parent class
+from device.peripherals.classes.atlas import Atlas
 
 # Import device comms
 from device.comms.i2c import I2C
@@ -12,19 +12,12 @@ from device.utilities.mode import Mode
 from device.utilities.error import Error
 
 
-class AtlasEC(Peripheral):
+class AtlasEC(Atlas):
     """ Atlas EC sensor. """
 
     # Initialize sensor parameters
     _ec = None
     _status = None
-
-    # Initialize health metrics
-    _health = None
-    _minimum_health = 80.0
-    _missed_readings = 0
-    _readings_count = 0
-    _readings_per_health_update = 20
 
 
     @property
@@ -43,44 +36,11 @@ class AtlasEC(Peripheral):
             self.report_sensor_value(self.name, self.ec_name, value)
 
 
-    @property
-    def health(self):
-        """ Gets health value. """
-        return self._health
-
-
-    @health.setter
-    def health(self, value):
-        """ Safely updates health in device state each time 
-            it is changed. """
-        self._health = value
-        self.logger.debug("Health: {}".format(value))
-        with threading.Lock():
-            self.report_health(self._health)
-        
-
     def __init__(self, *args, **kwargs):
-        """ Instantiates sensor. Instantiates parent class, initializes i2c 
-            mux parameters, and initializes sensor variable names. """
-
-        # Instantiate parent class
+        """ Instantiates sensor. Instantiates parent class, and initializes 
+            sensor variable name. """
         super().__init__(*args, **kwargs)
-
-        # Initialize i2c mux parameters
-        self.parameters = self.config["parameters"]
-        self.bus = int(self.parameters["communication"]["bus"])
-        self.mux = int(self.parameters["communication"]["mux"], 16)
-        self.channel = int(self.parameters["communication"]["channel"])
-        self.address = int(self.parameters["communication"]["address"], 16)
-        self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-            self.bus, self.mux, self.channel, self.address))
-        self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
-
-        # Initialize sensor variable names
         self.ec_name = self.parameters["variables"]["sensor"]["ec"]
-
-        # Remove me
-        self.simulate = True
 
 
     def initialize(self):
@@ -98,22 +58,9 @@ class AtlasEC(Peripheral):
         self.perform_initial_health_check()
             
 
-    def perform_initial_health_check(self):
-        """ Performs initial health check by trying to send a `get temperature
-            reading command` and verifying sensor acknowledges. Finishes 
-            within 200ms. """
-        try:
-            # TODO: Do something
-            self.logger.info("Passed initial health check")
-        except Exception:
-            self.logger.exception("Failed initial health check")
-            self.error = Error.FAILED_HEALTH_CHECK
-            self.mode = Mode.ERROR
-
-
     def warm(self):
         """ Warms sensor. Useful for sensors with warm up times >200ms """
-        self.logger.debug("Warming sensor")
+        self.logger.debug("Sensor does not require warming")
         # TODO: Do something
 
 
@@ -127,68 +74,6 @@ class AtlasEC(Peripheral):
             self.update_health()
 
 
-    def update_ec(self):
-        """ Updates sensor ec. """
-        self.logger.debug("Getting EC")
-        try:
-            # Send read command
-            with threading.Lock():
-                bytes = bytearray("R\00", 'utf8') # Create byte array
-                self.i2c.write_raw(bytes) # Send get ec command
-            
-            # Wait for sensor to process
-            time.sleep(0.9) 
-
-            # Read sensor data
-            with threading.Lock():
-                data = self.i2c.read(8) 
-                if len(data) != 8:
-                    self.logger.critial("Requested 8 bytes but only received {}".format(len(data)))
-                # TODO: throw an error if we dont get 8 bytes back...
-                # Need to flush the bus...
-                # Extra laggard bytes will mess up other sensors...
-                # TODO: before each read, flush the bus...do this in i2c.py
-
-            # Convert status data
-            status = data[0] 
-
-            # Convert ec data
-            raw = float(data[1:].decode('utf-8').strip("\x00"))
-
-            # Set significant figures
-            ec = float("{:.1f}".format(raw))
-
-            # Update status in shared state
-            self.ec = ec
-
-        except:
-            self.logger.exception("Bad EC reading")
-            self._missed_readings += 1
-
-
-    def update_health(self):
-        """ Updates sensor health. """
-
-        # Increment readings count
-        self._readings_count += 1
-
-        # Update health after specified number of readings
-        if self._readings_count == self._readings_per_health_update:
-            good_readings = self._readings_per_health_update - self._missed_readings
-            health = float(good_readings) / self._readings_per_health_update * 100
-            self.health = int(health)
-
-            # Check health is satisfactory
-            if self.health < self._minimum_health:
-                self.logger.warning("Unacceptable sensor health")
-
-                # Set error
-                self.error = Error.FAILED_HEALTH_CHECK
-
-                # Transition to error mode
-                self.mode = Mode.ERROR
-
-
     def shutdown(self):
         """ Shuts down sensor. """
 
@@ -199,5 +84,29 @@ class AtlasEC(Peripheral):
         self.health = 100
 
 
+    def perform_initial_health_check(self):
+        """ Performs initial health check by trying to send a `get temperature
+            reading command` and verifying sensor acknowledges. Finishes 
+            within 200ms. """
+        try:
+                
+
+
+            self.logger.info("Passed initial health check")
+        except Exception:
+            self.logger.exception("Failed initial health check")
+            self.error = Error.FAILED_HEALTH_CHECK
+            self.mode = Mode.ERROR
+
+
+    def update_ec(self):
+        """ Updates sensor ec. """
+        self.logger.debug("Getting EC")
+        raw = self.read_value() # Get sensor reading
+        ec = float("{:.1f}".format(raw)) # Set significant figures
+        self.ec = ec # Update status in shared state
+
+
     def clear_reported_values(self):
+        """ Clears reported values. """
         self.ec = None
