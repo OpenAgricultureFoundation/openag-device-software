@@ -23,19 +23,19 @@ if __name__ == "__main__":
         bus = 2
         mux =0x77
         channel = 1
-        address = 0x61
+        address = 0x64
     elif "--edu1" in sys.argv:
         print("Config: PFC-EDU v1")
         bus = 2
         mux =0x77
         channel = 1
-        address = 0x61
+        address = 0x64
     else:
         print("Config: Default")
         bus = 2
         mux =0x77
         channel = 1
-        address = 0x61
+        address = 0x64
 
     # Get run options from command line args
     if '--no-mux' in sys.argv:
@@ -69,13 +69,14 @@ if __name__ == "__main__":
         i2c.write([channel])
         sys.exit()
 
-    # Get pH
-    if logging_enabled: print("Getting pH")
+    # Get EC
+    if logging_enabled: print("Getting EC")
     bytes = bytearray("R\00", 'utf8') # Create byte array
-    i2c.write_raw(bytes) # Send get ph command
+    i2c.write_raw(bytes) # Send get ec command
     time.sleep(0.9) # Wait for sensor to process
     data = i2c.read(31) # Get sensor data
     status = data[0] # Convert status data
-    raw = float(data[1:].decode('utf-8').strip("\x00")) # Convert ph data
+    raw = float(data[1:].decode('utf-8').strip("\x00")) # Convert ec data
+    raw = raw / 1000 # Convert to mS/cm
     ec = float("{:.1f}".format(raw)) # Set significant figures
-    print("EC: {} uS/cm".format(ec))
+    print("EC: {} mS/cm".format(ec))

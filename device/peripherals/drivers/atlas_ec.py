@@ -36,6 +36,96 @@ class AtlasEC(Atlas):
             self.report_sensor_value(self.name, self.ec_name, value)
 
 
+    @property
+    def output_parameter_ec(self):
+        """ Gets output parameter electrical conductivity state. """
+        response_message = self.process_command("O,?", 0.3)
+        if response_message != None:
+            if "EC" in response_message:
+                return True
+            else:
+                return False
+        else:
+            return None
+
+
+    @output_parameter_ec.setter
+    def output_parameter_ec(self, value):
+        """ Sets output parameter electrical conductivity state. """ 
+        if value:  
+            self.process_command("O,EC,1", 0.3)
+        else:
+            self.process_command("O,EC,0", 0.3)
+
+    @property
+    def output_parameter_tds(self):
+        """ Gets output parameter total dissolved solids state. """
+        response_message = self.process_command("O,?", 0.3)
+        if response_message != None:
+            if "TDS" in response_message:
+                return True
+            else:
+                return False
+        else:
+            return None
+
+
+    @output_parameter_tds.setter
+    def output_parameter_tds(self, value):
+        """ Sets output parameter total dissolved solids state. """ 
+        if value:  
+            self.process_command("O,TDS,1", 0.3)
+        else:
+            self.process_command("O,TDS,0", 0.3)
+
+    @property
+    def output_parameter_s(self):
+        """ Gets output parameter salinity state. """
+        response_message = self.process_command("O,?", 0.3)
+        if response_message != None:
+            # Note: Can't just check if substring in string..`S` in `TDS`,`SG`
+            parameters = response_message.split(",")
+            for parameter in parameters:
+                if parameter == "S":
+                    return True
+            return False
+        else:
+            return None
+
+
+    @output_parameter_s.setter
+    def output_parameter_s(self, value):
+        """ Sets output parameter salinity state. """ 
+        if value:  
+            self.process_command("O,S,1", 0.3)
+        else:
+            self.process_command("O,S,0", 0.3)
+
+
+    @property
+    def output_parameter_sg(self):
+        """ Gets output parameter specific gravity state. """
+        response_message = self.process_command("O,?", 0.3)
+        if response_message != None:
+            if "SG" in response_message:
+                return True
+            else:
+                return False
+        else:
+            return None
+
+
+    @output_parameter_sg.setter
+    def output_parameter_sg(self, value):
+        """ Sets output parameter specific gravity state. """ 
+        if value:  
+            self.process_command("O,SG,1", 0.3)
+        else:
+            self.process_command("O,SG,0", 0.3)
+
+
+
+
     def __init__(self, *args, **kwargs):
         """ Instantiates sensor. Instantiates parent class, and initializes 
             sensor variable name. """
@@ -60,7 +150,22 @@ class AtlasEC(Atlas):
 
     def warm(self):
         """ Warms sensor. Useful for sensors with warm up times >200ms """
-        self.logger.debug("Sensor does not require warming")
+        self.logger.debug("Warming sensor")
+
+        # Set device operation parameters
+        self.protocol_lock = True
+        self.led = True
+        self.output_parameter_ec = True # enable electrical conductivity output
+        self.output_parameter_tds = False # disable total dissolved solids output
+        self.output_parameter_s = False # disable salinity output
+        self.output_parameter_sg = False # disable specific gravity output
+        # TODO: set probe type
+        # TODO: set output parameters
+
+        while True:
+            self.logger.info("Waiting")
+            time.sleep(5)
+
         # TODO: Do something
 
 
@@ -85,12 +190,15 @@ class AtlasEC(Atlas):
 
 
     def perform_initial_health_check(self):
-        """ Performs initial health check by trying to send a `get temperature
-            reading command` and verifying sensor acknowledges. Finishes 
+        """ Performs initial health check by....Finishes 
             within 200ms. """
-        try:
-                
+        self.logger.info("Performing initial health check")
 
+        try:
+            if self.status != None:
+                self.logger.debug("Status not none!")
+            else:
+                failed_health_check = True
 
             self.logger.info("Passed initial health check")
         except Exception:
@@ -102,10 +210,14 @@ class AtlasEC(Atlas):
     def update_ec(self):
         """ Updates sensor ec. """
         self.logger.debug("Getting EC")
-        raw = self.read_value() # Get sensor reading
-        ec = float("{:.1f}".format(raw)) # Set significant figures
-        self.ec = ec # Update status in shared state
 
+        try:
+            value = self.read_value()
+            self.ec = float("{:.1f}".format(value))
+        except:
+            self.logger.exception("Bad reading")
+            self._missed_readings += 1
+    
 
     def clear_reported_values(self):
         """ Clears reported values. """

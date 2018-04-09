@@ -56,15 +56,15 @@
 		}
 	},
 	{
-		"key": "water_electrical_conductivity_us/cm",
+		"key": "water_electrical_conductivity_ms/cm",
 		"info": {
 			"name": {
 				"brief": "EC",
 				"verbose": "Electrical Conductivity"
 			},
 			"unit": {
-				"brief": "uS/cm",
-				"verbose": "Micro Siemens per Centimeter",
+				"brief": "mS/cm",
+				"verbose": "Milli Siemens per Centimeter",
 				"type": "number"
 			}
 		}
