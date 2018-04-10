@@ -94,17 +94,19 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard_console': {
-            'format' : "%(levelname)s %(name)s: %(message)s",
+            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(name)s: %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
         'standard_file': {
-            'format' : "[%(asctime)s] %(levelname)s %(name)s: %(message)s",
+            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(name)s: %(message)s",
             'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
         'device_console': {
-            'format' : "%(levelname)s %(console_name)s: %(message)s",
+            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(console_name)s: %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
         'device_file': {
-            'format' : "[%(asctime)s] %(levelname)s %(file_name)s: %(message)s",
+            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(file_name)s: %(message)s",
             'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
     },

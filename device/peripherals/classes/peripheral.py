@@ -1,9 +1,9 @@
 # Import python modules
-import logging, time, threading
+import logging, time, threading, math
 
 # Import device modes and errors
-from device.utilities.mode import Mode
-from device.utilities.error import Error
+from device.utilities.modes import Modes
+from device.utilities.errors import Errors
 
 
 class Peripheral:
@@ -24,8 +24,9 @@ class Peripheral:
     thread_is_active = True
 
     # Initialize timing variabless
-    sampling_interval_sec = 5
-    last_update_time = None
+    sampling_interval_seconds = 2
+    last_update_seconds = None
+    last_update_interval_seconds = None
 
 
     def __init__(self, name, state, config, simulate=False):
@@ -47,8 +48,8 @@ class Peripheral:
             self.logger.info("Simulating sensor")
 
         # Initialize modes and errors
-        self.mode = Mode.INIT
-        self.error = Error.NONE
+        self.mode = Modes.INIT
+        self.error = Errors.NONE
 
 
     @property
@@ -126,46 +127,47 @@ class Peripheral:
     def run_state_machine(self):
         """ Runs peripheral state machine. """
         while self.thread_is_active:
-            if self.mode == Mode.INIT:
+            if self.mode == Modes.INIT:
                 self.run_init_mode()
-            elif self.mode == Mode.WARMING:
-                self.run_warming_mode()
-            elif self.mode == Mode.NORMAL:
+            elif self.mode == Modes.SETUP:
+                self.run_setup_mode()
+            elif self.mode == Modes.NORMAL:
                 self.run_normal_mode()
-            elif self.mode == Mode.ERROR:
+            elif self.mode == Modes.ERROR:
                 self.run_error_mode()
-            elif self.mode == Mode.RESET:
+            elif self.mode == Modes.RESET:
                 self.run_reset_mode()
-            elif self.mode == Mode.SHUTDOWN:
+            elif self.mode == Modes.SHUTDOWN:
                 self.run_shutdown_mode
             else:
-                self.error = Error.INVALID_MODE
+                self.error = Errors.INVALID_MODE
                 self.logger.critical("Entered invalid mode")
 
 
     def run_init_mode(self):
         """ Runs initialization mode. Initializes peripheral state then 
-            transitions to WARMING. Transitions to ERROR on error. """
+            transitions to SETUP. Transitions to ERROR on error. """
         self.logger.info("Entered INIT")
 
         # Initialize peripheral
         self.initialize()
 
-        # Transition to WARMING if not ERROR
-        if self.mode != Mode.ERROR:
-            self.mode = Mode.WARMING
+        # Transition to SETUP if not ERROR
+        if self.mode != Modes.ERROR:
+            self.mode = Modes.SETUP
 
 
-    def run_warming_mode(self):
-        """ Runs warming mode. Initializes peripheral hardware then 
-            transitions to NORMAL. Transitions to ERROR on error. """
-        self.logger.info("Entered WARMING")
+    def run_setup_mode(self):
+        """ Runs setup mode. Sets up peripheral then transitions to NORMAL on 
+            completion or ERROR on error. """
+        self.logger.info("Entered SETUP")
 
-        # Warm peripheral
-        self.warm()
+        # Setup peripheral
+        self.setup()
 
-        # Transition to NORMAL
-        self.mode = Mode.NORMAL
+        # Transition to NORMAL if not ERROR
+        if self.mode != Modes.ERROR:
+            self.mode = Modes.NORMAL
 
 
     def run_normal_mode(self):
@@ -174,18 +176,20 @@ class Peripheral:
             Transitions to ERROR on error. """
         self.logger.info("Entered NORMAL")
         
-        self.last_update_time_sec = time.time()
+        self._update_complete = True
+        self.last_update_seconds = time.time()
         while self.thread_is_active:
             # Update every sampling interval
-            if self.sampling_interval_sec < time.time() - self.last_update_time_sec:
+            self.last_update_interval_seconds = time.time() - self.last_update_seconds
+            if self.sampling_interval_seconds < self.last_update_interval_seconds:
+                self.logger.debug("Updating peripheral, time delta: {:.3f} sec".format(self.last_update_interval_seconds))
+                self.last_update_seconds = time.time()
                 self.update()
-                self.last_update_time_sec = time.time()
-
             # Update every 100ms
             time.sleep(0.100) # 100ms
 
             # Transition to ERROR on error
-            if self.mode == Mode.ERROR:
+            if self.mode == Modes.ERROR:
                 break
 
 
@@ -199,7 +203,7 @@ class Peripheral:
         
         # Wait for reset mode command
         while self.thread_is_active:
-            if self.commanded_mode == Mode.RESET:
+            if self.commanded_mode == Modes.RESET:
                 self.mode == self.commanded_mode
                 self.commanded_mode = None
                 break
@@ -211,10 +215,10 @@ class Peripheral:
         self.logger.info("Entered RESET")
 
         # Clear error state
-        self.error = Error.NONE
+        self.error = Errors.NONE
 
         # Transition to init
-        self.mode = Mode.INIT
+        self.mode = Modes.INIT
 
 
     def run_shutdown_mode(self):
@@ -227,7 +231,7 @@ class Peripheral:
 
         # Wait for initialize mode command
         while self.thread_is_active:
-            if self.commanded_mode == Mode.INIT:
+            if self.commanded_mode == Modes.INIT:
                 self.mode = self.commanded_mode
                 self.commanded_mode = None
                 break
@@ -325,7 +329,12 @@ class Peripheral:
                 self.logger.warning("Unacceptable sensor health")
 
                 # Set error
-                self.error = Error.FAILED_HEALTH_CHECK
+                self.error = Errors.FAILED_HEALTH_CHECK
 
                 # Transition to error mode
-                self.mode = Mode.ERROR
+                self.mode = Modes.ERROR
+
+
+    def magnitude(self, x):
+        """ Gets magnitude of provided value. """
+        return int(math.floor(math.log10(x)))

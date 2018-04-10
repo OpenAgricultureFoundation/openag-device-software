@@ -1,28 +1,9 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Food Server Rack",
+    "name": "Food Server Rack Isolated DO",
     "version": "1",
-    "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
+    "uuid": "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf",
     "peripherals": [
-        {
-            "name": "AtlasEC-1",
-            "type": "AtlasEC",
-            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
-            "parameters": {
-                "variables": {
-                    "sensor": {
-                        "ec": "water_electrical_conductivity_ms/cm"
-                    },
-                    "actuator": null
-                },
-                "communication": {
-                    "bus": "2", 
-                    "mux": "0x77", 
-                    "channel": "1", 
-                    "address": "0x64"
-                }
-            }
-        },
         {
             "name": "AtlasDO-1",
             "type": "AtlasDO",

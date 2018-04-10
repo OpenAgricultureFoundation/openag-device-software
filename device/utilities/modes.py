@@ -1,14 +1,13 @@
-class Mode(object):
+class Modes(object):
 	""" State machine modes """
 	NONE = "NONE"
 	INIT = "INIT"
-	CONFIG = "CONFIG"
 	SETUP = "SETUP"
 	NORMAL = "NORMAL"
-	LOAD = "LOAD"
+	CONFIG = "CONFIG"
 	ERROR = "ERROR"
 	RESET = "RESET"
-	WARMING = "WARMING"
+	LOAD = "LOAD"
 	START = "START"
 	QUEUED = "QUEUED"
 	PAUSE = "PAUSE"

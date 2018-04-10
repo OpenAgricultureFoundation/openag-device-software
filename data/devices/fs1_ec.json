@@ -1,8 +1,8 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Food Server Rack",
+    "name": "Food Server Rack Isolated EC",
     "version": "1",
-    "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
+    "uuid": "5e0610fe-a488-4f70-bb7b-8fe0830fccbb",
     "peripherals": [
         {
             "name": "AtlasEC-1",
@@ -20,25 +20,6 @@
                     "mux": "0x77", 
                     "channel": "1", 
                     "address": "0x64"
-                }
-            }
-        },
-        {
-            "name": "AtlasDO-1",
-            "type": "AtlasDO",
-            "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
-            "parameters": {
-                "variables": {
-                    "sensor": {
-                        "do": "water_dissolved_oxygen_mg/l"
-                    },
-                    "actuator": null
-                },
-                "communication": {
-                    "bus": "2", 
-                    "mux": "0x77", 
-                    "channel": "1", 
-                    "address": "0x61"
                 }
             }
         }

@@ -2,8 +2,8 @@
 import logging, time, threading, os, sys, datetime, json
 
 # Import device utilities
-from device.utilities.mode import Mode
-from device.utilities.error import Error
+from device.utilities.modes import Modes
+from device.utilities.errors import Errors
 
 # Import device parsers
 from device.parsers import RecipeParser
@@ -32,8 +32,8 @@ class RecipeManager:
     def __init__(self, state):
         """ Initializes recipe handler """
         self.state = state
-        self.mode = Mode.INIT
-        self.error = Error.NONE
+        self.mode = Modes.INIT
+        self.error = Errors.NONE
 
 
     @property
@@ -384,28 +384,28 @@ class RecipeManager:
     def run_state_machine(self):
         """ Runs recipe state machine. """
         while True:
-            if self.mode == Mode.INIT:
+            if self.mode == Modes.INIT:
                 self.run_init_mode()
-            if self.mode == Mode.NORECIPE:
+            if self.mode == Modes.NORECIPE:
                 self.run_norecipe_mode()  
-            elif self.mode == Mode.START:
+            elif self.mode == Modes.START:
                 self.run_start_mode()
-            elif self.mode == Mode.QUEUED:
+            elif self.mode == Modes.QUEUED:
                 self.run_queued_mode()        
-            elif self.mode == Mode.NORMAL:
+            elif self.mode == Modes.NORMAL:
                 self.run_normal_mode()
-            elif self.mode == Mode.PAUSE:
+            elif self.mode == Modes.PAUSE:
                 self.run_pause_mode()
-            elif self.mode == Mode.RESUME:
+            elif self.mode == Modes.RESUME:
                 self.run_resume_mode()
-            elif self.mode == Mode.STOP:
+            elif self.mode == Modes.STOP:
                 self.run_stop_mode()
-            elif self.mode == Mode.ERROR:
+            elif self.mode == Modes.ERROR:
                 self.run_error_mode()
-            elif self.mode == Mode.RESET:
+            elif self.mode == Modes.RESET:
                 self.run_reset_mode()
             else:
-                self.error = Error.INVALID_MODE
+                self.error = Errors.INVALID_MODE
                 self.logger.critial("Invalid state machine mode")
                 time.sleep(0.1)
 
@@ -414,14 +414,14 @@ class RecipeManager:
         """ Runs initialization mode. Transitions to stored recipe mode 
             or NORECIPE if no stored mode. """
         self.logger.info("Entered INIT")
-        self.error = Error.NONE
+        self.error = Errors.NONE
 
         # Transition to recipe stored mode
         if "stored_mode" in self.state.recipe and \
             self.state.recipe["stored_mode"] != None:
             self.mode = self.state.recipe["stored_mode"]
         else:
-            self.mode = Mode.NORECIPE
+            self.mode = Modes.NORECIPE
 
 
     def run_norecipe_mode(self):
@@ -435,9 +435,9 @@ class RecipeManager:
 
         # Wait for start command
         while True:
-            if self.commanded_mode == Mode.START:
+            if self.commanded_mode == Modes.START:
                 self.mode = self.commanded_mode
-                self.commanded_mode = Mode.NONE
+                self.commanded_mode = Modes.NONE
                 break
             time.sleep(0.1) # 100ms
 
@@ -482,10 +482,10 @@ class RecipeManager:
             self.commanded_mode = None
 
             # Transition to QUEUED
-            self.mode = Mode.QUEUED
+            self.mode = Modes.QUEUED
         except:
             self.logger.exception("Unable to start recipe")
-            self.mode = Mode.NORECIPE # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
+            self.mode = Modes.NORECIPE # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
             self.error = "Unable to start recipe"
 
 
@@ -495,7 +495,7 @@ class RecipeManager:
         self.logger.info("Entered QUEUED")
         while True:
             if self.start_timestamp_minutes >= self.current_timestamp_minutes:
-                self.mode = Mode.NORMAL
+                self.mode = Modes.NORMAL
                 break
 
 
@@ -513,16 +513,16 @@ class RecipeManager:
                 self.update_recipe_environment()
 
             # Check for transition to PAUSE
-            if self.commanded_mode == Mode.PAUSE:
+            if self.commanded_mode == Modes.PAUSE:
                 self.mode = self.commanded_mode
-                self.commanded_mode = Mode.NONE
+                self.commanded_mode = Modes.NONE
                 break
 
             # Check for transition to STOP
-            if self.commanded_mode == Mode.STOP:
+            if self.commanded_mode == Modes.STOP:
                 self.logger.info("Recipe received request to transition from NORMAL to STOP")
                 self.mode = self.commanded_mode
-                self.commanded_mode = Mode.NONE
+                self.commanded_mode = Modes.NONE
                 break
 
             # Update thread every 100ms
@@ -540,15 +540,15 @@ class RecipeManager:
 
         while True:
             # Check for transition to NORMAL
-            if self.commanded_mode == Mode.NORMAL:
+            if self.commanded_mode == Modes.NORMAL:
                 self.mode = self.commanded_mode
-                self.commanded_mode = Mode.NONE
+                self.commanded_mode = Modes.NONE
                 break
 
             # Check for transition to STOP
-            if self.commanded_mode == Mode.STOP:
+            if self.commanded_mode == Modes.STOP:
                 self.mode = self.commanded_mode
-                self.commanded_mode = Mode.NONE
+                self.commanded_mode = Modes.NONE
                 break
 
             # Update every 100ms
@@ -565,7 +565,7 @@ class RecipeManager:
         self.clear_desired_sensor_state()
 
         # Transition to NORECIPE
-        self.mode = Mode.NORECIPE
+        self.mode = Modes.NORECIPE
 
 
     def run_error_mode(self):
@@ -579,9 +579,9 @@ class RecipeManager:
 
         # Wait for reset mode command
         while True:
-            if self.commanded_mode == Mode.RESET:
+            if self.commanded_mode == Modes.RESET:
                 self.mode == self.commanded_mode
-                self.commanded_mode = Mode.NONE
+                self.commanded_mode = Modes.NONE
                 break
             time.sleep(0.1) # 100ms
 
@@ -591,10 +591,10 @@ class RecipeManager:
         self.logger.info("Entered RESET")
 
         # Clear error
-        self.error = Error.NONE
+        self.error = Errors.NONE
 
         # Transition to INIT
-        self.mode = Mode.INIT
+        self.mode = Modes.INIT
 
 
     def get_recipe_environment(self, minute):

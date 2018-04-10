@@ -3,9 +3,7 @@ import threading, logging, time
 import json as json_
 
 # Import device utilities
-from device.utilities.mode import Mode
-from device.utilities.event import EventRequest
-from device.utilities.variable import Variable
+from device.utilities.events import EventRequests
 
 # Import common app funcitons
 from app.common import Common
@@ -52,7 +50,7 @@ class RecipeViewer:
 
         # Make event request and return event response
         event_request = {
-            "type": EventRequest.CREATE_RECIPE,
+            "type": EventRequests.CREATE_RECIPE,
             "json": json}
         return Common.manage_event(event_request)
 
@@ -70,7 +68,7 @@ class RecipeViewer:
 
         # Make event request and return event response
         event_request = {
-            "type": EventRequest.START_RECIPE,
+            "type": EventRequests.START_RECIPE,
             "uuid": pk,
             "start_timestamp_minutes": start_timestamp_minutes}
         return Common.manage_event(event_request)      
@@ -80,7 +78,7 @@ class RecipeViewer:
         """ Stops a recipe. Sends stop command to event thread, waits for 
             recipe to stop, then returns response. """
         self.logger.info("Received stop recipe request")
-        event_request = {"type": EventRequest.STOP_RECIPE}
+        event_request = {"type": EventRequests.STOP_RECIPE}
         return Common.manage_event(event_request)
 
 

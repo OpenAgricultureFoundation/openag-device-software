@@ -69,7 +69,7 @@
             "parameters": {
                 "variables": {
                     "sensor": {
-                        "ec": "water_electrical_conductivity_us/cm"
+                        "ec": "water_electrical_conductivity_ms/cm"
                     },
                     "actuator": null
                 },

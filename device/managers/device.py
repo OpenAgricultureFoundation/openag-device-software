@@ -6,14 +6,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 # Import device utilities
-from device.utilities.mode import Mode
-from device.utilities.error import Error
-from device.utilities.variable import Variable
-
-# Import device validators
-from device.utilities.validators import PeripheralSetupValidator
-from device.utilities.validators import DeviceConfigValidator
-from device.utilities.validators import RecipeValidator
+from device.utilities.modes import Modes
+from device.utilities.errors import Errors
 
 # Import json validators
 from jsonschema import validate
@@ -95,8 +89,8 @@ class DeviceManager:
 
     def __init__(self):
         """ Initializes device. """
-        self.mode = Mode.INIT
-        self.error = Error.NONE
+        self.mode = Modes.INIT
+        self.error = Errors.NONE
 
 
     @property
@@ -212,19 +206,19 @@ class DeviceManager:
         # Start state machine
         self.logger.info("Started state machine")
         while True:
-            if self.mode == Mode.INIT:
+            if self.mode == Modes.INIT:
                 self.run_init_mode()
-            elif self.mode == Mode.CONFIG:
+            elif self.mode == Modes.CONFIG:
                 self.run_config_mode()
-            elif self.mode == Mode.SETUP:
+            elif self.mode == Modes.SETUP:
                 self.run_setup_mode()
-            elif self.mode == Mode.NORMAL:
+            elif self.mode == Modes.NORMAL:
                 self.run_normal_mode()
-            elif self.mode == Mode.LOAD:
+            elif self.mode == Modes.LOAD:
                 self.run_load_mode()
-            elif self.mode == Mode.ERROR:
+            elif self.mode == Modes.ERROR:
                 self.run_error_mode()
-            elif self.mode == Mode.RESET:
+            elif self.mode == Modes.RESET:
                 self.run_reset_mode()
 
 
@@ -240,7 +234,7 @@ class DeviceManager:
         self.load_database_stored_state()
 
         # Transition to CONFIG
-        self.mode = Mode.CONFIG
+        self.mode = Modes.CONFIG
 
 
     def run_config_mode(self):
@@ -248,12 +242,16 @@ class DeviceManager:
             config command then transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
+
+        # Load an initial config during development
+        self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server v1
+        # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
+        # self.config_uuid = "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf" # FS1 DO
+
+
         # If device config is not set, wait for config command
         if self.config_uuid == None:
             self.logger.info("Waiting for config command")
-
-            # Fake config command during development
-            self.commanded_config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126"
 
             while True:
                 if self.commanded_config_uuid != None:
@@ -264,7 +262,7 @@ class DeviceManager:
                 time.sleep(0.1)
 
         # Transition to SETUP
-        self.mode = Mode.SETUP
+        self.mode = Modes.SETUP
 
 
     def run_setup_mode(self):
@@ -289,7 +287,7 @@ class DeviceManager:
             time.sleep(0.2)
 
         # Transition to NORMAL
-        self.mode = Mode.NORMAL
+        self.mode = Modes.NORMAL
 
 
     def run_normal_mode(self):
@@ -307,7 +305,7 @@ class DeviceManager:
                 self.store_environment()
             
             # Check for system error
-            if self.mode == Mode.ERROR:
+            if self.mode == Modes.ERROR:
                 break
 
             # Update every 100ms
@@ -324,10 +322,10 @@ class DeviceManager:
         self.stop_controller_threads()
 
         # Load config into stored state
-        self.error = Error.NONE
+        self.error = Errors.NONE
 
         # Transition to CONFIG
-        self.mode = Mode.CONFIG
+        self.mode = Modes.CONFIG
 
  
     def run_reset_mode(self):
@@ -340,10 +338,10 @@ class DeviceManager:
         self.kill_controller_threads()
 
         # Clear errors
-        self.error = Error.NONE
+        self.error = Errors.NONE
 
         # Transition to INIT
-        self.mode = Mode.INIT
+        self.mode = Modes.INIT
 
 
     def run_error_mode(self):
@@ -357,7 +355,7 @@ class DeviceManager:
 
         # Wait for reset
         while True:
-            if self.mode == Mode.RESET:
+            if self.mode == Modes.RESET:
                 break
 
             # Update every 100ms
@@ -562,8 +560,8 @@ class DeviceManager:
 
     def load_device_config_files(self):
         """ Loads device config files from codebase into database by creating 
-            new entries if nonexistant or updating existing if existant. 
-            Verification depends on peripheral setups. """
+            new entries after deleting existing entries. Verification depends 
+            on peripheral setups. """
         self.logger.info("Loading device config files")
 
         # Get devices
@@ -583,12 +581,12 @@ class DeviceManager:
         # TODO: Validate device config with peripherals
         # TODO: Validate device config with varibles
 
+        # Delete all device config entries from database
+        DeviceConfigModel.objects.all().delete()
+
         # Create device config entry if new or update existing
         for device_config in device_configs:
-            if DeviceConfigModel.objects.filter(uuid=device_config["uuid"]).exists():
-                DeviceConfigModel.objects.update(uuid=device_config["uuid"], json=json.dumps(device_config))
-            else:
-                DeviceConfigModel.objects.create(json=json.dumps(device_config))
+            DeviceConfigModel.objects.create(json=json.dumps(device_config))
 
 
     def load_database_stored_state(self):
@@ -745,7 +743,7 @@ class DeviceManager:
     def all_threads_initialized(self):
         """ Checks that all recipe, peripheral, and controller 
             theads are initialized. """
-        if self.state.recipe["mode"] == Mode.INIT:
+        if self.state.recipe["mode"] == Modes.INIT:
             return False
         elif not self.all_peripherals_initialized():
             return False
@@ -758,7 +756,7 @@ class DeviceManager:
         """ Checks that all peripheral threads have transitioned from INIT. """
         for peripheral_name in self.state.peripherals:
             peripheral_state = self.state.peripherals[peripheral_name]
-            if peripheral_state["mode"] == Mode.INIT or peripheral_state["mode"] == Mode.WARMING:
+            if peripheral_state["mode"] == Modes.INIT or peripheral_state["mode"] == Modes.SETUP:
                 return False
         return True
 
@@ -767,7 +765,7 @@ class DeviceManager:
         """ Checks that all controller threads have transitioned from INIT. """
         for controller_name in self.state.controllers:
             controller_state = self.state.controllers[controller_name]
-            if controller_state["mode"] == Mode.INIT:
+            if controller_state["mode"] == Modes.INIT:
                 return False
         return True
 
@@ -787,10 +785,10 @@ class DeviceManager:
     def shutdown_peripheral_threads(self):
         """ Shuts down peripheral threads. """
         for peripheral_name in self.peripherals:
-            self.periphrals[peripheral_name].commanded_mode = Mode.SHUTDOWN
+            self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
 
 
     def shutdown_controller_threads(self):
         """ Shuts down controller threads. """
         for controller_name in self.controllers:
-            self.controllers[controller_name].commanded_mode = Mode.SHUTDOWN
+            self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN

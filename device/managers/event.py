@@ -1,12 +1,11 @@
 # Import python modules
 import logging, time, threading, json, os, sys
 
-# Import device utilities
-from device.utilities.mode import Mode
-from device.utilities.error import Error
-from device.utilities.event import EventRequest
-from device.utilities.event import EventResponse
-from device.utilities.validators import RecipeValidator
+# Import device modes errors and events
+from device.utilities.modes import Modes
+from device.utilities.errors import Errors
+from device.utilities.events import EventRequests
+from device.utilities.events import EventResponses
 
 # Import database models
 from app.models import EventModel
@@ -32,8 +31,8 @@ class EventManager:
     def __init__(self, state):
         """ Initialize event handler. """
         self.state = state
-        self.mode = Mode.INIT
-        self.error = Error.NONE
+        self.mode = Modes.INIT
+        self.error = Errors.NONE
 
 
     @property
@@ -90,19 +89,19 @@ class EventManager:
 
         # Verify request is valid
         if "type" not in event.request:
-            event.response["type"] = EventResponse.INVALID_REQUEST
+            event.response["type"] = EventResponses.INVALID_REQUEST
             event.save()
             return
         
         # Handle event
-        if event.request["type"] == EventRequest.CREATE_RECIPE:
+        if event.request["type"] == EventRequests.CREATE_RECIPE:
             self.create_recipe(event)
-        elif event.request["type"] == EventRequest.START_RECIPE:
+        elif event.request["type"] == EventRequests.START_RECIPE:
             self.start_recipe(event)
-        elif event.request["type"] == EventRequest.STOP_RECIPE:
+        elif event.request["type"] == EventRequests.STOP_RECIPE:
             self.stop_recipe(event)
         else:
-            event.response["type"] = EventResponse.INVALID_EVENT
+            event.response["type"] = EventResponses.INVALID_EVENT
             event.save()
 
 
@@ -173,7 +172,7 @@ class EventManager:
 
         # Check recipe is in a mode that can be started
         mode = self.recipe_mode
-        if mode != Mode.NORECIPE:
+        if mode != Modes.NORECIPE:
             event.response["status"] = 400
             event.response["message"] = "Recipe cannot be started from {} mode".format(mode)
             event.save()
@@ -181,12 +180,12 @@ class EventManager:
 
         # Send start recipe command
         self.commanded_recipe_uuid = uuid
-        self.commanded_recipe_mode = Mode.START
+        self.commanded_recipe_mode = Modes.START
 
         # Wait for recipe to start
         start_time_seconds = time.time()
         while time.time() - start_time_seconds < timeout_seconds:
-            if self.recipe_mode == Mode.QUEUED or self.recipe_mode == Mode.NORMAL:
+            if self.recipe_mode == Modes.QUEUED or self.recipe_mode == Modes.NORMAL:
                 event.response["status"] = 200
                 event.response["message"] = "Recipe started!"
                 event.save()
@@ -207,19 +206,19 @@ class EventManager:
         # Check recipe in a mode that can be stopped
         mode = self.recipe_mode
         self.logger.debug("Recipe currently in {} mode".format(mode))
-        if mode != Mode.NORMAL and mode != Mode.PAUSE and mode != Mode.QUEUED:
+        if mode != Modes.NORMAL and mode != Modes.PAUSE and mode != Modes.QUEUED:
             event.response["status"] = 400
             event.response["message"] = "Recipe cannot be stopped from {} mode".format(mode)
             event.save()
             return
 
         # Send stop command
-        self.commanded_recipe_mode = Mode.STOP
+        self.commanded_recipe_mode = Modes.STOP
 
         # Wait for recipe to stop
         start_time_seconds = time.time()
         while time.time() - start_time_seconds < timeout_seconds:
-            if self.recipe_mode == Mode.NORECIPE:
+            if self.recipe_mode == Modes.NORECIPE:
                 event.response["status"] = 200
                 event.response["message"] = "Recipe stopped!"
                 event.save()

@@ -1,4 +1,4 @@
-class Error(object):
+class Errors(object):
 	""" System errors. """
 	NONE = "None"
 	UNKNOWN = "Unknown"
