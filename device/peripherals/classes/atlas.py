@@ -90,7 +90,12 @@ class Atlas(Peripheral):
             else:
                 raise Exception("Device did not process request in time")
         elif response_code == 255: # Device has no data to send
-            raise Exception("Device has no data to send")
+            if retry == True:
+                # Try to read one more time
+                self.logger.warning("Sensor reported no data to read, retrying read")
+                self.read_response(processing_seconds, num_response_bytes, retry=False)
+            else:
+                raise Exception("Device has no data to send")
             
 
     def perform_initial_health_check(self):

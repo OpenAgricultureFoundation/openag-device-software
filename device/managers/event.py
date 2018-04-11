@@ -145,7 +145,7 @@ class EventManager:
             return
 
 
-    def start_recipe(self, event, timeout_seconds=2, update_interval_seconds=0.1):
+    def start_recipe(self, event, timeout_seconds=10, update_interval_seconds=0.1):
         """ Starts recipe. Gets recipe uuid and start timestamp from event
             request, checks recipe is in a mode that can be started, sends
             start recipe command, waits for recipe to start, then 
@@ -198,7 +198,7 @@ class EventManager:
         event.save()
 
 
-    def stop_recipe(self, event, timeout_seconds=2, update_interval_seconds=0.1):
+    def stop_recipe(self, event, timeout_seconds=10, update_interval_seconds=0.1):
         """ Stops recipe. Checks recipe is in a mode that can be stopped, sends 
             stop command, waits for recipe to stop, returns event response. """
         self.logger.info("Received STOP_RECIPE")

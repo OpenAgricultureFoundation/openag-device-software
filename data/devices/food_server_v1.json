@@ -5,6 +5,45 @@
     "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
     "peripherals": [
         {
+            "name": "SHT25-1",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "temperature": "air_temperature_celcius",
+                        "humidity": "air_humidity_percent"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x40"
+                }
+            }
+        },
+        {
+            "name": "T6713-1",
+            "type": "T6713",
+            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "parameters": {
+                "variables": {
+                    "sensor": {
+                        "co2": "air_co2_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x15"
+                }
+            }
+        },
+        {
             "name": "AtlasEC-1",
             "type": "AtlasEC",
             "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
@@ -47,6 +86,26 @@
                     "mux": "0x77", 
                     "channel": "1", 
                     "address": "0x61"
+                }
+            }
+        },
+        {
+            "name": "LightPanelTaurus-1",
+            "type": "LightPanelTaurus",
+            "uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+            "parameters": {
+                "variables": {
+                    "actuator": {
+                        "intensity": "light_intensity_par",
+                        "spectrum": "light_spectrum_taurus"
+                    },
+                    "sensor": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x3c"
                 }
             }
         }

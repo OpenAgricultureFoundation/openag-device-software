@@ -8,8 +8,8 @@ from device.peripherals.classes.peripheral import Peripheral
 from device.comms.i2c import I2C
 
 # Import device modes and errors
-from device.utilities.mode import Mode
-from device.utilities.error import Error
+from device.utilities.modes import Modes
+from device.utilities.errors import Errors
 
 
 class SHT25(Peripheral):
@@ -121,13 +121,13 @@ class SHT25(Peripheral):
             self.logger.info("Passed initial health check")
         except Exception:
             self.logger.exception("Failed initial health check")
-            self.error = Error.FAILED_HEALTH_CHECK
-            self.mode = Mode.ERROR
+            self.error = Errors.FAILED_HEALTH_CHECK
+            self.mode = Modes.ERROR
 
 
-    def warm(self):
-        """ Warms sensor. Useful for sensors with warm up times >200ms """
-        self.logger.debug("Warming sensor")
+    def setup(self):
+        """ Sets up sensor. Useful for sensors with warm up times >200ms """
+        self.logger.debug("Setting up sensor")
 
 
     def update(self):
@@ -216,10 +216,10 @@ class SHT25(Peripheral):
                 self.logger.warning("Unacceptable sensor health")
 
                 # Set error
-                self.error = Error.FAILED_HEALTH_CHECK
+                self.error = Errors.FAILED_HEALTH_CHECK
 
                 # Transition to error mode
-                self.mode = Mode.ERROR
+                self.mode = Modes.ERROR
 
 
     def shutdown(self):
