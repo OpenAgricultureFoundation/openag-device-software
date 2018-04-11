@@ -2,12 +2,12 @@
 	"name":  "Atlas Dissolved Oxygen Sensor EZO",
 	"version": "1",
 	"uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
-	"module_name": "atlas_do",
-	"class_name": "AtlasDO",
+	"module_name": "atlas_dissolved_oxygen",
+	"class_name": "AtlasDissolvedOxygen",
 	"parameters": {
 		"variables": {
 			"sensors": {
-				"do": {
+				"dissolved_oxygen_mg_l": {
 					"name": "string", 
 					"uuid": "string"
 				}
@@ -24,7 +24,7 @@
 	"info": {
 		"variables": {
 			"sensors":{
-				"do": {
+				"dissolved_oxygen_mg_l": {
 					"units": "mg/l",
 					"range": [0.01, 100],
 			        "accuracy": {

@@ -96,6 +96,11 @@ class Atlas(Peripheral):
     def perform_initial_health_check(self):
         """ Performs initial health check by reading device status. """
         self.logger.info("Performing initial health check")
+
+        if self.simulate:
+            self.logger.info("Simulating initial health check")
+            return
+
         try:
             if self.status != None:
                 self.logger.debug("Status not none!")

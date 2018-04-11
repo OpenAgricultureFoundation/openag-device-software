@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Food Server Rack Isolated EC",
+    "name": "Food Server Rack - Electrical Conductivity Only",
     "version": "1",
     "uuid": "5e0610fe-a488-4f70-bb7b-8fe0830fccbb",
     "peripherals": [
@@ -11,9 +11,12 @@
             "parameters": {
                 "variables": {
                     "sensor": {
-                        "ec": "water_electrical_conductivity_ms/cm"
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms/cm"
                     },
-                    "actuator": null
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": null
+                    }
                 },
                 "communication": {
                     "bus": "2", 

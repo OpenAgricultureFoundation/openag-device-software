@@ -24,7 +24,7 @@ class Peripheral:
     thread_is_active = True
 
     # Initialize timing variabless
-    sampling_interval_seconds = 2
+    sampling_interval_seconds = 5
     last_update_seconds = None
     last_update_interval_seconds = None
 

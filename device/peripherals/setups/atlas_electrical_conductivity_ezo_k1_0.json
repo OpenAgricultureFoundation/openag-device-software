@@ -2,12 +2,12 @@
     "name":  "Atlas Electrical Conductivity Sensor EZO K1.0",
     "version": "1",
     "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
-    "module_name": "atlas_ec",
-    "class_name": "AtlasEC",
+    "module_name": "atlas_electrical_conductivity",
+    "class_name": "AtlasElectricalConductivity",
     "parameters": {
         "variables": {
             "sensors": {
-                "ec": {
+                "electrical_conductivity_ms_cm": {
                     "name": "string", 
                     "uuid": "string"
                 }
@@ -24,7 +24,7 @@
     "info": {
         "variables": {
             "sensors":{
-                "ec": {
+                "electrical_conductivity_ms_cm": {
                     "units": "mS/cm",
                     "range": [0.005, 200],
                     "accuracy": {

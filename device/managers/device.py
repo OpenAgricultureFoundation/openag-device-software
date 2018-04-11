@@ -244,7 +244,7 @@ class DeviceManager:
 
 
         # Load an initial config during development
-        self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server v1
+        self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server rack v1
         # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
         # self.config_uuid = "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf" # FS1 DO
 

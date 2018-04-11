@@ -11,9 +11,12 @@
             "parameters": {
                 "variables": {
                     "sensor": {
-                        "ec": "water_electrical_conductivity_ms/cm"
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms/cm"
                     },
-                    "actuator": null
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": null
+                    }
                 },
                 "communication": {
                     "bus": "2", 
@@ -25,14 +28,19 @@
         },
         {
             "name": "AtlasDO-1",
-            "type": "AtlasDO",
+            "type": "AtlasDissolvedOxygen",
             "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
             "parameters": {
                 "variables": {
                     "sensor": {
-                        "do": "water_dissolved_oxygen_mg/l"
+                        "dissolved_oxygen_mg_l": "water_dissolved_oxygen_mg/l"
                     },
-                    "actuator": null
+                    "actuator": null,
+                    "compensation": {
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms/cm",
+                        "temperature_celcius": null,
+                        "pressure_kpa": null
+                    }
                 },
                 "communication": {
                     "bus": "2", 
