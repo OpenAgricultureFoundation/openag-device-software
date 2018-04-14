@@ -22,7 +22,7 @@ class StateSerializer(serializers.HyperlinkedModelSerializer):
 class EventSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = EventModel
-        fields = ("timestamp", "request", "response")
+        fields = ("timestamp", "recipient", "request", "response")
 
 
 class EnvironmentSerializer(serializers.HyperlinkedModelSerializer):

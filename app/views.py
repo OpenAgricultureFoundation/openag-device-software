@@ -44,6 +44,7 @@ from app.serializers import CultivationMethodSerializer
 
 # Import app viewers
 from app.viewers import DeviceViewer
+from app.viewers import EventViewer
 from app.viewers import RecipeViewer
 from app.viewers import SimpleRecipeViewer
 from app.viewers import EnvironmentViewer
@@ -60,13 +61,31 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-class EventViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows events to be viewed. """
+class EventViewSet(viewsets.ModelViewSet):
+    """ API endpoint that allows events to be viewed and created. """
     serializer_class = EventSerializer
 
     def get_queryset(self):
         queryset = EventModel.objects.all()
         return queryset
+
+    def create(self, request):
+        """ API endpoint to create an event. """
+
+        # Get parameters
+        try:
+            request_dict = request.data.dict()
+        except Exception as e:
+            message = "Unable to create request dict: {}".format(e)
+            return Response(message, 400)
+
+        # Get request parameters
+        event_viewer = EventViewer()
+        message, status = event_viewer.create(request_dict)
+        print("Returning status={}. message={}".format(status, message))
+        # return Response(response, status)
+        response_dict = {"message": message}
+        return Response(response_dict, status=200)
 
 
 class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -203,6 +222,37 @@ class Events(APIView):
     def get(self, request):
         events = EventModel.objects.all().order_by("-timestamp")
         return Response({'events': events})
+
+
+class Actions(APIView):
+    """ UI page for actions. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'actions.html'
+
+    def get(self, request):
+
+        # Get current device state object
+        current_device = DeviceViewer()
+
+        # Get current environment state object
+        current_environment = EnvironmentViewer()
+
+        # Get current recipe state object
+        current_recipe = RecipeViewer()
+
+        # Get stored recipe objects
+        recipe_objects = RecipeModel.objects.all()
+        recipes = []
+        for recipe_object in recipe_objects:
+            recipes.append(SimpleRecipeViewer(recipe_object))
+
+        # Build and return response
+        response = {
+            "current_device": current_device,
+            "current_environment": current_environment,
+            "current_recipe": current_recipe,
+            "recipes": recipes}
+        return Response(response)
 
 
 class DeviceConfigList(APIView):

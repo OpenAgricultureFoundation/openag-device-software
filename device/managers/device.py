@@ -79,7 +79,7 @@ class DeviceManager:
 
     # Intialize event object
     event = EventManager(state)
-    post_save.connect(event.process, sender=EventModel)
+    # post_save.connect(event.process, sender=EventModel)
 
 
     # Initialize peripheral and controller managers
@@ -121,6 +121,38 @@ class DeviceManager:
         """ Safely updates commanded mode in state object. """
         with threading.Lock():
             self.state.device["commanded_mode"] = value
+
+
+    @property
+    def request(self):
+        """ Gets request from shared state object. """
+        if "request" in self.state.device:
+            return self.state.device["request"]
+        else:
+            return None
+
+
+    @request.setter
+    def request(self, value):
+        """ Safely updates request in state object. """
+        with threading.Lock():
+            self.state.device["request"] = value
+
+
+    @property
+    def response(self):
+        """ Gets response from shared state object. """
+        if "response" in self.state.device:
+            return self.state.device["response"]
+        else:
+            return None
+
+
+    @response.setter
+    def response(self, value):
+        """ Safely updates response in state object. """
+        with threading.Lock():
+            self.state.device["response"] = value
 
 
     @property
@@ -244,8 +276,8 @@ class DeviceManager:
 
 
         # Load an initial config during development
-        self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server rack v1
-        # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
+        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server rack v1
+        self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
         # self.config_uuid = "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf" # FS1 DO
 
 
@@ -271,8 +303,11 @@ class DeviceManager:
             transitions to NORMAL. """
         self.logger.info("Entered SETUP")
 
-        # Spawn recipe
+        # Spawn recipe thread
         self.recipe.spawn()
+
+        # Spawn event thread
+        self.event.spawn()
 
         # Create peripheral managers and spawn threads
         self.create_peripheral_managers()
@@ -303,6 +338,12 @@ class DeviceManager:
             # Store environment state in every 10 minutes 
             if time.time() - self.latest_environment_timestamp > 60*10:
                 self.store_environment()
+
+            # Check for events
+            request = self.request
+            if self.request != None:
+                self.request = None
+                self.process_event(request)
             
             # Check for system error
             if self.mode == Modes.ERROR:
@@ -792,3 +833,61 @@ class DeviceManager:
         """ Shuts down controller threads. """
         for controller_name in self.controllers:
             self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
+
+
+################################# Events ######################################
+
+
+    def process_event(self, request):
+        """ Processes an event. Gets request parameters, executes request, returns 
+            response. """
+
+        # Get request parameters
+        try:
+            request_type = request["type"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return
+
+        # Execute request
+        if request["type"] == "Load Recipe":
+            self.process_load_recipe_event()
+        elif request["type"] == "Start Recipe":
+            self.process_start_recipe_event()
+        elif request["type"] == "Stop Recipe":
+            self.process_stop_recipe_event()
+        elif request["type"] == "Reset":
+            self.process_reset_event()
+        elif request["type"] == "Configure":
+            self.process_configure_event()
+
+
+    def process_load_recipe_event(self):
+        """ Processes load recipe event. """
+        self.logger.critical("Loading recipe")
+        self.response = {"status": 200, "message": "Pretended to load recipe"}
+
+
+    def process_start_recipe_event(self):
+        """ Processes load recipe event. """
+        self.logger.debug("Starting recipe")
+        self.response = {"status": 200, "message": "Pretended to start recipe"}
+
+
+    def process_stop_recipe_event(self):
+        """ Processes load recipe event. """
+        self.logger.debug("Stopping recipe")
+        self.response = {"status": 200, "message": "Pretended to stop recipe"}
+
+
+    def process_reset_event(self):
+        """ Processes reset event. """
+        self.logger.debug("Resetting device")
+        self.response = {"status": 200, "message": "Pretended to reset device"}
+
+
+    def process_configure_event(self):
+        """ Processes configure event. """
+        self.logger.debug("Configuring device")
+        self.response = {"status": 200, "message": "Pretended to configure device"}

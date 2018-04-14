@@ -55,6 +55,7 @@ urlpatterns = [
     url(r'^$', redirect_to_dashboard, name="home"),
     url(r'^dashboard/$', views.Dashboard.as_view(), name="dashboard"),
     url(r'^events/$', views.Events.as_view(), name="events"),
+    url(r'^actions/$', views.Actions.as_view(), name="actions"),
     url(r'^recipes/$', views.Recipes.as_view(), name="recipes"),
     url(r'^recipe/build/$', views.RecipeBuilder.as_view(), name="recipe-builder"),
     url(r'^environments/$', views.Environments.as_view(), name="environments"),

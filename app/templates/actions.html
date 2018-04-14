@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block javascript %}
+<script>
+   function stop_recipe() {
+     $.ajax({
+       url: '/api/recipe/stop/',
+       type: "POST",
+       data: {
+         'csrfmiddlewaretoken': '{{ csrf_token }}'},
+       dataType: 'json',
+       success: function(data) {
+           alert(data.message)
+       },
+       error: function(data) {
+           alert(data.responseText)
+       },
+       complete: function(data) {
+           // TODO: Reload on when recipe name changes
+           location.reload();
+       }
+     });
+   }
+   
+   function start_recipe() {
+       var uuid = $('#recipe_uuid').val();
+   
+       $.ajax({
+           url: '/api/recipe/' + uuid + '/start/',
+           type: "POST",
+           data: {
+             'csrfmiddlewaretoken': '{{ csrf_token }}'},
+           dataType: 'json',
+           success: function(data) {
+               alert(data.message)
+           },
+           error: function(data) {
+               alert(data.responseText)
+           },
+           complete: function(data) {
+               // TODO: Reload on when recipe name changes
+               location.reload();
+           }
+       });
+   }
+   
+   function create_event(recipient_type, recipient_name, request_type, request_value_id) {
+      var value = $(request_value_id).val();
+      recipient =  {
+          "type": recipient_type,
+          "name": recipient_name};
+      request = {
+          "type": request_type,
+          "value": value};
+
+      $.ajax({
+          url: "/api/event/",
+          type: "POST",
+          data: {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "recipient": JSON.stringify(recipient),
+            "request": JSON.stringify(request)
+          },
+          dataType: 'json',
+          success: function(data) {
+              alert(data.message)
+          },
+          error: function(data) {
+              alert(data.responseText)
+          },
+          complete: function(data) {
+              // location.reload();
+          }
+      });
+      
+   }
+
+</script>
+{% endblock %}
+
+
+{% block content %}
+{% csrf_token %}
+<div class="actions">
+   <div class="row">
+      <div class="col-sm">
+         
+            <h2> Device </h2>
+            <div class="card">
+            <p>
+               <input type="text" id="recipe_json" name="recipe_json" placeholder='Paste recipe json here' required>
+               <button class="btn" type="button" onClick="create_event()"><i class="icon-share"></i> Create Event </button>
+            </p>
+         </div>
+      </div>
+      <div class="col-sm">
+            <h2> SHT25-1 </h2>
+            <div class="card">
+            <p>
+                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Reset </button> </br>
+            </p>
+            <p>
+                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Configure </button>
+            </p>
+          </div>
+            <h2> AtlasEC-1 </h2>
+            <div class="card">
+            <p>
+                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Reset </button> 
+            </p>
+            <p>
+                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Configure </button>
+            </p>
+            <p>
+                <input type="text" id="low_point_calibration_value" name="low_point_calibration_value" placeholder='12.88' required>
+                <button class="btn" type="button" onClick="create_event('Peripheral','AtlasEC-1','Single Point Calibration','#low_point_calibration_value')"><i class="icon-share"></i> Single Point Calibration </button>
+            </p>
+            <p>
+            </p>
+         </div>
+      </div>
+   </div>
+</div>
+{% endblock %}

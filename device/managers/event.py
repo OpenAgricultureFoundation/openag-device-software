@@ -1,231 +1,126 @@
 # Import python modules
 import logging, time, threading, json, os, sys
 
-# Import device modes errors and events
-from device.utilities.modes import Modes
-from device.utilities.errors import Errors
+# Import device utilities
 from device.utilities.events import EventRequests
 from device.utilities.events import EventResponses
 
 # Import database models
 from app.models import EventModel
-from app.models import RecipeModel
 
 
 class EventManager:
-    """ Manages events. """
+	""" Manages events. """
+	_timeout = 10
 
-    # Initialize logger
-    extra = {"console_name":"Event", "file_name": "event"}
-    logger = logging.getLogger(__name__)
-    logger = logging.LoggerAdapter(logger, extra)
-
-    # Initialize mode & error variables
-    _mode = None
-    _error = None
-
-    # Initialize thread object
-    thread = None
+	# Initialize logger
+	extra = {"console_name":"Device", "file_name": "device"}
+	logger = logging.getLogger(__name__)
+	logger = logging.LoggerAdapter(logger, extra)
 
 
-    def __init__(self, state):
-        """ Initialize event handler. """
-        self.state = state
-        self.mode = Modes.INIT
-        self.error = Errors.NONE
+	def __init__(self, state):
+	    """ Initialize event handler. """
+	    self.state = state
 
 
-    @property
-    def recipe_mode(self):
-        """ Gets recipe mode from shared state. """
-        if "mode" in self.state.recipe:
-            return self.state.recipe["mode"]
-        else:
-            return None
+	def spawn(self, delay=None):
+	    """ Spawns event thread. """
+	    self.thread = threading.Thread(target=self.run)
+	    self.thread.daemon = True
+	    self.thread.start()
 
 
-    @property
-    def commanded_recipe_mode(self):
-        """ Gets commanded recipe mode from shared state. """
-        if "commanded_mode" in self.state.recipe:
-            return self.state.recipe["commanded_mode"]
-        else:
-            return None
+	def run(self):
+		""" Runs event manager. """
+
+		while True:
+			# Check for new event to process
+			if EventModel.objects.filter(response=None).exists():
+				event = EventModel.objects.filter(response=None).earliest()
+				event.response = self.process(event.recipient, event.request)
+				event.save()
+
+			# Update every 100ms
+			time.sleep(0.1)
 
 
-    @commanded_recipe_mode.setter
-    def commanded_recipe_mode(self, value):
-        """ Safely updates commanded recipe mode in shared state. """
-        with threading.Lock():
-            self.state.recipe["commanded_mode"] = value
+	def process(self, recipient, request):
+		""" Processes request to recipient, returns response. """
+		self.logger.debug("Processing new event request")
 
+		# Get request parameters
+		try:
+			recipient_type = recipient["type"]
+			recipient_name = recipient["name"]
+		except KeyError as e:
+			self.logger.exception("Unable to get request parameters")
+			response = {"status": 400, "message": "Unable to get request parameters: {}".format(e)}
 
-    @property
-    def commanded_recipe_uuid(self):
-        """ Gets commanded recipe uuid from shared state. """
-        if "commanded_uuid" in self.state.recipe:
-            return self.state.recipe["commanded_recipe_uuid"]
-        else:
-            return None
+		# Process device requests
+		if recipient_type == "Device":
+			self.logger.debug("Processing device event request")
+			# Clear device response
+			self.state.device["response"] = None
 
+			# Send request to device
+			self.state.device["request"] = request
 
-    @commanded_recipe_uuid.setter
-    def commanded_recipe_uuid(self, value):
-        """ Safely updates commanded recipe uuid in shared state. """
-        with threading.Lock():
-            self.state.recipe["commanded_recipe_uuid"] = value
+			# Wait for response
+			while self.state.device["response"] == None:
+				# Check for timeout
+				start_time = time.time()
+				if time.time() - start_time > self._timeout:
+					message = "Request did not process within {} seconds".format(self._timeout)
+					self.logger.critical(message)
+					response = {"status": 500, "message": message}
+					return response
 
+				# Update every 100ms
+				time.sleep(0.1)
 
-    def process(self, sender, instance, **kwargs):
-        """ Processes event when new model is saved in Event table. """
-        event = EventModel.objects.latest()
+			# Return response
+			response = self.state.device["response"]
+			self.state.device["response"] = None
+			return response
+		
+		# Process peripheral requests
+		elif recipient_type == "Peripheral":
+			self.logger.debug("Processing peripheral event request")
+			
+			# Check if recipient exists
+			if recipient_name not in self.state.peripherals:
+				response = {"status": 400, "message": "Peripheral recipient `{}` does not exist".format(recipient_name)}
+				return response
 
-        # Check if new event
-        if event.response is not None:
-            return
-            
-        # Initialize response
-        event.response = {}
+			# Clear peripheral response
+			self.state.peripherals[recipient_name]["response"] = None
 
-        # Verify request is valid
-        if "type" not in event.request:
-            event.response["type"] = EventResponses.INVALID_REQUEST
-            event.save()
-            return
-        
-        # Handle event
-        if event.request["type"] == EventRequests.CREATE_RECIPE:
-            self.create_recipe(event)
-        elif event.request["type"] == EventRequests.START_RECIPE:
-            self.start_recipe(event)
-        elif event.request["type"] == EventRequests.STOP_RECIPE:
-            self.stop_recipe(event)
-        else:
-            event.response["type"] = EventResponses.INVALID_EVENT
-            event.save()
+			# Send reqeust to peripheral
+			self.state.peripherals[recipient_name]["request"] = request
 
+			# Wait for response
+			start_time = time.time()
+			while self.state.peripherals[recipient_name]["response"] == None:
+				# Check for timeout
+				start_time = time.time()
+				if time.time() - start_time > self._timeout:
+					message = "Request did not process within {} seconds".format(self._timeout)
+					self.logger.critical(message)
+					response = {"status": 500, "message": message}
+					return response
 
-    def create_recipe(self, event):
-        """ Creates recipe. Validates json, creates entry in database, then 
-            returns response. """
-        self.logger.info("Received CREATE_RECIPE")
+				# Update every 100ms
+				time.sleep(0.1)
 
-        # Get recipe json
-        if "recipe_json" not in event.request:
-            event.response["status"] = 400
-            event.response["message"] = "Request does not contain `recipe_json`"
-            event.save()
-            return
-        else:
-            recipe_json = event.request["recipe_json"]
+			# Return response
 
-        # Validate recipe
-        recipe_validator = RecipeValidator()
-        error_message = recipe_validator.validate(recipe_json)
-        if error_message != None:
-            self.logger.info("Recipe is invalid: {}".format(error_message))
-            event.response["status"] = 400
-            event.response["message"] = error_message
-            event.save()
-            return
+			response = self.state.peripherals[recipient_name]["response"]
+			self.logger.debug("Returning response: {}".format(response))
+			self.state.peripherals[recipient_name]["response"] = None
+			return response
 
-        # Create entry in database and return
-        self.logger.debug("Creating recipe in database")
-        try:
-            RecipeModel.objects.create(json=recipe_json)
-            event.response["status"] = 200
-            event.response["message"] = "Created recipe!"
-            event.save()
-            return
-        except:
-            self.logger.exception("Unable to create recipe in database")
-            event.response["status"] = 500
-            event.response["message"] = "Unable to create recipe in database"
-            event.save()
-            return
-
-
-    def start_recipe(self, event, timeout_seconds=10, update_interval_seconds=0.1):
-        """ Starts recipe. Gets recipe uuid and start timestamp from event
-            request, checks recipe is in a mode that can be started, sends
-            start recipe command, waits for recipe to start, then 
-            returns response  """
-        self.logger.info("Received START_RECIPE")
-
-        # Get recipe uuid
-        if "uuid" not in event.request:
-            event.response["status"] = 400
-            event.response["message"] = "Request does not contain `uuid`"
-            event.save()
-            return
-        else:
-            uuid = event.request["uuid"]
-
-        # Get recipe start timestamp
-        if "start_timestamp_minutes" not in event.request:
-            event.response["status"] = 400
-            event.response["message"] = "Request does not contain `start_timestamp_minutes`"
-            event.save()
-            return
-        else:
-            start_timestamp_minutes = event.request["start_timestamp_minutes"]
-
-        # Check recipe is in a mode that can be started
-        mode = self.recipe_mode
-        if mode != Modes.NORECIPE:
-            event.response["status"] = 400
-            event.response["message"] = "Recipe cannot be started from {} mode".format(mode)
-            event.save()
-            return
-
-        # Send start recipe command
-        self.commanded_recipe_uuid = uuid
-        self.commanded_recipe_mode = Modes.START
-
-        # Wait for recipe to start
-        start_time_seconds = time.time()
-        while time.time() - start_time_seconds < timeout_seconds:
-            if self.recipe_mode == Modes.QUEUED or self.recipe_mode == Modes.NORMAL:
-                event.response["status"] = 200
-                event.response["message"] = "Recipe started!"
-                event.save()
-                return
-            time.sleep(update_interval_seconds)
-
-        # Return timeout error
-        event.response["status"] = 500
-        event.response["message"] = "Start recipe event timed out"
-        event.save()
-
-
-    def stop_recipe(self, event, timeout_seconds=10, update_interval_seconds=0.1):
-        """ Stops recipe. Checks recipe is in a mode that can be stopped, sends 
-            stop command, waits for recipe to stop, returns event response. """
-        self.logger.info("Received STOP_RECIPE")
-
-        # Check recipe in a mode that can be stopped
-        mode = self.recipe_mode
-        self.logger.debug("Recipe currently in {} mode".format(mode))
-        if mode != Modes.NORMAL and mode != Modes.PAUSE and mode != Modes.QUEUED:
-            event.response["status"] = 400
-            event.response["message"] = "Recipe cannot be stopped from {} mode".format(mode)
-            event.save()
-            return
-
-        # Send stop command
-        self.commanded_recipe_mode = Modes.STOP
-
-        # Wait for recipe to stop
-        start_time_seconds = time.time()
-        while time.time() - start_time_seconds < timeout_seconds:
-            if self.recipe_mode == Modes.NORECIPE:
-                event.response["status"] = 200
-                event.response["message"] = "Recipe stopped!"
-                event.save()
-                return
-            time.sleep(update_interval_seconds)
-
-        # Return timeout error
-        event.response["status"] = 500
-        event.response["message"] = "Stop recipe event timed out"
-        event.save()
+		else:
+			# Return response
+			response = {"status": 400, "message": "Unknown recipient"}
+			return response

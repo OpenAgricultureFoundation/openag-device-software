@@ -22,6 +22,7 @@ class StateModel(models.Model):
 
 class EventModel(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
+    recipient=JSONField()
     request = JSONField()
     response = JSONField(blank=True, null=True)
 

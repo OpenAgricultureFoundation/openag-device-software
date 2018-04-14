@@ -63,7 +63,6 @@ class Atlas(Peripheral):
         """ Reads response from from device. Waits processing seconds then 
             tries to read num response bytes with optional retry. Returns 
             response string on success or raises exception on error. """
-        
 
         # Give device time to process
         self.logger.debug("Waiting for {} seconds".format(processing_seconds))
@@ -98,6 +97,51 @@ class Atlas(Peripheral):
                 raise Exception("Device has no data to send")
             
 
+###############################################################################
+
+
+def get_info(self):
+    """ Gets info about sensor type and firmware version. """
+    response_message = self.process_command("i", processing_seconds=0.3)
+    command, sensor_type, firmware_version = response_message.split(",")
+    return sensor_type, float(firmware_version)
+
+
+def get_status(self):
+    """ Gets sensor status. """
+    pass
+
+
+def enable_protocol_lock(self):
+    """ Commands sensor to enable protocol lock. """
+    self.process_command("Plock,1", processing_seconds=0.3)
+
+
+def disable_protocol_lock(self):
+    """ Commands sensor to disable protocol lock. """
+    self.process_command("Plock,0", processing_seconds=0.3)
+
+
+def enable_led(self):
+    """ Commands sensor to enable led. """
+    self.process_command("L,1", processing_seconds=0.3)
+
+
+def disable_led(self):
+    """ Commands sensor to disable led. """
+    self.process_command("L,0", processing_seconds=0.3)
+
+
+def enable_sleep_mode(self):
+    """ Commands sensor to enter sleep mode. Note: Sensor will wake up by
+        sending any command to it. """
+    self.process_command("Sleep", processing_seconds=0.3, read_response=False)
+
+
+
+###############################################################################
+
+
     def perform_initial_health_check(self):
         """ Performs initial health check by reading device status. """
         self.logger.info("Performing initial health check")
@@ -118,19 +162,7 @@ class Atlas(Peripheral):
             self.mode = Modes.ERROR
 
 
-    @property
-    def info(self):
-        """ Queries device for info. """
-        response_message = self.process_command("i", processing_seconds=0.3)
-        if response_message != None:
-            command, device, firmware_version = response_message.split(",")
-            info = {
-                "device": device,
-                "firmware_version": firmware_version
-            }
-            return info
-        else:
-            return None
+
 
 
     @property
@@ -173,58 +205,6 @@ class Atlas(Peripheral):
         return status
 
 
-    @property
-    def protocol_lock(self):
-        """ Gets protocol lock state from device. """
-        response_message = self.process_command("Plock,?", processing_seconds=0.3)
-        if response_message != None:
-            command, value = response_message.split(",")
-            return bool(int(value))
-        else:
-            return None
 
 
-    @protocol_lock.setter
-    def protocol_lock(self, value):
-        """ Sets device protocol lock state. """ 
-        if value:  
-            self.process_command("Plock,1", processing_seconds=0.3)
-        else:
-            self.process_command("Plock,0", processing_seconds=0.3)
 
-
-    @property
-    def led(self):
-        """ Gets LED state from device. """
-        response_message = self.process_command("L,?", processing_seconds=0.3)
-        if response_message != None:
-            command, value = response_message.split(",")
-            return bool(int(value))
-        else:
-            return None
-
-
-    @led.setter
-    def led(self, value):
-        """ Sets device LED state. """ 
-        if value:  
-            self.process_command("L,1", processing_seconds=0.3)
-        else:
-            self.process_command("L,0", processing_seconds=0.3)
-
-
-    @property
-    def sleep(self):
-        """ Sleep property placeholder. """
-        return None
-
-
-    @sleep.setter
-    def sleep(self, value):
-        """ Sets device into sleep mode. Note: device wakes up by sending
-            any command to it. """ 
-        if value:  
-            self.process_command("Sleep", processing_seconds=0.3, read_response=False)
-        else:
-            self.logger.debug("No need to set sleep=False, sending any command"
-                " to device will wake it up.")

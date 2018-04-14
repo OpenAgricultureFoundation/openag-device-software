@@ -13,6 +13,44 @@ from app.models import EventModel
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
 
+
+class EventViewer:
+    def create(self, request):
+
+        # Get request parameters
+        try:
+            recipient = json_.loads(request["recipient"])
+            request_ = json_.loads(request["request"])
+        except ValueError as e:
+            message = "Unable to get request parameters, invalid JSON: {}".format(e)
+            return message, 400
+        except KeyError as e:
+            message = "Unable to get request parameters, invalid key: {}".format(e)
+            return message, 400
+
+
+        # Create event in datbase
+        try:
+            event = EventModel.objects.create(recipient=recipient, request=request_)
+        except Exception as e:
+            message = "Unable to create event in database: {}".format(e)
+            return message, 500
+
+        # Wait for response
+        while True:
+            # Check response status
+            event = EventModel.objects.get(id=event.id)
+            if event.response != None:
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+        # Return response
+        event = EventModel.objects.get(id=event.id)
+        return event.response["message"], event.response["status"]
+        
+
 class RecipeViewer:
     # Initialize logger
     extra = {"console_name":"Recipe Viewer", "file_name": "recipe_viewer"}

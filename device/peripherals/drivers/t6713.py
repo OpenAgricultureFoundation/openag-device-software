@@ -72,9 +72,12 @@ class T6713(Peripheral):
         self.mux = int(self.parameters["communication"]["mux"], 16)
         self.channel = int(self.parameters["communication"]["channel"])
         self.address = int(self.parameters["communication"]["address"], 16)
-        self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-            self.bus, self.mux, self.channel, self.address))
-        self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
+
+        # Initialize I2C communication if sensor not simulated
+        if not self.simulate:
+            self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
+                self.bus, self.mux, self.channel, self.address))
+            self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
 
         # Initialize sensor variable names
         self.co2_name = self.parameters["variables"]["sensor"]["co2"]

@@ -86,6 +86,40 @@ class Peripheral:
 
 
     @property
+    def request(self):
+        """ Gets request from shared state object. """
+        if self.name in self.state.peripherals and \
+            "request" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["request"]
+        else:
+            return None
+
+
+    @request.setter
+    def request(self, value):
+        """ Safely updates request in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["request"] = value
+
+
+    @property
+    def response(self):
+        """ Gets response from shared state object. """
+        if self.name in self.state.peripherals and \
+            "response" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["response"]
+        else:
+            return None
+
+
+    @response.setter
+    def response(self, value):
+        """ Safely updates request in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["response"] = value
+
+
+    @property
     def error(self):
         """ Gets error value. """
         return self._error
@@ -110,7 +144,7 @@ class Peripheral:
     @health.setter
     def health(self, value):
         """ Safely updates health in device state each time 
-            it is changed. """
+            it is c hanged. """
         self._health = value
         self.logger.debug("Health: {}".format(value))
         with threading.Lock():
@@ -135,6 +169,8 @@ class Peripheral:
                 self.run_normal_mode()
             elif self.mode == Modes.ERROR:
                 self.run_error_mode()
+            elif self.mode == Modes.CONFIG:
+                self.run_config_mode()
             elif self.mode == Modes.RESET:
                 self.run_reset_mode()
             elif self.mode == Modes.SHUTDOWN:
@@ -179,18 +215,33 @@ class Peripheral:
         self._update_complete = True
         self.last_update_seconds = time.time()
         while self.thread_is_active:
+
             # Update every sampling interval
             self.last_update_interval_seconds = time.time() - self.last_update_seconds
             if self.sampling_interval_seconds < self.last_update_interval_seconds:
                 self.logger.debug("Updating peripheral, time delta: {:.3f} sec".format(self.last_update_interval_seconds))
                 self.last_update_seconds = time.time()
                 self.update()
-            # Update every 100ms
-            time.sleep(0.100) # 100ms
 
-            # Transition to ERROR on error
+            # Check for error transition
             if self.mode == Modes.ERROR:
                 break
+
+            # Check for events
+            if self.request != None:
+                request = self.request
+                self.request = None
+                self.process_event(request)
+
+            # Update every 100ms
+            time.sleep(0.100)
+
+
+
+    def run_config_mode(self):
+        """ Runs config mode. """
+        self.logger.info("Entering CONFIG")
+
 
 
     def run_error_mode(self):
@@ -238,6 +289,7 @@ class Peripheral:
 
             # Update every 100ms
             time.sleep(0.1)
+
 
 
     def report_sensor_value(self, sensor, variable, value, simple=False):

@@ -21,6 +21,7 @@ class AtlasElectricalConductivity(Atlas):
 
     # Initialize compensation sensor parameters
     _temperature_threshold_celcius = 0.1
+    _prev_temperature_celcius = 0
 
 
     def __init__(self, *args, **kwargs):
@@ -37,6 +38,30 @@ class AtlasElectricalConductivity(Atlas):
         self.temperature_name = self.parameters["variables"]["compensation"]["temperature_celcius"]
 
 
+    @property
+    def electrical_conductivity_ms_cm(self):
+        """ Gets electrical conductivity value. """
+        return self._electrical_conductivity_ms_cm
+
+
+    @electrical_conductivity_ms_cm.setter
+    def electrical_conductivity_ms_cm(self, value):
+        """ Safely updates electrical conductivity in shared state. """   
+        self.logger.debug("Electrical conductivity: {} mS/cm".format(value))    
+        self._electrical_conductivity_ms_cm = value
+        with threading.Lock():
+            self.report_sensor_value(self.name, self.electrical_conductivity_name, value)
+
+
+    @property
+    def temperature_celcius(self):
+        """ Gets temperature stored in shared state. """
+        if self.temperature_name in self.state.environment["sensor"]["reported"]:
+            temperature_celcius = self.state.environment["sensor"]["reported"][self.temperature_name]
+            if temperature_celcius != None:
+                return float(temperature_celcius)
+
+
     def initialize(self):
         """ Initializes sensor. Performs initial health check.
             Finishes within 200ms.  """
@@ -50,44 +75,60 @@ class AtlasElectricalConductivity(Atlas):
 
         # Perform initial health check
         self.perform_initial_health_check()
-            
+
+
+    def perform_initial_health_check(self, retry=False):
+        """ Performs initial health check by reading device status. """
+        
+        # Check for simulated sensor
+        if self.simulate:
+            self.logger.info("Simulating initial health check")
+            return
+        else:
+            self.logger.info("Performing initial health check")
+
+        # Check sensor health
+        try:
+            sensor_type, self._firmware_version = self.get_info()
+            if sensor_type != "EC":
+                self.logger.critical("Incorrect circuit stamp. Expecting `EC`, received `{}`".format(sensor_type))
+                raise Exception("Incorrect circuit stamp type")
+            else:
+                self.logger.debug("Passed initial health check")
+        except:
+            self.logger.exception("Failed initial health check")
+            self.error = Errors.FAILED_HEALTH_CHECK
+            self.mode = Modes.ERROR
+     
 
     def setup(self):
         """ Sets up sensor. Programs device operation parameters into 
             sensor driver circuit. Transitions to NORMAL on completion 
             and ERROR on error. """
-        self.logger.debug("Setting up sensor")
-
+        
+        # Check for simulated sensor
         if self.simulate:
             self.logger.info("Simulating sensor setup")
             return
+        else:
+            self.logger.debug("Setting up sensor")
 
+        # Setup sensor
         try:
-            # Verify correct driver stamp
-            info = self.info
-            if self.info["device"] != "EC":
-                self.logger.critical("Incorrect driver circuit. Expecting `EC`, received `{}`".format(info["device"]))
-                raise exception("Incorrect hardware configuration")
-
-            # Lock i2c protocol and set output parameters on supported firmware
-            if float(info["firmware_version"]) >= 1.95:
-                self.protocol_lock = True 
-                self.output_parameter_electrical_conductivity = True
-                self.output_parameter_total_dissolved_solids = False
-                self.output_parameter_salinity = False 
-                self.output_parameter_specific_gravity = False
+            # Set firmware dependent settings
+            if self._firmware_version >= 1.95:
+                self.enable_protocol_lock()
+                self.enable_electrical_conductivity_output()
+                self.disable_total_dissolved_solids_output()
+                self.disable_salinity_output()
+                self.disable_specific_gravity_output()
             else:
                 self.logger.warning("Using old circuit stamp, consider upgrading")
             
-            # Enable status led
-            self.led = True 
-
-            # Set probe type
-            self.probe_type = "1.0"
-
-            # Reset device compensation values
-            self._sensor_temperature_celcius = 0
-       
+            # Set firmware independent settings
+            self.enable_led()
+            self.set_probe_type("1.0")
+            self.logger.debug("Successfully setup sensor")
         except:
             self.logger.exception("Sensor setup failed")
             self.mode = Modes.ERROR
@@ -99,63 +140,49 @@ class AtlasElectricalConductivity(Atlas):
             self.electrical_conductivity_ms_cm = 3.33
             self.health = 100
         else:
-            self.update_sensor_compensation_variables()
+            self.update_compensation_temperature()
             self.update_electrical_conductivity()
             self.update_health()
 
+    def update_electrical_conductivity(self):
+        """ Updates sensor electrical conductivity. """
+        self.logger.debug("Getting electrical conductivity")
+        try:
+            self.electrical_conductivity_ms_cm = self.get_electrical_conductivity()
+        except:
+            self.logger.exception("Unable to get electrical conductivity")
+            self._missed_readings += 1
 
-    def shutdown(self):
-        """ Shuts down sensor. Clears reported values, resets sensor health,
-            then sets device into sleep mode. """
-        self.clear_reported_values()
-        self.health = 100
-        self.sleep = True
 
-
-    def update_sensor_compensation_variables(self):
-        """ Update sensor compensation variables. """
-        self.update_compensation_temperature()
-        
-            
     def update_compensation_temperature(self):
-        """ Update compensation for electrical conductivity. """
-        self.logger.debug("Updating compensation for temperature")
+        """ Updates sensor compensation temperature on if temperature value exists
+            in shared state. Only sets on new values greater than threshold. """
 
         # Check if there is a temperature value in shared state to compensate with
-        state_temp = self.state_temperature_celcius
-        if state_temp == None:
+        temperature_celcius = self.temperature_celcius
+        if temperature_celcius == None:
             self.logger.debug("No temperature value in shared state to compensate with")
             return
 
         # Check if temperature value on sensor requires an update
-        delta_temp = self._sensor_temperature_celcius - state_temp
-        if abs(delta_temp) < self._temperature_threshold_celcius:
+        temperature_delta_celcius = abs(self._prev_temperature_celcius - temperature_celcius)
+        if temperature_delta_celcius < self._temperature_threshold_celcius:
             self.logger.debug("Device temperature compensation does not require update, value within threshold")
             return
 
         # Update sensor temperature compensation value
-        self.logger.debug("Updating sensor temperature compensation value")
-        self.sensor_temperature_celcuis = state_temp
-        
-
-    def update_electrical_conductivity(self):
-        """ Updates sensor electrical conductivity. """
-        self.logger.debug("Updating electrical conductivity")
+        self._prev_temperature_celcius = temperature_celcius
         try:
-            # Get electrical conductivity from device
-            # Assumes electrical conductivity is only device output
-            response_string = self.process_command("R", processing_seconds=0.6)
-            electrical_conductivity_raw_value = float(response_string) / 1000 # Convert uS/cm to mS/cm
-
-            # Set significant figures based off error magnitude
-            error_value = electrical_conductivity_raw_value * self._electrical_conductivity_accuracy_percent / 100
-            error_magnitude = self.magnitude(error_value)
-            significant_figures = error_magnitude * -1
-            self.electrical_conductivity_ms_cm = round(electrical_conductivity_raw_value, significant_figures)
-
+            self.set_compensation_temperature(temperature_celcius)
         except:
-            self.logger.exception("Bad reading")
-            self._missed_readings += 1
+            self.logger.exception("Unable to set compensation temperature")
+
+
+    def shutdown(self):
+        """ Shuts down sensor. Clears reported values, then sets sensor into 
+            sleep mode. """
+        self.clear_reported_values()
+        self.enable_sleep_mode()
     
 
     def clear_reported_values(self):
@@ -163,154 +190,164 @@ class AtlasElectricalConductivity(Atlas):
         self.electrical_conductivity_ms_cm = None
 
 
-    @property
-    def electrical_conductivity_ms_cm(self):
-        """ Gets electrical conductivity value. """
-        return self._electrical_conductivity_ms_cm
 
+################################## Events #####################################
 
-    @electrical_conductivity_ms_cm.setter
-    def electrical_conductivity_ms_cm(self, value):
-        """ Safely updates electrical conductivity in environment state each 
-            time it is changed. """   
-        self.logger.debug("Electrical conductivity: {} mS/cm".format(value))    
-        self._electrical_conductivity_ms_cm = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.electrical_conductivity_name, value)
+    def process_event(self, request):
+        """ Processes and event. Gets request parameters, executes request, returns 
+            response. """
 
+        self.logger.debug("Processing event request: `{}`".format(request))
 
+        # Get request parameters
+        try:
+            request_type = request["type"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
 
-    @property
-    def state_temperature_celcius(self):
-        """ Gets temperature stored in shared state. """
-        if self.temperature_name in self.state.environment["sensor"]["reported"]:
-            temperature_celcius = self.state.environment["sensor"]["reported"][self.temperature_name]
-            if temperature_celcius != None:
-                return float(temperature_celcius)
-
-
-    @property
-    def sensor_temperature_celcius(self):
-        """ Gets device compensation temperature value. """
-        return self._sensor_temperature_celcius
-
-
-    @sensor_temperature_celcius.setter
-    def sensor_temperature_celcius(self, value):
-        """ Sets device temperature compensation value. """   
-        self.logger.debug("Setting device compensation temperature: {} C".format(value))
-        self._sensor_temperature_celcius = value  
-        self.process_command("T,{}".format(value), processing_seconds=0.3)
-
-
-    @property
-    def output_parameter_electrical_conductivity(self):
-        """ Gets output parameter electrical conductivity state. """
-        response_message = self.process_command("O,?", processing_seconds=0.3)
-        if response_message != None:
-            if "EC" in response_message:
-                return True
-            else:
-                return False
+        # Execute request
+        if request_type == "Single Point Calibration":
+            self.response = self.process_single_point_calibration_event(request)
+        elif request_type == "Low Point Calibration":
+            return self.process_low_point_calibration_event(request)
         else:
-            return None
+            message = "Unknown event request type"
+            self.logger.info(message)
+            self.response = {"status": 400, "message": message}
 
 
-    @output_parameter_electrical_conductivity.setter
-    def output_parameter_electrical_conductivity(self, value):
-        """ Sets output parameter electrical conductivity state. """ 
-        if value:  
-            self.process_command("O,EC,1", processing_seconds=0.3)
-        else:
-            self.process_command("O,EC,0", processing_seconds=0.3)
+    def process_single_point_calibration_event(self, request):
+        """ Processes single point calibration event. Gets request parameters,
+            executes request, returns response. """
+        self.logger.debug("Processing single point calibration event")
+
+        # Get request parameters
+        try:
+            electrical_conductivity_ms_cm = request["value"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+
+        # Execute request
+        try:
+            self.take_single_point_calibration_reading(electrical_conductivity_ms_cm)
+            response = {"status": 200, "message": "Set single point calibration"}
+            return response
+        except Exception as e:
+            self.logger.exception("Unable to take single point calibration reading")
+            response = {"status": 500, "message": "Unable to take single point calibration reading: {}".format(e)}
 
 
-    @property
-    def output_parameter_total_dissolved_solids(self):
-        """ Gets output parameter total dissolved solids state. """
-        response_message = self.process_command("O,?", processing_seconds=0.3)
-        if response_message != None:
-            if "TDS" in response_message:
-                return True
-            else:
-                return False
-        else:
-            return None
+    def process_low_point_calibration_event(self, value):
+        """ Processes low point calibration event. """
+        pass
 
 
-    @output_parameter_total_dissolved_solids.setter
-    def output_parameter_total_dissolved_solids(self, value):
-        """ Sets output parameter total dissolved solids state. """ 
-        if value:  
-            self.process_command("O,TDS,1", processing_seconds=0.3)
-        else:
-            self.process_command("O,TDS,0", processing_seconds=0.3)
-
-    @property
-    def output_parameter_salinity(self):
-        """ Gets output parameter salinity state. """
-        response_message = self.process_command("O,?", processing_seconds=0.3)
-        if response_message != None:
-            # Note: Can't just check if substring in string..`S` in `TDS`,`SG`
-            parameters = response_message.split(",")
-            for parameter in parameters:
-                if parameter == "S":
-                    return True
-            return False
-        else:
-            return None
+############################# Hardware Interactions ###########################
 
 
-    @output_parameter_salinity.setter
-    def output_parameter_salinity(self, value):
-        """ Sets output parameter salinity state. """ 
-        if value:  
-            self.process_command("O,S,1", processing_seconds=0.3)
-        else:
-            self.process_command("O,S,0", processing_seconds=0.3)
+    def get_electrical_conductivity(self):
+        """ Gets electrical conductivity reading from sensor, sets significant 
+            figures based off error magnitude, returns value in mS/cm. """
+
+        # Get electrical conductivity reading from sensor
+        # Assumes electrical conductivity is only device output
+        response_string = self.process_command("R", processing_seconds=0.6)
+        electrical_conductivity_us_cm = float(response_string)
+        electrical_conductivity_ms_cm = electrical_conductivity_us_cm / 1000
+
+        # Set significant figures based off error magnitude
+        error_value = electrical_conductivity_ms_cm * self._electrical_conductivity_accuracy_percent / 100
+        error_magnitude = self.magnitude(error_value)
+        significant_figures = error_magnitude * -1
+
+        # Return value in mS/cm
+        return round(electrical_conductivity_ms_cm, significant_figures)
 
 
-    @property
-    def output_parameter_specific_gravity(self):
-        """ Gets output parameter specific gravity state. """
-        response_message = self.process_command("O,?", processing_seconds=0.3)
-        if response_message != None:
-            if "SG" in response_message:
-                return True
-            else:
-                return False
-        else:
-            return None
+    def set_compensation_temperature(self, temperature_celcius):
+        """ Commands sensor to set compensation temperature. """
+        command = "T,{}".format(temperature_celcius)
+        self.process_command(command, processing_seconds=0.3)
 
 
-    @output_parameter_specific_gravity.setter
-    def output_parameter_specific_gravity(self, value):
-        """ Sets output parameter specific gravity state. """ 
-        if value:  
-            self.process_command("O,SG,1", processing_seconds=0.3)
-        else:
-            self.process_command("O,SG,0", processing_seconds=0.3)
+    def enable_electrical_conductivity_output(self):
+        """ Commands sensor to enable electrical conductivity output when 
+            reporting readings. """
+        self.process_command("O,EC,1", processing_seconds=0.3)
 
 
-    @property
-    def probe_type(self):
-        """ Gets probe type from device. """
-        response_message = self.process_command("K,?", processing_seconds=0.6)
-        if response_message != None:
-            command, value = response_message.split(",")
-            return value
-        else:
-            return None
+    def disable_total_dissolved_solids_output(self):
+        """ Commands sensor to disable electrical conductivity output when 
+            reporting readings. """
+        self.process_command("O,EC,0", processing_seconds=0.3)
 
 
-    @probe_type.setter
-    def probe_type(self, value):
-        """ Sets device probe type. """ 
-        if value:  
-            self.process_command("K,{}".format(value), processing_seconds=0.3)
-        else:
-            self.process_command("K,{}".format(value), processing_seconds=0.3)
+    def enable_total_dissolved_solids_output(self):
+        """ Commands sensor to enable total dissolved solids output when 
+            reporting readings. """
+        self.process_command("O,TDS,1", processing_seconds=0.3)
 
 
+    def disable_total_dissolved_solids_output(self):
+        """ Commands sensor to disable total dissolved solids output when 
+            reporting readings. """
+        self.process_command("O,TDS,0", processing_seconds=0.3)
 
 
+    def enable_salinity_output(self):
+        """ Commands sensor to enable salinity output when reporting 
+            readings. """
+        self.process_command("O,S,1", processing_seconds=0.3)
+
+
+    def disable_salinity_output(self):
+        """ Commands sensor to disable salinity output when reporting 
+            readings. """
+        self.process_command("O,S,0", processing_seconds=0.3)
+
+
+    def enable_specific_gravity_output(self):
+        """ Commands sensor to enable specific gravity output when reporting
+            readings. """
+        self.process_command("O,SG,1", processing_seconds=0.3)
+
+
+    def disable_specific_gravity_output(self):
+        """ Commands sensor to disable specific gravity output when reporting
+            readings. """
+        self.process_command("O,SG,0", processing_seconds=0.3)
+
+
+    def set_probe_type(self, value):
+        """ Commands sensor to set probe type to value. """
+        self.process_command("K,{}".format(value), processing_seconds=0.3)
+
+
+    def take_dry_calibration_reading(self):
+        """ Commands sensor to take a dry calibration reading. """
+        self.process_command("Cal,dry", processing_seconds=0.6)
+
+
+    def take_single_point_calibration_reading(self, electrical_conductivity_ms_cm):
+        """ Commands sensor to take a single point calibration reading. """
+        self.logger.debug("Commanding sensor to take a single point calibration reading.")
+        # electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
+        # command = "Cal,{}".format(electrical_conductivity_us_cm)
+        # self.process_command(command, processing_seconds=0.6)
+
+
+    def take_low_point_calibration_reading(self, electrical_conductivity_ms_cm):
+        """ Commands sensor to take a low point calibration reading. """
+        electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
+        command = "Cal,low,{}".format(electrical_conductivity_us_cm)
+        self.process_command(command, processing_seconds=0.6)
+
+
+    def take_high_point_calibration_reading(self, electrical_conductivity_ms_cm):
+        """ Commands sensor to take a high point calibration reading. """
+        electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
+        command = "Cal,high,{}".format(electrical_conductivity_us_cm)
+        self.process_command(command, processing_seconds=0.6)
