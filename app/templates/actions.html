@@ -46,8 +46,8 @@
         <a class="badge badge-primary" data-toggle="collapse" href="#collapseEC" role="button" aria-expanded="false" aria-controls="collapseEC">EC: 10.2 mS/cm</a>
         <a class="badge badge-secondary" data-toggle="collapse" href="#collapseSamplingInterval" role="button" aria-expanded="false" aria-controls="collapseSamplingInterval">Sampling Interval: 10 Sec</a>
         <a class="badge badge-secondary" data-toggle="collapse" href="#collapseI2CAddress" role="button" aria-expanded="false" aria-controls="collapseI2CAddress">I2C Addr: 0x63</a>
-        <a class="badge badge-secondary" data-toggle="collapse" href="#configReset" role="button" aria-expanded="false" aria-controls="configSamplingInterval">One-Point Calibration</a>
-        <a class="badge badge-secondary" data-toggle="collapse" href="#configReset" role="button" aria-expanded="false" aria-controls="configSamplingInterval">Two-Point Calibration</a>
+        <a class="badge badge-secondary" data-toggle="collapse" href="#collapseOnePointCalibration" role="button" aria-expanded="false" aria-controls="collapseOnePointCalibration">One-Point Calibration</a>
+        <a class="badge badge-secondary" data-toggle="collapse" href="#collapseTwoPointCalibration" role="button" aria-expanded="false" aria-controls="collapseTwoPointCalibration">Two-Point Calibration</a>
       </div>
 
       <div class="collapse" id="collapseHealth">
@@ -62,16 +62,16 @@
       <div class="collapse" id="collapseMode">
         <div class="card-body">
           <h5 class="card-title">Mode</h5>
-          <p class="card-text">This is the current state machine mode. TODO: Display more granular health info. </p>
-
-          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseMode" aria-expanded="false" aria-controls="collapseMode">Got it!</button>
+          <p class="card-text">This is the current state machine mode. TODO: Display more granular health info.</p>
+          <button class="btn btn-secondary" type="button">Reset</button>
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseMode" aria-expanded="false" aria-controls="collapseMode">Done!</button>
         </div>
       </div>
 
       <div class="collapse" id="collapseEC">
         <div class="card-body">
           <h5 class="card-title">Electrical Conductivity</h5>
-          <p class="card-text">Electrical Conductivity is the measure of ... TODO: Display EC value, compensation varaibles, accuracy, etc. </p>
+          <p class="card-text">Electrical Conductivity is the measure of... TODO: Display EC value, compensation varaibles, accuracy, etc. </p>
           <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseEC" aria-expanded="false" aria-controls="collapseEC">Got it!</button>
         </div>
       </div>
@@ -108,6 +108,37 @@
           <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseSamplingInterval" aria-expanded="false" aria-controls="collapseSamplingInterval">Set!</button>
         </div>
       </div>
+
+
+      <div class="collapse" id="collapseOnePointCalibration">
+        <div class="card-body">
+          <h5 class="card-title">One-Point Calibration</h5>
+          <h6 class="card-subtitle mb-2 text-muted">Here are some general instructions.</h6>
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseOnePointCalibrationStep1" aria-expanded="false" aria-controls="collapseOnePointCalibrationStep1">Start Calibration</button>
+        </div>
+        <div class="collapse" id="collapseOnePointCalibrationStep1">
+          <div class="card-body">
+            <h5 class="card-title">Step 1: Dry Calibration</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Instructions for step 1.</h6>
+            <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseOnePointCalibrationStep2" aria-expanded="false" aria-controls="collapseOnePointCalibrationStep2">Take Dry Calibration</button>
+          </div>
+        </div>
+        <div class="collapse" id="collapseOnePointCalibrationStep2">
+          <div class="card-body">
+            <h5 class="card-title">Step 2: Single Point Calibration</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Instructions for step 2.</h6>
+            <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseOnePointCalibrationStep3" aria-expanded="false" aria-controls="collapseOnePointCalibrationStep3">Take Single Point Calibration</button>
+          </div>
+        </div>
+        <div class="collapse" id="collapseOnePointCalibrationStep3">
+          <div class="card-body">
+            <h5 class="card-title">Step 3: Reset</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Instructions for step 3.</h6>
+            <p> <button class="btn btn-secondary" type="button">Reset</button> </p>
+          </div>
+        </div>
+      </div>
+
 
       <div class="card-footer">
         <small class="text-muted">Last updated 3 mins ago</small>
