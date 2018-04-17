@@ -5,6 +5,7 @@ class Modes(object):
 	SETUP = "SETUP"
 	NORMAL = "NORMAL"
 	CONFIG = "CONFIG"
+	CALIBRATE = "CALIBRATE"
 	ERROR = "ERROR"
 	RESET = "RESET"
 	LOAD = "LOAD"

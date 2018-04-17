@@ -22,85 +22,98 @@
         }
     },
     "events": {
-        "system": [
-            {
-                "type": "Set Sampling Interval",
-                "parameters": {
-                    "value": {
-                        "type": "number",
-                        "default": 10.0,
-                        "unit": "Seconds"
-                    }
-                }
+        "individual": {
+            "Reset": {
+                "description": null,
+                "parameters": null
             },
-            {
-                "type": "Set I2C Address",
-                "parameters": {
-                    "value": {
+            "Calibrate": {
+                "description": null,
+                "parameters": null
+            },
+            "Dry Calibration": {
+                "description": null,
+                "parameters": null
+            },
+            "Low Point Calibration": {
+                "description": null,
+                "parameters": [
+                    {
+                        "name": "value",
+                        "type": "number",
+                        "unit": "mS/cm",
+                        "default": "12.88"
+                    }
+                ]
+            },
+            "High Point Calibration": {
+                "description": null,
+                "parameters": [
+                    {
+                        "name": "value",
+                        "type": "number",
+                        "unit": "mS/cm",
+                        "default": "80.00"
+                    }
+                ]
+            },
+            "Set I2C Address": {
+                "description": null,
+                "parameters": [
+                    {
+                        "name": "value",
                         "type": "number",
                         "default": "0x51",
                         "unit": "Hex"
                     }
-                }
-            }
-        ],
-        "calibration": [
-            {
-                "type": "One Point Calibration",
-                "description": "",
-                "sequences": [
+                ]
+            },
+            "Set Sampling Interval": {
+                "parameters": [
                     {
-                        "name": "Dry Calibration",
-                        "description": null,
-                        "parameters": null
-                    },
-                    {
-                        "name": "Low Point Calibration",
-                        "description": null,
-                        "parameters": [
-                            {
-                                "name": "value",
-                                "type": "number",
-                                "unit": "mS/cm",
-                                "default": "12.88"
-                            }
-                        ]
+                        "name": "value",
+                        "type": "number",
+                        "default": 10.0,
+                        "unit": "Seconds"
                     }
+                ]
+            }
+        },
+        "sequences": [
+            {
+                "name": "Reset",
+                "description": null,
+                "events": ["Reset"]
+            },
+            {
+                "name": "Change Sampling Interval",
+                "description": null,
+                "events": ["Set Sampling Interval"]
+            },
+            {
+                "name": "Change I2C Address",
+                "description": null,
+                "events": ["Set I2C Address"]
+            },
+            {
+                "name": "One Point Calibration",
+                "description": null,
+                "events": [
+                    "Calibrate", 
+                    "Dry Calibration",
+                    "Single Point Calibration",
+                    "Reset"
                 ]
             },
             {
-                "type": "Two Point Calibration",
+                "name": "Two Point Calibration",
                 "description": null,
-                "sequences": [
-                    {
-                        "name": "Dry Calibration",
-                        "description": null,
-                        "parameters": null
-                    },
-                    {
-                        "name": "Low Point Calibration",
-                        "description": null,
-                        "parameters": [
-                            {
-                                "name": "value",
-                                "type": "number",
-                                "unit": "mS/cm",
-                                "default": "12.88"
-                            }
-                        ]
-                    },
-                    {
-                        "name": "High Point Calibration",
-                        "description": null,
-                        "parameters": [
-                            {
-                                "name": "value",
-                                "type": "number",
-                                "unit": "mS/cm",
-                                "default": "12.88"
-                            }
-                        ]
-                    }
+                "events": [
+                    "Calibrate", 
+                    "Dry Calibration",
+                    "Low Point Calibration",
+                    "High Point Calibration",
+                    "Reset"
                 ]
             }
         ]

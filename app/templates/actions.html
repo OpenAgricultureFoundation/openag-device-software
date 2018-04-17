@@ -1,48 +1,6 @@
 {% extends 'base.html' %}
 {% block javascript %}
 <script>
-   function stop_recipe() {
-     $.ajax({
-       url: '/api/recipe/stop/',
-       type: "POST",
-       data: {
-         'csrfmiddlewaretoken': '{{ csrf_token }}'},
-       dataType: 'json',
-       success: function(data) {
-           alert(data.message)
-       },
-       error: function(data) {
-           alert(data.responseText)
-       },
-       complete: function(data) {
-           // TODO: Reload on when recipe name changes
-           location.reload();
-       }
-     });
-   }
-   
-   function start_recipe() {
-       var uuid = $('#recipe_uuid').val();
-   
-       $.ajax({
-           url: '/api/recipe/' + uuid + '/start/',
-           type: "POST",
-           data: {
-             'csrfmiddlewaretoken': '{{ csrf_token }}'},
-           dataType: 'json',
-           success: function(data) {
-               alert(data.message)
-           },
-           error: function(data) {
-               alert(data.responseText)
-           },
-           complete: function(data) {
-               // TODO: Reload on when recipe name changes
-               location.reload();
-           }
-       });
-   }
-   
    function create_event(recipient_type, recipient_name, request_type, request_value_id) {
       var value = $(request_value_id).val();
       recipient =  {
@@ -70,54 +28,139 @@
           complete: function(data) {
               // location.reload();
           }
-      });
-      
+      }); 
    }
-
 </script>
 {% endblock %}
 
 
 {% block content %}
 {% csrf_token %}
-<div class="actions">
-   <div class="row">
-      <div class="col-sm">
+<div class="actions"></br>
+  <div class="card-columns">
+    <div class="card">
+      <div class="card-header">
+        <h4>AtlasEC-1</h4>
+        <a class="badge badge-success" data-toggle="collapse" href="#collapseHealth" role="button" aria-expanded="false" aria-controls="collapseHealth">Health: 100%</a>
+        <a class="badge badge-success" data-toggle="collapse" href="#collapseMode" role="button" aria-expanded="false" aria-controls="collapseMode">Mode: NORMAL</a>
+        <a class="badge badge-primary" data-toggle="collapse" href="#collapseEC" role="button" aria-expanded="false" aria-controls="collapseEC">EC: 10.2 mS/cm</a>
+        <a class="badge badge-secondary" data-toggle="collapse" href="#collapseSamplingInterval" role="button" aria-expanded="false" aria-controls="collapseSamplingInterval">Sampling Interval: 10 Sec</a>
+        <a class="badge badge-secondary" data-toggle="collapse" href="#collapseI2CAddress" role="button" aria-expanded="false" aria-controls="collapseI2CAddress">I2C Addr: 0x63</a>
+        <a class="badge badge-secondary" data-toggle="collapse" href="#configReset" role="button" aria-expanded="false" aria-controls="configSamplingInterval">One-Point Calibration</a>
+        <a class="badge badge-secondary" data-toggle="collapse" href="#configReset" role="button" aria-expanded="false" aria-controls="configSamplingInterval">Two-Point Calibration</a>
+      </div>
+
+      <div class="collapse" id="collapseHealth">
+        <div class="card-body">
+          <h5 class="card-title">Health</h5>
+          <p class="card-text">Health is the percentage of successful updates in a given period. E.g. if a sensor tries to take 
+            10 readings and 8 of them are valid, the sensor health is 80%. TODO: Display more granular health info. </p>
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseHealth" aria-expanded="false" aria-controls="collapseHealth">Got it!</button>
+        </div>
+      </div>
+
+      <div class="collapse" id="collapseMode">
+        <div class="card-body">
+          <h5 class="card-title">Mode</h5>
+          <p class="card-text">This is the current state machine mode. TODO: Display more granular health info. </p>
+
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseMode" aria-expanded="false" aria-controls="collapseMode">Got it!</button>
+        </div>
+      </div>
+
+      <div class="collapse" id="collapseEC">
+        <div class="card-body">
+          <h5 class="card-title">Electrical Conductivity</h5>
+          <p class="card-text">Electrical Conductivity is the measure of ... TODO: Display EC value, compensation varaibles, accuracy, etc. </p>
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseEC" aria-expanded="false" aria-controls="collapseEC">Got it!</button>
+        </div>
+      </div>
+
+      <div class="collapse" id="collapseI2CAddress">
+        <div class="card-body">
+          <h5 class="card-title">I2C Address</h5>
+          <p class="card-text">Sets I2C address in sensor. Note: Device config must be updated to reflect the new I2C address.
+            TODO: Display current I2C address. </p>
          
-            <h2> Device </h2>
-            <div class="card">
-            <p>
-               <input type="text" id="recipe_json" name="recipe_json" placeholder='Paste recipe json here' required>
-               <button class="btn" type="button" onClick="create_event()"><i class="icon-share"></i> Create Event </button>
-            </p>
-         </div>
-      </div>
-      <div class="col-sm">
-            <h2> SHT25-1 </h2>
-            <div class="card">
-            <p>
-                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Reset </button> </br>
-            </p>
-            <p>
-                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Configure </button>
-            </p>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="0x63" aria-label="SamplingIntervalValue" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+              <span class="input-group-text" id="basic-addon2">Hex</span>
+            </div>
           </div>
-            <h2> AtlasEC-1 </h2>
-            <div class="card">
-            <p>
-                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Reset </button> 
-            </p>
-            <p>
-                <button class="btn" type="button" onClick="start_recipe()"><i class="icon-share"></i> Configure </button>
-            </p>
-            <p>
-                <input type="text" id="low_point_calibration_value" name="low_point_calibration_value" placeholder='12.88' required>
-                <button class="btn" type="button" onClick="create_event('Peripheral','AtlasEC-1','Single Point Calibration','#low_point_calibration_value')"><i class="icon-share"></i> Single Point Calibration </button>
-            </p>
-            <p>
-            </p>
-         </div>
+
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseI2CAddress" aria-expanded="false" aria-controls="collapseI2CAddress">Set!</button>
+        </div>
       </div>
-   </div>
+
+      <div class="collapse" id="collapseSamplingInterval">
+        <div class="card-body">
+          <h5 class="card-title">Sampling Interval</h5>
+          <p class="card-text">Set a new sampling interval. TODO: Display current info about sampling interval.</p>
+
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="10" aria-label="SamplingIntervalValue" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+              <span class="input-group-text" id="basic-addon2">Seconds</span>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseSamplingInterval" aria-expanded="false" aria-controls="collapseSamplingInterval">Set!</button>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <small class="text-muted">Last updated 3 mins ago</small>
+      </div>
+    </div>
+
+    <!-- ############################################# New Card ################################################### -->
+    
+    <div class="card">
+      <img class="card-img-top" src="..." alt="Card image cap">
+      <div class="card-body">
+        <h5 class="card-title">Card title</h5>
+        <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+      </div>
+    </div>
+    <div class="card bg-primary text-white text-center p-3">
+      <blockquote class="blockquote mb-0">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat.</p>
+        <footer class="blockquote-footer">
+          <small>
+            Someone famous in <cite title="Source Title">Source Title</cite>
+          </small>
+        </footer>
+      </blockquote>
+    </div>
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">Card title</h5>
+        <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
+        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+      </div>
+    </div>
+    <div class="card">
+      <img class="card-img" src="..." alt="Card image">
+    </div>
+    <div class="card p-3 text-right">
+      <blockquote class="blockquote mb-0">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+        <footer class="blockquote-footer">
+          <small class="text-muted">
+            Someone famous in <cite title="Source Title">Source Title</cite>
+          </small>
+        </footer>
+      </blockquote>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Card title</h5>
+        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.</p>
+        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

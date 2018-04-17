@@ -46,10 +46,17 @@ class AtlasElectricalConductivity(Atlas):
 
     @electrical_conductivity_ms_cm.setter
     def electrical_conductivity_ms_cm(self, value):
-        """ Safely updates electrical conductivity in shared state. """   
+        """ Safely updates electrical conductivity in shared state. If sensor 
+            is in calibrate mode only update peripheral shared state, else
+            updates peripheral and environment shared state. """   
         self.logger.debug("Electrical conductivity: {} mS/cm".format(value))    
         self._electrical_conductivity_ms_cm = value
-        with threading.Lock():
+        
+        # Update peripheral and/or environment shared state
+        if self.mode == Modes.CALIBRATE:
+            self.report_peripheral_value(self.electrical_conductivity_name, value)
+        else:
+            self.report_peripheral_value(self.electrical_conductivity_name, value)
             self.report_sensor_value(self.name, self.electrical_conductivity_name, value)
 
 
@@ -135,7 +142,7 @@ class AtlasElectricalConductivity(Atlas):
 
 
     def update(self):
-        """ Updates sensor. """
+        """ Updates sensor when in normal mode. """
         if self.simulate:
             self.electrical_conductivity_ms_cm = 3.33
             self.health = 100
@@ -143,6 +150,7 @@ class AtlasElectricalConductivity(Atlas):
             self.update_compensation_temperature()
             self.update_electrical_conductivity()
             self.update_health()
+
 
     def update_electrical_conductivity(self):
         """ Updates sensor electrical conductivity. """
@@ -157,6 +165,11 @@ class AtlasElectricalConductivity(Atlas):
     def update_compensation_temperature(self):
         """ Updates sensor compensation temperature on if temperature value exists
             in shared state. Only sets on new values greater than threshold. """
+
+        # Don't update compensation temperature from calibrate mode
+        if self.mode == Modes.CALIBRATE:
+            self.logger.debug("No need to update compensation temperature when in CALIBRATE mode")
+            return
 
         # Check if there is a temperature value in shared state to compensate with
         temperature_celcius = self.temperature_celcius
@@ -207,20 +220,43 @@ class AtlasElectricalConductivity(Atlas):
             self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
 
         # Execute request
-        if request_type == "Single Point Calibration":
+        if request_type == "Reset":
+            self.response = self.process_reset_event(request)
+        elif request_type == "Calibrate":
+            self.response = self.process_calibrate_event(request)
+        elif request_type == "Single Point Calibration":
             self.response = self.process_single_point_calibration_event(request)
-        elif request_type == "Low Point Calibration":
-            return self.process_low_point_calibration_event(request)
         else:
             message = "Unknown event request type"
             self.logger.info(message)
             self.response = {"status": 400, "message": message}
 
 
+    def process_reset_event(self, request):
+        """ Processes reset event. """
+        self.logger.debug("Processing reset event")
+        self.mode = Modes.RESET
+        response = {"status": 200, "message": "Resetting peripheral"}
+        return response
+
+
+    def process_calibrate_event(self, request):
+        """ Processes calibrate event. """
+        self.logger.debug("Processing calibrate event")
+        self.mode = Modes.CALIBRATE
+        response = {"status": 200, "message": "Calibrating peripheral"}
+        return response
+
+
     def process_single_point_calibration_event(self, request):
         """ Processes single point calibration event. Gets request parameters,
             executes request, returns response. """
         self.logger.debug("Processing single point calibration event")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            response = {"status": 400, "message": "Peripheral must be in calibration mode"}
+            return response
 
         # Get request parameters
         try:
@@ -238,11 +274,7 @@ class AtlasElectricalConductivity(Atlas):
         except Exception as e:
             self.logger.exception("Unable to take single point calibration reading")
             response = {"status": 500, "message": "Unable to take single point calibration reading: {}".format(e)}
-
-
-    def process_low_point_calibration_event(self, value):
-        """ Processes low point calibration event. """
-        pass
+            return response
 
 
 ############################# Hardware Interactions ###########################

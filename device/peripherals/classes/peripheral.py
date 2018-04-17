@@ -169,8 +169,8 @@ class Peripheral:
                 self.run_normal_mode()
             elif self.mode == Modes.ERROR:
                 self.run_error_mode()
-            elif self.mode == Modes.CONFIG:
-                self.run_config_mode()
+            elif self.mode == Modes.CALIBRATE:
+                self.run_calibrate_mode()
             elif self.mode == Modes.RESET:
                 self.run_reset_mode()
             elif self.mode == Modes.SHUTDOWN:
@@ -206,11 +206,12 @@ class Peripheral:
             self.mode = Modes.NORMAL
 
 
-    def run_normal_mode(self):
+    def run_normal_mode(self, calibrate=False):
         """ Runs normal operation mode. Every sampling interval gets reported 
             sensor / actuator state, and sets desired actuator state. 
             Transitions to ERROR on error. """
-        self.logger.info("Entered NORMAL")
+        if not calibrate:
+            self.logger.info("Entered NORMAL")
         
         self._update_complete = True
         self.last_update_seconds = time.time()
@@ -237,11 +238,12 @@ class Peripheral:
             time.sleep(0.100)
 
 
-
-    def run_config_mode(self):
-        """ Runs config mode. """
-        self.logger.info("Entering CONFIG")
-
+    def run_calibrate_mode(self):
+        """ Runs calibrate mode. Currently just does the same thing as normal
+            mode except variable reporting functions only update peripheral 
+            state instead of both peripheral and environment. """
+        self.logger.info("Entered CALIBRATE")
+        self.run_normal_mode(calibrate=True)
 
 
     def run_error_mode(self):
@@ -356,12 +358,20 @@ class Peripheral:
 
     def report_actuator_value(self, actuator, variable, value):
         """ Report an actuator value. """
-        self.state.environment["actuator"]["reported"][variable] = value
+        with threading.Lock():
+            self.state.environment["actuator"]["reported"][variable] = value
 
 
     def report_health(self, value):
         """ Report peripheral health. """
-        self.state.peripherals[self.name]["health"] = value
+        with threading.Lock():
+            self.state.peripherals[self.name]["health"] = value
+
+
+    def report_peripheral_value(self, variable, value):
+        """ Reports a peripherals value to peripheral dict in shared state. """
+        with threading.Lock():
+            self.state.peripherals[self.name][variable] = value
 
 
     def update_health(self):
