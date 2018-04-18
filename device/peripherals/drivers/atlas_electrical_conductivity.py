@@ -26,7 +26,7 @@ class AtlasElectricalConductivity(Atlas):
 
     def __init__(self, *args, **kwargs):
         """ Instantiates sensor. Instantiates parent class, and initializes 
-            sensor variable name. """
+            sensor names. """
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
@@ -222,8 +222,10 @@ class AtlasElectricalConductivity(Atlas):
         # Execute request
         if request_type == "Reset":
             self.response = self.process_reset_event(request)
-        elif request_type == "Calibrate":
-            self.response = self.process_calibrate_event(request)
+        elif request_type == "Enable Calibration Mode":
+            self.response = self.process_enable_calibration_mode_event(request)
+        elif request_type == "Dry Calibration":
+            self.response = self.process_dry_calibration_event(request)
         elif request_type == "Single Point Calibration":
             self.response = self.process_single_point_calibration_event(request)
         else:
@@ -240,12 +242,40 @@ class AtlasElectricalConductivity(Atlas):
         return response
 
 
-    def process_calibrate_event(self, request):
+    def process_enable_calibration_mode_event(self, request):
         """ Processes calibrate event. """
-        self.logger.debug("Processing calibrate event")
-        self.mode = Modes.CALIBRATE
-        response = {"status": 200, "message": "Calibrating peripheral"}
+        self.logger.debug("Processing enable calibration mode event")
+
+        # return {"status": 400, "message": "This is a test"}
+
+        if self.mode == Modes.CALIBRATE:
+            response = {"status": 200, "message": "Already in calibration mode"}
+        else:
+            self.mode = Modes.CALIBRATE
+            response = {"status": 200, "message": "Enabling calibration mode"}
         return response
+
+
+
+    def process_dry_calibration_event(self, request):
+        """ Processes dry calibration event. Verifies sensor in calibrate mode,
+            then takes dry calibration reading. """
+        self.logger.debug("Processing dry calibration event")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            response = {"status": 400, "message": "Must be in calibration mode to take dry calibration"}
+            return response
+
+        # Execute request
+        try:
+            self.take_dry_calibration_reading()
+            response = {"status": 200, "message": "Successfully took dry calibration reading"}
+            return response
+        except Exception as e:
+            self.logger.exception("Unable to take dry calibration reading")
+            response = {"status": 500, "message": "Unable to take dry calibration reading: {}".format(e)}
+            return response
 
 
     def process_single_point_calibration_event(self, request):
@@ -255,7 +285,7 @@ class AtlasElectricalConductivity(Atlas):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Peripheral must be in calibration mode"}
+            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration."}
             return response
 
         # Get request parameters
@@ -283,6 +313,7 @@ class AtlasElectricalConductivity(Atlas):
     def get_electrical_conductivity(self):
         """ Gets electrical conductivity reading from sensor, sets significant 
             figures based off error magnitude, returns value in mS/cm. """
+        self.logger.debug("Getting electrical conductivity")
 
         # Get electrical conductivity reading from sensor
         # Assumes electrical conductivity is only device output
@@ -301,6 +332,7 @@ class AtlasElectricalConductivity(Atlas):
 
     def set_compensation_temperature(self, temperature_celcius):
         """ Commands sensor to set compensation temperature. """
+        self.logger.debug("Setting compensation temperature")
         command = "T,{}".format(temperature_celcius)
         self.process_command(command, processing_seconds=0.3)
 
@@ -308,64 +340,74 @@ class AtlasElectricalConductivity(Atlas):
     def enable_electrical_conductivity_output(self):
         """ Commands sensor to enable electrical conductivity output when 
             reporting readings. """
+        self.logger.info("Enabling electrical conductivity output")
         self.process_command("O,EC,1", processing_seconds=0.3)
 
 
-    def disable_total_dissolved_solids_output(self):
+    def disable_electrical_conductivity_output(self):
         """ Commands sensor to disable electrical conductivity output when 
             reporting readings. """
+        self.logger.info("Disabling electrical conductivity output")
         self.process_command("O,EC,0", processing_seconds=0.3)
 
 
     def enable_total_dissolved_solids_output(self):
         """ Commands sensor to enable total dissolved solids output when 
             reporting readings. """
+        self.logger.info("Enabling total dissolved solids output")
         self.process_command("O,TDS,1", processing_seconds=0.3)
 
 
     def disable_total_dissolved_solids_output(self):
         """ Commands sensor to disable total dissolved solids output when 
             reporting readings. """
+        self.logger.info("Disabling total dissolved solids output")
         self.process_command("O,TDS,0", processing_seconds=0.3)
 
 
     def enable_salinity_output(self):
         """ Commands sensor to enable salinity output when reporting 
             readings. """
+        self.logger.info("Enabling salinity output")
         self.process_command("O,S,1", processing_seconds=0.3)
 
 
     def disable_salinity_output(self):
         """ Commands sensor to disable salinity output when reporting 
             readings. """
+        self.logger.info("Disabling salinity output")
         self.process_command("O,S,0", processing_seconds=0.3)
 
 
     def enable_specific_gravity_output(self):
         """ Commands sensor to enable specific gravity output when reporting
             readings. """
+        self.logger.info("Enabling specific gravity output")
         self.process_command("O,SG,1", processing_seconds=0.3)
 
 
     def disable_specific_gravity_output(self):
         """ Commands sensor to disable specific gravity output when reporting
             readings. """
+        self.logger.info("Disabling specific gravity output")
         self.process_command("O,SG,0", processing_seconds=0.3)
 
 
     def set_probe_type(self, value):
         """ Commands sensor to set probe type to value. """
+        self.logger.info("Setting probe type")
         self.process_command("K,{}".format(value), processing_seconds=0.3)
 
 
     def take_dry_calibration_reading(self):
         """ Commands sensor to take a dry calibration reading. """
-        self.process_command("Cal,dry", processing_seconds=0.6)
+        self.logger.info("(FAKE) Taking dry calibration reading")
+        #self.process_command("Cal,dry", processing_seconds=0.6)
 
 
     def take_single_point_calibration_reading(self, electrical_conductivity_ms_cm):
         """ Commands sensor to take a single point calibration reading. """
-        self.logger.debug("Commanding sensor to take a single point calibration reading.")
+        self.logger.info("(FAKE) Taking single point calibration reading.")
         # electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
         # command = "Cal,{}".format(electrical_conductivity_us_cm)
         # self.process_command(command, processing_seconds=0.6)
@@ -373,13 +415,15 @@ class AtlasElectricalConductivity(Atlas):
 
     def take_low_point_calibration_reading(self, electrical_conductivity_ms_cm):
         """ Commands sensor to take a low point calibration reading. """
-        electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
-        command = "Cal,low,{}".format(electrical_conductivity_us_cm)
-        self.process_command(command, processing_seconds=0.6)
+        self.logger.info("(FAKE) Taking low point calibration reading.")
+        # electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
+        # command = "Cal,low,{}".format(electrical_conductivity_us_cm)
+        # self.process_command(command, processing_seconds=0.6)
 
 
     def take_high_point_calibration_reading(self, electrical_conductivity_ms_cm):
         """ Commands sensor to take a high point calibration reading. """
-        electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
-        command = "Cal,high,{}".format(electrical_conductivity_us_cm)
-        self.process_command(command, processing_seconds=0.6)
+        self.logger.info("(FAKE) Taking high point calibration reading.")
+        # electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
+        # command = "Cal,high,{}".format(electrical_conductivity_us_cm)
+        # self.process_command(command, processing_seconds=0.6)

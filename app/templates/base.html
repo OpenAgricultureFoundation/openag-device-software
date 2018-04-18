@@ -10,7 +10,7 @@
         body {
          background-color: #f1f1f1;
         }
-       .dashboard, .events, .recipes, .environments, .actions {
+       .dashboard, .events, .recipes, .environments, .peripherals {
         padding: 20px;
        }
        .card {
@@ -32,6 +32,9 @@
           <ul class="navbar-nav mr-auto">
             <li {% if 'dashboard' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'dashboard' %}">Dashboard<span class="sr-only">(current)</span></a>
+            </li>
+            <li {% if 'peripherals' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'peripherals' %}">Peripherals</a>
             </li>
             <li {% if 'events' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'events' %}">Events</a>

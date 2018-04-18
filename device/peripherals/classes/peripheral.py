@@ -206,17 +206,16 @@ class Peripheral:
             self.mode = Modes.NORMAL
 
 
-    def run_normal_mode(self, calibrate=False):
+    def run_normal_mode(self):
         """ Runs normal operation mode. Every sampling interval gets reported 
             sensor / actuator state, and sets desired actuator state. 
             Transitions to ERROR on error. """
-        if not calibrate:
-            self.logger.info("Entered NORMAL")
+        self.logger.info("Entered NORMAL")
         
         self._update_complete = True
         self.last_update_seconds = time.time()
         while self.thread_is_active:
-
+            
             # Update every sampling interval
             self.last_update_interval_seconds = time.time() - self.last_update_seconds
             if self.sampling_interval_seconds < self.last_update_interval_seconds:
@@ -224,8 +223,8 @@ class Peripheral:
                 self.last_update_seconds = time.time()
                 self.update()
 
-            # Check for error transition
-            if self.mode == Modes.ERROR:
+            # Check for error or calibrate transition
+            if self.mode == Modes.ERROR or self.mode == Modes.CALIBRATE:
                 break
 
             # Check for events
@@ -233,7 +232,7 @@ class Peripheral:
                 request = self.request
                 self.request = None
                 self.process_event(request)
-
+            
             # Update every 100ms
             time.sleep(0.100)
 
@@ -241,9 +240,33 @@ class Peripheral:
     def run_calibrate_mode(self):
         """ Runs calibrate mode. Currently just does the same thing as normal
             mode except variable reporting functions only update peripheral 
-            state instead of both peripheral and environment. """
+            state instead of both peripheral and environment. Transitions to 
+            ERROR or NORMAL."""
         self.logger.info("Entered CALIBRATE")
-        self.run_normal_mode(calibrate=True)
+
+        self._update_complete = True
+        self.last_update_seconds = time.time()
+        while self.thread_is_active:
+            
+            # Update every sampling interval
+            self.last_update_interval_seconds = time.time() - self.last_update_seconds
+            if self.sampling_interval_seconds < self.last_update_interval_seconds:
+                self.logger.debug("Updating peripheral, time delta: {:.3f} sec".format(self.last_update_interval_seconds))
+                self.last_update_seconds = time.time()
+                self.update()
+
+            # Check for transition to error or reset
+            if self.mode == Modes.ERROR or self.mode == Modes.RESET:
+                break
+
+            # Check for events
+            if self.request != None:
+                request = self.request
+                self.request = None
+                self.process_event(request)
+            
+            # Update every 100ms
+            time.sleep(0.100)
 
 
     def run_error_mode(self):

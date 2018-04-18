@@ -85,7 +85,7 @@ class EventViewSet(viewsets.ModelViewSet):
         print("Returning status={}. message={}".format(status, message))
         # return Response(response, status)
         response_dict = {"message": message}
-        return Response(response_dict, status=200)
+        return Response(response_dict, status=status)
 
 
 class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -224,10 +224,10 @@ class Events(APIView):
         return Response({'events': events})
 
 
-class Actions(APIView):
-    """ UI page for actions. """
+class Peripherals(APIView):
+    """ UI page for peripherals. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'actions.html'
+    template_name = 'peripherals.html'
 
     def get(self, request):
 
