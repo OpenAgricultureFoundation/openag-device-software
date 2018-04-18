@@ -41,6 +41,7 @@ from app.serializers import RecipeSerializer
 from app.serializers import RecipeTransitionSerializer
 from app.serializers import CultivarSerializer
 from app.serializers import CultivationMethodSerializer
+from app.serializers import PeripheralSetupSerializer
 
 # Import app viewers
 from app.viewers import DeviceViewer
@@ -156,6 +157,15 @@ class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
+    """ API endpoint that allows peripheral setups to be viewed. """
+    serializer_class = PeripheralSetupSerializer
+
+    def get_queryset(self):
+        queryset = PeripheralSetupModel.objects.all()
+        return queryset
+
+
 class Dashboard(APIView):
     """ UI page for dashboard. """
     renderer_classes = [TemplateHTMLRenderer]
@@ -246,12 +256,19 @@ class Peripherals(APIView):
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
 
+        # Get stored peripheral setups
+        peripheral_setups = PeripheralSetupModel.objects.all()
+        peripheral_setups = []
+        for periheral_setup in peripheral_setups:
+            peripheral_setups.append(json.loads(peripheral_setups.json))
+
         # Build and return response
         response = {
             "current_device": current_device,
             "current_environment": current_environment,
             "current_recipe": current_recipe,
-            "recipes": recipes}
+            "recipes": recipes,
+            "peripheral_setups": peripheral_setups}
         return Response(response)
 
 

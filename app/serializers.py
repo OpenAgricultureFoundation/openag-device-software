@@ -6,6 +6,7 @@ from app.models import StateModel
 from app.models import EventModel
 from app.models import EnvironmentModel
 from app.models import DeviceConfigModel
+from app.models import PeripheralSetupModel
 from app.models import RecipeModel
 from app.models import RecipeTransitionModel
 from app.models import CultivarModel
@@ -35,6 +36,12 @@ class DeviceConfigSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = DeviceConfigModel
         fields = ("uuid", "json")
+
+
+class PeripheralSetupSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = PeripheralSetupModel
+        fields = ("uuid", "name", "json")
 
 
 class RecipeSerializer(serializers.HyperlinkedModelSerializer):

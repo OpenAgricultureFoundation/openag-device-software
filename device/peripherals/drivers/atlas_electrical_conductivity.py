@@ -37,6 +37,9 @@ class AtlasElectricalConductivity(Atlas):
         # Initialize compensation sensor names
         self.temperature_name = self.parameters["variables"]["compensation"]["temperature_celcius"]
 
+        # TODO: Load this in from device config file
+        self.setup_uuid = "349fba97-1f23-48c7-8fe7-1ea717915dd4"
+
 
     @property
     def electrical_conductivity_ms_cm(self):

@@ -86,6 +86,23 @@ class Peripheral:
 
 
     @property
+    def setup_uuid(self):
+        """ Gets setup uuid from shared state object. """
+        if self.name in self.state.peripherals and \
+            "setup_uuid" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["setup_uuid"]
+        else:
+            return None
+
+
+    @setup_uuid.setter
+    def setup_uuid(self, value):
+        """ Safely updates setup uuid in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["setup_uuid"] = value
+
+
+    @property
     def request(self):
         """ Gets request from shared state object. """
         if self.name in self.state.peripherals and \

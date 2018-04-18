@@ -3,6 +3,65 @@
 
 <script>
 
+  window.onload = function() {
+    loadPeripheralSetups()
+  };
+
+  function loadPeripheralSetups() {
+    $.ajax({
+        url: "/api/peripheral/setups/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {;
+          peripheral_setups = data
+          loadPeripheralStates();
+        },
+        error: function(data) {
+          console.log("Event request failed");
+        }
+    });
+  }
+
+  function loadPeripheralStates() {
+    $.ajax({
+        url: "/api/state/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var state = data[0];
+          peripheral_states = JSON.parse(state["peripherals"]);
+          doShit();
+        },
+        error: function(data) {
+          console.log("Event request failed");
+        }
+    });
+  }
+
+
+  function doShit() {
+
+    console.log(peripheral_setups)
+    console.log(peripheral_states)
+
+
+    for (var peripheral_name in peripheral_states) {
+      console.log(peripheral_name, peripheral_states[peripheral_name]);
+      setup_uuid = peripheral_states[peripheral_name]["setup_uuid"];
+      break;
+    }
+    console.log(setup_uuid)
+
+    for (var i in peripheral_setups) {
+      if (setup_uuid == peripheral_setups[i]["uuid"]) {
+        setup_json = JSON.parse(peripheral_setups[i]["json"])
+        console.log(setup_json["events"]);
+      }
+    }
+  }
+
   function camelCase(str){
     return str
       .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
@@ -62,7 +121,7 @@
     expand(event_name)
   }
 
- 
+
    function create_peripheral_event(recipient, event_name) {
       /* Creates peripheral event. */
       console.log("Creating peripheral event for: " + recipient + ": " + event_name)
@@ -138,6 +197,7 @@
 
     // Hide next button
     $(base_event_sequence_name + 'NextButton').collapse('hide');
+
   }
 
    function complete_event() {
@@ -280,7 +340,7 @@
                 <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="singlePointCalibrationErrorAlert">Error!</div>
                 <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="singlePointCalibrationSuccessAlert">Success!</div>
                 <div class="collapse" id="singlePointCalibrationNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Dry Calibration')" style="float: right;">Next</button>
+                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Single Point Calibration')" style="float: right;">Next</button>
                 </div>
               </div>
             </div>
@@ -292,7 +352,7 @@
                 <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="resetErrorAlert">Error!</div>
                 <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="resetSuccessAlert">Success!</div>
                 <div class="collapse" id="resetNextButton">
-                  <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button>
+                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Reset')" style="float: right;">Next</button>
                 </div>
               </div>
             </div>
