@@ -326,3 +326,12 @@ class Entry(APIView):
     
     def get(self, request):
         return Response({'entry': 'data'})
+
+
+class Scratchpad(APIView):
+    """ UI page for scratchpad. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'scratchpad.html'
+    
+    def get(self, request):
+        return Response()

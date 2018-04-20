@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+
+{% block javascript %}
+<script>
+
+  window.onload = function() {
+    loadPeripheralSetups()
+  };
+
+  function loadPeripheralSetups() {
+    $.ajax({
+        url: "/api/peripheral/setups/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {;
+          peripheral_setups = data
+          loadPeripheralStates();
+        },
+        error: function(data) {
+          console.log("Event request failed");
+        }
+    });
+  }
+
+  function loadPeripheralStates() {
+    $.ajax({
+        url: "/api/state/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var state = data[0];
+          peripheral_states = JSON.parse(state["peripherals"]);
+          doShit();
+        },
+        error: function(data) {
+          console.log("Event request failed");
+        }
+    });
+  }
+
+  function doShit() {
+
+    // console.log(peripheral_setups)
+    // console.log(peripheral_states)
+
+    for (var peripheral_name in peripheral_states) {
+      // console.log(peripheral_name, peripheral_states[peripheral_name]);
+      setup_uuid = peripheral_states[peripheral_name]["setup_uuid"];
+      break;
+    }
+
+    for (var i in peripheral_setups) {
+      if (setup_uuid == peripheral_setups[i]["uuid"]) {
+        setup_json = JSON.parse(peripheral_setups[i]["json"])
+        break
+      }
+    }
+
+    console.log(setup_uuid)
+    console.log(setup_json["events"]);
+
+  }
+
+
+  function doStuff() { 
+    console.log("Doin stuff")
+    // $( ".world" ).clone().appendTo( ".hello" );
+    // $( ".event-button" ).clone().appendTo( ".hello" );
+
+
+    // var hello = document.getElementById('hello');
+    // var template = document.getElementById('event-button-template').content.cloneNode(true);
+    // hello.appendChild(template)
+    // document.body.appendChild(template.content.cloneNode(true));
+
+
+    // template.querySelector('.comment-author').innerText = comment.author;
+
+    // const person = {
+    //     name: 'Wes',
+    //     job: 'Web Developer',
+    //     city: 'Hamilton',
+    //     bio: 'Wes is a really cool guy that loves to teach web development!'
+    // }
+
+    // const markup = `
+    //  <div class="person">
+    //     <h2>
+    //         ${person.name}
+    //     </h2>
+    //     <p class="location">${person.city}</p>
+    //     <p class="bio">${person.bio}</p>
+    //  </div>
+    // `;
+
+
+
+    var peripherals = [
+      {
+        name: "AtlasEC-1",
+        events: [
+          {
+            name: "One Point Calibration"
+          }
+        ]
+      }
+    ]
+
+    for (peripheral_index in peripherals) {
+      peripheral = peripherals[peripheral_index]
+      console.log("Creating peripheral card for: " + peripheral.name)
+
+      // Create peripheral card template
+      var peripheralCardTemplate = `
+        <div id="${peripheral.name}" class="card">
+          <div id="${peripheral.name}-header" class="card-header">
+            <h4>${peripheral.name}</h4>
+          </div>
+        </div>
+        `
+      // Create peripheral card in DOM
+      cardColumns = document.getElementById('card-columns');
+      cardColumns.insertAdjacentHTML('beforeend', peripheralCardTemplate);
+
+      // Get peripheral card header
+      peripheralCardHeader = document.getElementById(peripheral.name + '-header');
+
+      // Add peripheral event buttons to peripheral card header
+      for (i in peripheral.events) {
+        event_name = peripheral.events[i].name
+        console.log(event_name)
+        var eventButtonTemplate = `
+          <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="expand('${event_name}');">${event_name}</a>
+        `
+        peripheralCardHeader.insertAdjacentHTML('beforeend', eventButtonTemplate);
+
+      }
+    }
+  }
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+
+<p><button class="btn" type="button" onClick="doStuff()">Do Stuff</button></p>
+
+<div id="hello" class="hello">
+    <p>Hello</p>
+</div>
+
+<div class="peripherals"></br>
+  <div id="card-columns" class="card-columns">
+  </div>
+</div>
+
+
+
+
+<div class="peripherals"></br>
+  <div class="card-columns">
+    <div class="card" >
+      <div class="card-header">
+        <h4>AtlasEC-1</h4>
+        <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="show_event('One Point Calibration');">One Point Calibration</a>
+      </div>
+
+      <div class="collapse" id="onePointCalibrationCard">
+        <div id="onePointCalibrationCarousel" class="carousel slide" data-ride="carousel" data-interval=false>
+
+          <!-- HEAD SLIDE -->
+          <div class="carousel-inner">
+            <div class="carousel-item active">
+              <div class="card-body">
+                <h5 class="card-title">One-Point Calibration</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Here are some general instructions / overview of a one point calibration. What the process entails and what materials you will need.</h6>
+                <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button>
+              </div>
+            </div>
+
+            <!-- BODY SLIDES -->
+            <div class="carousel-item">
+              <div class="card-body">
+                <h5 class="card-title">Step 1: Enable Calibration Mode</h5>
+                <h6 class="card-subtitle mb-2 text-muted">This will set device into calibration mode. It will keep displaying values but won't store them in the environment history.</h6>       
+                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Enable Calibration Mode')"><i class="icon-share"></i>Enable Calibration Mode</button></p>
+                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="enableCalibrationModeSuccessAlert">Success!</div>
+                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="enableCalibrationModeErrorAlert">Error!</div>
+                <div class="collapse" id="enableCalibrationModeNextButton">
+                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Enable Calibration Mode')" style="float: right;">Next</button>
+                   <!-- <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button> -->
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card-body">
+                <h5 class="card-title">Step 2: Dry Calibration</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 2.</h6>
+                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Dry Calibration')"><i class="icon-share"></i>Dry Calibration</button></p>
+                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="dryCalibrationErrorAlert">Error!</div>
+                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="dryCalibrationSuccessAlert">Success!</div>
+                <div class="collapse" id="dryCalibrationNextButton">
+                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Dry Calibration')" style="float: right;">Next</button>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card-body">
+                <h5 class="card-title">Step 3: Single Point Calibration</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 3.</h6>
+                <div class="input-group mb-3">
+                  <input type="text" id="singlePointCalibrationValue" name="singlePointCalibrationValue" placeholder='12.88' required>
+                  <div class="input-group-append">
+                    <span class="input-group-text" id="basic-addon2">mS/cm</span>
+                  </div>
+                </div>
+                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Single Point Calibration')"><i class="icon-share"></i>Single Point Calibration</button></p>
+                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="singlePointCalibrationErrorAlert">Error!</div>
+                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="singlePointCalibrationSuccessAlert">Success!</div>
+                <div class="collapse" id="singlePointCalibrationNextButton">
+                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Single Point Calibration')" style="float: right;">Next</button>
+                </div>
+              </div>
+            </div>
+            <div class="carousel-item">
+              <div class="card-body">
+                <h5 class="card-title">Step 4: Reset</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 4.</h6>
+                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Reset')"><i class="icon-share"></i>Reset</button></p>
+                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="resetErrorAlert">Error!</div>
+                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="resetSuccessAlert">Success!</div>
+                <div class="collapse" id="resetNextButton">
+                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Reset')" style="float: right;">Next</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- FOOTER SLIDE -->
+            <div class="carousel-item">
+              <div class="card-body">
+                <h5 class="card-title">Completed!</h5>
+                <h6 class="card-subtitle mb-2 text-muted">One point calibration completely successfully </h6>
+                <button class="btn" type="button" data-target="#onePointCalibrationCard" data-toggle="collapse" style="float: right;">Done</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
