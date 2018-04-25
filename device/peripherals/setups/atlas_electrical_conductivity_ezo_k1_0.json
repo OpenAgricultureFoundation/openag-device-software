@@ -21,103 +21,42 @@
             "address": "0x63"
         }
     },
-    "events": {
-        "individual": {
-            "Reset": {
-                "description": null,
-                "parameters": null
+    "events": [
+        {
+            "name": "Set Sampling Interval",
+            "description": "Description goes here. New!!",
+            "value": {
+                "default": 10,
+                "unit": "Seconds"
             },
-            "Calibrate": {
-                "description": null,
-                "parameters": null
-            },
-            "Dry Calibration": {
-                "description": null,
-                "parameters": null
-            },
-            "Low Point Calibration": {
-                "description": null,
-                "parameters": [
-                    {
-                        "name": "value",
-                        "type": "number",
-                        "unit": "mS/cm",
-                        "default": "12.88"
+            "sequence": null
+          },
+          {
+            "name": "One Point Calibration",
+            "description": "Description goes here",
+            "value": null,
+            "sequence": [
+                {
+                    "name": "Enable Calibration Mode",
+                    "description": "Description goes here",
+                    "value": null
+                },
+                {
+                    "name": "Dry Calibration",
+                    "description": "Description goes here",
+                    "value": null
+                },
+                {
+                    "name": "Single Point Calibration",
+                    "description": "Description goes here",
+                    "value": {
+                        "default": 12.88,
+                        "unit": "mS/cm"
                     }
-                ]
-            },
-            "High Point Calibration": {
-                "description": null,
-                "parameters": [
-                    {
-                        "name": "value",
-                        "type": "number",
-                        "unit": "mS/cm",
-                        "default": "80.00"
-                    }
-                ]
-            },
-            "Set I2C Address": {
-                "description": null,
-                "parameters": [
-                    {
-                        "name": "value",
-                        "type": "number",
-                        "default": "0x51",
-                        "unit": "Hex"
-                    }
-                ]
-            },
-            "Set Sampling Interval": {
-                "parameters": [
-                    {
-                        "name": "value",
-                        "type": "number",
-                        "default": 10.0,
-                        "unit": "Seconds"
-                    }
-                ]
-            }
-        },
-        "sequences": [
-            {
-                "name": "Reset",
-                "description": null,
-                "events": ["Reset"]
-            },
-            {
-                "name": "Change Sampling Interval",
-                "description": null,
-                "events": ["Set Sampling Interval"]
-            },
-            {
-                "name": "Change I2C Address",
-                "description": null,
-                "events": ["Set I2C Address"]
-            },
-            {
-                "name": "One Point Calibration",
-                "description": null,
-                "events": [
-                    "Calibrate", 
-                    "Dry Calibration",
-                    "Single Point Calibration",
-                    "Reset"
-                ]
-            },
-            {
-                "name": "Two Point Calibration",
-                "description": null,
-                "events": [
-                    "Calibrate", 
-                    "Dry Calibration",
-                    "Low Point Calibration",
-                    "High Point Calibration",
-                    "Reset"
-                ]
-            }
-        ]
-    },
+                }
+            ]
+        }
+    ],
     "info": {
         "variables": {
             "sensors":{

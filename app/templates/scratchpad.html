@@ -1,47 +1,286 @@
 {% extends 'base.html' %}
 
-
 {% block javascript %}
 <script>
 
   window.onload = function() {
+
+    var peripheralData = {
+      setups: null,
+      states: null
+    };
+
+    // Create peripheral cards based off stored data in db
     loadPeripheralSetups()
+      .then(function(peripheralSetups) {
+        peripheralData.setups = peripheralSetups;
+        return loadPeripheralStates();
+      })
+      .then(function(peripheralStates) {
+        peripheralData.states = peripheralStates;
+        return createPeripheralsDict(peripheralData);
+      })
+      .then(function(peripheralsDict) {
+        createPeripheralCards(peripheralsDict);
+      })
+      .catch(function(error) {
+        console.log(error);
+      })
   };
 
   function loadPeripheralSetups() {
-    $.ajax({
-        url: "/api/peripheral/setups/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {;
-          peripheral_setups = data
-          loadPeripheralStates();
-        },
-        error: function(data) {
-          console.log("Event request failed");
-        }
-    });
+    return new Promise(function (resolve, reject) {
+      console.log("Loading peripheral setups")
+      $.ajax({
+          url: "/api/peripheral/setups/",
+          type: "GET",
+          data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+          dataType: "json",
+          success: function(data) {;
+            var peripheralSetups = data;
+            resolve(peripheralSetups);
+          },
+          error: function(data) {
+            console.log("Event request failed");
+            reject(data);
+          }
+      });
+    })
   }
 
   function loadPeripheralStates() {
-    $.ajax({
+    return new Promise(function (resolve, reject) {
+      console.log("Loading peripheral states")
+      $.ajax({
         url: "/api/state/",
         type: "GET",
         data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
+        dataType: "json",
         success: function(data) {
           var state = data[0];
-          peripheral_states = JSON.parse(state["peripherals"]);
-          doShit();
+          var peripheralStates = JSON.parse(state["peripherals"]);
+          resolve(peripheralStates);
         },
         error: function(data) {
           console.log("Event request failed");
+          reject(data);
         }
-    });
+      });
+    })
   }
 
-  function create_peripheral_event(recipient, event_name, event_id) {
+  function createPeripheralsDict(peripheralData) {
+    return new Promise(function (resolve, reject) {
+      console.log("Creating peripherals dict");
+
+      // TODO: add error handling
+
+      // Initialize peripherals dict
+      peripheralsDict = []
+
+      // Loop through each active peripheral
+      for (var peripheralName in peripheralData.states) {
+        // console.log(peripheralName, peripheralData.states[peripheralName]);
+        
+        // Get each active peripherals setup uuid
+        setupUUID = peripheralData.states[peripheralName]["setup_uuid"];
+
+        // Get setup json for each peripheral from setup uuid
+        for (var i in peripheralData.setups) {
+          if (setupUUID == peripheralData.setups[i]["uuid"]) {
+            setupJSON = JSON.parse(peripheralData.setups[i]["json"])
+
+            // Create peripheral card entry in peripheral dict
+            peripheralsDict.push({
+              name: peripheralName,
+              events: setupJSON["events"]
+            })
+            break;
+          }
+        }
+      }
+      resolve(peripheralsDict);
+    })
+  }
+
+
+  function createPeripheralCards(peripherals) { 
+    console.log("Creating peripheral cards");
+    // var peripherals = [
+    //   {
+    //     name: "AtlasEC-1",
+    //     events: [
+    //       {
+    //         name: "Set Sampling Interval",
+    //         description: "Description goes here",
+    //         value: {
+    //           default: 10,
+    //           unit: "Seconds"
+    //         },
+    //         sequence: null
+    //       },
+    //       {
+    //         name: "One Point Calibration",
+    //         description: "Description goes here",
+    //         value: null,
+    //         sequence: [
+    //           {
+    //             name: "Enable Calibration Mode",
+    //             description: "Description goes here",
+    //             value: null
+    //           },
+    //           {
+    //             name: "Dry Calibration",
+    //             description: "Description goes here",
+    //             value: null
+    //           },
+    //           {
+    //             name: "Single Point Calibration",
+    //             description: "Description goes here",
+    //             value: {
+    //               default: 12.88,
+    //               unit: "mS/cm"
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   }
+    // ];
+
+    for (peripheral_index in peripherals) {
+      peripheral = peripherals[peripheral_index]
+      console.log("Creating peripheral card for: " + peripheral.name)
+
+      // Create peripheral card template
+      var peripheralCardTemplate = `
+        <div id="${lowerCamel(peripheral.name)}" class="card">
+          <div id="${lowerCamel(peripheral.name)}Header" class="card-header">
+            <h4>${peripheral.name}</h4>
+          </div>
+        </div>
+        `
+      // Create peripheral card in DOM
+      cardColumns = document.getElementById('card-columns');
+      cardColumns.insertAdjacentHTML('beforeend', peripheralCardTemplate);
+
+      // Get peripheral card instance
+      peripheralCardInstance = document.getElementById(lowerCamel(peripheral.name));
+      peripheralCardHeader = document.getElementById(lowerCamel(peripheral.name) + 'Header');
+
+      // Add peripheral event buttons to peripheral card header
+      for (i in peripheral.events) {
+        // Parse parameters
+        event = peripheral.events[i]
+        event.id = lowerCamel(peripheral.name) + upperCamel(event.name)
+
+        console.log("Creating event card for: " + peripheral.name + ": " + event.name)
+
+        // Create event buttons
+        var eventButtonTemplate = `
+          <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="showEvent('${event.id}');">${event.name}</a>
+        `
+        peripheralCardHeader.insertAdjacentHTML('beforeend', eventButtonTemplate);
+
+        // Create non-sequenced event cards
+        if (event.sequence == null) {
+          var eventCardTemplate = 
+          `<div id="${event.id}Card" class="collapse" >
+            <div class="card-body">
+              <h5 class="card-title">${event.name}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">${event.description}</h6>
+              ${event.value ? 
+                `<div class="input-group mb-3">
+                  <input type="text" id="${event.id}Value" name="${event.id}Value" placeholder="${event.value.default}" required>
+                  <div class="input-group-append">
+                    <span class="input-group-text" id="basic-addon2">${event.value.unit}</span>
+                  </div>
+                </div>`
+              : ''}
+              <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${event.name}','${event.id}')"><i class="icon-share"></i>${event.name}</button></p>
+              <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${event.id}ErrorAlert"><span id="alertMessage"></span></div>
+              <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${event.id}SuccessAlert"><span id="alertMessage"></span></div>
+            </div>
+          </div>`
+          peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
+        }
+
+        // Create sequenced event cards
+        else {
+          var eventCardHeadTemplate = `
+            <div class="collapse" id="${event.id}Card">
+              <div id="${event.id}Carousel" class="carousel slide" data-ride="carousel" data-interval=false>
+
+                <div class="carousel-inner">
+                  <!-- HEAD SLIDE -->
+                  <div class="carousel-item active">
+                    <div class="card-body">
+                      <h5 class="card-title">${event.name}</h5>
+                      <h6 class="card-subtitle mb-2 text-muted">${event.description}</h6>
+                      <button class="btn" type="button" data-target="#${event.id}Carousel" data-slide="next" style="float: right;">Next</button>
+                    </div>
+                  </div>`
+
+          var eventCardBodyTemplate = `<!-- BODY SLIDES -->`
+          for (i in event.sequence) {
+            sequence = event.sequence[i]
+            sequence.id = event.id + upperCamel(sequence.name)
+
+            // Create slides w/optional value for each sequence in event 
+            eventCardBodyTemplate += `  
+              <div class="carousel-item">
+                <div class="card-body">
+                  <h5 class="card-title">${sequence.name}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">${sequence.description}</h6>
+                  ${sequence.value ? 
+                    `<div class="input-group mb-3">
+                      <input type="text" id="${sequence.id}Value" name="${sequence.id}Value" placeholder="${sequence.value.default}" required>
+                      <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">${sequence.value.unit}</span>
+                      </div>
+                    </div>`
+                  : ''}       
+                  <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${sequence.name}', '${sequence.id}')"><i class="icon-share"></i>${sequence.name}</button></p>
+                  <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${sequence.id}SuccessAlert">Success!</div>
+                  <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${sequence.id}ErrorAlert">Error!</div>
+                  <div class="collapse" id="${sequence.id}NextButton">
+                    <button class="btn" type="button" onClick="nextEvent('${event.id}', '${sequence.id}')" style="float: right;">Next</button>
+                  </div>
+                </div>
+              </div>
+            `
+          }
+
+          var eventCardFooterTemplate = `
+                        <!-- FOOTER SLIDE -->
+                        <div class="carousel-item">
+                          <div class="card-body">
+                            <h5 class="card-title">Completed!</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">What should go here?</h6>
+                            <button class="btn" type="button" data-target="#${event.id}Card" data-toggle="collapse" style="float: right;">Done</button>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>`
+
+          var eventCardTemplate = eventCardHeadTemplate + "\n" + eventCardBodyTemplate + "\n" + eventCardFooterTemplate;
+          peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
+        }
+      }
+    }
+  }
+
+
+
+
+
+
+  function createPeripheralEvent(recipient, event_name, event_id) {
      /* Creates peripheral event. */
      console.log("Creating peripheral event for: " + recipient + ": " + event_name)
 
@@ -102,29 +341,6 @@
      }); 
   }
 
-  function doShit() {
-
-    // console.log(peripheral_setups)
-    // console.log(peripheral_states)
-
-    for (var peripheral_name in peripheral_states) {
-      // console.log(peripheral_name, peripheral_states[peripheral_name]);
-      setup_uuid = peripheral_states[peripheral_name]["setup_uuid"];
-      break;
-    }
-
-    for (var i in peripheral_setups) {
-      if (setup_uuid == peripheral_setups[i]["uuid"]) {
-        setup_json = JSON.parse(peripheral_setups[i]["json"])
-        break
-      }
-    }
-
-    console.log(setup_uuid)
-    console.log(setup_json["events"]);
-
-  }
-
 
   function lowerCamel(str){
     return str
@@ -132,6 +348,7 @@
       .replace(/\s/g, '')
       .replace(/^(.)/, function($1) { return $1.toLowerCase(); });
   }
+
 
   function upperCamel(str) {
     str = lowerCamel(str)
@@ -144,36 +361,19 @@
     base_name = "#" + event_id;
     event_card = base_name + "Card";
 
-
-    // Can I introspect these from DOM?
-    // e.g. look for all the cards with peripheral.name + ... + "Card"
-    var event_cards = [
-      // "#healthCard",
-      // "#modeCard",
-      // "#eCCard",
-      // "#setSamplingIntervalCard",
-      // "#setI2CAddressCard",
-      // "#onePointCalibrationCard",
-      // "#twoPointCalibrationCard"
-      ];
-
     // Hide alert messages
     $(base_name + 'ErrorAlert').collapse('hide');
     $(base_name + 'SuccessAlert').collapse('hide');
     
     // Hide all other events
-    for (var id in event_cards) {
-      if (event_card != event_cards[id]) {
-        $(event_cards[id]).collapse('hide');
-      }
-    }
+    $(".collapse").collapse('hide');
 
     // Toggle provided event
     $(event_card).collapse('toggle');
    }
 
 
-  function show_event(event_id) {
+  function showEvent(event_id) {
     // Get base name
     base_name = "#" + event_id
 
@@ -210,175 +410,6 @@
 
   }
 
-  function doStuff() { 
-    console.log("Doin stuff")
-
-    var peripherals = [
-      {
-        name: "AtlasEC-1",
-        events: [
-          {
-            name: "Set Sampling Interval",
-            description: "Description goes here",
-            value: {
-              default: 10,
-              unit: "Seconds"
-            },
-            sequence: null
-          },
-          {
-            name: "One Point Calibration",
-            description: "Description goes here",
-            value: null,
-            sequence: [
-              {
-                name: "Enable Calibration Mode",
-                description: "Description goes here",
-                value: null
-              },
-              {
-                name: "Dry Calibration",
-                description: "Description goes here",
-                value: null
-              },
-              {
-                name: "Single Point Calibration",
-                description: "Description goes here",
-                value: {
-                  default: 12.88,
-                  unit: "mS/cm"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    ];
-
-    for (peripheral_index in peripherals) {
-      peripheral = peripherals[peripheral_index]
-      console.log("Creating peripheral card for: " + peripheral.name)
-
-      // Create peripheral card template
-      var peripheralCardTemplate = `
-        <div id="${lowerCamel(peripheral.name)}" class="card">
-          <div id="${lowerCamel(peripheral.name)}Header" class="card-header">
-            <h4>${peripheral.name}</h4>
-          </div>
-        </div>
-        `
-      // Create peripheral card in DOM
-      cardColumns = document.getElementById('card-columns');
-      cardColumns.insertAdjacentHTML('beforeend', peripheralCardTemplate);
-
-      // Get peripheral card instance
-      peripheralCardInstance = document.getElementById(lowerCamel(peripheral.name));
-      peripheralCardHeader = document.getElementById(lowerCamel(peripheral.name) + 'Header');
-
-      // Add peripheral event buttons to peripheral card header
-      for (i in peripheral.events) {
-        // Parse parameters
-        event = peripheral.events[i]
-        event.id = lowerCamel(peripheral.name) + upperCamel(event.name)
-
-        console.log("Creating event card for: " + peripheral.name + ": " + event.name)
-
-        // Create event buttons
-        var eventButtonTemplate = `
-          <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="show_event('${event.id}');">${event.name}</a>
-        `
-        peripheralCardHeader.insertAdjacentHTML('beforeend', eventButtonTemplate);
-
-        // Create non-sequenced event cards
-        if (event.sequence == null) {
-          var eventCardTemplate = 
-          `<div id="${event.id}Card" class="collapse" >
-            <div class="card-body">
-              <h5 class="card-title">${event.name}</h5>
-              <h6 class="card-subtitle mb-2 text-muted">${event.description}</h6>
-              <div class="input-group mb-3">
-                <input type="text" id="${event.id}Value" name="${event.id}Value" placeholder="${event.value.default}" required>
-                <div class="input-group-append">
-                  <span class="input-group-text" id="basic-addon2">${event.value.unit}</span>
-                </div>
-              </div>
-              <p><button class="btn" type="button" onClick="create_peripheral_event('${peripheral.name}','${event.name}','${event.id}')"><i class="icon-share"></i>${event.name}</button></p>
-              <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${event.id}ErrorAlert"><span id="alertMessage"></span></div>
-              <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${event.id}SuccessAlert"><span id="alertMessage"></span></div>
-            </div>
-          </div>`
-          peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
-        }
-
-        // Create sequenced event cards
-        else {
-          var eventCardHeadTemplate = `
-            <div class="collapse" id="${event.id}Card">
-              <div id="${event.id}Carousel" class="carousel slide" data-ride="carousel" data-interval=false>
-
-                <div class="carousel-inner">
-                  <!-- HEAD SLIDE -->
-                  <div class="carousel-item active">
-                    <div class="card-body">
-                      <h5 class="card-title">${event.name}</h5>
-                      <h6 class="card-subtitle mb-2 text-muted">${event.description}</h6>
-                      <button class="btn" type="button" data-target="#${event.id}Carousel" data-slide="next" style="float: right;">Next</button>
-                    </div>
-                  </div>`
-
-          var eventCardBodyTemplate = `<!-- BODY SLIDES -->`
-          for (i in event.sequence) {
-            sequence = event.sequence[i]
-            sequence.id = event.id + upperCamel(sequence.name)
-            // console.log(sequence.name)
-
-             // TODO: add in optional values....
-
-            eventCardBodyTemplate += `  
-              <div class="carousel-item">
-                <div class="card-body">
-                  <h5 class="card-title">${sequence.name}</h5>
-                  <h6 class="card-subtitle mb-2 text-muted">${sequence.description}</h6>       
-                  <p><button class="btn" type="button" onClick="create_peripheral_event('${peripheral.name}','${sequence.name}', '${sequence.id}')"><i class="icon-share"></i>${sequence.name}</button></p>
-                  <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${sequence.id}SuccessAlert">Success!</div>
-                  <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${sequence.id}ErrorAlert">Error!</div>
-                  <div class="collapse" id="${sequence.id}NextButton">
-                    <button class="btn" type="button" onClick="nextEvent('${event.id}', '${sequence.id}')" style="float: right;">Next</button>
-                  </div>
-                </div>
-              </div>
-            `
-          }
-
-          var eventCardFooterTemplate = `
-                        <!-- FOOTER SLIDE -->
-                        <div class="carousel-item">
-                          <div class="card-body">
-                            <h5 class="card-title">Completed!</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">What should go here?</h6>
-                            <button class="btn" type="button" data-target="#${event.id}Card" data-toggle="collapse" style="float: right;">Done</button>
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>`
-
-          var eventCardTemplate = eventCardHeadTemplate + "\n" + eventCardBodyTemplate + "\n" + eventCardFooterTemplate;
-          peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
-        }
-
-
-
-
-
-      }
-    }
-  }
-
 </script>
 
 {% endblock %}
@@ -386,118 +417,13 @@
 {% block content %}
 {% csrf_token %}
 
-
-<p><button class="btn" type="button" onClick="doStuff()">Do Stuff</button></p>
-
-<div id="hello" class="hello">
-    <p>Hello</p>
-</div>
-
 <div class="peripherals"></br>
   <div id="card-columns" class="card-columns">
   </div>
 </div>
 
+<!-- <p><button class="btn" type="button" onClick="createPeripheralCards()">Do Stuff</button></p> -->
 
 
-
-<div class="peripherals"></br>
-  <div class="card-columns">
-    <div class="card" >
-      <div class="card-header">
-        <h4>AtlasEC-1</h4>
-        <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="show_event('One Point Calibration');">One Point Calibration</a>
-      </div>
-
-      
-
-
-
-
-      <div class="collapse" id="onePointCalibrationCard">
-        <div id="onePointCalibrationCarousel" class="carousel slide" data-ride="carousel" data-interval=false>
-
-          <!-- HEAD SLIDE -->
-          <div class="carousel-inner">
-            <div class="carousel-item active">
-              <div class="card-body">
-                <h5 class="card-title">One-Point Calibration</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Here are some general instructions / overview of a one point calibration. What the process entails and what materials you will need.</h6>
-                <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button>
-              </div>
-            </div>
-
-            <!-- BODY SLIDES -->
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 1: Enable Calibration Mode</h5>
-                <h6 class="card-subtitle mb-2 text-muted">This will set device into calibration mode. It will keep displaying values but won't store them in the environment history.</h6>       
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Enable Calibration Mode')"><i class="icon-share"></i>Enable Calibration Mode</button></p>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="enableCalibrationModeSuccessAlert">Success!</div>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="enableCalibrationModeErrorAlert">Error!</div>
-                <div class="collapse" id="enableCalibrationModeNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Enable Calibration Mode')" style="float: right;">Next</button>
-                   <!-- <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button> -->
-                </div>
-              </div>
-            </div>
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 2: Dry Calibration</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 2.</h6>
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Dry Calibration')"><i class="icon-share"></i>Dry Calibration</button></p>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="dryCalibrationErrorAlert">Error!</div>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="dryCalibrationSuccessAlert">Success!</div>
-                <div class="collapse" id="dryCalibrationNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Dry Calibration')" style="float: right;">Next</button>
-                </div>
-              </div>
-            </div>
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 3: Single Point Calibration</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 3.</h6>
-                <div class="input-group mb-3">
-                  <input type="text" id="singlePointCalibrationValue" name="singlePointCalibrationValue" placeholder='12.88' required>
-                  <div class="input-group-append">
-                    <span class="input-group-text" id="basic-addon2">mS/cm</span>
-                  </div>
-                </div>
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Single Point Calibration')"><i class="icon-share"></i>Single Point Calibration</button></p>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="singlePointCalibrationErrorAlert">Error!</div>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="singlePointCalibrationSuccessAlert">Success!</div>
-                <div class="collapse" id="singlePointCalibrationNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Single Point Calibration')" style="float: right;">Next</button>
-                </div>
-              </div>
-            </div>
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 4: Reset</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 4.</h6>
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Reset')"><i class="icon-share"></i>Reset</button></p>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="resetErrorAlert">Error!</div>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="resetSuccessAlert">Success!</div>
-                <div class="collapse" id="resetNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Reset')" style="float: right;">Next</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- FOOTER SLIDE -->
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Completed!</h5>
-                <h6 class="card-subtitle mb-2 text-muted">One point calibration completely successfully </h6>
-                <button class="btn" type="button" data-target="#onePointCalibrationCard" data-toggle="collapse" style="float: right;">Done</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 {% endblock %}
