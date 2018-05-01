@@ -26,8 +26,8 @@ class I2C(object):
             self.mux_enabled = False
 
         # Initialize i2c file reader and writer
-        self.fr = io.open("/dev/i2c-"+str(bus), "rb", buffering=0)
-        self.fw = io.open("/dev/i2c-"+str(bus), "wb", buffering=0)
+        self.fr = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
+        self.fw = io.open("/dev/i2c-" + str(bus), "wb", buffering=0)
         fcntl.ioctl(self.fr, self.I2C_SLAVE, address)
         fcntl.ioctl(self.fw, self.I2C_SLAVE, address)
 
@@ -48,6 +48,7 @@ class I2C(object):
     def write(self, byte_list):
         """ Writes byte list to device. Converts byte list to byte array then 
             sends bytes. """
+        self.manage_mux()
         byte_array = bytearray(byte_list)
         byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
         self.logger.debug("Writing: {}".format(byte_string))
@@ -56,12 +57,14 @@ class I2C(object):
 
     def write_raw(self, bytes):
         """ Writes raw bytes to device. """
+        self.manage_mux()
         self.logger.debug("Writing: {}".format(bytes))
         self.fw.write(bytes)
 
 
     def read(self, num_bytes):
         """ Reads num bytes from device. Returns byte array. """
+        self.manage_mux()
         byte_array = bytearray(self.fr.read(num_bytes))
         byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
         self.logger.debug("Read: {}".format(byte_string))
@@ -70,8 +73,20 @@ class I2C(object):
 
     def read_raw(self, num_bytes):
         """ Reads num bytes from device. Returns raw bytes. """
-        bytes = self.fr.read(num_bytes)
-        return bytes
+        self.manage_mux()
+        bytes_ = self.fr.read(num_bytes)
+        return bytes_
+
+
+    def manage_mux(self):
+        """ Sets mux to channel if enabled. """
+        if self.mux_enabled():
+            self.logger.debug("Setting mux {} to channel {}".format(self.mux, self.channel))
+            byte_list = [self.mux, self.channel]
+            byte_array = bytearray(byte_list)
+            byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
+            self.logger.debug("Writing: {}".format(byte_string))
+            self.fw.write(byte_array)
 
 
     def close(self):

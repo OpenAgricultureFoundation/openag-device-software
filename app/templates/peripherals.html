@@ -1,68 +1,344 @@
 {% extends 'base.html' %}
-{% block javascript %}
 
+{% block javascript %}
 <script>
 
   window.onload = function() {
+
+    var peripheralData = {
+      setups: null,
+      states: null
+    };
+
+    // Create peripheral cards based off stored data in db
     loadPeripheralSetups()
+      .then(function(peripheralSetups) {
+        peripheralData.setups = peripheralSetups;
+        return loadPeripheralStates();
+      })
+      .then(function(peripheralStates) {
+        peripheralData.states = peripheralStates;
+        return createPeripheralsDict(peripheralData);
+      })
+      .then(function(peripheralsDict) {
+        createPeripheralCards(peripheralsDict);
+      })
+      .catch(function(error) {
+        console.log(error);
+      })
   };
 
   function loadPeripheralSetups() {
-    $.ajax({
-        url: "/api/peripheral/setups/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {;
-          peripheral_setups = data
-          loadPeripheralStates();
-        },
-        error: function(data) {
-          console.log("Event request failed");
-        }
-    });
+    return new Promise(function (resolve, reject) {
+      console.log("Loading peripheral setups")
+      $.ajax({
+          url: "/api/peripheral/setups/",
+          type: "GET",
+          data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+          dataType: "json",
+          success: function(data) {;
+            var peripheralSetups = data;
+            resolve(peripheralSetups);
+          },
+          error: function(data) {
+            console.log("Event request failed");
+            reject(data);
+          }
+      });
+    })
   }
 
   function loadPeripheralStates() {
-    $.ajax({
+    return new Promise(function (resolve, reject) {
+      console.log("Loading peripheral states")
+      $.ajax({
         url: "/api/state/",
         type: "GET",
         data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
+        dataType: "json",
         success: function(data) {
           var state = data[0];
-          peripheral_states = JSON.parse(state["peripherals"]);
-          doShit();
+          var peripheralStates = JSON.parse(state["peripherals"]);
+          resolve(peripheralStates);
         },
         error: function(data) {
           console.log("Event request failed");
+          reject(data);
         }
-    });
+      });
+    })
+  }
+
+  function createPeripheralsDict(peripheralData) {
+    return new Promise(function (resolve, reject) {
+      console.log("Creating peripherals dict");
+
+      // TODO: add error handling
+
+      // Initialize peripherals dict
+      peripheralsDict = []
+
+      // Loop through each active peripheral
+      for (var peripheralName in peripheralData.states) {
+        // console.log(peripheralName, peripheralData.states[peripheralName]);
+        
+        // Get each active peripherals setup uuid
+        setupUUID = peripheralData.states[peripheralName]["setup_uuid"];
+
+        // Get setup json for each peripheral from setup uuid
+        for (var i in peripheralData.setups) {
+          if (setupUUID == peripheralData.setups[i]["uuid"]) {
+            setupJSON = JSON.parse(peripheralData.setups[i]["json"])
+
+            // Create peripheral card entry in peripheral dict
+            peripheralsDict.push({
+              name: peripheralName,
+              events: setupJSON["events"]
+            })
+            break;
+          }
+        }
+      }
+      resolve(peripheralsDict);
+    })
   }
 
 
-  function doShit() {
+  function createPeripheralCards(peripherals) { 
+    console.log("Creating peripheral cards");
+    // var peripherals = [
+    //   {
+    //     name: "AtlasEC-1",
+    //     events: [
+    //       {
+    //         name: "Set Sampling Interval",
+    //         description: "Description goes here",
+    //         value: {
+    //           default: 10,
+    //           unit: "Seconds"
+    //         },
+    //         sequence: null
+    //       },
+    //       {
+    //         name: "One Point Calibration",
+    //         description: "Description goes here",
+    //         value: null,
+    //         sequence: [
+    //           {
+    //             name: "Enable Calibration Mode",
+    //             description: "Description goes here",
+    //             value: null
+    //           },
+    //           {
+    //             name: "Dry Calibration",
+    //             description: "Description goes here",
+    //             value: null
+    //           },
+    //           {
+    //             name: "Single Point Calibration",
+    //             description: "Description goes here",
+    //             value: {
+    //               default: 12.88,
+    //               unit: "mS/cm"
+    //             }
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   }
+    // ];
 
-    console.log(peripheral_setups)
-    console.log(peripheral_states)
+    for (peripheral_index in peripherals) {
+      peripheral = peripherals[peripheral_index]
+      console.log("Creating peripheral card for: " + peripheral.name)
 
+      // Create peripheral card template
+      var peripheralCardTemplate = `
+        <div id="${lowerCamel(peripheral.name)}" class="card">
+          <div id="${lowerCamel(peripheral.name)}Header" class="card-header">
+            <h4>${peripheral.name}</h4>
+          </div>
+        </div>
+        `
+      // Create peripheral card in DOM
+      cardColumns = document.getElementById('card-columns');
+      cardColumns.insertAdjacentHTML('beforeend', peripheralCardTemplate);
 
-    for (var peripheral_name in peripheral_states) {
-      console.log(peripheral_name, peripheral_states[peripheral_name]);
-      setup_uuid = peripheral_states[peripheral_name]["setup_uuid"];
-      break;
-    }
-    console.log(setup_uuid)
+      // Get peripheral card instance
+      peripheralCardInstance = document.getElementById(lowerCamel(peripheral.name));
+      peripheralCardHeader = document.getElementById(lowerCamel(peripheral.name) + 'Header');
 
-    for (var i in peripheral_setups) {
-      if (setup_uuid == peripheral_setups[i]["uuid"]) {
-        setup_json = JSON.parse(peripheral_setups[i]["json"])
-        console.log(setup_json["events"]);
+      // Add peripheral event buttons to peripheral card header
+      for (i in peripheral.events) {
+        // Parse parameters
+        event = peripheral.events[i]
+        event.id = lowerCamel(peripheral.name) + upperCamel(event.name)
+
+        console.log("Creating event card for: " + peripheral.name + ": " + event.name)
+
+        // Create event buttons
+        var eventButtonTemplate = `
+          <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="showEvent('${event.id}');">${event.name}</a>
+        `
+        peripheralCardHeader.insertAdjacentHTML('beforeend', eventButtonTemplate);
+
+        // Create non-sequenced event cards
+        if (event.sequence == null) {
+          var eventCardTemplate = 
+          `<div id="${event.id}Card" class="collapse" >
+            <div class="card-body">
+              <h5 class="card-title">${event.name}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">${event.description}</h6>
+              ${event.value ? 
+                `<div class="input-group mb-3">
+                  <input type="text" id="${event.id}Value" name="${event.id}Value" placeholder="${event.value.default}" required>
+                  <div class="input-group-append">
+                    <span class="input-group-text" id="basic-addon2">${event.value.unit}</span>
+                  </div>
+                </div>`
+              : ''}
+              <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${event.name}','${event.id}')"><i class="icon-share"></i>${event.name}</button></p>
+              <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${event.id}ErrorAlert"><span id="alertMessage"></span></div>
+              <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${event.id}SuccessAlert"><span id="alertMessage"></span></div>
+            </div>
+          </div>`
+          peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
+        }
+
+        // Create sequenced event cards
+        else {
+          var eventCardHeadTemplate = `
+            <div class="collapse" id="${event.id}Card">
+              <div id="${event.id}Carousel" class="carousel slide" data-ride="carousel" data-interval=false>
+
+                <div class="carousel-inner">
+                  <!-- HEAD SLIDE -->
+                  <div class="carousel-item active">
+                    <div class="card-body">
+                      <h5 class="card-title">${event.name}</h5>
+                      <h6 class="card-subtitle mb-2 text-muted">${event.description}</h6>
+                      <button class="btn" type="button" data-target="#${event.id}Carousel" data-slide="next" style="float: right;">Next</button>
+                    </div>
+                  </div>`
+
+          var eventCardBodyTemplate = `<!-- BODY SLIDES -->`
+          for (i in event.sequence) {
+            sequence = event.sequence[i]
+            sequence.id = event.id + upperCamel(sequence.name)
+
+            // Create slides w/optional value for each sequence in event 
+            eventCardBodyTemplate += `  
+              <div class="carousel-item">
+                <div class="card-body">
+                  <h5 class="card-title">${sequence.name}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">${sequence.description}</h6>
+                  ${sequence.value ? 
+                    `<div class="input-group mb-3">
+                      <input type="text" id="${sequence.id}Value" name="${sequence.id}Value" placeholder="${sequence.value.default}" required>
+                      <div class="input-group-append">
+                        <span class="input-group-text" id="basic-addon2">${sequence.value.unit}</span>
+                      </div>
+                    </div>`
+                  : ''}       
+                  <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${sequence.name}', '${sequence.id}')"><i class="icon-share"></i>${sequence.name}</button></p>
+                  <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${sequence.id}SuccessAlert">Success!</div>
+                  <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${sequence.id}ErrorAlert">Error!</div>
+                  <div class="collapse" id="${sequence.id}NextButton">
+                    <button class="btn" type="button" onClick="nextEvent('${event.id}', '${sequence.id}')" style="float: right;">Next</button>
+                  </div>
+                </div>
+              </div>
+            `
+          }
+
+          var eventCardFooterTemplate = `
+                        <!-- FOOTER SLIDE -->
+                        <div class="carousel-item">
+                          <div class="card-body">
+                            <h5 class="card-title">Finished</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">Successfully completed ${event.name}.</h6>
+                            <button class="btn" type="button" data-target="#${event.id}Card" data-toggle="collapse" style="float: right;">Done</button>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>`
+
+          var eventCardTemplate = eventCardHeadTemplate + "\n" + eventCardBodyTemplate + "\n" + eventCardFooterTemplate;
+          peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
+        }
       }
     }
   }
 
-  function camelCase(str){
+
+  function createPeripheralEvent(recipient, event_name, event_id) {
+     /* Creates peripheral event. */
+     console.log("Creating peripheral event for: " + recipient + ": " + event_name)
+
+     // Get function parameters
+     base_name = "#" + event_id;
+     var value = $(base_name + "Value").val();
+
+     // Create recipient and request dicts
+     recipient =  {
+         "type": "Peripheral",
+         "name": recipient};
+     request = {
+         "type": event_name,
+         "value": value};
+
+     // Send create event request to endpoint
+     $.ajax({
+         url: "/api/event/",
+         type: "POST",
+         data: {
+           "csrfmiddlewaretoken": "{{ csrf_token }}",
+           "recipient": JSON.stringify(recipient),
+           "request": JSON.stringify(request)
+         },
+         dataType: 'json',
+         success: function(data) {
+           console.log("Event request succeeded")
+
+           // Get response message
+           message = data.message
+
+           console.log("Alert message: " + message)
+           
+           // Set alert message
+           document.getElementById("alertMessage").innerHTML = message;
+
+           // Show alert
+           $(base_name + 'SuccessAlert').collapse('show');
+
+           // Show next button
+           $(base_name + 'NextButton').collapse('show');
+         },
+         error: function(data) {
+           console.log("Event request failed")
+
+           // Get response message
+           response_dict = JSON.parse(data.responseText)
+           message = response_dict["message"]
+       
+           // Set alert message
+           document.getElementById("alertMessage").innerHTML = message;
+
+           // Show alert
+           $(base_name + 'ErrorAlert').collapse('show');
+         },
+         complete: function(data) {
+         }
+     }); 
+  }
+
+
+  function lowerCamel(str){
     return str
       .replace(/\s(.)/g, function($1) { return $1.toUpperCase(); })
       .replace(/\s/g, '')
@@ -70,41 +346,32 @@
   }
 
 
-  function expand(event_name) {
-    console.log("Expanding card for: " + event_name)
+  function upperCamel(str) {
+    str = lowerCamel(str)
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 
-    base_name = "#" + camelCase(event_name)
-    event_card = base_name + "Card"
+  function expand(event_id) {
+    console.log("Expanding card for: " + event_id);
 
-    var event_cards = [
-      "#healthCard",
-      "#modeCard",
-      "#eCCard",
-      "#setSamplingIntervalCard",
-      "#setI2CAddressCard",
-      "#onePointCalibrationCard",
-      "#twoPointCalibrationCard"
-      ];
+    base_name = "#" + event_id;
+    event_card = base_name + "Card";
 
     // Hide alert messages
     $(base_name + 'ErrorAlert').collapse('hide');
     $(base_name + 'SuccessAlert').collapse('hide');
     
     // Hide all other events
-    for (var id in event_cards) {
-      if (event_card != event_cards[id]) {
-        $(event_cards[id]).collapse('hide');
-      }
-    }
+    $(".collapse").collapse('hide');
 
     // Toggle provided event
     $(event_card).collapse('toggle');
    }
 
 
-  function show_event(event_name) {
+  function showEvent(event_id) {
     // Get base name
-    base_name = "#" + camelCase(event_name)
+    base_name = "#" + event_id
 
     // Reset carousel
     carousel_name = base_name + "Carousel"
@@ -118,76 +385,15 @@
     $(base_name + 'ErrorAlert').collapse('hide');
 
     // Expand event
-    expand(event_name)
+    expand(event_id)
   }
 
 
-   function create_peripheral_event(recipient, event_name) {
-      /* Creates peripheral event. */
-      console.log("Creating peripheral event for: " + recipient + ": " + event_name)
-
-      // Get function parameters
-      base_name = "#" + camelCase(event_name)
-      var value = $(base_name + "Value").val();
-
-      // Create recipient and request dicts
-      recipient =  {
-          "type": "Peripheral",
-          "name": recipient};
-      request = {
-          "type": event_name,
-          "value": value};
-
-      // Send create event request to endpoint
-      $.ajax({
-          url: "/api/event/",
-          type: "POST",
-          data: {
-            "csrfmiddlewaretoken": "{{ csrf_token }}",
-            "recipient": JSON.stringify(recipient),
-            "request": JSON.stringify(request)
-          },
-          dataType: 'json',
-          success: function(data) {
-            console.log("Event request succeeded")
-
-            // Get response message
-            message = data.message
-
-            console.log("Alert message: " + message)
-            
-            // Set alert message
-            document.getElementById("alertMessage").innerHTML = message;
-
-            // Show alert
-            $(base_name + 'SuccessAlert').collapse('show');
-
-            // Show next button
-            $(base_name + 'NextButton').collapse('show');
-          },
-          error: function(data) {
-            console.log("Event request failed")
-
-            // Get response message
-            response_dict = JSON.parse(data.responseText)
-            message = response_dict["message"]
-        
-            // Set alert message
-            document.getElementById("alertMessage").innerHTML = message;
-
-            // Show alert
-            $(base_name + 'ErrorAlert').collapse('show');
-          },
-          complete: function(data) {
-          }
-      }); 
-   }
-
-  function nextEvent(event_name, event_sequence_name) {
+  function nextEvent(event_id, sequence_id) {
     console.log("Initiating next event")
 
-    base_event_name = "#" + camelCase(event_name)
-    base_event_sequence_name = "#" + camelCase(event_sequence_name)
+    base_event_name = "#" + event_id
+    base_event_sequence_name = "#" + sequence_id
 
     // Advance carousel
     $(base_event_name + 'Carousel').carousel('next');
@@ -200,223 +406,16 @@
 
   }
 
-   function complete_event() {
-    // Hide event card
-    $('#setSamplingIntervalCard').collapse('hide');
-   }
-
 </script>
-{% endblock %}
 
+{% endblock %}
 
 {% block content %}
 {% csrf_token %}
+
 <div class="peripherals"></br>
-  <div class="card-columns">
-    <div class="card" >
-      <div class="card-header">
-        <h4>AtlasEC-1</h4>
-        <a class="badge badge-warning" data-toggle="collapse" href="" role="button" onclick="expand('Health');">Health: 80%</a>
-        <a class="badge badge-success" data-toggle="collapse" href="" role="button" onclick="expand('Mode');">Mode: NORMAL</a>
-        <a class="badge badge-primary" data-toggle="collapse" href="" role="button" onclick="expand('EC');">EC: 10.2 mS/cm</a>
-        <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="expand('Set Sampling Interval');">Set Sampling Interval</a>
-        <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="expand('Set I2C Address');">Set I2C Address</a>
-        <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="show_event('One Point Calibration');">One Point Calibration</a>
-        <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="show_event('Two Point Calibration');">Two Point Calibration</a>
-      </div>
-
-      <div class="collapse" id="healthCard">
-        <div class="card-body">
-          <h5 class="card-title">Health</h5>
-          <p class="card-text">Health is the percentage of successful updates in a given period. E.g. if a sensor tries to take 
-            10 readings and 8 of them are valid, the sensor health is 80%. TODO: Display more granular health info. </p>
-          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseHealth" aria-expanded="false" aria-controls="collapseHealth">Got it!</button>
-        </div>
-      </div>
-
-      <div class="collapse" id="modeCard">
-        <div class="card-body">
-          <h5 class="card-title">Mode</h5>
-          <p class="card-text">This is the current state machine mode. TODO: Display more granular health info.</p>
-          <button class="btn btn-secondary" type="button">Reset</button>
-          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseMode" aria-expanded="false" aria-controls="collapseMode">Done!</button>
-        </div>
-      </div>
-
-      <div class="collapse" id="eCCard">
-        <div class="card-body">
-          <h5 class="card-title">Electrical Conductivity</h5>
-          <p class="card-text">Electrical Conductivity is the measure of... TODO: Display EC value, compensation varaibles, accuracy, etc. </p>
-          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseEC" aria-expanded="false" aria-controls="collapseEC">Got it!</button>
-        </div>
-      </div>
-
-      <div class="collapse" id="setI2CAddressCard">
-        <div class="card-body">
-          <h5 class="card-title">I2C Address</h5>
-          <p class="card-text">Sets I2C address in sensor. Note: Device config must be updated to reflect the new I2C address.
-            TODO: Display current I2C address. </p>
-         
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" placeholder="0x63" aria-label="SamplingIntervalValue" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-              <span class="input-group-text" id="basic-addon2">Hex</span>
-            </div>
-          </div>
-
-          <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#collapseI2CAddress" aria-expanded="false" aria-controls="collapseI2CAddress">Set!</button>
-        </div>
-      </div>
-
-      <div class="collapse" id="setSamplingIntervalCard">
-        <div class="card-body">
-          <h5 class="card-title">Set Sampling Interval</h5>
-          <h6 class="card-subtitle mb-2 text-muted">Set a new sampling interval for sensor updates. </h6>
-          <div class="input-group mb-3">
-            <input type="text" id="setSamplingIntervalValue" name="setSamplingIntervalValue" placeholder='10' required>
-            <div class="input-group-append">
-              <span class="input-group-text" id="basic-addon2">Seconds</span>
-            </div>
-          </div>
-          <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Set Sampling Interval')"><i class="icon-share"></i>Set Sampling Interval</button></p>
-          <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="setSamplingIntervalErrorAlert"><span id="alertMessage"></span></div>
-          <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="setSamplingIntervalSuccessAlert"><span id="alertMessage"></span></div>
-        </div>
-      </div>
-
-
-      <div class="collapse" id="onePointCalibrationCard">
-        <div id="onePointCalibrationCarousel" class="carousel slide" data-ride="carousel" data-interval=false>
-
-          <!-- HEAD SLIDE -->
-          <div class="carousel-inner">
-            <div class="carousel-item active">
-              <div class="card-body">
-                <h5 class="card-title">One-Point Calibration</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Here are some general instructions / overview of a one point calibration. What the process entails and what materials you will need.</h6>
-                <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button>
-              </div>
-            </div>
-
-
-            <!-- BODY SLIDES -->
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 1: Enable Calibration Mode</h5>
-                <h6 class="card-subtitle mb-2 text-muted">This will set device into calibration mode. It will keep displaying values but won't store them in the environment history.</h6>       
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Enable Calibration Mode')"><i class="icon-share"></i>Enable Calibration Mode</button></p>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="enableCalibrationModeSuccessAlert">Success!</div>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="enableCalibrationModeErrorAlert">Error!</div>
-                <div class="collapse" id="enableCalibrationModeNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Enable Calibration Mode')" style="float: right;">Next</button>
-                   <!-- <button class="btn" type="button" data-target="#onePointCalibrationCarousel" data-slide="next" style="float: right;">Next</button> -->
-                </div>
-              </div>
-            </div>
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 2: Dry Calibration</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 2.</h6>
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Dry Calibration')"><i class="icon-share"></i>Dry Calibration</button></p>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="dryCalibrationErrorAlert">Error!</div>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="dryCalibrationSuccessAlert">Success!</div>
-                <div class="collapse" id="dryCalibrationNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Dry Calibration')" style="float: right;">Next</button>
-                </div>
-              </div>
-            </div>
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 3: Single Point Calibration</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 3.</h6>
-                <div class="input-group mb-3">
-                  <input type="text" id="singlePointCalibrationValue" name="singlePointCalibrationValue" placeholder='12.88' required>
-                  <div class="input-group-append">
-                    <span class="input-group-text" id="basic-addon2">mS/cm</span>
-                  </div>
-                </div>
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Single Point Calibration')"><i class="icon-share"></i>Single Point Calibration</button></p>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="singlePointCalibrationErrorAlert">Error!</div>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="singlePointCalibrationSuccessAlert">Success!</div>
-                <div class="collapse" id="singlePointCalibrationNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Single Point Calibration')" style="float: right;">Next</button>
-                </div>
-              </div>
-            </div>
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Step 4: Reset</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Instructions for step 4.</h6>
-                <p><button class="btn" type="button" onClick="create_peripheral_event('AtlasEC-1','Reset')"><i class="icon-share"></i>Reset</button></p>
-                <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="resetErrorAlert">Error!</div>
-                <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="resetSuccessAlert">Success!</div>
-                <div class="collapse" id="resetNextButton">
-                  <button class="btn" type="button" onClick="nextEvent('One Point Calibration', 'Reset')" style="float: right;">Next</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- FOOTER SLIDE -->
-            <div class="carousel-item">
-              <div class="card-body">
-                <h5 class="card-title">Completed!</h5>
-                <h6 class="card-subtitle mb-2 text-muted">One point calibration completely successfully </h6>
-                <button class="btn" type="button" data-target="#onePointCalibrationCard" data-toggle="collapse" style="float: right;">Done</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ############################################# New Card ################################################### -->
-    
-    <div class="card">
-      <img class="card-img-top" src="..." alt="Card image cap">
-      <div class="card-body">
-        <h5 class="card-title">Card title</h5>
-        <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
-        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-      </div>
-    </div>
-    <div class="card bg-primary text-white text-center p-3">
-      <blockquote class="blockquote mb-0">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat.</p>
-        <footer class="blockquote-footer">
-          <small>
-            Someone famous in <cite title="Source Title">Source Title</cite>
-          </small>
-        </footer>
-      </blockquote>
-    </div>
-    <div class="card text-center">
-      <div class="card-body">
-        <h5 class="card-title">Card title</h5>
-        <p class="card-text">This card has supporting text below as a natural lead-in to additional content.</p>
-        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-      </div>
-    </div>
-    <div class="card">
-      <img class="card-img" src="..." alt="Card image">
-    </div>
-    <div class="card p-3 text-right">
-      <blockquote class="blockquote mb-0">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-        <footer class="blockquote-footer">
-          <small class="text-muted">
-            Someone famous in <cite title="Source Title">Source Title</cite>
-          </small>
-        </footer>
-      </blockquote>
-    </div>
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Card title</h5>
-        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.</p>
-        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-      </div>
-    </div>
+  <div id="card-columns" class="card-columns">
   </div>
 </div>
+
 {% endblock %}

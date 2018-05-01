@@ -23,17 +23,23 @@
     },
     "events": [
         {
+            "name": "Reset",
+            "description": "Reset sensor.",
+            "value": null,
+            "sequence": null
+        },
+        {
             "name": "Set Sampling Interval",
-            "description": "Description goes here. New!!",
+            "description": "Description goes here.",
             "value": {
                 "default": 10,
                 "unit": "Seconds"
             },
             "sequence": null
-          },
-          {
+        },
+        {
             "name": "One Point Calibration",
-            "description": "Description goes here",
+            "description": "First, enable calibration mode to stop reporting sensor data to stored environment database. Next, remove sensors from reservoir, wipe dry, then take dry calibration reading. After, place sensors in known calibration solution, wait for reading to stabilize, then take single point calibration reading. Finally, reset the device to set it back into normal operation mode.",
             "value": null,
             "sequence": [
                 {
@@ -53,6 +59,11 @@
                         "default": 12.88,
                         "unit": "mS/cm"
                     }
+                },
+                {
+                    "name": "Reset",
+                    "description": "Reset device to set it back into normal operation mode.",
+                    "value": null
                 }
             ]
         }

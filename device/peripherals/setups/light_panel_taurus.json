@@ -6,14 +6,23 @@
 	"class_name": "LightPanelTaurus",
 	"parameters": {
 		"variables": {
-			"sensors": null,
-			"actuators": {
-				"intensity": {
-					"name": "string", 
+			"sensors": {
+				"intensity_par": {
+					"name": "string",
 					"uuid": "string"
 				},
-				"spectrum": {
-					"name": "string", 
+				"spectrum_taurus": {
+					"name": "string",
+					"uuid": "string"
+				}
+			},
+			"actuators": {
+				"intensity_par": {
+					"name": "string",
+					"uuid": "string"
+				},
+				"spectrum_taurus": {
+					"name": "string",
 					"uuid": "string"
 				}
 			}
@@ -25,17 +34,18 @@
 			"address": "int"
 		}
 	},
+	"events": [
+		{
+		    "name": "Reset",
+		    "description": "Reset sensor.",
+		    "value": null,
+		    "sequence": null
+		}
+	],
 	"info": {
 		"variables": {
 			"sensors": null,
-			"actuators":{
-				"intensity": {
-					"todo": true
-				},
-				"spectrum": {
-					"todo": true
-				}
-			}
+			"actuators":null
 		}
 	}
 }
