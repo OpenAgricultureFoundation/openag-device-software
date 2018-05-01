@@ -8,6 +8,76 @@ import time, logging
 # Import device comms
 from device.comms.i2c import I2C
 
+# Fade parameters
+min_fade = 50
+max_fade = 220
+increment = 2
+delay = 0.01
+channels = [0,2,4,5,6,7]
+
+
+# Device functions
+def turn_on():
+    """ Turns on light. """
+    if logging_enabled: print("Turning on")
+
+    # Turn all lights on
+    for ch in channels:
+        i2c.write([0x30+ch, 0x00, 0x00])
+
+
+def turn_off():
+    """ Turns off light. """
+    if logging_enabled: print("Turning off")
+
+    # Turn all lights off
+    for ch in channels:
+        i2c.write([0x30+ch, 0xff, 0x00])
+
+
+def fade_all():
+    """ Fades all light channels simultaneuosly. """
+    if logging_enabled: print("Fading all")
+
+    # Start with all lights off
+    turn_off()
+
+    # Fade lights forever!
+    while True:
+        # Fade up
+        for val in range(max_fade, min_fade, -increment):
+            for ch in [0,2,4,5,6,7]:
+                i2c.write([0x30+ch, val, 0x00])
+            time.sleep(delay)
+
+        # Fade down
+        for val in range(min_fade, max_fade, increment):
+            for ch in [0,2,4,5,6,7]:
+                i2c.write([0x30+ch, val, 0x00])
+            time.sleep(delay)
+
+
+def fade_individual():
+    """ Fades individual light channels sequentially. """
+    print("Fading individual")
+
+    # Start with all lights off
+    turn_off()
+
+    # Fade lights forever!
+    while True:
+        for ch in channels:
+            # Fade up
+            for val in range(max_fade, min_fade, -increment):
+                i2c.write([0x30+ch, val, 0x00])
+                time.sleep(delay)
+            
+            # Fade down
+            for val in range(min_fade, max_fade, increment):
+                i2c.write([0x30+ch, val, 0x00])
+                time.sleep(delay)
+
+
 # Run main
 if __name__ == "__main__":
     """ Runs light panel taurus for hardware testing. """
@@ -16,14 +86,10 @@ if __name__ == "__main__":
     no_mux = False
     set_mux = False
     logging_enabled = False
-    on = False
-    off = False
-    fade_all = False
-    fade_individual = False
-
-    # Initialize fade parameters
-    min_fade = 50
-    max_fade = 210
+    set_on = False
+    set_off = False
+    set_fade_all = False
+    set_fade_individual = False
 
     # Get device config from command line args
     if "--fs1" in sys.argv:
@@ -58,16 +124,16 @@ if __name__ == "__main__":
 
     # Get output options from command line args
     if "--on" in sys.argv:
-        on = True
+        set_on = True
     elif "--off" in sys.argv:
-        off = True
+        set_off = True
     elif "--fade-all" in sys.argv:
-        fade_all = True
+        set_fade_all = True
     elif "--fade-indiv" in sys.argv:
-        fade_individual = True
+        set_fade_individual = True
     else:
         print("No output option specified. \nPlease select one of the following:",
-            "\n  --on", "\n  --off", "\n  --fade")
+            "\n  --on", "\n  --off", "\n  --fade-all", "\n  --fade-indiv")
         sys.exit(0)
 
     # Activate logging if enabled
@@ -92,42 +158,14 @@ if __name__ == "__main__":
         sys.exit()
 
     # Set output
-    if logging_enabled: print("Setting output")
-
-    if on:
-        print("Turning on")
-        for ch in range(8):
-            i2c.write([0x47, 0x30+ch, 0x00, 0x00])
-    elif off:
-        print("Turning off")
-        for ch in range(8):
-            i2c.write([0x47, 0x30+ch, 0x00, 0x00])
-    elif fade_all:
-        print("Fading all")
-        # Fade up
-        for val in range(min_fade, max_fade, 10):
-            for ch in [0,2,4,5,6,7]:
-                i2c.write([0x47, 0x30+ch, val, 0x00])
-            time.sleep(0.001)
-        # Fade down
-        for val in range(max_fade, min_fade, -10):
-            for ch in [0,2,4,5,6,7]:
-                i2c.write([0x47, 0x30+ch, val, 0x00])
-            time.sleep(0.001)
-    elif fade_individual:
-        print("Fading individual")
-        for ch in [0,2,4,5,6,7]:
-            # Fade up
-            for val in range(min_fade, max_fade, 10):
-                i2c.write([0x47, 0x30+ch, val, 0x00])
-                time.sleep(0.001)
-            # Fade down
-            for val in range(max_fade, min_fade, -10):
-                i2c.write([0x47, 0x30+ch, val, 0x00])
-                time.sleep(0.001)
+    if set_on:
+        turn_on()
+    elif set_off:
+        turn_off()
+    elif set_fade_all:
+        fade_all()
+    elif set_fade_individual:
+        fade_individual()
 
 
-    # i2cset -y 2 0x4c $((0x30+$i)) 0x00 0x00 i
 
-
-    
