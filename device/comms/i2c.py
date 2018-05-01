@@ -80,7 +80,7 @@ class I2C(object):
 
     def manage_mux(self):
         """ Sets mux to channel if enabled. """
-        if self.mux_enabled():
+        if self.mux_enabled:
             self.logger.debug("Setting mux {} to channel {}".format(self.mux, self.channel))
             byte_list = [self.mux, self.channel]
             byte_array = bytearray(byte_list)
