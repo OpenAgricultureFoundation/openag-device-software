@@ -7,32 +7,156 @@
 	"parameters": {
 		"variables": {
 			"sensors": {
-				"intensity_par": {
-					"name": "string",
-					"uuid": "string"
+				"intensity_watts": {
+					"name": {
+						"type": "string",
+						"default": "light_intensity_watts"
+					}
 				},
 				"spectrum_taurus": {
-					"name": "string",
-					"uuid": "string"
+					"name": {
+						"type": "string",
+						"default": "light_spectrum_taurus"
+					}
 				}
 			},
 			"actuators": {
-				"intensity_par": {
-					"name": "string",
-					"uuid": "string"
-				},
-				"spectrum_taurus": {
-					"name": "string",
-					"uuid": "string"
+				"channel_outputs_percent": {
+					"name": {
+						"type": "string",
+						"default": "light_channel_outputs_percent"
+					}
 				}
 			}
 		},	
 		"communication": {
-			"bus": "int",
-			"mux": "int",
-			"channel": "int",
-			"address": "int"
-		}
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "integer",
+				"default": "0x47"
+			}
+		},
+		"channel_configurations": [
+			{
+				"name": "Far Red",
+				"hardware_channel": 1,
+				"software_channel": 6,
+				"planar_distance_map": [
+					{"z_cm": 5, "intensity_watts": 50},
+					{"z_cm": 10, "intensity_watts": 25},
+					{"z_cm": 15, "intensity_watts": 13},
+					{"z_cm": 20, "intensity_watts": 6}
+				],
+				"output_percent_map": [
+					{"output_percent": 100, "intensity_normalized": 1},
+					{"output_percent": 75, "intensity_normalized": 0.75},
+					{"output_percent": 50, "intensity_normalized": 0.5},
+					{"output_percent": 25, "intensity_normalized": 0.25},
+					{"output_percent": 0, "intensity_normalized": 0}
+				]
+			},
+			{
+				"name": "Cool White #1",
+				"hardware_channel": 2,
+				"software_channel": 4,
+				"planar_distance_map": [
+					{"z_cm": 5, "intensity_watts": 100},
+					{"z_cm": 10, "intensity_watts": 75},
+					{"z_cm": 15, "intensity_watts": 50},
+					{"z_cm": 20, "intensity_watts": 25}
+				],
+				"output_percent_map": [
+					{"output_percent": 100, "intensity_normalized": 1},
+					{"output_percent": 75, "intensity_normalized": 0.75},
+					{"output_percent": 50, "intensity_normalized": 0.5},
+					{"output_percent": 25, "intensity_normalized": 0.25},
+					{"output_percent": 0, "intensity_normalized": 0}
+				]
+			},
+			{
+				"name": "Cool White #2",
+				"hardware_channel": 3,
+				"software_channel": 2,
+				"planar_distance_map": [
+					{"z_cm": 5, "intensity_watts": 100},
+					{"z_cm": 10, "intensity_watts": 75},
+					{"z_cm": 15, "intensity_watts": 50},
+					{"z_cm": 20, "intensity_watts": 25}
+				],
+				"output_percent_map": [
+					{"output_percent": 100, "intensity_normalized": 1},
+					{"output_percent": 75, "intensity_normalized": 0.75},
+					{"output_percent": 50, "intensity_normalized": 0.5},
+					{"output_percent": 25, "intensity_normalized": 0.25},
+					{"output_percent": 0, "intensity_normalized": 0}
+				]
+			},
+			{
+				"name": "Cool White #3",
+				"hardware_channel": 4,
+				"software_channel": 0,
+				"planar_distance_map": [
+					{"z_cm": 5, "intensity_watts": 100},
+					{"z_cm": 10, "intensity_watts": 75},
+					{"z_cm": 15, "intensity_watts": 50},
+					{"z_cm": 20, "intensity_watts": 25}
+				],
+				"output_percent_map": [
+					{"output_percent": 100, "intensity_normalized": 1},
+					{"output_percent": 75, "intensity_normalized": 0.75},
+					{"output_percent": 50, "intensity_normalized": 0.5},
+					{"output_percent": 25, "intensity_normalized": 0.25},
+					{"output_percent": 0, "intensity_normalized": 0}
+				]
+			},
+			{
+				"name": "Cool White #4",
+				"hardware_channel": 5,
+				"software_channel": 7,
+				"planar_distance_map": [
+					{"z_cm": 5, "intensity_watts": 100},
+					{"z_cm": 10, "intensity_watts": 75},
+					{"z_cm": 15, "intensity_watts": 50},
+					{"z_cm": 20, "intensity_watts": 25}
+				],
+				"output_percent_map": [
+					{"output_percent": 100, "intensity_normalized": 1},
+					{"output_percent": 75, "intensity_normalized": 0.75},
+					{"output_percent": 50, "intensity_normalized": 0.5},
+					{"output_percent": 25, "intensity_normalized": 0.25},
+					{"output_percent": 0, "intensity_normalized": 0}
+				]
+			},
+			{
+				"name": "Warm White",
+				"hardware_channel": 6,
+				"software_channel": 5,
+				"planar_distance_map": [
+					{"z_cm": 5, "intensity_watts": 75},
+					{"z_cm": 10, "intensity_watts": 55},
+					{"z_cm": 15, "intensity_watts": 25},
+					{"z_cm": 20, "intensity_watts": 12.5}
+				],
+				"output_percent_map": [
+					{"output_percent": 100, "intensity_normalized": 1},
+					{"output_percent": 75, "intensity_normalized": 0.75},
+					{"output_percent": 50, "intensity_normalized": 0.5},
+					{"output_percent": 25, "intensity_normalized": 0.25},
+					{"output_percent": 0, "intensity_normalized": 0}
+				]
+			}
+		]
 	},
 	"events": [
 		{
@@ -47,5 +171,69 @@
 			"sensors": null,
 			"actuators":null
 		}
-	}
+	},
+	"channel_samples": [
+		{
+			"name": "Far Red",
+			"data": {
+				"output_percent_calibration": [
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 75, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 75, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 50, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 50, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 25, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 6.25},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 25, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 6.25},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 0, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 0},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 0, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 0}
+				],
+				"location_calibation": [
+					{"x_cm": 0, "y_cm": 0, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 5, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 10, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+
+					{"x_cm": 0, "y_cm": 0, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 15, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+
+					{"x_cm": 0, "y_cm": 0, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 0, "y_cm": 0, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": 10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": -10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": 10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": -10, "z_cm": 20, "output_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5}
+				]
+			}
+		}
+	]
 }

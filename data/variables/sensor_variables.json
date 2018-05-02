@@ -84,15 +84,15 @@
 		}
 	},
 	{
-		"key": "light_intensity_par",
+		"key": "light_intensity_watts",
 		"info": {
 			"name": {
 				"brief": "Light Intensity",
 				"verbose": "Light Itensity"
 			},
 			"unit": {
-				"brief": "PAR",
-				"verbose": "Photosynthetically Active Radiation",
+				"brief": "Watts",
+				"verbose": "Watts TODO, ask dan",
 				"type": "number"
 			}
 		}
