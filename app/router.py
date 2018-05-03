@@ -44,10 +44,10 @@ class Router(routers.DefaultRouter):
                         continue
 
                 # Add APIView endpoints
-                # endpoints = ["recipe/stop", "recipe/{pk}/start/"]
-                # base = ret["state"].split("api",1)[0] + "api/"
-                # for endpoint in endpoints:
-                #     ret[endpoint] = base + endpoint
+                endpoints = ["recipe/stop", "recipe/{pk}/start/"]
+                base = ret["state"].split("api",1)[0] + "api/"
+                for endpoint in endpoints:
+                    ret[endpoint] = base + endpoint
 
                 return Response(ret)
 

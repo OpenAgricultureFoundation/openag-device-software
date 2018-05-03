@@ -105,9 +105,23 @@
 				"verbose": "Light Spectrum Taurus"
 			},
 			"unit": {
-				"brief": "FR,R,G,B,CW,WW",
-				"verbose": "Far Red, Red, Green, Blue, Cool White, Warm White",
+				"brief": "%",
+				"verbose": "Percent",
 				"type": "normalized_percentage_array"
+			}
+		}
+	},
+	{
+		"key": "light_illumination_distance_cm",
+		"info": {
+			"name": {
+				"brief": "Light Distance",
+				"verbose": "Light Illumination Distance"
+			},
+			"unit": {
+				"brief": "cm",
+				"verbose": "Centimeters",
+				"type": "number"
 			}
 		}
 	},

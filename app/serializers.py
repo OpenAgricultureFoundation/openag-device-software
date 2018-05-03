@@ -47,7 +47,7 @@ class PeripheralSetupSerializer(serializers.HyperlinkedModelSerializer):
 class RecipeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RecipeModel
-        fields = ("uuid", "recipe_json")
+        fields = ("uuid", "name", "version", "json")
 
 
 class RecipeTransitionSerializer(serializers.HyperlinkedModelSerializer):

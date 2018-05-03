@@ -278,7 +278,8 @@ class DeviceManager:
         # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server rack v1
         # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
         # self.config_uuid = "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf" # FS1 DO
-        self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # Hazelnut light 5x5
+        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # Hazelnut light 5x5
+        self.config_uuid = "7be845ec-216c-4898-9bcf-f533764b7c26" # EDU light
 
         # If device config is not set, wait for config command
         if self.config_uuid == None:
@@ -844,22 +845,25 @@ class DeviceManager:
         # Get request parameters
         try:
             request_type = request["type"]
+            request_value = request["value"]
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
             return
 
         # Execute request
-        if request["type"] == "Load Recipe":
+        if request_type== "Load Recipe":
             self.process_load_recipe_event()
-        elif request["type"] == "Start Recipe":
-            self.process_start_recipe_event()
-        elif request["type"] == "Stop Recipe":
+        elif request_type == "Start Recipe":
+            self.process_start_recipe_event(request_value)
+        elif request_type == "Stop Recipe":
             self.process_stop_recipe_event()
-        elif request["type"] == "Reset":
+        elif request_type == "Reset":
             self.process_reset_event()
-        elif request["type"] == "Configure":
+        elif request_type == "Configure":
             self.process_configure_event()
+        else:
+            self.logger.info("Received invalid event request type: {}".format(request_type))
 
 
     def process_load_recipe_event(self):
@@ -868,25 +872,66 @@ class DeviceManager:
         self.response = {"status": 200, "message": "Pretended to load recipe"}
 
 
-    def process_start_recipe_event(self):
+    def process_start_recipe_event(self, request_value):
         """ Processes load recipe event. """
-        self.logger.debug("Starting recipe")
-        self.response = {"status": 200, "message": "Pretended to start recipe"}
+        self.logger.debug("Processing start recipe event")
+
+
+        # TODO: Check for valid mode transition
+
+
+        # Send start recipe command to recipe thread
+        self.recipe.commanded_recipe_uuid = request_value
+        self.recipe.commanded_mode = Modes.START
+
+        # Wait for recipe to be picked up by recipe thread or timeout event
+        start_time_seconds = time.time()
+        timeout_seconds = 10
+        while True:
+            # Exit when recipe thread picks up new recipe
+            if self.recipe.commanded_mode == None:
+                self.response = {"status": 200, "message": "Started recipe: {}".format(request_value)}
+                break
+
+            # Exit on timeout
+            if time.time() - start_time_seconds > timeout_seconds:
+                self.logger.critical("Unable to start recipe within 10 seconds. Something is wrong with code.")
+                self.response = {"status": 500, "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code."}
+                break
 
 
     def process_stop_recipe_event(self):
         """ Processes load recipe event. """
-        self.logger.debug("Stopping recipe")
-        self.response = {"status": 200, "message": "Pretended to stop recipe"}
+        self.logger.debug("Processing stop recipe event")
+
+        # TODO: Check for valid mode transition
+
+        # Send stop recipe command
+        self.recipe.commanded_mode = Modes.STOP
+
+        # Wait for recipe to be picked up by recipe thread or timeout event
+        start_time_seconds = time.time()
+        timeout_seconds = 10
+        while True:
+            # Exit when recipe thread transitions to NORECIPE
+            if self.recipe.mode == Modes.NORECIPE:
+                self.response = {"status": 200, "message": "Stopped recipe"}
+                break
+
+            # Exit on timeout
+            if time.time() - start_time_seconds > timeout_seconds:
+                self.logger.critical("Unable to stop recipe within 10 seconds. Something is wrong with code.")
+                self.response = {"status": 500, "message": "Unable to stop recipe, thread did not change state withing 10 seconds. Something is wrong with code."}
+                break
 
 
     def process_reset_event(self):
         """ Processes reset event. """
-        self.logger.debug("Resetting device")
+        self.logger.debug("Processing reset event")
         self.response = {"status": 200, "message": "Pretended to reset device"}
 
 
     def process_configure_event(self):
         """ Processes configure event. """
-        self.logger.debug("Configuring device")
+        self.logger.debug("Processing configure event")
         self.response = {"status": 200, "message": "Pretended to configure device"}

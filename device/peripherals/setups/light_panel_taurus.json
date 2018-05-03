@@ -2,8 +2,8 @@
 	"name":  "Light Panel Taurus Actuator",
 	"version": "1",
 	"uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
-	"module_name": "light_panel_taurus",
-	"class_name": "LightPanelTaurus",
+	"module_name": "light_panel",
+	"class_name": "LightPanel",
 	"parameters": {
 		"variables": {
 			"sensors": {
@@ -13,11 +13,17 @@
 						"default": "light_intensity_watts"
 					}
 				},
-				"spectrum_taurus": {
+				"spectrum_normalized_percentage_dict": {
 					"name": {
 						"type": "string",
 						"default": "light_spectrum_taurus"
 					}
+				},
+				"illumination_distance_cm": {
+					"name": {
+						"type": "string",
+						"default": "light_illumination_distance_cm"
+					} 
 				}
 			},
 			"actuators": {
@@ -46,118 +52,148 @@
 				"type": "integer",
 				"default": "0x47"
 			}
-		},
-		"channel_configurations": [
-			{
-				"name": "Far Red",
-				"hardware_channel": 1,
-				"software_channel": 6,
-				"planar_distance_map": [
-					{"z_cm": 5, "intensity_watts": 50},
-					{"z_cm": 10, "intensity_watts": 25},
-					{"z_cm": 15, "intensity_watts": 13},
-					{"z_cm": 20, "intensity_watts": 6}
-				],
-				"output_percent_map": [
-					{"output_percent": 100, "intensity_normalized": 1},
-					{"output_percent": 75, "intensity_normalized": 0.75},
-					{"output_percent": 50, "intensity_normalized": 0.5},
-					{"output_percent": 25, "intensity_normalized": 0.25},
-					{"output_percent": 0, "intensity_normalized": 0}
-				]
-			},
-			{
-				"name": "Cool White #1",
-				"hardware_channel": 2,
-				"software_channel": 4,
-				"planar_distance_map": [
-					{"z_cm": 5, "intensity_watts": 100},
-					{"z_cm": 10, "intensity_watts": 75},
-					{"z_cm": 15, "intensity_watts": 50},
-					{"z_cm": 20, "intensity_watts": 25}
-				],
-				"output_percent_map": [
-					{"output_percent": 100, "intensity_normalized": 1},
-					{"output_percent": 75, "intensity_normalized": 0.75},
-					{"output_percent": 50, "intensity_normalized": 0.5},
-					{"output_percent": 25, "intensity_normalized": 0.25},
-					{"output_percent": 0, "intensity_normalized": 0}
-				]
-			},
-			{
-				"name": "Cool White #2",
-				"hardware_channel": 3,
-				"software_channel": 2,
-				"planar_distance_map": [
-					{"z_cm": 5, "intensity_watts": 100},
-					{"z_cm": 10, "intensity_watts": 75},
-					{"z_cm": 15, "intensity_watts": 50},
-					{"z_cm": 20, "intensity_watts": 25}
-				],
-				"output_percent_map": [
-					{"output_percent": 100, "intensity_normalized": 1},
-					{"output_percent": 75, "intensity_normalized": 0.75},
-					{"output_percent": 50, "intensity_normalized": 0.5},
-					{"output_percent": 25, "intensity_normalized": 0.25},
-					{"output_percent": 0, "intensity_normalized": 0}
-				]
-			},
-			{
-				"name": "Cool White #3",
-				"hardware_channel": 4,
-				"software_channel": 0,
-				"planar_distance_map": [
-					{"z_cm": 5, "intensity_watts": 100},
-					{"z_cm": 10, "intensity_watts": 75},
-					{"z_cm": 15, "intensity_watts": 50},
-					{"z_cm": 20, "intensity_watts": 25}
-				],
-				"output_percent_map": [
-					{"output_percent": 100, "intensity_normalized": 1},
-					{"output_percent": 75, "intensity_normalized": 0.75},
-					{"output_percent": 50, "intensity_normalized": 0.5},
-					{"output_percent": 25, "intensity_normalized": 0.25},
-					{"output_percent": 0, "intensity_normalized": 0}
-				]
-			},
-			{
-				"name": "Cool White #4",
-				"hardware_channel": 5,
-				"software_channel": 7,
-				"planar_distance_map": [
-					{"z_cm": 5, "intensity_watts": 100},
-					{"z_cm": 10, "intensity_watts": 75},
-					{"z_cm": 15, "intensity_watts": 50},
-					{"z_cm": 20, "intensity_watts": 25}
-				],
-				"output_percent_map": [
-					{"output_percent": 100, "intensity_normalized": 1},
-					{"output_percent": 75, "intensity_normalized": 0.75},
-					{"output_percent": 50, "intensity_normalized": 0.5},
-					{"output_percent": 25, "intensity_normalized": 0.25},
-					{"output_percent": 0, "intensity_normalized": 0}
-				]
-			},
-			{
-				"name": "Warm White",
-				"hardware_channel": 6,
-				"software_channel": 5,
-				"planar_distance_map": [
-					{"z_cm": 5, "intensity_watts": 75},
-					{"z_cm": 10, "intensity_watts": 55},
-					{"z_cm": 15, "intensity_watts": 25},
-					{"z_cm": 20, "intensity_watts": 12.5}
-				],
-				"output_percent_map": [
-					{"output_percent": 100, "intensity_normalized": 1},
-					{"output_percent": 75, "intensity_normalized": 0.75},
-					{"output_percent": 50, "intensity_normalized": 0.5},
-					{"output_percent": 25, "intensity_normalized": 0.25},
-					{"output_percent": 0, "intensity_normalized": 0}
-				]
-			}
-		]
+		}
 	},
+	"channel_configs": [
+		{
+			"name": {
+				"brief": "FR",
+				"verbose": "Far Red"
+			},
+			"channel": {
+				"hardware": 1,
+				"software": 6
+			},
+			"planar_distance_map": [
+				{"z_cm": 5, "intensity_watts": 50},
+				{"z_cm": 10, "intensity_watts": 25},
+				{"z_cm": 15, "intensity_watts": 13},
+				{"z_cm": 20, "intensity_watts": 6}
+			],
+			"output_percent_map": [
+				{"output_percent": 100, "intensity_normalized": 1},
+				{"output_percent": 75, "intensity_normalized": 0.75},
+				{"output_percent": 50, "intensity_normalized": 0.5},
+				{"output_percent": 25, "intensity_normalized": 0.25},
+				{"output_percent": 0, "intensity_normalized": 0}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW1",
+				"verbose": "Cool White #1"
+			},
+			"channel": {
+				"hardware": 2,
+				"software": 4
+			},
+			"planar_distance_map": [
+				{"z_cm": 5, "intensity_watts": 100},
+				{"z_cm": 10, "intensity_watts": 75},
+				{"z_cm": 15, "intensity_watts": 50},
+				{"z_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"output_percent": 100, "intensity_normalized": 1},
+				{"output_percent": 75, "intensity_normalized": 0.75},
+				{"output_percent": 50, "intensity_normalized": 0.5},
+				{"output_percent": 25, "intensity_normalized": 0.25},
+				{"output_percent": 0, "intensity_normalized": 0}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW2",
+				"verbose": "Cool White #2"
+			},
+			"channel": {
+				"hardware": 3,
+				"software": 2
+			},
+			"planar_distance_map": [
+				{"z_cm": 5, "intensity_watts": 100},
+				{"z_cm": 10, "intensity_watts": 75},
+				{"z_cm": 15, "intensity_watts": 50},
+				{"z_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"output_percent": 100, "intensity_normalized": 1},
+				{"output_percent": 75, "intensity_normalized": 0.75},
+				{"output_percent": 50, "intensity_normalized": 0.5},
+				{"output_percent": 25, "intensity_normalized": 0.25},
+				{"output_percent": 0, "intensity_normalized": 0}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW3",
+				"verbose": "Cool White #3"
+			},
+			"channel": {
+				"hardware": 4,
+				"software": 0
+			},
+			"planar_distance_map": [
+				{"z_cm": 5, "intensity_watts": 100},
+				{"z_cm": 10, "intensity_watts": 75},
+				{"z_cm": 15, "intensity_watts": 50},
+				{"z_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"output_percent": 100, "intensity_normalized": 1},
+				{"output_percent": 75, "intensity_normalized": 0.75},
+				{"output_percent": 50, "intensity_normalized": 0.5},
+				{"output_percent": 25, "intensity_normalized": 0.25},
+				{"output_percent": 0, "intensity_normalized": 0}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW4",
+				"verbose": "Cool White #4"
+			},
+			"channel": {
+				"hardware": 4,
+				"software": 7
+			},
+			"planar_distance_map": [
+				{"z_cm": 5, "intensity_watts": 100},
+				{"z_cm": 10, "intensity_watts": 75},
+				{"z_cm": 15, "intensity_watts": 50},
+				{"z_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"output_percent": 100, "intensity_normalized": 1},
+				{"output_percent": 75, "intensity_normalized": 0.75},
+				{"output_percent": 50, "intensity_normalized": 0.5},
+				{"output_percent": 25, "intensity_normalized": 0.25},
+				{"output_percent": 0, "intensity_normalized": 0}
+			]
+		},
+		{
+			"name": {
+				"brief": "WW",
+				"verbose": "Warm White"
+			},
+			"channel": {
+				"hardware": 6,
+				"software": 5
+			},
+			"planar_distance_map": [
+				{"z_cm": 5, "intensity_watts": 75},
+				{"z_cm": 10, "intensity_watts": 55},
+				{"z_cm": 15, "intensity_watts": 25},
+				{"z_cm": 20, "intensity_watts": 12.5}
+			],
+			"output_percent_map": [
+				{"output_percent": 100, "intensity_normalized": 1},
+				{"output_percent": 75, "intensity_normalized": 0.75},
+				{"output_percent": 50, "intensity_normalized": 0.5},
+				{"output_percent": 25, "intensity_normalized": 0.25},
+				{"output_percent": 0, "intensity_normalized": 0}
+			]
+		}
+	],
 	"events": [
 		{
 		    "name": "Reset",

@@ -37,26 +37,30 @@
 	"environments": {
 		"standard_day": {
 			"name": "Standard Day",
-			"light_spectrum_taurus": [15, 15, 15, 15, 20, 20],
-			"light_intensity_par": 300,
+			"light_spectrum_taurus": {"FR": 15, "CW1": 5, "CW2": 15, "CW3": 15, "CW4": 20, "WW": 20},
+			"light_intensity_watts": 50,
+			"light_illumination_distance_cm": 10,
 			"air_temperature_celcius": 22
 		},
 		"standard_night": {
 			"name": "Standard Night",
-			"light_spectrum_taurus": null,
-			"light_intensity_par": 0,
+			"light_spectrum_taurus": {"FR": 15, "CW1": 5, "CW2": 15, "CW3": 15, "CW4": 20, "WW": 20},
+			"light_intensity_watts": 0,
+			"light_illumination_distance_cm": 10,
 			"air_temperature_celcius": 18
 		},
 		"cold_day": {
 			"name": "Standard Day",
-			"light_spectrum_taurus": [15, 15, 15, 15, 20, 20],
-			"light_intensity_par": 300,
+			"light_spectrum_taurus": {"FR": 15, "CW1": 5, "CW2": 15, "CW3": 15, "CW4": 20, "WW": 20},
+			"light_intensity_watts": 50,
+			"light_illumination_distance_cm": 10,
 			"air_temperature_celcius": 10
 		},
 		"frost_night": {
 			"name": "Frost Night",
-			"light_spectrum_taurus": null,
-			"light_intensity_par": 0,
+			"light_spectrum_taurus": {"FR": 15, "CW1": 5, "CW2": 15, "CW3": 15, "CW4": 20, "WW": 20},
+			"light_intensity_watts": 0,
+			"light_illumination_distance_cm": 10,
 			"air_temperature_celcius": 2
 		}
 	},
