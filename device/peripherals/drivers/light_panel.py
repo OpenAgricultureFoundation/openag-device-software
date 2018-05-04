@@ -117,12 +117,12 @@ class LightPanel(Peripheral):
     def channel_output_percent_dict(self, value):
         """ Safely updates channel outputs percent in environment object each time 
             it is changed. """
-
-        self.logger.error("setting channel output percent dict")
-
-        self._intensity_watts = value
+        self._channel_output_percent_dict = value
         with threading.Lock():
-            self.report_actuator_value(self.name, self.channel_output_name, self.channel_output_percent_dict)
+            self.report_actuator_value(self.name, self.channel_output_name, value)
+
+            if self.mode != Modes.MANUAL:
+                self.set_desired_actuator_value(self.name, self.channel_output_name, value)
 
 
     def initialize(self):
@@ -132,26 +132,19 @@ class LightPanel(Peripheral):
         # Initialize sensor
         self.logger.debug("Initializing sensor")
 
-        # Check if simulating actuator
-        if self.simulate:
-            self.intensity_watts = 77.7
-            self.spectrum_normalized_percentage_dict = {"FR": 10, "CW1": 20, "CW2": 20, "CW3": 20, "CW4": 20, "WW": 10}
-            self.illumination_distance_cm = 5
-            self.channel_output_percent_dict = {"FR": 70, "CW1": 40, "CW2": 40, "CW3": 40, "CW4": 40, "WW": 80}
-            self.health = 100
-        else:
-            self.intensity_watts = None
-            self.spectrum_normalized_percentage_dict = None
-            self.channel_output_percent_dict = None
-            self.illumination_distance_cm = None
-            self.health = 100
+        # Set initial parameters
+        self.intensity_watts = None
+        self.spectrum_normalized_percentage_dict = None
+        self.channel_output_percent_dict = None
+        self.illumination_distance_cm = None
+        self.health = 100
 
         # Perform initial health check
         self.perform_initial_health_check()
 
 
     def perform_initial_health_check(self):
-        """ Performs initial health check by TBD...."""
+        """ Performs initial health check by TODO: this. """
 
         # Check for simulated sensor
         if self.simulate:
@@ -199,18 +192,24 @@ class LightPanel(Peripheral):
         if self.intensity_name in self.state.environment["sensor"]["desired"]:
             self._desired_intensity_watts = self.state.environment["sensor"]["desired"][self.intensity_name]
             if self._desired_intensity_watts != self.intensity_watts:
+                self.logger.info("Received new desired intensity")
+                self.logger.debug("desired_intensity = {} Watts".format(self._desired_intensity_watts))
                 update_channels = True
 
         # Check for new desired spectrum
         if self.spectrum_name in self.state.environment["sensor"]["desired"]:
             self._desired_spectrum_normalized_percentage_dict = self.state.environment["sensor"]["desired"][self.spectrum_name]
             if self._desired_spectrum_normalized_percentage_dict != self.spectrum_normalized_percentage_dict:
+                self.logger.info("Received new desired spectrum")
+                self.logger.debug("desired_spectrum_dict = {}".format(self._desired_spectrum_normalized_percentage_dict))
                 update_channels = True
 
         # Check for new illumination distance
         if self.illumination_distance_name in self.state.environment["sensor"]["desired"]:
             self._desired_illumination_distance_cm = self.state.environment["sensor"]["desired"][self.illumination_distance_name]
             if self._desired_illumination_distance_cm != self.illumination_distance_cm:
+                self.logger.info("Received new desired illumination distance")
+                self.logger.debug("desired_illumination_distance = {} cm".format(self._desired_illumination_distance_cm))
                 update_channels = True
 
         # Update output channels if new value
@@ -245,53 +244,57 @@ class LightPanel(Peripheral):
 
     def update_channel_outputs(self):
         """ Updates channel outputs. """
-        self.logger.debug("Updating channel outputs")
 
-        # Check desired light parameters are not None
+        # Check desired light parameters are not None. If any desired parameter 
+        # is None, turn off all outputs and clear reported values
         if self._desired_intensity_watts == None:
             self.logger.warning("Unable to update channel outputs, no desired intensity")
+            self.turn_off_output()
             self.clear_reported_values()
             return
         if self._desired_spectrum_normalized_percentage_dict == None:
             self.logger.warning("Unable to update channel outputs, no desired spectrum")
+            self.turn_off_output()
             self.clear_reported_values()
             return
         if self._desired_illumination_distance_cm == None:
             self.logger.warning("Unable to update channel outputs, no desired illumination distance")
+            self.turn_off_output()
             self.clear_reported_values()
             return
 
         # Calculate max intensity for given spectrum
-        spectrum_max_intensity_watts, error = self.get_spectrum_max_intensity_watts()
-        if error != None:
-            self.logger.warning(error)
-            self.clear_reported_values()
-            return
+        spectrum_max_intensity_watts = self.get_spectrum_max_intensity_watts()
 
         # Check desired intensity is realiazable for desired spectrum
         if spectrum_max_intensity_watts < self._desired_intensity_watts:
-            self.logger.warning("Unable to update channel outputs, desired intensity not realizable for given spectrum")
-            self.clear_reported_values()
-            return
-
-        # Desired light variables are valid, update reported sensor values 
-        self.intensity_watts = self._desired_intensity_watts
+            self.logger.warning("Desired intensity is not realizable for given spectrum, setting max intensity spectrum can realize")
+            self.logger.debug("desired_intensity={}Watts, spectrum_max_intensity={}Watts".format(self._desired_intensity_watts, spectrum_max_intensity_watts))
+            self.intensity_watts = spectrum_max_intensity_watts
+        else:
+            self.intensity_watts = self._desired_intensity_watts
+        
+        # Set spectrum and illumination to desired values       
         self.spectrum_normalized_percentage_dict = self._desired_spectrum_normalized_percentage_dict
-        self.illumination_distance = self._desired_illumination_distance
+        self.illumination_distance_cm = self._desired_illumination_distance_cm
 
         # Calculate channel output percents
+        self.logger.info("Calculating channel output percents")
         channel_output_percent_dict = {}
         for channel_config in self.channel_configs:
-            channel_name = channel_config["name"]["breif"]
-            channel_output_percent_dict[channel_name] = get_channel_output_percent(channel_name)
-        self.logger.debug("channel_output_percent_dict={}".format(channel_output_percent_dict))
+            channel_name = channel_config["name"]["brief"]
+            channel_output_percent_dict[channel_name] = self.get_channel_output_percent(channel_name)
+        self.logger.debug("channel_output_percent_dict = {}".format(channel_output_percent_dict))
+
+        # Set channel output on actuator hardwarechannel_output
+        self.set_channel_outputs(channel_output_percent_dict)
 
 
     def get_channel_output_percent(self, channel_name):
         """ Gets channel output percent. """
     
-        channel_spectrum_percent = self.desired_spectrum_normalized_percentage_dict[channel_name]
-        desired_channel_intensity_watts = self.desired_intensity_watts * channel_spectrum_percent / 100
+        channel_spectrum_percent = self._desired_spectrum_normalized_percentage_dict[channel_name]
+        desired_channel_intensity_watts = self._desired_intensity_watts * channel_spectrum_percent / 100
         channel_intensity_watts_at_illumination_distance = self.get_channel_intensity_watts_at_illumination_distance(channel_name)
         channel_output_coefficient = desired_channel_intensity_watts / channel_intensity_watts_at_illumination_distance
         channel_output_percent = self.get_channel_output_percent_from_output_coefficient(channel_name, channel_output_coefficient)
@@ -301,83 +304,62 @@ class LightPanel(Peripheral):
 
     def get_channel_output_percent_from_output_coefficient(self, channel_name, channel_output_coefficient):
         """ Gets channel output percent from provided channel output
-            coefficient for provided channel name. """
+            coefficient for provided channel name. Calculates output percent
+            from linear interpolation of output percent map. Rounds output 
+            percent to 2 decimal points. Assumes config dict keys are already
+            verifided. """
 
-        # Get output percent map 
-        try:
-            output_percent_map = self.channel_config_dict[channel_name]["output_percent_map"]
-        except KeyError:
-            error = "Unable to get output percent map for channel: {}".format(channel_name)
-            self.logger.exception(error)
-            return None, error
-
-        # Get output percent map parameters
-        try:
-            output_percent_list = []
-            output_coefficient_list = []
-            for entry in output_percent_map:
-                output_percent_list.append(entry["output_percent"])
-                output_coefficient_list.append(entry["intensity_normalized"])
-        except KeyError:
-            self.logger.exception("Unable to get parameters from output percent map: {}".format(output_percent_map))
-            error = "Unable to get parameters from output percent map"
-            return None, error
+        # Get output percent map, assume config dict already verified
+        output_percent_map = self.channel_config_dict[channel_name]["output_percent_map"]
+       
+        # Get output percent map parameters, assume map alread verified
+        output_percent_list = []
+        output_coefficient_list = []
+        for entry in output_percent_map:
+            output_percent_list.append(entry["output_percent"])
+            output_coefficient_list.append(entry["intensity_normalized"])
 
         # Calculate output percent from linear interpolation of output percent map
         interpolate_output_percent = scipy.interpolate.interp1d(output_coefficient_list, output_percent_list)
-        output_percent = interpolate_output_percent(channel_output_coefficient)
-        self.logger.debug("Output percent: {}".format(output_percent))
+        output_percent = float(interpolate_output_percent(channel_output_coefficient))
+
+        # Set significant figures
+        output_percent = round(output_percent, 2)
 
         # Return interpolated output percent
-        return output_percent, None
-
+        return output_percent
 
 
     def get_channel_intensity_watts_at_illumination_distance(self, channel_name):
         """ Gets channel intensity at desired illumination distance for 
             given channel name. Checks for valid illumination distance then 
             calculates intensity from linear interpolation of planar distance
-            map. """
-        # self.logger.debug("Getting channel intensity watts at illumination distance={}".format(self._desired_illumination_distance_cm))
+            map. Warns if desired illumination distance is out of range but 
+            still interpolates. Assumes config dict keys are already verifided. """
 
-        # Get planar distance map 
-        try:
-            planar_distance_map = self.channel_config_dict[channel_name]["planar_distance_map"]
-        except KeyError:
-            self.logger.exception("Unable to get planar distance map for channel config: {}".format(channel_config))
-            error = "Unable to get planar distance map for channel"
-            return None, error
+        # Get planar distance map, assume channel config dict already verified
+        planar_distance_map = self.channel_config_dict[channel_name]["planar_distance_map"]
 
-        # Get valid illumination distance range
-        try:
-            distance_list = []
-            intensity_list = []
-            for entry in planar_distance_map:
-                distance_list.append(entry["z_cm"])
-                intensity_list.append(entry["intensity_watts"])
-        except KeyError:
-            self.logger.exception("Unable to get parameters from planar distance map: {}".format(planar_distance_map))
-            error = "Unable to get parameters from planar distance map"
-            return None, error
+        # Get valid illumination distance range, assume planar distance map already verified
+        distance_list = []
+        intensity_list = []
+        for entry in planar_distance_map:
+            distance_list.append(entry["z_cm"])
+            intensity_list.append(entry["intensity_watts"])
 
-        # Check illumination distance within valid range
-        min_distance = min(distance_list)
-        max_distance = max(distance_list)
+        # Check illumination distance within valid range, warn if not.
+        # TODO: Should this prevent light from turning on?
+        if self._desired_illumination_distance_cm < min(distance_list):
+            self.logger.warning("Desired illumination distance less than min calibrated distance, interpolating anyway")
+            self.logger.debug("Desired illumination distance: {}cm, min calibrated distance: {}cm".format(self._desired_illumination_distance_cm, min(distance_list)))
+        if self._desired_illumination_distance_cm > max(distance_list):
+            self.logger.warning("Desired illumination distance greater than max calibrated distance, interpolating anyway")
+            self.logger.debug("Desired illumination distance: {}cm, max calibrated distance: {}cm".format(self._desired_illumination_distance_cm, max(distance_list)))
 
-        # self.logger.error(self._desired_illumination_distance_cm)
-        # self.logger.error(range(min_distance, max_distance))
-        if self._desired_illumination_distance_cm not in range(min_distance, max_distance):
-            error = "Illumination distance not within valid range"
-            self.logger.warning(error + ", range=[{},{}], distance={}".format(min_distance, max_distance, self._illumination_distance_cm))
-            return None, error
-
-        # Calculate intensity from linear interpolation of planar distance map
+        # Calculate intensity from linear interpolation of planar distance map then return value
         interpolate_intensity = scipy.interpolate.interp1d(distance_list, intensity_list)
-        interpolated_intensity = interpolate_intensity(self._desired_illumination_distance_cm)
-
-
-        # self.logger.debug("Interpolated intensity: {}".format(interpolated_intensity))
-        return interpolated_intensity, None
+        channel_intensity_watts_at_illumination_distance = float(interpolate_intensity(self._desired_illumination_distance_cm))
+        return channel_intensity_watts_at_illumination_distance
 
 
     def get_spectrum_max_intensity_watts(self):
@@ -385,58 +367,73 @@ class LightPanel(Peripheral):
             desired illumination distance. """
 
         # Initialize max planar intensities list
-        max_planar_intensities_watts = []
+        max_channel_intensities_watts = []
 
-        # Get max planar intensity for each channel
+        # Get max planar intensity for each channel and append to max planar 
+        # intensities list. Calculate max planar intensity for each channel by
+        # assuming all channel intensities superimpose to generate the desired
+        # overall light intensity. For example, if a Far Red channel on a light 
+        # panel is set to comprise 20% of the light output, and can output 50 
+        # Watts at a distance of 10cm. The max overall intensity this channel
+        # could realize while preserving the integrity of the spectrum is:
+        #   50 / 0.2 = 250 Watts.
         for channel_config in self.channel_configs:
             channel_name = channel_config["name"]["brief"]
             channel_intensity_watts_at_illumination_distance = self.get_channel_intensity_watts_at_illumination_distance(channel_name)
-            max_planar_intensities_watts.append(channel_intensity_watts_at_illumination_distance)
+            channel_spectrum_percent = self._desired_spectrum_normalized_percentage_dict[channel_name]
+            channel_max_intensity = channel_intensity_watts_at_illumination_distance / (channel_spectrum_percent / 100)
+            max_channel_intensities_watts.append(channel_max_intensity)
 
         # Return lowest actuatable intensity
-        return min(max_planar_intensities_watts)
-
-
-    def set_spectrum(self, spectrum):
-        """ Set light spectrum. """
-        try:
-            self.spectrum = spectrum
-        except:
-            self.logger.exception("Unable to set spectrum")
-            self._missed_readings += 1
-
-        self.update_health()
-    
-
-    def set_intensity(self, intensity):
-        """ Set light intensity. """
-        try:
-            self.intensity = intensity
-        except:
-            self.logger.exception("Unable to set intensity")
-            self._missed_readings += 1
-
-        self.update_health()
+        return min(max_channel_intensities_watts)
 
 
     def shutdown(self):
         """ Shuts down sensor. """
-
-        # Clear reported values
-        self.clear_desired_values()
+        self.turn_off_output()
         self.clear_reported_values()
 
 
-    def clear_desired_values(self):
-        """ TODO: make this not suck. """
-        self.set_intensity(0)
-        self.set_spectrum(None)
+    def turn_off_output(self):
+        """ Turns off output. Sets all channel output percents to 0%. """
+        
+        # Build channel output percent dict
+        channel_output_percent_dict = {}
+        for channel_config in self.channel_configs:
+            channel_name = channel_config["name"]["brief"]
+            channel_output_percent_dict[channel_name] = 0
+
+        # Set channel outputs on hardware
+        self.set_channel_outputs(channel_output_percent_dict)
 
 
     def clear_reported_values(self):
+        """ Clears values reported to shared state. """
         self.intensity_watts = None
         self.spectrum_normalized_percentage_dict = None
         self.illumination_distance_cm = None
+
+
+############################# Hardware Interactions ###########################
+
+    def set_channel_outputs(self, channel_output_percent_dict):
+        """ Sets channel outputs on hardware. Converts each channel output 
+            percent to output byte then sends update command to hardware. 
+            Assumes channel config dict keys are verified. """
+        try:
+            for channel_name, output_percent in channel_output_percent_dict.items():
+                output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
+                software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
+                if not self.simulate:
+                    self.i2c.write([0x30+software_channel, output_byte, 0x00])
+                else:
+                    self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+            self.channel_output_percent_dict = channel_output_percent_dict
+        except:
+            self.channel_output_percent_dict = None
+            self.logger.exception("Unable to set channel outputs")
+            self._missed_readings += 1
+        self.update_health()
 
 
 ################################## Events #####################################

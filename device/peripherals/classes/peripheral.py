@@ -333,7 +333,6 @@ class Peripheral:
             time.sleep(0.1)
 
 
-
     def report_sensor_value(self, sensor, variable, value, simple=False):
         """ Report sensor value to environment sensor dict and reported sensor 
             stats dict. """
@@ -397,13 +396,19 @@ class Peripheral:
 
 
     def report_actuator_value(self, actuator, variable, value):
-        """ Report an actuator value. """
+        """ Reports an actuator value. """
         with threading.Lock():
             self.state.environment["actuator"]["reported"][variable] = value
 
 
+    def set_desired_actuator_value(self, actuator, variable, value):
+        """ Sets and actuators desried value. """
+        with threading.Lock():
+            self.state.environment["actuator"]["desired"][variable] = value
+
+
     def report_health(self, value):
-        """ Report peripheral health. """
+        """ Reports a peripherals health. """
         with threading.Lock():
             self.state.peripherals[self.name]["health"] = value
 
