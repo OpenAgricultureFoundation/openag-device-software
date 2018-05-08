@@ -12,7 +12,7 @@ from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
 
-class AtlasElectricalConductivity(Atlas):
+class AtlasEC(Atlas):
     """ Atlas electrical conductivity sensor. """
 
     # Initialize reported sensor parameters 
