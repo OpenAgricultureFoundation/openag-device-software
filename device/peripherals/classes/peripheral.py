@@ -78,7 +78,6 @@ class Peripheral:
     def mode(self, value):
         """ Safely updates peripheral mode in device state object. """
         self._mode = value
-        self.logger.error("Setting mode to {}".format(value))
         with threading.Lock():
             if self.name not in self.state.peripherals:
                 self.state.peripherals[self.name] = {}
@@ -278,7 +277,7 @@ class Peripheral:
             # Update every sampling interval
             self.last_update_interval_seconds = time.time() - self.last_update_seconds
             if self.sampling_interval_seconds < self.last_update_interval_seconds:
-                self.logger.debug("Updating peripheral, time delta: {:.3f} sec".format(self.last_update_interval_seconds))
+                self.logger.debug("Updating peripheral, time_delta_seconds = {:.3f}".format(self.last_update_interval_seconds))
                 self.last_update_seconds = time.time()
                 self.update()
 

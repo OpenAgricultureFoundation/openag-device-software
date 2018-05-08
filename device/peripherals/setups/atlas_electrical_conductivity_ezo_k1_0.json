@@ -43,8 +43,14 @@
             "sequence": null
         },
         {
+            "name": "Shutdown",
+            "description": "Shutdown sensor.",
+            "value": null,
+            "sequence": null
+        },
+        {
             "name": "Set Sampling Interval",
-            "description": "Description goes here.",
+            "description": "Sets sampling interval.",
             "value": {
                 "default": 10,
                 "unit": "Seconds"

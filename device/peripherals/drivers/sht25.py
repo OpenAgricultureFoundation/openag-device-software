@@ -12,9 +12,11 @@ from device.utilities.errors import Errors
 class SHT25(Peripheral):
     """ Temperature and humidity sensor. """
 
-    # Initialize sensor parameters
+    # Initialize sensor variable parameters
     _temperature_celcius = None
     _humidity_percent = None
+
+    # Initialize sampling interval parameters
     _min_sampling_interval_seconds = 1
     _default_sampling_interval_seconds = 5
 
@@ -64,16 +66,26 @@ class SHT25(Peripheral):
 
 
     def reset(self): 
-        """ Resets sensor. """ or \
+        """ Resets sensor. """
         self.logger.info("Resetting sensor")
-        self.initiate_soft_reset()
+
+        # Clear reported values
         self.clear_reported_values()
+
+        # Send soft reset command to sensor hardware
+        try:
+            self.initiate_soft_reset()
+            self.logger.debug("Successfully reset sensor")
+        except:
+            self.logger.exception("Sensor reset failed")
+            self.mode = Modes.ERROR
 
 
     def shutdown(self):
         """ Shuts down sensor. """
         self.logger.info("Shutting down sensor")
         self.clear_reported_values()
+        self.logger.debug("Successfully shutdown sensor")
 
 
 ########################## Setter & Getter Functions ##########################
@@ -92,6 +104,8 @@ class SHT25(Peripheral):
         self._temperature_celcius = value
         with threading.Lock():
             self.report_sensor_value(self.name, self.temperature_name, value)
+            self.report_peripheral_value(self.temperature_name, value)
+
 
     @property
     def humidity_percent(self):
@@ -106,6 +120,7 @@ class SHT25(Peripheral):
         self._humidity_percent = value
         with threading.Lock():
             self.report_sensor_value(self.name, self.humidity_name, value)
+            self.report_peripheral_value(self.humidity_name, value)
 
 
 ############################# Main Helper Functions ###########################

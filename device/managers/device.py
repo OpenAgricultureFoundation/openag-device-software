@@ -276,11 +276,11 @@ class DeviceManager:
 
         # Load an initial config during development
         # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # FS1
-        # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
+        self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
         # self.config_uuid = "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf" # FS1 DO
         # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ1 Light
         # self.config_uuid = "7be845ec-216c-4898-9bcf-f533764b7c26" # EDU1 Light
-        self.config_uuid = "b82e43eb-7549-4fcc-aba7-b66585cb6dd1" # EDU1 SHT25
+        # self.config_uuid = "b82e43eb-7549-4fcc-aba7-b66585cb6dd1" # EDU1 SHT25
 
 
         # If device config is not set, wait for config command
@@ -798,6 +798,12 @@ class DeviceManager:
         """ Checks that all peripheral threads have transitioned from INIT. """
         for peripheral_name in self.state.peripherals:
             peripheral_state = self.state.peripherals[peripheral_name]
+
+            # Check if mode in peripheral state
+            if "mode" not in peripheral_state:
+                return False
+
+            # Check if mode either init or setup
             if peripheral_state["mode"] == Modes.INIT or peripheral_state["mode"] == Modes.SETUP:
                 return False
         return True
