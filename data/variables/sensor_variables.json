@@ -56,7 +56,7 @@
 		}
 	},
 	{
-		"key": "water_electrical_conductivity_ms/cm",
+		"key": "water_electrical_conductivity_ms_cm",
 		"info": {
 			"name": {
 				"brief": "EC",
@@ -70,7 +70,7 @@
 		}
 	},
 	{
-		"key": "water_dissolved_oxygen_mg/l",
+		"key": "water_dissolved_oxygen_mg_l",
 		"info": {
 			"name": {
 				"brief": "DO",

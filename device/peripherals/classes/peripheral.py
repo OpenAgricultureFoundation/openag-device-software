@@ -624,8 +624,12 @@ class Peripheral:
             self.logger.info(error_message)
             response = {"status": 400, "message": error_message}
 
-        # Get desired sampling interval. TODO: error handle bad type
-        desired_sampling_interval_seconds = float(value)
+        # Safely get desired sampling interval
+        try:
+            desired_sampling_interval_seconds = float(value)
+        except ValueError:
+            response = {"status": 400, "message": "Invalid sampling interval value!"}
+            return response
 
         # Check desired sampling interval larger than min interval
         if desired_sampling_interval_seconds < self._min_sampling_interval_seconds:

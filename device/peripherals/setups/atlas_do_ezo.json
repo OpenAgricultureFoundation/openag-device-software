@@ -2,25 +2,62 @@
 	"name":  "Atlas Dissolved Oxygen Sensor EZO",
 	"version": "1",
 	"uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
-	"module_name": "atlas_dissolved_oxygen",
-	"class_name": "AtlasDissolvedOxygen",
+	"module_name": "atlas_do",
+	"class_name": "AtlasDO",
 	"parameters": {
 		"variables": {
 			"sensors": {
 				"dissolved_oxygen_mg_l": {
-					"name": "string", 
-					"uuid": "string"
+					"name": {
+                        "type": "string",
+                        "default": "water_electrical_conductivity_ms_cm"
+                    }
 				}
 			},
 			"actuators": null
 		},	
 		"communication": {
-			"bus": "int",
-			"mux": "int",
-			"channel": "int",
-			"address": "int"
-		}
+            "bus": {
+                "type": "integer",
+                "default": 2
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 1
+            },
+            "address": {
+                "type": "string",
+                "default": "0x61"
+            }
+        }
 	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor mode.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    }
+	],
 	"info": {
 		"variables": {
 			"sensors":{

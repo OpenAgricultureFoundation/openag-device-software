@@ -61,7 +61,6 @@ class AtlasEC(Atlas):
             and ERROR on error. """
         self.logger.debug("Setting up sensor")
 
-        # Setup sensor
         try:
             # Set firmware dependent settings
             if self._firmware_version >= 1.95:
@@ -114,39 +113,6 @@ class AtlasEC(Atlas):
             self.mode = Modes.ERROR
 
 
-########################## Setter & Getter Functions ##########################
-
-
-    @property
-    def electrical_conductivity_ms_cm(self):
-        """ Gets electrical conductivity value. """
-        return self._electrical_conductivity_ms_cm
-
-
-    @electrical_conductivity_ms_cm.setter
-    def electrical_conductivity_ms_cm(self, value):
-        """ Safely updates electrical conductivity in shared state. If sensor 
-            is in calibrate mode only update peripheral shared state, else
-            updates peripheral and environment shared state. """   
-        self._electrical_conductivity_ms_cm = value
-        
-        # Update peripheral and/or environment shared state
-        if self.mode == Modes.CALIBRATE:
-            self.report_peripheral_value(self.electrical_conductivity_name, value)
-        else:
-            self.report_sensor_value(self.name, self.electrical_conductivity_name, value)
-            self.report_peripheral_value(self.electrical_conductivity_name, value)
-
-
-    @property
-    def temperature_celcius(self):
-        """ Gets temperature stored in shared state. """
-        if self.compensation_temperature_name in self.state.environment["sensor"]["reported"]:
-            temperature_celcius = self.state.environment["sensor"]["reported"][self.compensation_temperature_name]
-            if temperature_celcius != None:
-                return float(temperature_celcius)
-
-
 ############################# Main Helper Functions ###########################
     
 
@@ -169,9 +135,9 @@ class AtlasEC(Atlas):
         """ Updates sensor electrical conductivity. """
         self.logger.debug("Getting electrical conductivity")
         try:
-            self.electrical_conductivity_ms_cm = self.read_electrical_conductivity()
+            self.electrical_conductivity_ms_cm = self.read_electrical_conductivity_ms_cm()
         except:
-            self.logger.exception("Unable to get electrical conductivity")
+            self.logger.exception("Unable to update electrical conductivity, bad reading")
             self._missed_readings += 1
 
 
@@ -199,7 +165,7 @@ class AtlasEC(Atlas):
         # Update sensor temperature compensation value
         self._prev_temperature_celcius = temperature_celcius
         try:
-            self.set_compensation_temperature(temperature_celcius)
+            self.set_compensation_temperature_celcius(temperature_celcius)
         except:
             self.logger.warning("Unable to set sensor compensation temperature")
 
@@ -306,7 +272,8 @@ class AtlasEC(Atlas):
         command, sensor_type, firmware_version = response_message.split(",")
         return sensor_type, float(firmware_version)
 
-    def read_electrical_conductivity(self):
+
+    def read_electrical_conductivity_ms_cm(self):
         """ Reads electrical conductivity from sensor, sets significant 
             figures based off error magnitude, returns value in mS/cm. """
 
@@ -320,8 +287,8 @@ class AtlasEC(Atlas):
         # Sensor is not simulated
         self.logger.debug("Reading electrical conductivity value from hardware")
 
-        # Get electrical conductivity reading from sensor
-        # Assumes electrical conductivity is only device output
+        # Get electrical conductivity reading from hardware
+        # Assumes electrical conductivity is only enabled output
         response_string = self.process_command("R", processing_seconds=0.6)
         electrical_conductivity_us_cm = float(response_string)
         electrical_conductivity_ms_cm = electrical_conductivity_us_cm / 1000
@@ -337,7 +304,7 @@ class AtlasEC(Atlas):
         return electrical_conductivity_ms_cm
 
 
-    def set_compensation_temperature(self, temperature_celcius):
+    def set_compensation_temperature_celcius(self, temperature_celcius):
         """ Commands sensor to set compensation temperature. """
 
         # Check for simulated sensor
@@ -560,3 +527,37 @@ class AtlasEC(Atlas):
         electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
         command = "Cal,high,{}".format(electrical_conductivity_us_cm)
         self.process_command(command, processing_seconds=0.6)
+
+
+
+########################## Setter & Getter Functions ##########################
+
+
+    @property
+    def electrical_conductivity_ms_cm(self):
+        """ Gets electrical conductivity value. """
+        return self._electrical_conductivity_ms_cm
+
+
+    @electrical_conductivity_ms_cm.setter
+    def electrical_conductivity_ms_cm(self, value):
+        """ Safely updates electrical conductivity in shared state. If sensor 
+            is in calibrate mode only update peripheral shared state, else
+            updates peripheral and environment shared state. """   
+        self._electrical_conductivity_ms_cm = value
+        
+        # Update peripheral and/or environment shared state
+        if self.mode == Modes.CALIBRATE:
+            self.report_peripheral_value(self.electrical_conductivity_name, value)
+        else:
+            self.report_sensor_value(self.name, self.electrical_conductivity_name, value)
+            self.report_peripheral_value(self.electrical_conductivity_name, value)
+
+
+    @property
+    def temperature_celcius(self):
+        """ Gets temperature stored in shared state. """
+        if self.compensation_temperature_name in self.state.environment["sensor"]["reported"]:
+            temperature_celcius = self.state.environment["sensor"]["reported"][self.compensation_temperature_name]
+            if temperature_celcius != None:
+                return float(temperature_celcius)

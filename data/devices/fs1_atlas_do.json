@@ -1,0 +1,37 @@
+{	
+    "format": "openag-standard-v1",
+    "name": "Food Server Rack - Atlas DO Only",
+    "version": "1",
+    "uuid": "98d44119-331b-4019-9533-db731ecee672",
+    "peripherals": [
+        {
+            "name": "AtlasDO-1",
+            "type": "AtlasDO",
+            "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Dissolved Oxygen Sensor EZO",
+                    "file_name": "atlas_do_ezo"
+                },
+                "variables": {
+                    "sensor": {
+                        "dissolved_oxygen_mg_l": "water_dissolved_oxygen_mg_l"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": "water_temperature_celcius",
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm",
+                        "pressure_kpa": "water_pressure_kpa"
+                    }
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x61"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}
