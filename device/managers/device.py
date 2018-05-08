@@ -275,11 +275,13 @@ class DeviceManager:
         self.logger.info("Entered CONFIG")
 
         # Load an initial config during development
-        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # Food server rack v1
+        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # FS1
         # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # FS1 EC
         # self.config_uuid = "8ac7744a-6fb4-4d0e-9109-bdd184a35eaf" # FS1 DO
-        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # Hazelnut light 5x5
-        self.config_uuid = "7be845ec-216c-4898-9bcf-f533764b7c26" # EDU light
+        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ1 Light
+        # self.config_uuid = "7be845ec-216c-4898-9bcf-f533764b7c26" # EDU1 Light
+        self.config_uuid = "b82e43eb-7549-4fcc-aba7-b66585cb6dd1" # EDU1 SHT25
+
 
         # If device config is not set, wait for config command
         if self.config_uuid == None:
@@ -657,17 +659,16 @@ class DeviceManager:
         # Load peripherals state
         stored_peripherals_state = json.loads(stored_state.peripherals)
         for peripheral_name in stored_peripherals_state:
+            self.state.peripherals[peripheral_name] = {}
             if "stored" in stored_peripherals_state[peripheral_name]:
-                self.state.peripherals[peripheral_name] = {}
                 self.state.peripherals[peripheral_name]["stored"] = stored_peripherals_state[peripheral_name]["stored"]
 
         # Load controllers state
         stored_controllers_state = json.loads(stored_state.controllers)
         for controller_name in stored_controllers_state:
+            self.state.controllers[controller_name] = {}
             if "stored" in stored_controllers_state[controller_name]:
-                self.state.controllers[controller_name] = {}
                 self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
-
    
     def store_environment(self):
         """ Stores current environment state in environment table. """

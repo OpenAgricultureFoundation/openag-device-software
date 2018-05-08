@@ -8,23 +8,37 @@
         "variables": {
             "sensors": {
                 "electrical_conductivity_ms_cm": {
-                    "name": "string", 
-                    "uuid": "string"
+                    "name": {
+                        "type": "string",
+                        "default": "water_electrical_conductivity_ms_cm"
+                    }
                 }
             },
             "actuators": null
         },  
         "communication": {
-            "bus": "2",
-            "mux": "0x77",
-            "channel": "2",
-            "address": "0x63"
+            "bus": {
+                "type": "integer",
+                "default": 2
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 1
+            },
+            "address": {
+                "type": "string",
+                "default": "0x63"
+            }
         }
     },
     "events": [
         {
             "name": "Reset",
-            "description": "Reset sensor.",
+            "description": "Reset sensor mode.",
             "value": null,
             "sequence": null
         },

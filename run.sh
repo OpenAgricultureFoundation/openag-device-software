@@ -11,7 +11,7 @@ do
 key="$1"
 
 case $key in
-    -nd | --nodevice)           shift               
+    -nd | --no-device)           shift               
                                 NO_DEVICE="true"
                                 ;;
     -nd | --simulate)           shift               

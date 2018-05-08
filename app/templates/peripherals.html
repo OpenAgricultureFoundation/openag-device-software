@@ -13,14 +13,18 @@
     // Create peripheral cards based off stored data in db
     loadPeripheralSetups()
       .then(function(peripheralSetups) {
+        console.log(peripheralSetups);
         peripheralData.setups = peripheralSetups;
         return loadPeripheralStates();
       })
       .then(function(peripheralStates) {
+        console.log(peripheralStates);
         peripheralData.states = peripheralStates;
+
         return createPeripheralsDict(peripheralData);
       })
       .then(function(peripheralsDict) {
+        console.log(peripheralsDict);
         createPeripheralCards(peripheralsDict);
       })
       .catch(function(error) {
@@ -106,47 +110,6 @@
 
   function createPeripheralCards(peripherals) { 
     console.log("Creating peripheral cards");
-    // var peripherals = [
-    //   {
-    //     name: "AtlasEC-1",
-    //     events: [
-    //       {
-    //         name: "Set Sampling Interval",
-    //         description: "Description goes here",
-    //         value: {
-    //           default: 10,
-    //           unit: "Seconds"
-    //         },
-    //         sequence: null
-    //       },
-    //       {
-    //         name: "One Point Calibration",
-    //         description: "Description goes here",
-    //         value: null,
-    //         sequence: [
-    //           {
-    //             name: "Enable Calibration Mode",
-    //             description: "Description goes here",
-    //             value: null
-    //           },
-    //           {
-    //             name: "Dry Calibration",
-    //             description: "Description goes here",
-    //             value: null
-    //           },
-    //           {
-    //             name: "Single Point Calibration",
-    //             description: "Description goes here",
-    //             value: {
-    //               default: 12.88,
-    //               unit: "mS/cm"
-    //             }
-    //           }
-    //         ]
-    //       }
-    //     ]
-    //   }
-    // ];
 
     for (peripheral_index in peripherals) {
       peripheral = peripherals[peripheral_index]
@@ -198,8 +161,12 @@
                 </div>`
               : ''}
               <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${event.name}','${event.id}')"><i class="icon-share"></i>${event.name}</button></p>
-              <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${event.id}ErrorAlert"><span id="alertMessage"></span></div>
-              <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${event.id}SuccessAlert"><span id="alertMessage"></span></div>
+              <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${event.id}SuccessAlert"><span id="${event.id}SuccessAlertMessage"></span></div>
+
+              <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${event.id}ErrorAlert"><span id="${event.id}ErrorAlertMessage"></span></div>
+              <div class="collapse" id="${event.id}NextButton">
+                <button class="btn" type="button" data-target="#${event.id}Card" data-toggle="collapse" style="float: right;">Done</button>
+              </div>
             </div>
           </div>`
           peripheralCardInstance.insertAdjacentHTML('beforeend', eventCardTemplate);
@@ -241,8 +208,8 @@
                     </div>`
                   : ''}       
                   <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${sequence.name}', '${sequence.id}')"><i class="icon-share"></i>${sequence.name}</button></p>
-                  <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${sequence.id}SuccessAlert">Success!</div>
-                  <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${sequence.id}ErrorAlert">Error!</div>
+                  <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${sequence.id}SuccessAlert"><span id="${sequence.id}SuccessAlertMessage"></span></div>
+                  <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${sequence.id}ErrorAlert"><span id="${sequence.id}ErrorAlertMessage"></span></div>
                   <div class="collapse" id="${sequence.id}NextButton">
                     <button class="btn" type="button" onClick="nextEvent('${event.id}', '${sequence.id}')" style="float: right;">Next</button>
                   </div>
@@ -303,31 +270,31 @@
          },
          dataType: 'json',
          success: function(data) {
-           console.log("Event request succeeded")
+          console.log("Event request succeeded")
 
-           // Get response message
-           message = data.message
-
-           console.log("Alert message: " + message)
+          // Get response message
+          message = data.message
+          console.log("Alert message: " + message)
            
-           // Set alert message
-           document.getElementById("alertMessage").innerHTML = message;
+          // Set alert message
+          document.getElementById(event_id + "SuccessAlertMessage").innerHTML = message;
 
-           // Show alert
-           $(base_name + 'SuccessAlert').collapse('show');
+          // Show alert
+          $(base_name + "SuccessAlert").collapse("show");
 
-           // Show next button
-           $(base_name + 'NextButton').collapse('show');
-         },
-         error: function(data) {
+          // Show next button
+          $(base_name + "NextButton").collapse("show");
+        },
+        error: function(data) {
            console.log("Event request failed")
 
            // Get response message
            response_dict = JSON.parse(data.responseText)
            message = response_dict["message"]
+           console.log("Alert message: " + message)
        
            // Set alert message
-           document.getElementById("alertMessage").innerHTML = message;
+           document.getElementById(event_id + "ErrorAlertMessage").innerHTML = message;
 
            // Show alert
            $(base_name + 'ErrorAlert').collapse('show');

@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Food Server Rack - Electrical Conductivity Only",
+    "name": "Food Server Rack - Atlas EC Only",
     "version": "1",
     "uuid": "5e0610fe-a488-4f70-bb7b-8fe0830fccbb",
     "peripherals": [

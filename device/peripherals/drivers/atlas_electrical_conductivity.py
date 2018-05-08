@@ -232,7 +232,7 @@ class AtlasElectricalConductivity(Atlas):
         elif request_type == "Single Point Calibration":
             self.response = self.process_single_point_calibration_event(request)
         else:
-            message = "Unknown event request type"
+            message = "Unknown event request type!"
             self.logger.info(message)
             self.response = {"status": 400, "message": message}
 
@@ -241,7 +241,7 @@ class AtlasElectricalConductivity(Atlas):
         """ Processes reset event. """
         self.logger.debug("Processing reset event")
         self.mode = Modes.RESET
-        response = {"status": 200, "message": "Resetting peripheral"}
+        response = {"status": 200, "message": "Resetting peripheral!"}
         return response
 
 
@@ -252,10 +252,10 @@ class AtlasElectricalConductivity(Atlas):
         # return {"status": 400, "message": "This is a test"}
 
         if self.mode == Modes.CALIBRATE:
-            response = {"status": 200, "message": "Already in calibration mode"}
+            response = {"status": 200, "message": "Already in calibration mode!"}
         else:
             self.mode = Modes.CALIBRATE
-            response = {"status": 200, "message": "Enabling calibration mode"}
+            response = {"status": 200, "message": "Enabling calibration mode!"}
         return response
 
 
@@ -267,16 +267,16 @@ class AtlasElectricalConductivity(Atlas):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to take dry calibration"}
+            response = {"status": 400, "message": "Must be in calibration mode to take dry calibration!"}
             return response
 
         # Execute request
         try:
             self.take_dry_calibration_reading()
-            response = {"status": 200, "message": "Successfully took dry calibration reading"}
+            response = {"status": 200, "message": "Successfully took dry calibration reading!"}
             return response
         except Exception as e:
-            self.logger.exception("Unable to take dry calibration reading")
+            self.logger.exception("Unable to take dry calibration reading!")
             response = {"status": 500, "message": "Unable to take dry calibration reading: {}".format(e)}
             return response
 
@@ -288,7 +288,7 @@ class AtlasElectricalConductivity(Atlas):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration."}
+            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!."}
             return response
 
         # Get request parameters
@@ -302,11 +302,11 @@ class AtlasElectricalConductivity(Atlas):
         # Execute request
         try:
             self.take_single_point_calibration_reading(electrical_conductivity_ms_cm)
-            response = {"status": 200, "message": "Set single point calibration"}
+            response = {"status": 200, "message": "Set single point calibration!"}
             return response
         except Exception as e:
             self.logger.exception("Unable to take single point calibration reading")
-            response = {"status": 500, "message": "Unable to take single point calibration reading: {}".format(e)}
+            response = {"status": 500, "message": "Unable to take single point calibration reading: {}!".format(e)}
             return response
 
 

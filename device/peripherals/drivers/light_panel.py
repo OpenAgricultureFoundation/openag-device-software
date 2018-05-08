@@ -54,8 +54,8 @@ class LightPanel(Peripheral):
         self.illumination_distance_name = self.parameters["variables"]["sensor"]["illumination_distance_cm"]
         self.channel_output_name = self.parameters["variables"]["actuator"]["channel_output_percent_dict"]
 
-        # Initialize setup file
-        self.load_setup_file()
+        # Initialize setup dict
+        self.load_setup_dict_from_file()
 
         # Initialize channel configs
         self.load_channel_configs()
@@ -217,19 +217,11 @@ class LightPanel(Peripheral):
             self.update_channel_outputs()
 
 
-    def load_setup_file(self): 
-        """ Loads setup file from filename. """
-        self.logger.debug("Loading setup file")
-
-        # TODO: load this from database
-        file_name = self.parameters["setup"]["file_name"]
-        self.setup_file = json.load(open("device/peripherals/setups/" + file_name + ".json"))
-
 
     def load_channel_configs(self): 
         """ Loads channel configs from setup file. """
         self.logger.debug("Loading channel configs")
-        self.channel_configs = self.setup_file["channel_configs"]
+        self.channel_configs = self.setup_dict["channel_configs"]
 
 
     def parse_channel_configs(self):

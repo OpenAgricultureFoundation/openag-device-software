@@ -1,0 +1,32 @@
+{	
+    "format": "openag-standard-v1",
+    "name": "PFC-EDU - SHT25 Temp/Hum Only",
+    "version": "1",
+    "uuid": "b82e43eb-7549-4fcc-aba7-b66585cb6dd1",
+    "peripherals": [
+        {
+            "name": "SHT25-1",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor",
+                    "file_name": "sht25"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x40"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}
