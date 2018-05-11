@@ -199,6 +199,8 @@
                 <div class="card-body">
                   <h5 class="card-title">${sequence.name}</h5>
                   <h6 class="card-subtitle mb-2 text-muted">${sequence.description}</h6>
+                  
+
                   ${sequence.value ? 
                     `<div class="input-group mb-3">
                       <input type="text" id="${sequence.id}Value" name="${sequence.id}Value" placeholder="${sequence.value.default}" required>
@@ -206,7 +208,8 @@
                         <span class="input-group-text" id="basic-addon2">${sequence.value.unit}</span>
                       </div>
                     </div>`
-                  : ''}       
+                  : ''}   
+
                   <p><button class="btn" type="button" onClick="createPeripheralEvent('${peripheral.name}','${sequence.name}', '${sequence.id}')"><i class="icon-share"></i>${sequence.name}</button></p>
                   <div class="alert alert-success alert-dismissible fade collapse" role="alert" id="${sequence.id}SuccessAlert"><span id="${sequence.id}SuccessAlertMessage"></span></div>
                   <div class="alert alert-danger alert-dismissible fade collapse" role="alert" id="${sequence.id}ErrorAlert"><span id="${sequence.id}ErrorAlertMessage"></span></div>
@@ -258,6 +261,10 @@
      request = {
          "type": event_name,
          "value": value};
+
+      // Hide alert messages
+      $(base_name + "SuccessAlert").collapse("hide");
+      $(base_name + "ErrorAlert").collapse("hide");
 
      // Send create event request to endpoint
      $.ajax({

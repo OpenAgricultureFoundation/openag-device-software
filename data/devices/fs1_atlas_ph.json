@@ -1,32 +1,32 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Food Server Rack - Atlas EC Only",
+    "name": "Food Server Rack - Atlas pH Only",
     "version": "1",
-    "uuid": "5e0610fe-a488-4f70-bb7b-8fe0830fccbb",
+    "uuid": "00060e4e-6fc5-46cb-98f7-ad38e65653dd",
     "peripherals": [
         {
-            "name": "AtlasEC-1",
-            "type": "AtlasEC",
-            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
+            "name": "AtlasPH-1",
+            "type": "AtlasPH",
+            "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
             "parameters": {
                 "setup": {
-                    "name": "Atlas Electrical Conductivity Sensor EZO K1.0",
-                    "file_name": "atlas_ec_ezo_k1_0"
+                    "name": "Atlas Potential Hydrogen Sensor EZO",
+                    "file_name": "atlas_ph_ezo"
                 },
                 "variables": {
                     "sensor": {
-                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm"
+                        "potential_hydrogen": "water_potential_hydrogen"
                     },
                     "actuator": null,
                     "compensation": {
-                        "temperature_celcius": null
+                        "temperature_celcius": "water_temperature_celcius"
                     }
                 },
                 "communication": {
                     "bus": "2", 
                     "mux": "0x77", 
                     "channel": "1", 
-                    "address": "0x64"
+                    "address": "0x63"
                 }
             }
         }

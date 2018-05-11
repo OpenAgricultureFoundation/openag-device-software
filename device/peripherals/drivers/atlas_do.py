@@ -267,7 +267,6 @@ class AtlasDO(Atlas):
         return response
 
 
-
 ############################# Hardware Interactions ###########################
 
 

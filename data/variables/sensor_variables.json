@@ -42,7 +42,7 @@
 		}
 	},
 	{
-		"key": "water_ph",
+		"key": "water_potential_hydrogen",
 		"info": {
 			"name": {
 				"brief": "pH",

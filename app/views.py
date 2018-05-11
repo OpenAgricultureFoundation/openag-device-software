@@ -83,8 +83,6 @@ class EventViewSet(viewsets.ModelViewSet):
         # Get request parameters
         event_viewer = EventViewer()
         message, status = event_viewer.create(request_dict)
-        print("Returning status={}. message={}".format(status, message))
-        # return Response(response, status)
         response_dict = {"message": message}
         return Response(response_dict, status=status)
 

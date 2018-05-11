@@ -38,19 +38,19 @@
     "events": [
         {
             "name": "Reset",
-            "description": "Reset sensor mode.",
+            "description": "Restarts sensor initialization process.",
             "value": null,
             "sequence": null
         },
         {
             "name": "Shutdown",
-            "description": "Shutdown sensor.",
+            "description": "Stops reporting readings and turn off sensor.",
             "value": null,
             "sequence": null
         },
         {
             "name": "Set Sampling Interval",
-            "description": "Sets sampling interval.",
+            "description": "Sets a new sampling interval. Value persists across reboots. Resets to default value only when new device config is loaded.",
             "value": {
                 "default": 10,
                 "unit": "Seconds"
@@ -59,22 +59,22 @@
         },
         {
             "name": "One Point Calibration",
-            "description": "First, enable calibration mode to stop reporting sensor data to stored environment database. Next, remove sensors from reservoir, wipe dry, then take dry calibration reading. After, place sensors in known calibration solution, wait for reading to stabilize, then take single point calibration reading. Finally, reset the device to set it back into normal operation mode.",
+            "description": "Set into calibration mode, take calibration readings, then reset.",
             "value": null,
             "sequence": [
                 {
                     "name": "Enable Calibration Mode",
-                    "description": "Description goes here",
+                    "description": "Stops reporting data into environment database. Required to send calibration commands.",
                     "value": null
                 },
                 {
                     "name": "Dry Calibration",
-                    "description": "Description goes here",
+                    "description": "Dry off the probe, wait for sensor value to stabilize, then take calibration reading.",
                     "value": null
                 },
                 {
                     "name": "Single Point Calibration",
-                    "description": "Description goes here",
+                    "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
                     "value": {
                         "default": 12.88,
                         "unit": "mS/cm"
@@ -82,7 +82,7 @@
                 },
                 {
                     "name": "Reset",
-                    "description": "Reset device to set it back into normal operation mode.",
+                    "description": "Restarts sensor initialization process.",
                     "value": null
                 }
             ]

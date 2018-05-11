@@ -412,6 +412,7 @@ class Peripheral:
 
 ############################# Main Helper Functions ###########################
 
+
     def establish_i2c_connection(self): 
         """ Establishes i2c connection. Gets i2c parameters from config and 
             opens i2c communication if sensor is not simulated. """
@@ -560,7 +561,6 @@ class Peripheral:
         # Get request parameters
         try:
             request_type = request["type"]
-            value = request["value"]
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
@@ -571,10 +571,12 @@ class Peripheral:
         elif request_type == "Shutdown":
             self.response = self.process_shutdown_event()
         elif request_type == "Set Sampling Interval":
-            self.response = self.process_set_sampling_interval_event(value)
+            self.response = self.process_set_sampling_interval_event(request)
+        elif request_type == "Enable Calibration Mode":
+            self.response = self.process_enable_calibration_mode_event()
         else:
             # Process peripheral specific requests
-            self.process_peripheral_specific_event(request_type, value)
+            self.process_peripheral_specific_event(request)
 
 
     def process_reset_event(self):
@@ -614,9 +616,16 @@ class Peripheral:
         return response
 
 
-    def process_set_sampling_interval_event(self, value):
+    def process_set_sampling_interval_event(self, request):
         """ Processes shutdown event. """
         self.logger.debug("Processing set sampling interval event")
+
+        # Verify value in request
+        try:
+            value = request["value"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
 
         # Check sensor is in normal or shutdown mode
         if (self.mode != Modes.NORMAL) and (self.mode != Modes.SHUTDOWN):
@@ -642,6 +651,18 @@ class Peripheral:
 
         # Return event response
         response = {"status": 200, "message": "Set sampling interval!"}
+        return response
+
+
+    def process_enable_calibration_mode_event(self):
+        """ Processes calibrate event. """
+        self.logger.debug("Processing enable calibration mode event")
+
+        if self.mode == Modes.CALIBRATE:
+            response = {"status": 200, "message": "Already in calibration mode!"}
+        else:
+            self.mode = Modes.CALIBRATE
+            response = {"status": 200, "message": "Enabling calibration mode!"}
         return response
 
 

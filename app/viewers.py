@@ -46,7 +46,6 @@ class EventViewer:
             time.sleep(0.1)
 
         # Return response
-        print("Viewer returning response")
         event = EventModel.objects.get(id=event.id)
         return event.response["message"], event.response["status"]
         
