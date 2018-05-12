@@ -20,8 +20,11 @@ class AtlasDO(Atlas):
     _dissolved_oxygen_accuracy_mg_l = 0.05
 
     # Initialize compensation sensor parameters
+    _prev_electrical_conductivity_ms_cm = None
     _electrical_conductivity_threshold_ms_cm = 0.1
+    _prev_temperature_celcius = None
     _temperature_threshold_celcius = 0.1
+    _prev_pressure_kpa = None
     _pressure_threshold_kpa = 0.1
 
     # Initialize sampling interval parameters
@@ -115,9 +118,6 @@ class AtlasDO(Atlas):
             self.mode = Modes.ERROR
 
 
-############################# Main Helper Functions ###########################
-
-
     def perform_initial_health_check(self, retry=False):
         """ Performs initial health check by reading device status. """
         try:
@@ -155,13 +155,14 @@ class AtlasDO(Atlas):
             return
 
         # Check if electrical conductivity value on sensor requires an update
-        electrical_conductivity_delta_ms_cm = abs(self._prev_electrical_conductivity_ms_cm - electrical_conductivity_ms_cm)
-        if electrical_conductivity_delta_ms_cm < self._electrical_conductivity_threshold_ms_cm:
-            self.logger.debug("Device electrical conductivity compensation does not require update, value within threshold")
-            return
+        if self._prev_electrical_conductivity_ms_cm != None:
+            electrical_conductivity_delta_ms_cm = abs(self._prev_electrical_conductivity_ms_cm - electrical_conductivity_ms_cm)
+            if electrical_conductivity_delta_ms_cm < self._electrical_conductivity_threshold_ms_cm:
+                self.logger.debug("Device electrical conductivity compensation does not require update, value within threshold")
+                return
 
         # Update sensor conductivity compensation value
-        self._electrical_conductivity_ms_cm = electrical_conductivity_ms_cm
+        self._prev_electrical_conductivity_ms_cm = electrical_conductivity_ms_cm
         try:
             self.set_compensation_electrical_conductivity(electrical_conductivity_ms_cm)
         except:
@@ -183,10 +184,11 @@ class AtlasDO(Atlas):
             return
 
         # Check if temperature value on sensor requires an update
-        temperature_delta_temp = abs(self._prev_temperature_celcius - temperature_celcius)
-        if temperature_delta_celcius < self._temperature_threshold_celcius:
-            self.logger.debug("Device temperature compensation does not require update, value within threshold")
-            return
+        if self._prev_temperature_celcius != None:
+            temperature_delta_celcius = abs(self._prev_temperature_celcius - temperature_celcius)
+            if temperature_delta_celcius < self._temperature_threshold_celcius:
+                self.logger.debug("Device temperature compensation does not require update, value within threshold")
+                return
 
         # Update sensor temperature compensation value
         self._prev_temperature_celcius = temperature_celcius
@@ -211,10 +213,11 @@ class AtlasDO(Atlas):
             return
 
         # Check if pressure value on sensor requires an update
-        pressure_delta_kpa = abs(self._prev_pressure_kpa - pressure_kpa)
-        if pressure_delta_kpa < self._pressure_threshold_kpa:
-            self.logger.debug("Device pressure compensation does not require update, value within threshold")
-            return
+        if self._prev_pressure_kpa != None:
+            pressure_delta_kpa = abs(self._prev_pressure_kpa - pressure_kpa)
+            if pressure_delta_kpa < self._pressure_threshold_kpa:
+                self.logger.debug("Device pressure compensation does not require update, value within threshold")
+                return
 
         # Update sensor pressure compensation value
         self._prev_pressure_kpa = pressure_kpa
@@ -241,30 +244,6 @@ class AtlasDO(Atlas):
 
 ################# Peripheral Specific Event Functions #########################
 
-
-    def process_peripheral_specific_event(self, request_type, value):
-        """ Processes and event. Gets request parameters, executes request, returns 
-            response. """
-
-        # Execute request
-        if request_type == "Enable Calibration Mode":
-            self.response = self.process_enable_calibration_mode_event()
-        else:
-            message = "Unknown event request type!"
-            self.logger.info(message)
-            self.response = {"status": 400, "message": message}
-
-
-    def process_enable_calibration_mode_event(self):
-        """ Processes calibrate event. """
-        self.logger.debug("Processing enable calibration mode event")
-
-        if self.mode == Modes.CALIBRATE:
-            response = {"status": 200, "message": "Already in calibration mode!"}
-        else:
-            self.mode = Modes.CALIBRATE
-            response = {"status": 200, "message": "Enabling calibration mode!"}
-        return response
 
 
 ############################# Hardware Interactions ###########################

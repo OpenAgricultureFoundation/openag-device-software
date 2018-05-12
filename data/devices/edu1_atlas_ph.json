@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Food Server Rack - Atlas pH Only",
+    "name": "PFC EDU - Atlas pH Only",
     "version": "1",
     "uuid": "00060e4e-6fc5-46cb-98f7-ad38e65653dd",
     "peripherals": [

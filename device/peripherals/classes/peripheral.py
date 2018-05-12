@@ -229,6 +229,8 @@ class Peripheral:
                 self.run_error_mode()
             elif self.mode == Modes.CALIBRATE:
                 self.run_calibrate_mode()
+            elif self.mode == Modes.MANUAL:
+                self.run_manual_mode()
             elif self.mode == Modes.RESET:
                 self.run_reset_mode()
             elif self.mode == Modes.SHUTDOWN:
@@ -281,8 +283,8 @@ class Peripheral:
                 self.last_update_seconds = time.time()
                 self.update()
 
-            # Check for error, calibrate, or shutdown transition
-            if (self.mode == Modes.ERROR) or (self.mode == Modes.CALIBRATE):
+            # Check for update error
+            if self.mode == Modes.ERROR:
                 break
 
             # Check for events
@@ -291,8 +293,15 @@ class Peripheral:
                 self.request = None
                 self.process_event(request)
 
-            # Check for reset or shutdown transition
-            if (self.mode == Modes.RESET) or (self.mode == Modes.SHUTDOWN):
+            # Check for state transition
+            transition_modes = [
+                Modes.CALIBRATE, 
+                Modes.MANUAL, 
+                Modes.RESET, 
+                Modes.SHUTDOWN, 
+                Modes.ERROR,
+            ]
+            if self.mode in transition_modes:
                 break
 
             # Update every 100ms
@@ -326,6 +335,28 @@ class Peripheral:
                 request = self.request
                 self.request = None
                 self.process_event(request)
+            
+            # Update every 100ms
+            time.sleep(0.100)
+
+
+    def run_manual_mode(self):
+        """ Runs manual mode. Waits for new events and checks for transition to
+            normal, reset, shutdown, or error."""
+        self.logger.info("Entered MANUAL")
+
+        while self.thread_is_active:
+
+            # Check for events
+            if self.request != None:
+                request = self.request
+                self.request = None
+                self.process_event(request)
+
+            # Check for transition to normal, reset, shutdown, or error
+            transition_modes = [Modes.NORMAL, Modes.RESET, Modes.SHUTDOWN, Modes.ERROR]
+            if self.mode in transition_modes:
+                break
             
             # Update every 100ms
             time.sleep(0.100)
@@ -574,6 +605,8 @@ class Peripheral:
             self.response = self.process_set_sampling_interval_event(request)
         elif request_type == "Enable Calibration Mode":
             self.response = self.process_enable_calibration_mode_event()
+        elif request_type == "Enable Manual Mode":
+            self.response = self.process_enable_manual_mode_event()
         else:
             # Process peripheral specific requests
             self.process_peripheral_specific_event(request)
@@ -655,14 +688,30 @@ class Peripheral:
 
 
     def process_enable_calibration_mode_event(self):
-        """ Processes calibrate event. """
+        """ Processes enable calibration mode event. """
         self.logger.debug("Processing enable calibration mode event")
+
+        # TODO: Verify transition from valid mode
 
         if self.mode == Modes.CALIBRATE:
             response = {"status": 200, "message": "Already in calibration mode!"}
         else:
             self.mode = Modes.CALIBRATE
             response = {"status": 200, "message": "Enabling calibration mode!"}
+        return response
+
+
+    def process_enable_manual_mode_event(self):
+        """ Processes enable manual mode event. """
+        self.logger.debug("Processing enable manual mode event")
+
+        # TODO: Verfiy transition from valid mode
+
+        if self.mode == Modes.MANUAL:
+            response = {"status": 200, "message": "Already in manual mode!"}
+        else:
+            self.mode = Modes.MANUAL
+            response = {"status": 200, "message": "Enabling manual mode!"}
         return response
 
 

@@ -11,7 +11,6 @@
             "parameters": {
                 "setup": {
                     "name": "Light Panel Taurus Actuator",
-                    "uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
                     "file_name": "light_panel_taurus"
                 },
                 "variables": {

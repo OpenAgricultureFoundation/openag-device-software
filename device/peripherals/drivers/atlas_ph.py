@@ -12,9 +12,6 @@ from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
 
-# TODO: Calibration Events
-
-
 class AtlasPH(Atlas):
     """ Atlas pH sensor. """
 
@@ -33,10 +30,10 @@ class AtlasPH(Atlas):
     def __init__(self, *args, **kwargs):
         """ Instantiates sensor. Instantiates parent class, and initializes 
             sensor variable name. """
-        
+
         # Instantiate parent class
         super().__init__(*args, **kwargs)
-        
+
         # Initialize reported sensor variable names
         self.potential_hydrogen_name = self.parameters["variables"]["sensor"]["potential_hydrogen"]
 
@@ -57,7 +54,7 @@ class AtlasPH(Atlas):
 
         # Perform initial health check
         self.perform_initial_health_check()
-            
+
 
     def setup(self):
         """ Sets up sensor. Programs device operation parameters into 
@@ -72,7 +69,7 @@ class AtlasPH(Atlas):
                 # TODO: enable / disable outputs
             else:
                 self.logger.warning("Using old circuit stamp, consider upgrading")
-            
+
             # Set firmware independent settings
             self.enable_led()
             self.logger.debug("Successfully setup sensor")
@@ -83,7 +80,7 @@ class AtlasPH(Atlas):
 
     def update(self):
         """ Updates sensor. """
-        self.update_compensation_temperature() # update compensation before pH
+        self.update_compensation_temperature()  # update compensation before pH
         self.update_potential_hydrogen()
         self.update_health()
 
@@ -113,7 +110,7 @@ class AtlasPH(Atlas):
             self.mode = Modes.ERROR
 
 
-############################# Main Helper Functions ###########################
+    ############################# Main Helper Functions #######################
 
 
     def perform_initial_health_check(self, retry=False):
@@ -121,7 +118,7 @@ class AtlasPH(Atlas):
         try:
             sensor_type, self._firmware_version = self.read_info()
             if sensor_type != "PH":
-                self.logger.critical("Incorrect circuit stamp. Expecting `PH`, received `{}`".format(sensor_type))
+                self.logger.critical("Incorrect circuit stamp. Expecting `PH`, received `{}`".format(sensor_type) )
                 raise Exception("Incorrect circuit stamp type")
             else:
                 self.logger.debug("Passed initial health check")
@@ -146,10 +143,11 @@ class AtlasPH(Atlas):
             return
 
         # Check if temperature value on sensor requires an update
-        temperature_delta_temp = abs(self._prev_temperature_celcius - temperature_celcius)
-        if temperature_delta_celcius < self._temperature_threshold_celcius:
-            self.logger.debug("Device temperature compensation does not require update, value within threshold")
-            return
+        if self._prev_temperature_celcius != None:
+            temperature_delta_celcius = abs(self._prev_temperature_celcius - temperature_celcius)
+            if temperature_delta_celcius < self._temperature_threshold_celcius:
+                self.logger.debug("Device temperature compensation does not require update, value within threshold")
+                return
 
         # Update sensor temperature compensation value
         self._prev_temperature_celcius = temperature_celcius
@@ -167,14 +165,14 @@ class AtlasPH(Atlas):
         except:
             self.logger.exception("Unable to update potential_hydrogen, bad reading")
             self._missed_readings += 1
-    
+
 
     def clear_reported_values(self):
         """ Clears reported values. """
         self.potential_hydrogen = None
 
 
-################# Peripheral Specific Event Functions #########################
+    ################# Peripheral Specific Event Functions #####################
 
 
     def process_peripheral_specific_event(self, request):
@@ -188,6 +186,8 @@ class AtlasPH(Atlas):
             self.response = self.process_mid_point_calibration_event(request)
         elif request["type"] == "High Point Calibration":
             self.response = self.process_high_point_calibration_event(request)
+        elif request["type"] == "Clear Calibration":
+            self.response = self.process_clear_calibration_event()
         else:
             message = "Unknown event request type!"
             self.logger.info(message)
@@ -205,7 +205,9 @@ class AtlasPH(Atlas):
             value = int(request["value"])
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
-            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            response = {
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
+            }
             return response
         except ValueError as e:
             error_message = "Invalid request value: `{}`".format(request["value"])
@@ -222,7 +224,7 @@ class AtlasPH(Atlas):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!."}
+            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!.",}
             return response
 
         # Execute request
@@ -320,10 +322,29 @@ class AtlasPH(Atlas):
             return response
 
 
+    def process_clear_calibration_event(self):
+        """ Processes clear calibration event. """
+        self.logger.debug("Processing clear calibration event")
 
-############################# Hardware Interactions ###########################
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            response = {"status": 400, "message": "Must be in calibration mode to clear calibration!."}
+            return response
 
-    
+        # Execute request
+        try:
+            self.clear_calibration_data()
+            response = {"status": 200, "message": "Cleared calibration!"}
+            return response
+        except Exception as e:
+            self.logger.exception("Unable to clear calibration reading")
+            response = {"status": 500, "message": "Unable to clear calibration reading: {}!".format(e)}
+            return response
+
+
+    ############################# Hardware Interactions #######################
+
+
     def read_info(self):
         """ Gets info about sensor type and firmware version. """
 
@@ -353,7 +374,7 @@ class AtlasPH(Atlas):
             potential_hydrogen = 6.83
             self.logger.debug("potential_hydrogen = {}".format(potential_hydrogen))
             return potential_hydrogen
-        
+
         # Sensor is not simulated
         self.logger.debug("Reading potential hydrogen value from hardware")
 
@@ -378,15 +399,14 @@ class AtlasPH(Atlas):
         # Check for simulated sensor
         if self.simulate:
             self.logger.debug("Simulating setting compensation temperature in hardware")
-            return 
+            return
 
         # Sensor not simulated
         self.logger.debug("Setting compensation temperature")
-        
+
         # Send update compensation temperature command
         command = "T,{}".format(temperature_celcius)
         self.process_command(command, processing_seconds=0.3)
-
 
     def take_low_point_calibration_reading(self, value):
         """ Commands sensor to take a low point calibration reading. """
@@ -394,7 +414,7 @@ class AtlasPH(Atlas):
         # Check for simulated sensor
         if self.simulate:
             self.logger.debug("Simulating taking low point calibration reading in hardware")
-            return 
+            return
 
         # Sensor is not simulated
         self.logger.info("Taking low point calibration reading in hardware.")
@@ -403,17 +423,16 @@ class AtlasPH(Atlas):
         command = "Cal,low,{}".format(value)
         self.process_command(command, processing_seconds=0.9)
 
-
     def take_mid_point_calibration_reading(self, value):
         """ Commands sensor to take a mid point calibration reading. """
 
         # Check for simulated sensor
         if self.simulate:
             self.logger.debug("Simulating taking mid point calibration reading in hardware, value={}".format(value))
-            return 
+            return
 
         # Sensor is not simulated
-        self.logger.info("Taking mid point calibration reading in hardware, value={}".format(value))
+        self.logger.info( "Taking mid point calibration reading in hardware, value={}".format(value))
 
         # Send take mid point calibration command to hardware
         command = "Cal,mid,{}".format(value)
@@ -436,23 +455,35 @@ class AtlasPH(Atlas):
         self.process_command(command, processing_seconds=0.9)
 
 
-########################## Setter & Getter Functions ##########################
+    def clear_calibration_data(self):
+        """ Commands sensor to clear calibration data. """
 
+        # Check for simulated sensor
+        if self.simulate:
+            self.logger.debug("Simulating taking high point calibration reading in hardware")
+            return
+
+        # Sensor is not simulated
+        self.logger.info("Taking high point calibration reading in hardware.")
+
+        # Send take high point calibration command to hardware
+        self.process_command("Cal,clear", processing_seconds=0.3)
+
+
+    ########################## Setter & Getter Functions ##########################
 
     @property
     def potential_hydrogen(self):
         """ Gets pH value. """
         return self._potential_hydrogen
 
-
     @potential_hydrogen.setter
     def potential_hydrogen(self, value):
         """ Safely updates ph in environment state each time
-            it is changed. """   
+            it is changed. """
         self._potential_hydrogen = value
         with threading.Lock():
             self.report_sensor_value(self.name, self.potential_hydrogen_name, value)
-
 
     @property
     def temperature_celcius(self):

@@ -262,10 +262,6 @@
          "type": event_name,
          "value": value};
 
-      // Hide alert messages
-      $(base_name + "SuccessAlert").collapse("hide");
-      $(base_name + "ErrorAlert").collapse("hide");
-
      // Send create event request to endpoint
      $.ajax({
          url: "/api/event/",
@@ -286,6 +282,9 @@
           // Set alert message
           document.getElementById(event_id + "SuccessAlertMessage").innerHTML = message;
 
+          // Hide error alert
+          $(base_name + "ErrorAlert").collapse("hide");
+
           // Show alert
           $(base_name + "SuccessAlert").collapse("show");
 
@@ -302,6 +301,9 @@
        
            // Set alert message
            document.getElementById(event_id + "ErrorAlertMessage").innerHTML = message;
+
+           // Hide success alert
+           $(base_name + "SuccessAlert").collapse("hide");
 
            // Show alert
            $(base_name + 'ErrorAlert').collapse('show');

@@ -155,6 +155,28 @@
 	                "value": null
 	            }
 	        ]
+	    },
+	    {
+	        "name": "Clear Calibration",
+	        "description": "Set into calibration mode, clear calibration data, then reset.",
+	        "value": null,
+	        "sequence": [
+	            {
+	                "name": "Enable Calibration Mode",
+	                "description": "Stops reporting data into environment database. Required to send calibration commands.",
+	                "value": null
+	            },
+	            {
+	                "name": "Clear Calibration",
+            		"description": "Clears calibration data stored on sensor hardware.",
+	                "value": null
+	            },
+	            {
+	                "name": "Reset",
+	                "description": "Restarts sensor initialization process.",
+	                "value": null
+	            }
+	        ]
 	    }
 	],
 	"info": {

@@ -59,7 +59,7 @@
         },
         {
             "name": "One Point Calibration",
-            "description": "Set into calibration mode, take calibration readings, then reset.",
+            "description": "Set into calibration mode, take dry and single point calibration readings, then reset.",
             "value": null,
             "sequence": [
                 {
@@ -79,6 +79,66 @@
                         "default": 12.88,
                         "unit": "mS/cm"
                     }
+                },
+                {
+                    "name": "Reset",
+                    "description": "Restarts sensor initialization process.",
+                    "value": null
+                }
+            ]
+        },
+        {
+            "name": "Two Point Calibration",
+            "description": "Set into calibration mode, take dry, low, and high calibration readings, then reset.",
+            "value": null,
+            "sequence": [
+                {
+                    "name": "Enable Calibration Mode",
+                    "description": "Stops reporting data into environment database. Required to send calibration commands.",
+                    "value": null
+                },
+                {
+                    "name": "Dry Calibration",
+                    "description": "Dry off the probe, wait for sensor value to stabilize, then take calibration reading.",
+                    "value": null
+                },
+                {
+                    "name": "Low Point Calibration",
+                    "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+                    "value": {
+                        "default": 12.88,
+                        "unit": "mS/cm"
+                    }
+                },
+                {
+                    "name": "High Point Calibration",
+                    "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+                    "value": {
+                        "default": 80.0,
+                        "unit": "mS/cm"
+                    }
+                },
+                {
+                    "name": "Reset",
+                    "description": "Restarts sensor initialization process.",
+                    "value": null
+                }
+            ]
+        },
+        {
+            "name": "Clear Calibration",
+            "description": "Set into calibration mode, clear calibration data, then reset.",
+            "value": null,
+            "sequence": [
+                {
+                    "name": "Enable Calibration Mode",
+                    "description": "Stops reporting data into environment database. Required to send calibration commands.",
+                    "value": null
+                },
+                {
+                    "name": "Clear Calibration",
+                    "description": "Clears calibration data stored on sensor hardware.",
+                    "value": null
                 },
                 {
                     "name": "Reset",

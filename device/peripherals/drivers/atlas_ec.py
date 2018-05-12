@@ -178,17 +178,23 @@ class AtlasEC(Atlas):
 ################# Peripheral Specific Event Functions #########################
 
 
-    def process_peripheral_specific_event(self, request_type, value):
+    def process_peripheral_specific_event(self, request):
         """ Processes and event. Gets request parameters, executes request, returns 
             response. """
 
         # Execute request
-        if request_type == "Enable Calibration Mode":
+        if request["type"] == "Enable Calibration Mode":
             self.response = self.process_enable_calibration_mode_event()
-        elif request_type == "Dry Calibration":
+        elif request["type"] == "Dry Calibration":
             self.response = self.process_dry_calibration_event()
-        elif request_type == "Single Point Calibration":
-            self.response = self.process_single_point_calibration_event(value)
+        elif request["type"] == "Single Point Calibration":
+            self.response = self.process_single_point_calibration_event(request)
+        elif request["type"] == "Low Point Calibration":
+            self.response = self.process_low_point_calibration_event(request)
+        elif request["type"] == "High Point Calibration":
+            self.response = self.process_high_point_calibration_event(request)
+        elif request["type"] == "Clear Calibration":
+            self.response = self.process_clear_calibration_event()
         else:
             message = "Unknown event request type!"
             self.logger.info(message)
@@ -228,27 +234,125 @@ class AtlasEC(Atlas):
             return response
 
 
-    def process_single_point_calibration_event(self, value):
+    def process_single_point_calibration_event(self, request):
         """ Processes single point calibration event. Gets request parameters,
             executes request, returns response. """
         self.logger.debug("Processing single point calibration event")
+
+        # Verify value in request
+        try:
+            value = float(request["value"])
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+        except ValueError as e:
+            error_message = "Invalid request value: `{}`".format(request["value"])
+            self.logger.exception(error_message)
+            response = {"status": 400, "message": error_message}
+            return response
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
             response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!."}
             return response
 
-        # Get request parameters
-        electrical_conductivity_ms_cm = value
-
         # Execute request
         try:
-            self.take_single_point_calibration_reading(electrical_conductivity_ms_cm)
+            self.take_single_point_calibration_reading(value)
             response = {"status": 200, "message": "Set single point calibration!"}
             return response
         except Exception as e:
             self.logger.exception("Unable to take single point calibration reading")
             response = {"status": 500, "message": "Unable to take single point calibration reading: {}!".format(e)}
+            return response
+
+
+    def process_low_point_calibration_event(self, request):
+        """ Processes low point calibration event. Gets request parameters,
+            executes request, returns response. """
+        self.logger.debug("Processing low point calibration event")
+
+        # Verify value in request
+        try:
+            value = float(request["value"])
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+        except ValueError as e:
+            error_message = "Invalid request value: `{}`".format(request["value"])
+            self.logger.exception(error_message)
+            response = {"status": 400, "message": error_message}
+            return response
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            response = {"status": 400, "message": "Must be in calibration mode to take low point calibration!."}
+            return response
+
+        # Execute request
+        try:
+            self.take_low_point_calibration_reading(value)
+            response = {"status": 200, "message": "Set low point calibration!"}
+            return response
+        except Exception as e:
+            self.logger.exception("Unable to take low point calibration reading")
+            response = {"status": 500, "message": "Unable to take low point calibration reading: {}!".format(e)}
+            return response
+
+
+    def process_high_point_calibration_event(self, request):
+        """ Processes high point calibration event. Gets request parameters,
+            executes request, returns response. """
+        self.logger.debug("Processing high point calibration event")
+
+        # Verify value in request
+        try:
+            value = float(request["value"])
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+        except ValueError as e:
+            error_message = "Invalid request value: `{}`".format(request["value"])
+            self.logger.exception(error_message)
+            response = {"status": 400, "message": error_message}
+            return response
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            response = {"status": 400, "message": "Must be in calibration mode to take high point calibration!."}
+            return response
+
+        # Execute request
+        try:
+            self.take_high_point_calibration_reading(value)
+            response = {"status": 200, "message": "Set high point calibration!"}
+            return response
+        except Exception as e:
+            self.logger.exception("Unable to take high point calibration reading")
+            response = {"status": 500, "message": "Unable to take high point calibration reading: {}!".format(e)}
+            return response
+
+
+    def process_clear_calibration_event(self):
+        """ Processes clear calibration event. """
+        self.logger.debug("Processing clear calibration event")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            response = {"status": 400, "message": "Must be in calibration mode to clear calibration!."}
+            return response
+
+        # Execute request
+        try:
+            self.clear_calibration_data()
+            response = {"status": 200, "message": "Cleared calibration!"}
+            return response
+        except Exception as e:
+            self.logger.exception("Unable to clear calibration reading")
+            response = {"status": 500, "message": "Unable to clear calibration reading: {}!".format(e)}
             return response
 
 
@@ -527,6 +631,21 @@ class AtlasEC(Atlas):
         electrical_conductivity_us_cm = electrical_conductivity_ms_cm * 1000
         command = "Cal,high,{}".format(electrical_conductivity_us_cm)
         self.process_command(command, processing_seconds=0.6)
+
+
+    def clear_calibration_data(self):
+        """ Commands sensor to clear calibration data. """
+
+        # Check for simulated sensor
+        if self.simulate:
+            self.logger.debug("Simulating taking high point calibration reading in hardware")
+            return
+
+        # Sensor is not simulated
+        self.logger.info("Taking high point calibration reading in hardware.")
+
+        # Send take high point calibration command to hardware
+        self.process_command("Cal,clear", processing_seconds=0.3)
 
 
 
