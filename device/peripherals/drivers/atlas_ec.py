@@ -77,7 +77,7 @@ class AtlasEC(Atlas):
             self.set_probe_type("1.0")
             self.logger.debug("Successfully setup sensor")
         except:
-            self.logger.exception("Sensor setup failed")
+            self.logger.Resetexception("Sensor setup failed")
             self.mode = Modes.ERROR
 
 

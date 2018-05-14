@@ -28,6 +28,29 @@
             }
         },
         {
+            "name": "T6713-1",
+            "type": "T6713",
+            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "parameters": {
+                "setup": {
+                    "name": "T6713 CO2 Sensor",
+                    "file_name": "t6713"
+                },
+                "variables": {
+                    "sensor": {
+                        "co2_ppm": "air_carbon_dioxide_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x15"
+                }
+            }
+        },
+        {
             "name": "AtlasEC-1",
             "type": "AtlasEC",
             "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",

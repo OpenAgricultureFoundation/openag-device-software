@@ -155,7 +155,7 @@
         reportedSensors = [];
         if ("reported_sensor" in peripheralData.states[peripheralName]) {
           reportedSensorDict = peripheralData.states[peripheralName]["reported_sensor"]
-          
+
           // Build reported sensors list
           for (var key in reportedSensorDict) {
             if (key in peripheralData.sensorVariables) {
@@ -203,6 +203,7 @@
 
         // Get each active peripherals setup uuid
         setupUUID = peripheralData.states[peripheralName]["setup_uuid"];
+        mode = peripheralData.states[peripheralName]["mode"];
 
         // Get setup json for each peripheral from setup uuid
         for (var i in peripheralData.setups) {
@@ -212,6 +213,7 @@
             // Create peripheral card entry in peripheral dict
             peripheralsDict.push({
               name: peripheralName,
+              mode: mode,
               reportedSensors: reportedSensors,
               reportedActuators: reportedActuators,
               events: setupJSON["events"]
@@ -250,6 +252,28 @@
       // Get peripheral card instance
       peripheralCardInstance = document.getElementById(lowerCamel(peripheral.name));
       peripheralCardHeader = document.getElementById(lowerCamel(peripheral.name) + 'Header');
+
+
+      // Create mode badges
+      console.log("Creating mode badge")
+      console.log("peripheral.mode = ", peripheral.mode)
+
+      if (peripheral.mode == "NORMAL") {
+        var reportedValueTemplate = `<a class="badge badge-success" data-toggle="collapse" href="" role="button";">Mode: ${peripheral.mode}</a>`
+      }
+      else if ((peripheral.mode == "INIT") || (peripheral.mode == "SETUP")) {
+        var reportedValueTemplate = `<a class="badge badge-warning" data-toggle="collapse" href="" role="button";">Mode: ${peripheral.mode}</a>`
+      }
+      else if ((peripheral.mode == "CALIBRATE") || (peripheral.mode == "MANUAL")) {
+        var reportedValueTemplate = `<a class="badge badge-info" data-toggle="collapse" href="" role="button";">Mode: ${peripheral.mode}</a>`
+      }
+      else {
+        var reportedValueTemplate = `<a class="badge badge-danger" data-toggle="collapse" href="" role="button";">Mode: ${peripheral.mode}</a>`
+      }
+
+      // var reportedValueTemplate = `<a class="badge badge-secondary" data-toggle="collapse" href="" role="button";">Mode: ${peripheral.mode}</a>`
+      peripheralCardHeader.insertAdjacentHTML('beforeend', reportedValueTemplate);
+
 
       // Create reported sensor value badges
       console.log("Creating reported sensor value badges")
