@@ -21,8 +21,8 @@
 				"verbose": "Air Humidity"
 			},
 			"unit": {
-				"brief": "%RH",
-				"verbose": "Percent Relative",
+				"brief": "%",
+				"verbose": "%RH",
 				"type": "number"
 			}
 		}
@@ -87,12 +87,12 @@
 		"key": "light_intensity_watts",
 		"info": {
 			"name": {
-				"brief": "Light Intensity",
+				"brief": "Intensity",
 				"verbose": "Light Intensity"
 			},
 			"unit": {
-				"brief": "Watts",
-				"verbose": "Watts TODO, ask dan",
+				"brief": "W",
+				"verbose": "Watts",
 				"type": "number"
 			}
 		}
@@ -101,7 +101,7 @@
 		"key": "light_spectrum_taurus",
 		"info": {
 			"name": {
-				"brief": "Light Spectrum",
+				"brief": "Spectrum",
 				"verbose": "Light Spectrum Taurus"
 			},
 			"unit": {
@@ -115,7 +115,7 @@
 		"key": "light_illumination_distance_cm",
 		"info": {
 			"name": {
-				"brief": "Light Distance",
+				"brief": "Distance",
 				"verbose": "Light Illumination Distance"
 			},
 			"unit": {

@@ -482,8 +482,12 @@ class AtlasPH(Atlas):
         """ Safely updates ph in environment state each time
             it is changed. """
         self._potential_hydrogen = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.potential_hydrogen_name, value)
+        self.report_peripheral_sensor_value(self.potential_hydrogen_name, value)
+        
+        # Update environment if not in calibrate mode
+        if self.mode != Modes.CALIBRATE:
+            self.report_environment_sensor_value(self.name, self.potential_hydrogen_name, value)
+
 
     @property
     def temperature_celcius(self):

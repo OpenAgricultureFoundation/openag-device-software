@@ -14,15 +14,20 @@ from device.comms.i2c import I2C
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
+# TODO: Refactor this module to clean up flow / naming
+# TODO: Add static type checking
+# TODO: Add better value capture method for events...e.g. not just a single
+#       value named value, give options for dropdowns, toggle buttons, etc
+
 
 class LightPanel(Peripheral):
     """ A multichannel light panel. """
 
     # Initialize sensor variables
-    _intensity_watts = None
-    _spectrum_normalized_percentage_dict = None
-    _illumination_distance_cm = None
-    _channel_output_percent_dict = None
+    _intensity = None
+    _spectrum = None
+    _distance = None
+    _channel_outputs = None
 
 
     def __init__(self, *args, **kwargs):
@@ -32,27 +37,14 @@ class LightPanel(Peripheral):
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
-        # Initialize i2c mux parameters
-        self.parameters = self.config["parameters"]
-        self.bus = int(self.parameters["communication"]["bus"])
-        self.mux = int(self.parameters["communication"]["mux"], 16) # Convert from hex string
-        self.channel = int(self.parameters["communication"]["channel"])
-        self.address = int(self.parameters["communication"]["address"], 16) # Convert from hex string
-        
-        # Initialize I2C communication if sensor not simulated
-        if not self.simulate:
-            self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-                self.bus, self.mux, self.channel, self.address))
-            self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
+        # Establish i2c connection
+        self.establish_i2c_connection()
 
         # Initialize variable names
         self.intensity_name = self.parameters["variables"]["sensor"]["intensity_watts"]
         self.spectrum_name = self.parameters["variables"]["sensor"]["spectrum_normalized_percentage_dict"]
         self.illumination_distance_name = self.parameters["variables"]["sensor"]["illumination_distance_cm"]
         self.channel_output_name = self.parameters["variables"]["actuator"]["channel_output_percent_dict"]
-
-        # Initialize setup dict
-        self.load_setup_dict_from_file()
 
         # Initialize channel configs
         self.load_channel_configs()
@@ -67,9 +59,9 @@ class LightPanel(Peripheral):
         self.logger.debug("Initializing sensor")
 
         # Set initial parameters
-        self.intensity_watts = None
-        self.spectrum_normalized_percentage_dict = None
-        self.illumination_distance_cm = None
+        self.intensity = 0
+        self.spectrum = None
+        self.distance = None
         self.health = 100
 
         # Start with light panel off
@@ -105,21 +97,21 @@ class LightPanel(Peripheral):
         update_channels = False
 
         # Check for new desired intensity
-        if self.desired_intensity_watts != self.intensity_watts:
+        if self.desired_intensity != self.intensity and self.desired_intensity != None:
             self.logger.info("Received new desired intensity")
-            self.logger.debug("desired_intensity = {} Watts".format(self.desired_intensity_watts))
+            self.logger.debug("desired_intensity = {} Watts".format(self.desired_intensity))
             update_channels = True
 
         # Check for new desired spectrum
-        if self.desired_spectrum_normalized_percentage_dict != self.spectrum_normalized_percentage_dict:
+        if self.desired_spectrum != self.spectrum:
             self.logger.info("Received new desired spectrum")
-            self.logger.debug("desired_spectrum_dict = {}".format(self.desired_spectrum_normalized_percentage_dict))
+            self.logger.debug("desired_spectrum_dict = {}".format(self.desired_spectrum))
             update_channels = True
 
         # Check for new illumination distance
-        if self.desired_illumination_distance_cm != self.illumination_distance_cm:
+        if self.desired_distance != self.distance:
             self.logger.info("Received new desired illumination distance")
-            self.logger.debug("desired_illumination_distance = {} cm".format(self.desired_illumination_distance_cm))
+            self.logger.debug("desired_illumination_distance = {} cm".format(self.desired_distance))
             update_channels = True
 
         # Update output channels if new value
@@ -195,56 +187,56 @@ class LightPanel(Peripheral):
 
         # Check desired light parameters are not None. If any desired parameter 
         # is None, turn off all outputs and clear reported values
-        if self.desired_intensity_watts == None:
+        if self.desired_intensity == None:
             self.logger.warning("Unable to update channel outputs, no desired intensity")
             self.turn_off_output()
             self.clear_reported_values()
             return
-        if self.desired_spectrum_normalized_percentage_dict == None:
+        if self.desired_spectrum == None:
             self.logger.warning("Unable to update channel outputs, no desired spectrum")
             self.turn_off_output()
             self.clear_reported_values()
             return
-        if self.desired_illumination_distance_cm == None:
+        if self.desired_distance == None:
             self.logger.warning("Unable to update channel outputs, no desired illumination distance")
             self.turn_off_output()
             self.clear_reported_values()
             return
 
         # Calculate max intensity for given spectrum
-        spectrum_max_intensity_watts = self.get_spectrum_max_intensity_watts()
+        spectrum_max_intensity = self.get_spectrum_max_intensity()
 
         # Check desired intensity is realiazable for desired spectrum
-        if spectrum_max_intensity_watts < self.desired_intensity_watts:
+        if spectrum_max_intensity < self.desired_intensity:
             self.logger.warning("Desired intensity is not realizable for given spectrum, setting max intensity spectrum can realize")
-            self.logger.debug("desired_intensity={}Watts, spectrum_max_intensity={}Watts".format(self.desired_intensity_watts, spectrum_max_intensity_watts))
-            self.intensity_watts = spectrum_max_intensity_watts
+            self.logger.debug("desired_intensity={}Watts, spectrum_max_intensity={}Watts".format(self.desired_intensity, spectrum_max_intensity))
+            self.intensity = spectrum_max_intensity
         else:
-            self.intensity_watts = self.desired_intensity_watts
+            self.intensity = self.desired_intensity
         
         # Set spectrum and illumination to desired values       
-        self.spectrum_normalized_percentage_dict = self.desired_spectrum_normalized_percentage_dict
-        self.illumination_distance_cm = self.desired_illumination_distance_cm
+        self.spectrum = self.desired_spectrum
+        self.distance = self.desired_distance
 
         # Calculate channel output percents
         self.logger.info("Calculating channel output percents")
-        channel_output_percent_dict = {}
+        channel_outputs = {}
         for channel_config in self.channel_configs:
             channel_name = channel_config["name"]["brief"]
-            channel_output_percent_dict[channel_name] = self.get_channel_output_percent(channel_name)
-        self.logger.debug("channel_output_percent_dict = {}".format(channel_output_percent_dict))
+            channel_outputs[channel_name] = self.get_channel_output_percent(channel_name)
+        self.logger.debug("channel_outputs = {}".format(channel_outputs))
 
         # Set channel output on actuator hardwarechannel_output
-        self.set_channel_outputs(channel_output_percent_dict)
+        self.set_channel_outputs(channel_outputs)
 
 
     def get_channel_output_percent(self, channel_name):
         """ Gets channel output percent. """
     
-        channel_spectrum_percent = self.desired_spectrum_normalized_percentage_dict[channel_name]
-        desired_channel_intensity_watts = self.desired_intensity_watts * channel_spectrum_percent / 100
-        channel_intensity_watts_at_illumination_distance = self.get_channel_intensity_at_distance(channel_name, self.desired_illumination_distance_cm)
-        channel_output_coefficient = desired_channel_intensity_watts / channel_intensity_watts_at_illumination_distance
+        channel_spectrum_percent = self.desired_spectrum[channel_name]
+        desired_channel_intensity = self.desired_intensity * channel_spectrum_percent / 100
+        channel_intensity_at_illumination_distance = self.get_channel_intensity_at_distance(channel_name, self.distance)
+        channel_output_coefficient = desired_channel_intensity / channel_intensity_at_illumination_distance
         channel_output_percent = self.get_channel_output_percent_from_output_coefficient(channel_name, channel_output_coefficient)
 
         return channel_output_percent
@@ -278,7 +270,7 @@ class LightPanel(Peripheral):
         return output_percent
 
 
-    def get_channel_intensity_at_distance(self, channel_name, illumination_distance_cm):
+    def get_channel_intensity_at_distance(self, channel_name, distance):
         """ Gets channel intensity at desired illumination distance for 
             given channel name. Checks for valid illumination distance then 
             calculates intensity from linear interpolation of planar distance
@@ -297,21 +289,21 @@ class LightPanel(Peripheral):
 
         # Check illumination distance within valid range, warn if not.
         # TODO: Should this prevent light from turning on?
-        if illumination_distance_cm < min(distance_list):
+        if distance < min(distance_list):
             self.logger.warning("Desired illumination distance less than min calibrated distance, interpolating anyway")
-            self.logger.debug("Desired illumination distance: {}cm, min calibrated distance: {}cm".format(illumination_distance_cm, min(distance_list)))
-        if illumination_distance_cm > max(distance_list):
+            self.logger.debug("Desired illumination distance: {}cm, min calibrated distance: {}cm".format(distance, min(distance_list)))
+        if distance > max(distance_list):
             self.logger.warning("Desired illumination distance greater than max calibrated distance, interpolating anyway")
-            self.logger.debug("Desired illumination distance: {}cm, max calibrated distance: {}cm".format(illumination_distance_cm, max(distance_list)))
+            self.logger.debug("Desired illumination distance: {}cm, max calibrated distance: {}cm".format(distance, max(distance_list)))
 
         # Calculate intensity from linear interpolation of planar distance map then return value
         interpolate_intensity = scipy.interpolate.interp1d(distance_list, intensity_list)
-        channel_intensity_watts = float(interpolate_intensity(illumination_distance_cm))
+        channel_intensity = float(interpolate_intensity(distance))
 
-        return channel_intensity_watts
+        return channel_intensity
 
 
-    def get_spectrum_max_intensity_watts(self):
+    def get_spectrum_max_intensity(self):
         """ Gets max intensity for given spectrum based on channel configs and
             desired illumination distance. """
 
@@ -328,47 +320,73 @@ class LightPanel(Peripheral):
         #   50 / 0.2 = 250 Watts.
         for channel_config in self.channel_configs:
             channel_name = channel_config["name"]["brief"]
-            channel_intensity_watts_at_illumination_distance = self.get_channel_intensity_at_distance(channel_name, self.desired_illumination_distance_cm)
-            channel_spectrum_percent = self.desired_spectrum_normalized_percentage_dict[channel_name]
-            channel_max_intensity = channel_intensity_watts_at_illumination_distance / (channel_spectrum_percent / 100)
+            channel_intensity_at_illumination_distance = self.get_channel_intensity_at_distance(channel_name, self.desired_distance)
+            channel_spectrum_percent = self.desired_spectrum[channel_name]
+            channel_max_intensity = channel_intensity_at_illumination_distance / (channel_spectrum_percent / 100)
             max_channel_intensities_watts.append(channel_max_intensity)
 
         # Return lowest actuatable intensity
         return min(max_channel_intensities_watts)
 
 
-    def calculate_resultant_spectrum(self, output_percent_dict : dict, illumination_distance_cm : str) -> dict:
+    def build_channel_outputs(self, output_percent, enable_channel_name=None):
+        """ Builds channel output percent dict and sets each channel output to 
+            passed in output percent. """
+        channel_outputs = {}
+        for channel_config in self.channel_configs:
+            channel_name = channel_config["name"]["brief"]
+
+            # If enable channel name parameter is passed in, only set channel 
+            # that channel to output percent and set the other channals off,
+            # otherwise set all channels to output percent
+            if enable_channel_name == None:
+                channel_outputs[channel_name] = output_percent
+            elif channel_name == enable_channel_name:
+                channel_outputs[channel_name] = output_percent
+            else:
+                channel_outputs[channel_name] = 0
+
+        return channel_outputs
+
+
+    def calculate_output_intensity_and_spectrum(self, output_percent_dict, distance):
         """ Calculates resultant spectrum from output percent dict at distance. """
 
-        channel_intensities_watts_dict = {}
-        channel_intensity_sum_watts = 0
+        channel_intensities = {}
+        output_intensity = 0
 
         # Calculate intensity at distance from output percent from each channel
         for channel_config in self.channel_configs:
             channel_name = channel_config["name"]["brief"]
-            raw_channel_intensity_watts = self.get_channel_intensity_at_distance(channel_name, illumination_distance_cm)
-            scaled_channel_intensity_watts = raw_channel_intensity_watts * output_percent_dict[channel_name] / 100
-            channel_intensities_watts_dict[channel_name] = scaled_channel_intensity_watts
-            channel_intensity_sum_watts += scaled_channel_intensity_watts
+            raw_intensity = self.get_channel_intensity_at_distance(channel_name, distance)
+            scaled_intensity = raw_intensity * output_percent_dict[channel_name] / 100
+            channel_intensities[channel_name] = scaled_intensity
+            output_intensity += scaled_intensity
+
+        # Check if light completely off
+        if output_intensity == 0:
+            return 0, None
 
         # Calculate spectrum
-        spectrum_normalized_percentage_dict = {}
-        for channel_name, intensity_watts in channel_intensities_watts_dict.items():
-            channel_percentage = intensity_watts / channel_intensity_sum_watts * 100
-            spectrum_normalized_percentage_dict[channel_name] = round(channel_percentage, 1)
+        output_spectrum = {}
+        for channel_name, intensity in channel_intensities.items():
+            channel_percentage = intensity / output_intensity * 100
+            output_spectrum[channel_name] = round(channel_percentage, 1)
 
-        # Return spectrum
-        return spectrum_normalized_percentage_dict
+        # Return output intensity and spectrum spectrum
+        self.logger.debug("output_intensity={}, output_spectrum={}".format(output_intensity, output_spectrum))
+        return output_intensity, output_spectrum
 
 
     def clear_reported_values(self):
         """ Clears values reported to shared state. """
-        self.intensity_watts = None
-        self.spectrum_normalized_percentage_dict = None
-        self.illumination_distance_cm = None
+        self.intensity = None
+        self.spectrum = None
+        self.distance = None
 
 
 ################# Peripheral Specific Event Functions #########################
+
 
     def process_peripheral_specific_event(self, request):
         """ Processes peripheral specific event event. Gets request parameters, 
@@ -379,16 +397,16 @@ class LightPanel(Peripheral):
             self.response = self.process_turn_on_event()
         elif request["type"] == "Turn Off":
             self.response = self.process_turn_off_event()
-        # elif request["type"] == "Fade Concurrently":
-        #     self.response = self.process_fade_concurrently_event()
-        # elif request["type"] == "Fade Sequentially":
-        #     self.response = self.process_fade_sequentially_event()
-        # elif request["type"] == "Turn On Channel":
-        #     self.response = self.process_turn_on_channel_event(request)
-        # elif request["type"] == "Turn Off Channel":
-        #     self.response = self.process_turn_off_channel_event(request)
-        # elif request["type"] == "Fade Channel":
-        #     self.response = self.process_fade_channel_event(request)
+        elif request["type"] == "Fade Concurrently":
+            self.process_fade_concurrently_event()
+        elif request["type"] == "Fade Sequentially":
+            self.process_fade_sequentially_event()
+        elif request["type"] == "Turn On Channel":
+            self.response = self.process_turn_on_channel_event(request)
+        elif request["type"] == "Turn Off Channel":
+            self.response = self.process_turn_off_channel_event(request)
+        elif request["type"] == "Fade Channel":
+            self.process_fade_channel_event(request)
         else:
             message = "Unknown event request type!"
             self.logger.info(message)
@@ -410,8 +428,10 @@ class LightPanel(Peripheral):
             response = {"status": 200, "message": "Turned light on!"}
             return response
         except Exception as e:
-            self.logger.exception("Unable to turn light on")
-            response = {"status": 500, "message": "Unable to turn light on: {}!".format(e)}
+            self.error = "Unable to turn light on"
+            self.logger.exception(self.error)
+            response = {"status": 500, "message": self.error}
+            self.mode = Modes.ERROR
             return response
 
 
@@ -430,29 +450,182 @@ class LightPanel(Peripheral):
             response = {"status": 200, "message": "Turned light off!"}
             return response
         except Exception as e:
-            self.logger.exception("Unable to turn light off")
-            response = {"status": 500, "message": "Unable to turn light off: {}!".format(e)}
+            self.error = "Unable to turn light off"
+            self.logger.exception(self.error)
+            response = {"status": 500, "message": self.error}
+            self.mode = Modes.ERROR
             return response
+
+
+    def process_fade_concurrently_event(self):
+        """ Processes fade concurrently event. """
+        self.logger.debug("Processing fade concurrently event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            self.response = {"status": 400, "message": "Must be in manual mode."}
+            return
+
+        # Return response to event request
+        self.response = {"status": 200, "message": "Fading concurrently!"}
+
+        # Start fade concurrently loop, exits on new event
+        try:
+            self.fade_concurrently()
+        except:
+            self.error = "Fade concurrently failed"
+            self.logger.exception(self.error)
+            self.mode = Modes.ERROR
+
+
+    def process_fade_sequentially_event(self):
+        """ Processes fade sequentially event. """
+        self.logger.debug("Processing fade sequentially event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            self.response = {"status": 400, "message": "Must be in manual mode."}
+            return
+
+        # Return response to event request
+        self.response = {"status": 200, "message": "Fading sequentially!"}
+
+        # Start fade concurrently loop, exits on new event
+        try:
+            self.fade_sequentially()
+        except:
+            self.error = "Fade sequentially failed"
+            self.logger.exception(self.error)
+            self.mode = Modes.ERROR
+            return
+
+
+    def process_turn_on_channel_event(self, request):
+        """ Processes turn off event. """
+        self.logger.debug("Processing turn on channel event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            response = {"status": 400, "message": "Must be in manual mode."}
+            return response
+
+        # Verify value in request
+        try:
+            channel_name = request["value"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+
+        # Check channel name in channel outputs
+        if channel_name not in self.channel_outputs.keys():
+            response = {"status": 400, "message": "Invalid channel name."}
+            return response
+
+        # Execute request
+        try:
+            self.turn_on_channel_output(channel_name)
+            response = {"status": 200, "message": "Turned light channel `{}` on!".format(channel_name)}
+            return response
+        except Exception as e:
+            self.error = "Unable to turn light channel `{}` on".format(channel_name)
+            self.logger.exception(self.error)
+            self.mode = Modes.ERROR
+            response = {"status": 500, "message": self.error}
+            return response
+
+
+    def process_turn_off_channel_event(self, request):
+        """ Processes turn off channel event. """
+        self.logger.debug("Processing turn off channel event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            response = {"status": 400, "message": "Must be in manual mode."}
+            return response
+
+        # Verify value in request
+        try:
+            channel_name = request["value"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+
+        # Check channel name in channel outputs
+        if channel_name not in self.channel_outputs.keys():
+            response = {"status": 400, "message": "Invalid channel name."}
+            return response
+
+        # Execute request
+        try:
+            self.turn_off_channel_output(channel_name)
+            response = {"status": 200, "message": "Turned light channel `{}` off!".format(channel_name)}
+            return response
+        except Exception as e:
+            self.error = "Unable to turn light channel `{}` off".format(channel_name)
+            self.logger.exception(self.error)
+            self.mode = Modes.ERROR
+            response = {"status": 500, "message": self.error}
+            return response
+
+
+    def process_fade_channel_event(self, request):
+        """ Processes fadef channel event. """
+        self.logger.debug("Processing fade channel event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            self.response = {"status": 400, "message": "Must be in manual mode."}
+            return
+
+        # Verify value in request
+        try:
+            channel_name = request["value"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return
+
+        # Check channel name in channel outputs
+        if channel_name not in self.channel_outputs.keys():
+            self.response = {"status": 400, "message": "Invalid channel name."}
+            return
+
+        # Return response to event request
+        self.response = {"status": 200, "message": "Fading channel!"}
+
+        # Execute request
+        try:
+            self.fade_channel_output(channel_name)
+            self.response = {"status": 200, "message": "Fading channel `{}`!".format(channel_name)}
+            return
+        except Exception as e:
+            self.error = "Unable to fade channel `{}`".format(channel_name)
+            self.logger.exception(self.error)
+            self.mode = Modes.ERROR
+            self.response = {"status": 500, "message": self.error}
+            return
 
 
 ############################# Hardware Interactions ###########################
 
 
-    def set_channel_outputs(self, channel_output_percent_dict):
+    def set_channel_outputs(self, channel_outputs):
         """ Sets channel outputs on hardware. Converts each channel output 
             percent to output byte then sends update command to hardware. 
             Assumes channel config dict keys are verified. """
         try:
-            for channel_name, output_percent in channel_output_percent_dict.items():
+            for channel_name, output_percent in channel_outputs.items():
                 output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
                 software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
                 if not self.simulate:
                     self.i2c.write([0x30+software_channel, output_byte, 0x00])
                 else:
                     self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-            self.channel_output_percent_dict = channel_output_percent_dict
+            self.channel_outputs = channel_outputs
         except:
-            self.channel_output_percent_dict = None
+            self.channel_outputs = None
             self.logger.exception("Unable to set channel outputs")
             self._missed_readings += 1
         self.update_health()
@@ -465,63 +638,241 @@ class LightPanel(Peripheral):
         """ Turns on output. Sets all channel output percents to 100%. """
 
         # Build channel output percent dict
-        channel_output_percent_dict = {}
-        for channel_config in self.channel_configs:
-            channel_name = channel_config["name"]["brief"]
-            channel_output_percent_dict[channel_name] = 100
-
-        # Update reported intensity
-        self.intensity_watts = 100
+        channel_outputs = self.build_channel_outputs(output_percent=100)
 
         # Use previously used distance or first distance in entry if prev is none
-        if self.illumination_distance_cm == None:
-            self.illumination_distance_cm = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]        
+        if self.distance == None:
+            self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]   
 
-        # Calculate resultant spectrum
-        self.spectrum_normalized_percentage_dict = self.calculate_resultant_spectrum(channel_output_percent_dict, self.illumination_distance_cm)
+        # Calculate resultant intensity and spectrum
+        self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
 
         # Set channel outputs on hardware
-        self.set_channel_outputs(channel_output_percent_dict)
+        self.set_channel_outputs(channel_outputs)
 
 
     def turn_off_output(self):
         """ Turns off output. Sets all channel output percents to 0%. """
         
         # Build channel output percent dict
-        channel_output_percent_dict = {}
-        for channel_config in self.channel_configs:
-            channel_name = channel_config["name"]["brief"]
-            channel_output_percent_dict[channel_name] = 0
+        channel_outputs = self.build_channel_outputs(output_percent=0)
 
         # Update reported intensity, spectrum and distance
-        self.intensity_watts = 0
-        self.spectrum_normalized_percentage_dict = None
-        self.illumination_distance_cm = None
+        self.intensity = 0
+        self.spectrum = None
+        self.distance = None
 
         # Set channel outputs on hardware
-        self.set_channel_outputs(channel_output_percent_dict)
+        self.set_channel_outputs(channel_outputs)
+
+
+    def fade_concurrently(self):
+        """ Fades output concurrently forever. Exits on new event. """
+        self.logger.debug("Fading concurrently")
+
+        # Use previously used illumination distance or first distance in entry if prev is none
+        if self.distance == None:
+            self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
+
+
+        # Run fade loop until new event
+        while True:
+
+            # Fade up
+            for output_percent in range(0, 100, 10):
+                self.intensity = output_percent
+                channel_outputs = self.build_channel_outputs(output_percent)
+                self.set_channel_outputs(channel_outputs)
+                self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+                # Check for events
+                if self.request != None:
+                    request = self.request
+                    self.request = None
+                    self.process_event(request)
+                    return
+
+                # Update every 100ms
+                time.sleep(0.1)
+
+            # Fade down
+            for output_percent in range(100, 0, -10):
+                self.intensity = output_percent
+                channel_outputs = self.build_channel_outputs(output_percent)
+                self.set_channel_outputs(channel_outputs)
+                self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+
+                # Check for events
+                if self.request != None:
+                    request = self.request
+                    self.request = None
+                    self.process_event(request)
+                    return
+
+                # Update every 100ms
+                time.sleep(0.1)
+
+
+    def fade_sequentially(self):
+        """ Fades output sequentially, forever. Exits on new event. """
+        self.logger.debug("Fading sequentially")
+
+        # Use previously used illumination distance or first distance in entry if prev is none
+        if self.distance == None:
+            self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
+
+        # Run fade loop until new event
+        while True:
+
+            for channel_config in self.channel_configs:
+                channel_name = channel_config["name"]["brief"]
+                # Fade up
+                for output_percent in range(0, 100, 10):
+                    self.intensity = output_percent
+                    channel_outputs = self.build_channel_outputs(output_percent, enable_channel_name=channel_name)
+                    self.set_channel_outputs(channel_outputs)
+                    self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+                    # Check for events
+                    if self.request != None:
+                        request = self.request
+                        self.request = None
+                        self.process_event(request)
+                        return
+
+                    # Update every 100ms
+                    time.sleep(0.1)
+
+                # Fade down
+                for output_percent in range(100, 0, -10):
+                    self.intensity = output_percent
+                    channel_outputs = self.build_channel_outputs(output_percent, enable_channel_name=channel_name)
+                    self.set_channel_outputs(channel_outputs)
+                    self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+
+                    # Check for events
+                    if self.request != None:
+                        request = self.request
+                        self.request = None
+                        self.process_event(request)
+                        return
+
+                    # Update every 100ms
+                    time.sleep(0.1)
+
+
+    def turn_on_channel_output(self, channel_name):
+        """ Turns on channel output. Sets specific channel output percent to
+            100% and the rest of the channel to 0% """
+
+        # Set channel output to 0%
+        self.channel_outputs[channel_name] = 100
+
+        # Build channel output percent dict
+        # channel_outputs = self.build_channel_outputs(output_percent=100, enable_channel_name=channel_name)
+
+        # Use previously used distance or first distance in entry if prev is none
+        if self.distance == None:
+            self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]   
+
+        # Calculate resultant intensity and spectrum
+        self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
+
+        # Set channel outputs on hardware
+        self.set_channel_outputs(self.channel_outputs)
+
+
+    def turn_off_channel_output(self, channel_name):
+        """ Turns off channel output. Sets specific channel output percent to
+            100% and the rest of the channel to 0% """
+
+        # Set channel output to 0%
+        self.channel_outputs[channel_name] = 0
+
+        # Use previously used distance or first distance in entry if prev is none
+        if self.distance == None:
+            self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]   
+
+        # Calculate resultant intensity and spectrum
+        self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
+
+        # Set channel outputs on hardware
+        self.set_channel_outputs(self.channel_outputs)
+
+
+    def fade_channel_output(self, channel_name):
+        """ Fades output channel forever. Exits on new event. """
+        self.logger.debug("Fading channel")
+
+        # Turn off all channels
+        self.turn_off_output()
+
+        # Use previously used illumination distance or first distance in entry if prev is none
+        if self.distance == None:
+            self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
+
+        # Run fade loop until new event
+        while True:
+
+            # Fade up
+            for output_percent in range(0, 100, 10):
+                self.intensity = output_percent
+                self.channel_outputs[channel_name] = output_percent # TODO: copy the dict and pass in, dont need to set twice (here + in set function)
+                self.set_channel_outputs(self.channel_outputs)
+                self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
+
+                # Check for events
+                if self.request != None:
+                    request = self.request
+                    self.request = None
+                    self.process_event(request)
+                    return
+
+                # Update every 100ms
+                time.sleep(0.1)
+
+            # Fade down
+            for output_percent in range(100, 0, -10):
+                self.intensity = output_percent
+                self.channel_outputs[channel_name] = output_percent # TODO: copy the dict and pass in, dont need to set twice (here + in set function)
+                self.set_channel_outputs(self.channel_outputs)
+                self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
+
+                # Check for events
+                if self.request != None:
+                    request = self.request
+                    self.request = None
+                    self.process_event(request)
+                    return
+
+                # Update every 100ms
+                time.sleep(0.1)
+
+
 
 
 ########################## Setter & Getter Functions ##########################
 
 
     @property
-    def spectrum_normalized_percentage_dict(self):
+    def spectrum(self):
         """ Gets spectrum value. """
-        return self._spectrum_normalized_percentage_dict
+        return self._spectrum
 
 
-    @spectrum_normalized_percentage_dict.setter
-    def spectrum_normalized_percentage_dict(self, value):
+    @spectrum.setter
+    def spectrum(self, value):
         """ Safely updates spectrum in environment object each time
             it is changed. """
-        self._spectrum_normalized_percentage_dict = value
-        with threading.Lock():
-                self.report_sensor_value(self.name, self.spectrum_name, value, simple=True)
+        self._spectrum = value
+        self.report_sensor_value(self.name, self.spectrum_name, value, simple=True)
+        self.report_peripheral_sensor_value(self.spectrum_name, value)
 
 
     @property
-    def desired_spectrum_normalized_percentage_dict(self):
+    def desired_spectrum(self):
         """ Gets desired spectrum value from shared environment state if not 
             in manual mode, otherwise gets it from peripheral state. """
 
@@ -543,14 +894,14 @@ class LightPanel(Peripheral):
                 return value
 
 
-    @desired_spectrum_normalized_percentage_dict.setter
-    def desired_spectrum_normalized_percentage_dict(self, value):
+    @desired_spectrum.setter
+    def desired_spectrum(self, value):
         """ Safely updates desired spectrum in shared peripheral state. Only 
             updates from manual mode. """
 
         # Verify only setting from manual mode
         if self.mode != Modes.MANUAL:
-            self.logger.error("desired_intensity_watts setter should only be set from manual mode")
+            self.logger.error("desired_intensity setter should only be set from manual mode")
             return
 
         # Safely write desired intensity to shared peripheral state
@@ -563,22 +914,21 @@ class LightPanel(Peripheral):
 
 
     @property
-    def intensity_watts(self):
+    def intensity(self):
         """ Gets intensity value. """
-        return self._intensity_watts
+        return self._intensity
 
 
-    @intensity_watts.setter
-    def intensity_watts(self, value):
+    @intensity.setter
+    def intensity(self, value):
         """ Safely updates intensity in environment object each time 
             it is changed. """
-        self._intensity_watts = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.intensity_name, value, simple=True)
-
+        self._intensity = value
+        self.report_sensor_value(self.name, self.intensity_name, value, simple=True)
+        self.report_peripheral_sensor_value(self.intensity_name, value)
 
     @property
-    def desired_intensity_watts(self):
+    def desired_intensity(self):
         """ Gets desired intensity value from shared environment state if not 
             in manual mode, otherwise gets it from peripheral state. """
 
@@ -600,14 +950,14 @@ class LightPanel(Peripheral):
                 return value
 
 
-    @desired_intensity_watts.setter
-    def desired_intensity_watts(self, value):
+    @desired_intensity.setter
+    def desired_intensity(self, value):
         """ Safely updates desired intensity in shared peripheral state. Only 
             updates from manual mode. """
 
         # Verify only setting from manual mode
         if self.mode != Modes.MANUAL:
-            self.logger.error("desired_intensity_watts setter should only be set from manual mode")
+            self.logger.error("desired_intensity setter should only be set from manual mode")
             return
 
         # Safely write desired intensity to shared peripheral state
@@ -620,22 +970,22 @@ class LightPanel(Peripheral):
 
 
     @property
-    def illumination_distance_cm(self):
+    def distance(self):
         """ Gets intensity value. """
-        return self._illumination_distance_cm
+        return self._distance
 
 
-    @illumination_distance_cm.setter
-    def illumination_distance_cm(self, value):
+    @distance.setter
+    def distance(self, value):
         """ Safely updates illumination distance in environment object each time 
             it is changed. """
-        self._illumination_distance_cm = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.illumination_distance_name, value, simple=True)
+        self._distance = value
+        self.report_sensor_value(self.name, self.illumination_distance_name, value, simple=True)
+        self.report_peripheral_sensor_value(self.illumination_distance_name, value)
 
 
     @property
-    def desired_illumination_distance_cm(self):
+    def desired_distance(self):
         """ Gets desired illumination distance value from shared environment state if not 
             in manual mode, otherwise gets it from peripheral state. """
 
@@ -657,14 +1007,14 @@ class LightPanel(Peripheral):
                 return value
 
 
-    @desired_illumination_distance_cm.setter
-    def desired_illumination_distance_cm(self, value):
+    @desired_distance.setter
+    def desired_distance(self, value):
         """ Safely updates desired intensity in shared peripheral state. Only 
             updates from manual mode. """
 
         # Verify only setting from manual mode
         if self.mode != Modes.MANUAL:
-            self.logger.error("desired_intensity_watts setter should only be set from manual mode")
+            self.logger.error("desired_intensity setter should only be set from manual mode")
             return
 
         # Safely write desired intensity to shared peripheral state
@@ -677,16 +1027,17 @@ class LightPanel(Peripheral):
 
 
     @property
-    def channel_output_percent_dict(self):
+    def channel_outputs(self):
         """ Gets channel outputs percent value. """
-        return self._channel_output_percent_dict
+        return self._channel_outputs
 
 
-    @channel_output_percent_dict.setter
-    def channel_output_percent_dict(self, value):
+    @channel_outputs.setter
+    def channel_outputs(self, value):
         """ Safely updates channel outputs percent in environment object each time 
             it is changed. """
-        self._channel_output_percent_dict = value
-        with threading.Lock():
-            self.report_actuator_value(self.name, self.channel_output_name, value)
-            self.set_desired_actuator_value(self.name, self.channel_output_name, value)
+        self._channel_outputs = value
+        self.report_actuator_value(self.name, self.channel_output_name, value)
+        self.set_desired_actuator_value(self.name, self.channel_output_name, value)
+
+        self.report_peripheral_actuator_value(self.channel_output_name, value)

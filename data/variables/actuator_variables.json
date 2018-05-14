@@ -3,8 +3,8 @@
 		"key": "light_channel_output_percent_dict",
 		"info": {
 			"name": {
-				"brief": "Light Channel Output",
-				"verbose": "Light Channel Output Percent"
+				"brief": "Output",
+				"verbose": "Light Channel Output"
 			},
 			"unit": {
 				"brief": "%",

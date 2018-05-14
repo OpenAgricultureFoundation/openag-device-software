@@ -664,13 +664,11 @@ class AtlasEC(Atlas):
             is in calibrate mode only update peripheral shared state, else
             updates peripheral and environment shared state. """   
         self._electrical_conductivity_ms_cm = value
-        
-        # Update peripheral and/or environment shared state
-        if self.mode == Modes.CALIBRATE:
-            self.report_peripheral_value(self.electrical_conductivity_name, value)
-        else:
-            self.report_sensor_value(self.name, self.electrical_conductivity_name, value)
-            self.report_peripheral_value(self.electrical_conductivity_name, value)
+        self.report_peripheral_sensor_value(self.electrical_conductivity_name, value)
+
+        # Update environment if not in calibrate mode
+        if self.mode != Modes.CALIBRATE:
+            self.report_environment_sensor_value(self.name, self.electrical_conductivity_name, value)
 
 
     @property

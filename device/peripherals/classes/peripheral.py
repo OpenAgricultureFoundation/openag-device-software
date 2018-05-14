@@ -470,6 +470,9 @@ class Peripheral:
         self.setup_dict = json.load(open("device/peripherals/setups/" + file_name + ".json"))
 
 
+    # TODO: change this name
+    def report_environment_sensor_value(self, sensor, variable, value, simple=False):
+        self.report_sensor_value(sensor, variable, value, simple)
     def report_sensor_value(self, sensor, variable, value, simple=False):
         """ Report sensor value to environment sensor dict and reported sensor 
             stats dict. """
@@ -532,6 +535,9 @@ class Peripheral:
                 self.state.environment["sensor"]["reported"][variable] = self.state.environment["reported_sensor_stats"]["group"]["instantaneous"][variable]["value"]
 
 
+    # TODO: report_environment_actuator_value vs. report_peripheral_...
+    # TODO: report desired...
+
     def report_actuator_value(self, actuator, variable, value):
         """ Reports an actuator value. """
         with threading.Lock():
@@ -550,10 +556,27 @@ class Peripheral:
             self.state.peripherals[self.name]["health"] = value
 
 
+    # TODO: remove this
     def report_peripheral_value(self, variable, value):
         """ Reports a peripherals value to peripheral dict in shared state. """
         with threading.Lock():
             self.state.peripherals[self.name][variable] = value
+
+
+    def report_peripheral_sensor_value(self, variable, value):
+        """ Reports a peripherals sensor value to peripheral dict in shared state. """
+        with threading.Lock():
+            if "reported_sensor" not in self.state.peripherals[self.name]:
+                self.state.peripherals[self.name]["reported_sensor"] = {}
+            self.state.peripherals[self.name]["reported_sensor"][variable] = value
+
+
+    def report_peripheral_actuator_value(self, variable, value):
+        """ Reports a peripherals actuator value to peripheral dict in shared state. """
+        with threading.Lock():
+            if "reported_actuator" not in self.state.peripherals[self.name]:
+                self.state.peripherals[self.name]["reported_actuator"] = {}
+            self.state.peripherals[self.name]["reported_actuator"][variable] = value
 
 
     def update_health(self):

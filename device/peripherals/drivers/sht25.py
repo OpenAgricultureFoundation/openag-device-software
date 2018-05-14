@@ -88,39 +88,7 @@ class SHT25(Peripheral):
         self.logger.debug("Successfully shutdown sensor")
 
 
-########################## Setter & Getter Functions ##########################
 
-
-    @property
-    def temperature_celcius(self):
-        """ Gets temperature_celcius value. """
-        return self._temperature_celcius
-
-
-    @temperature_celcius.setter
-    def temperature_celcius(self, value):
-        """ Safely updates temperature_celcius in environment state each time
-            it is changed. """   
-        self._temperature_celcius = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.temperature_name, value)
-            self.report_peripheral_value(self.temperature_name, value)
-
-
-    @property
-    def humidity_percent(self):
-        """ Gets humidity_percent value. """
-        return self._humidity_percent
-
-
-    @humidity_percent.setter
-    def humidity_percent(self, value):
-        """ Safely updates humidity_percent in environment state each time 
-            it is changed. """
-        self._humidity_percent = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.humidity_name, value)
-            self.report_peripheral_value(self.humidity_name, value)
 
 
 ############################# Main Helper Functions ###########################
@@ -311,3 +279,37 @@ class SHT25(Peripheral):
         # Trigger reset
         with threading.Lock():
             self.i2c.write([0xFE])
+
+
+
+########################## Setter & Getter Functions ##########################
+
+
+    @property
+    def temperature_celcius(self):
+        """ Gets temperature_celcius value. """
+        return self._temperature_celcius
+
+
+    @temperature_celcius.setter
+    def temperature_celcius(self, value):
+        """ Safely updates temperature_celcius in environment state each time
+            it is changed. """   
+        self._temperature_celcius = value
+        self.report_environment_sensor_value(self.name, self.temperature_name, value)
+        self.report_peripheral_sensor_value(self.temperature_name, value)
+
+
+    @property
+    def humidity_percent(self):
+        """ Gets humidity_percent value. """
+        return self._humidity_percent
+
+
+    @humidity_percent.setter
+    def humidity_percent(self, value):
+        """ Safely updates humidity_percent in environment state each time 
+            it is changed. """
+        self._humidity_percent = value
+        self.report_environment_sensor_value(self.name, self.humidity_name, value)
+        self.report_peripheral_sensor_value(self.humidity_name, value)

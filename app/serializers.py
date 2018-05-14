@@ -11,6 +11,8 @@ from app.models import RecipeModel
 from app.models import RecipeTransitionModel
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+from app.models import SensorVariableModel
+from app.models import ActuatorVariableModel
 
 
 class StateSerializer(serializers.HyperlinkedModelSerializer):
@@ -67,3 +69,15 @@ class CultivationMethodSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RecipeModel
         fields = ("uuid", "name", "json")
+
+
+class SensorVariableSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = SensorVariableModel
+        fields = ("key", "json")
+
+
+class ActuatorVariableSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ActuatorVariableModel
+        fields = ("key", "json")

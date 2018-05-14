@@ -32,6 +32,8 @@ from app.models import PeripheralSetupModel
 from app.models import RecipeTransitionModel
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+from app.models import SensorVariableModel
+from app.models import ActuatorVariableModel
 
 # Import app serializers
 from app.serializers import StateSerializer
@@ -42,6 +44,9 @@ from app.serializers import RecipeTransitionSerializer
 from app.serializers import CultivarSerializer
 from app.serializers import CultivationMethodSerializer
 from app.serializers import PeripheralSetupSerializer
+from app.serializers import SensorVariableSerializer
+from app.serializers import ActuatorVariableSerializer
+
 
 # Import app viewers
 from app.viewers import DeviceViewer
@@ -51,6 +56,9 @@ from app.viewers import SimpleRecipeViewer
 from app.viewers import EnvironmentViewer
 from app.viewers import CultivarsViewer
 from app.viewers import CultivationMethodsViewer
+
+
+# TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -152,6 +160,24 @@ class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = CultivationMethodModel.objects.all()
+        return queryset
+
+
+class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
+    """ API endpoint that allows sensor variables to be viewed. """
+    serializer_class = SensorVariableSerializer
+
+    def get_queryset(self):
+        queryset = SensorVariableModel.objects.all()
+        return queryset
+
+
+class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
+    """ API endpoint that allows actuator variables to be viewed. """
+    serializer_class = ActuatorVariableSerializer
+
+    def get_queryset(self):
+        queryset = ActuatorVariableModel.objects.all()
         return queryset
 
 
@@ -333,3 +359,6 @@ class Scratchpad(APIView):
     
     def get(self, request):
         return Response()
+
+
+

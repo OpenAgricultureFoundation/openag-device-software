@@ -235,6 +235,50 @@
 		    "value": null,
 		    "sequence": null,
 		    "is_manual": true
+		},
+		{
+		    "name": "Fade Concurrently",
+		    "description": "Fades all channels up/down concurrently.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Fade Sequentially",
+		    "description": "Fades all channels up/down sequentially.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Turn On Channel",
+		    "description": "Turns on provided channel name.",
+		    "value": {
+		        "default": "CW1",
+		        "unit": "Channel"
+		    },
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Turn Off Channel",
+		    "description": "Turns off provided channel name.",
+		    "value": {
+		        "default": "CW1",
+		        "unit": "Channel"
+		    },
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Fade Channel",
+		    "description": "Fades provided channel name.",
+		    "value": {
+		        "default": "CW1",
+		        "unit": "Channel"
+		    },
+		    "sequence": null,
+		    "is_manual": true
 		}
 	],
 	"info": {

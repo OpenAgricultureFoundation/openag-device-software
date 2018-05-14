@@ -158,7 +158,7 @@ class AtlasDO(Atlas):
         if self._prev_electrical_conductivity_ms_cm != None:
             electrical_conductivity_delta_ms_cm = abs(self._prev_electrical_conductivity_ms_cm - electrical_conductivity_ms_cm)
             if electrical_conductivity_delta_ms_cm < self._electrical_conductivity_threshold_ms_cm:
-                self.logger.debug("Device electrical conductivity compensation does not require update, value within threshold")
+                self.logger.debug("Device compensation EC does not require update, value within threshold")
                 return
 
         # Update sensor conductivity compensation value
@@ -425,8 +425,11 @@ class AtlasDO(Atlas):
         """ Safely updates dissolved oxygen value in environment state each 
             time it is changed. """   
         self._dissolved_oxygen_mg_l = value
-        with threading.Lock():
-            self.report_sensor_value(self.name, self.dissolved_oxygen_name, value)
+        self.report_peripheral_sensor_value(self.dissolved_oxygen_name, value)
+
+        # Update environment if not in calibrate mode
+        if self.mode != Modes.CALIBRATE:
+            self.report_environment_sensor_value(self.name, self.dissolved_oxygen_name, value)
 
 
     @property

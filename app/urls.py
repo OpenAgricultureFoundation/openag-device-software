@@ -35,6 +35,9 @@ router.register(r"recipe/transitions", views.RecipeTransitionViewSet, base_name=
 router.register(r"cultivars", views.CultivarViewSet, base_name="api-cultivars")
 router.register(r"cultivation-methods", views.CultivationMethodViewSet, base_name="api-cultivation-methods")
 router.register(r"peripheral/setups", views.PeripheralSetupViewSet, base_name="api-peripheral-setups")
+router.register(r"variables/sensor", views.SensorVariableViewSet, base_name="api-sensor-variables")
+router.register(r"variables/actuator", views.ActuatorVariableViewSet, base_name="api-actuator-variables")
+
 
 # Setup dashboard redirect
 def redirect_to_dashboard(request):

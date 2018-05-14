@@ -7,7 +7,9 @@
 
     var peripheralData = {
       setups: null,
-      states: null
+      states: null,
+      sensorVariables: null,
+      actuatorVariables: null
     };
 
     // Create peripheral cards based off stored data in db
@@ -20,7 +22,16 @@
       .then(function(peripheralStates) {
         console.log(peripheralStates);
         peripheralData.states = peripheralStates;
-
+        return loadSensorVariables();
+      })
+      .then(function(sensorVariables) {
+        console.log(sensorVariables);
+        peripheralData.sensorVariables = sensorVariables;
+        return loadActuatorVariables();
+      })
+      .then(function(actuatorVariables) {
+        console.log(actuatorVariables);
+        peripheralData.actuatorVariables = actuatorVariables;
         return createPeripheralsDict(peripheralData);
       })
       .then(function(peripheralsDict) {
@@ -45,7 +56,7 @@
             resolve(peripheralSetups);
           },
           error: function(data) {
-            console.log("Event request failed");
+            console.log("Load peripheral setups failed");
             reject(data);
           }
       });
@@ -66,9 +77,63 @@
           resolve(peripheralStates);
         },
         error: function(data) {
-          console.log("Event request failed");
+          console.log("Load peripheral states failed");
           reject(data);
         }
+      });
+    })
+  }
+
+  function loadSensorVariables() {
+    return new Promise(function (resolve, reject) {
+      console.log("Loading sensor variables")
+      $.ajax({
+          url: "/api/variables/sensor/",
+          type: "GET",
+          data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+          dataType: "json",
+          success: function(data) {;
+            var sensorVariables = {};
+            
+            // Format data
+            for (index in data) {
+              json = JSON.parse(data[index]["json"])
+              sensorVariables[json["key"]] = json["info"]
+            }
+
+            resolve(sensorVariables);
+          },
+          error: function(data) {
+            console.log("Load sensor variables failed");
+            reject(data);
+          }
+      });
+    })
+  }
+
+  function loadActuatorVariables() {
+    return new Promise(function (resolve, reject) {
+      console.log("Loading actuator variables")
+      $.ajax({
+          url: "/api/variables/actuator/",
+          type: "GET",
+          data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+          dataType: "json",
+          success: function(data) {;
+            var actuatorVariables = {};
+
+            // Format data
+            for (index in data) {
+              json = JSON.parse(data[index]["json"])
+              actuatorVariables[json["key"]] = json["info"]
+            }
+
+            resolve(actuatorVariables);
+          },
+          error: function(data) {
+            console.log("Load actuator variables failed");
+            reject(data);
+          }
       });
     })
   }
@@ -86,6 +151,56 @@
       for (var peripheralName in peripheralData.states) {
         // console.log(peripheralName, peripheralData.states[peripheralName]);
         
+        // Get reported sensor values
+        reportedSensors = [];
+        if ("reported_sensor" in peripheralData.states[peripheralName]) {
+          reportedSensorDict = peripheralData.states[peripheralName]["reported_sensor"]
+          
+          // Build reported sensors list
+          for (var key in reportedSensorDict) {
+            if (key in peripheralData.sensorVariables) {
+                var value = reportedSensorDict[key];
+                
+                if (value == null) {
+                  value = "None";
+                }
+
+                var reportedSensor = {
+                  name:peripheralData.sensorVariables[key]["name"]["brief"],
+                  value: value,
+                  unit: peripheralData.sensorVariables[key]["unit"]["brief"]
+              }
+              console.log(reportedSensor)
+              reportedSensors.push(reportedSensor);
+            }
+          } 
+        }
+
+        // Get reported actuator values
+        reportedActuators = [];
+        if ("reported_actuator" in peripheralData.states[peripheralName]) {
+          reportedActuatorDict = peripheralData.states[peripheralName]["reported_actuator"]
+
+          // Build reported sensors list
+          for (var key in reportedActuatorDict) {
+            if (key in peripheralData.actuatorVariables) {
+                var value = reportedActuatorDict[key];
+                
+                if (value == null) {
+                  value = "None";
+                }
+
+                var reportedActuator = {
+                  name:peripheralData.actuatorVariables[key]["name"]["brief"],
+                  value: value,
+                  unit: peripheralData.actuatorVariables[key]["unit"]["brief"]
+              }
+              console.log(reportedActuator)
+              reportedActuators.push(reportedActuator);
+            }
+          }
+        }
+
         // Get each active peripherals setup uuid
         setupUUID = peripheralData.states[peripheralName]["setup_uuid"];
 
@@ -97,11 +212,15 @@
             // Create peripheral card entry in peripheral dict
             peripheralsDict.push({
               name: peripheralName,
+              reportedSensors: reportedSensors,
+              reportedActuators: reportedActuators,
               events: setupJSON["events"]
             })
             break;
           }
         }
+
+
       }
       resolve(peripheralsDict);
     })
@@ -120,6 +239,7 @@
         <div id="${lowerCamel(peripheral.name)}" class="card">
           <div id="${lowerCamel(peripheral.name)}Header" class="card-header">
             <h4>${peripheral.name}</h4>
+
           </div>
         </div>
         `
@@ -130,6 +250,53 @@
       // Get peripheral card instance
       peripheralCardInstance = document.getElementById(lowerCamel(peripheral.name));
       peripheralCardHeader = document.getElementById(lowerCamel(peripheral.name) + 'Header');
+
+      // Create reported sensor value badges
+      console.log("Creating reported sensor value badges")
+
+      for (index in peripheral.reportedSensors) {
+
+        // Build badge string
+        reportedSensor = peripheral.reportedSensors[index];
+
+        // Stringify values
+        value = reportedSensor["value"]
+        if (typeof(value) == "object") {
+          value = JSON.stringify(value);
+        }
+
+        var badgeString = reportedSensor["name"] + " (" + reportedSensor["unit"] + "): " + value;
+
+        // Inject badge string
+        var reportedValueTemplate = `
+          <a class="badge badge-secondary" data-toggle="collapse" href="" role="button";">${badgeString}</a>
+        `
+        peripheralCardHeader.insertAdjacentHTML('beforeend', reportedValueTemplate);
+      }
+
+      // Create reported actuator value badges
+      console.log("Creating reported actuator value badges")
+
+      for (index in peripheral.reportedActuators) {
+
+        // Build badge string
+        reportedActuator = peripheral.reportedActuators[index];
+        console.log(reportedActuator)
+
+        // Stringify values
+        value = reportedActuator["value"]
+        if (typeof(value) == "object") {
+          value = JSON.stringify(value);
+        }
+
+        var badgeString = reportedActuator["name"] + " (" + reportedActuator["unit"] + "): " + value;
+
+        // Inject badge string
+        var reportedValueTemplate = `
+          <a class="badge badge-secondary" data-toggle="collapse" href="" role="button";">${badgeString}</a>
+        `
+        peripheralCardHeader.insertAdjacentHTML('beforeend', reportedValueTemplate);
+      }
 
       // Add peripheral event buttons to peripheral card header
       for (i in peripheral.events) {
