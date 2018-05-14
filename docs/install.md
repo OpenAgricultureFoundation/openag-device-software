@@ -23,62 +23,14 @@ cd openag-brain-quartz
 sudo ./install.sh
 ```
 
-## Database
-### Login as postgres user
+## Create the database
 ```
-sudo -i -u postgres
-```
-
-### Enter postgres shell
-```
-psql
+./create_database.sh
 ```
 
-## Create `openag` user with password `openag`
+## Set up a Python Environment
 ```
-CREATE USER openag WITH PASSWORD 'openag';
-```
-
-## Create `openag_brain` database owned by `openag` user
-```
-CREATE DATABASE openag_brain OWNER openag;
-```
-
-## Logout of postgres shell
-```
-\q
-```
-
-## Logout of postgres user
-```
-ctrl + d
-```
-
-## Virtual Environment
-### Create virtual environment
-```
-virtualenv -p python3 venv
-```
-
-### Source virtual environment
-```
-source venv/bin/activate
-```
-
-### Install python modules (from inside venv)
-```
-pip install -r requirements.txt
-```
-
-## Provision database (from inside venv)
-### Create superuser
-```
-python manage.py createsuperuser
-```
-
-### Migrate database
-```
-python manage.py migrate
+./setup_python.sh
 ```
 
 ### Run software
