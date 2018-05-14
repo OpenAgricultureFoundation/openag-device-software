@@ -748,6 +748,13 @@ class Peripheral:
 
     def get_bit_from_byte(self, bit, byte):
         """ Gets a bit from a byte. """
+        
+        # Check but value 0-7
+        if bit not in range(0, 8):
+            self.logger.warning("Tried to get invalid bit from byte")
+            return None
+
+        # Get bit value
         mask = 0x1 << bit
         return (byte & mask) >> bit
 

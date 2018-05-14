@@ -275,8 +275,9 @@ class DeviceManager:
         self.logger.info("Entered CONFIG")
 
         # Load an initial config during development
-        self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU1
+        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU1
         # self.config_uuid = "b82e43eb-7549-4fcc-aba7-b66585cb6dd1" # EDU1 SHT25
+        self.config_uuid = "0f60a9f1-5a66-49e9-a3f2-8c7414ae90a0" # EDU1 T6713
         # self.config_uuid = "5e0610fe-a488-4f70-bb7b-8fe0830fccbb" # EDU1 EC
         # self.config_uuid = "98d44119-331b-4019-9533-db731ecee672" # EDU1 DO
         # self.config_uuid = "00060e4e-6fc5-46cb-98f7-ad38e65653dd" # EDU1 pH

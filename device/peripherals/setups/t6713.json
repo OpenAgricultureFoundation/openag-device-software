@@ -8,19 +8,56 @@
 		"variables": {
 			"sensors": {
 				"co2": {
-					"name": "string", 
-					"uuid": "string"
+					"name": {
+						"type": "string",
+						"default": "air_carbon_dioxide_ppm"
+					}
 				}
 			},
 			"actuators": null
 		},	
 		"communication": {
-			"bus": "int",
-			"mux": "int",
-			"channel": "int",
-			"address": "int"
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "string",
+				"default": "0x40"
+			}
 		}
 	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    }
+	],
 	"info": {
 		"variables": {
 			"sensors":{

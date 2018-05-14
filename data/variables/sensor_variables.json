@@ -28,10 +28,10 @@
 		}
 	},
 	{
-		"key": "air_co2_ppm",
+		"key": "air_carbon_dioxide_ppm",
 		"info": {
 			"name": {
-				"brief": "Co2",
+				"brief": "CO2",
 				"verbose": "Air Carbon Dioxide"
 			},
 			"unit": {

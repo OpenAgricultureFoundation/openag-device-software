@@ -48,7 +48,7 @@ class SHT25(Peripheral):
         self.health = 100
 
         # Perform initial health check
-        self.perform_initial_health_check()
+        self.check_health()
 
 
     def setup(self):
@@ -88,24 +88,20 @@ class SHT25(Peripheral):
         self.logger.debug("Successfully shutdown sensor")
 
 
-
-
-
 ############################# Main Helper Functions ###########################
 
 
-    def perform_initial_health_check(self):
-        """ Performs initial health check by trying to send a `get temperature
-            reading command` and verifying sensor acknowledges. Finishes 
-            within 200ms. """
+    def check_health(self):
+        """ Checks health by reading user register from sensor hardware and 
+            verifying resolutions"""
         try:
             register, _, _, _ = self.read_user_register()
             if register != 0:
                 raise ValueError("Unexpected sensor resolution")
-            self.logger.info("Passed initial health check")
+            self.logger.info("Passed health check")
         except Exception:
-            self.logger.exception("Failed initial health check")
-            self.error = Errors.FAILED_HEALTH_CHECK
+            self.error = "Failed health check"
+            self.logger.exception(self.error)
             self.mode = Modes.ERROR
 
 
@@ -279,7 +275,6 @@ class SHT25(Peripheral):
         # Trigger reset
         with threading.Lock():
             self.i2c.write([0xFE])
-
 
 
 ########################## Setter & Getter Functions ##########################

@@ -1,0 +1,32 @@
+{	
+    "format": "openag-standard-v1",
+    "name": "PFC-EDU - T6713 CO2 Only",
+    "version": "1",
+    "uuid": "0f60a9f1-5a66-49e9-a3f2-8c7414ae90a0",
+    "peripherals": [
+        {
+            "name": "T6713-1",
+            "type": "T6713",
+            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "parameters": {
+                "setup": {
+                    "name": "T6713 CO2 Sensor",
+                    "file_name": "t6713"
+                },
+                "variables": {
+                    "sensor": {
+                        "co2_ppm": "air_carbon_dioxide_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x15"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}
