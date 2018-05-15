@@ -1,4 +1,4 @@
-# OpenAg Brain Quartz
+# OpenAg Device Software
 
 ## Contents
  - [Install Instructions](docs/install.md)
