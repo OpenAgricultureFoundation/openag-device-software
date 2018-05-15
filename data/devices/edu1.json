@@ -16,7 +16,8 @@
                 "variables": {
                     "sensor": {
                         "temperature_celcius": "air_temperature_celcius",
-                        "humidity_percent": "air_humidity_percent"                    },
+                        "humidity_percent": "air_humidity_percent"                    
+                    },
                     "actuator": null
                 },
                 "communication": {
