@@ -53,7 +53,7 @@ class AtlasPH(Atlas):
         self.health = 100
 
         # Perform initial health check
-        self.perform_initial_health_check()
+        self.check_health(retry=True)
 
 
     def setup(self):
@@ -113,19 +113,27 @@ class AtlasPH(Atlas):
     ############################# Main Helper Functions #######################
 
 
-    def perform_initial_health_check(self, retry=False):
-        """ Performs initial health check by reading device status. """
+    def check_health(self, retry=False):
+        """ Checks health by reading sensor info and verifying correct circuit stamp type. """
         try:
             sensor_type, self._firmware_version = self.read_info()
-            if sensor_type != "PH":
-                self.logger.critical("Incorrect circuit stamp. Expecting `PH`, received `{}`".format(sensor_type) )
+            if sensor_type != "pH":
+                self.logger.critical("Incorrect circuit stamp. Expecting `pH`, received `{}`".format(sensor_type) )
                 raise Exception("Incorrect circuit stamp type")
             else:
                 self.logger.debug("Passed initial health check")
         except:
-            self.logger.exception("Failed initial health check")
-            self.error = Errors.FAILED_HEALTH_CHECK
-            self.mode = Modes.ERROR
+            if retry:
+                self.logger.info("Retrying health check")
+                self.check_health()
+            else:
+                self.logger.exception("Failed initial health check")
+                self.error = Errors.FAILED_HEALTH_CHECK
+                self.mode = Modes.ERROR
+            return
+
+        # Sensor is healthy
+        self.logger.debug("Passed health check")
 
 
     def update_compensation_temperature(self):
@@ -351,7 +359,7 @@ class AtlasPH(Atlas):
         # Check for simulated sensor
         if self.simulate:
             self.logger.debug("Simulating reading info from hardware")
-            sensor_type = "PH"
+            sensor_type = "pH"
             firmware_version = 2.0
             return sensor_type, firmware_version
 
@@ -359,7 +367,7 @@ class AtlasPH(Atlas):
         self.logger.debug("Reading info from hardware")
 
         # Send read info command to device
-        response_message = self.process_command("i", processing_seconds=0.3)
+        response_message = self.process_command("i", processing_seconds=0.6) # was 0.3
         command, sensor_type, firmware_version = response_message.split(",")
         return sensor_type, float(firmware_version)
 
@@ -380,7 +388,7 @@ class AtlasPH(Atlas):
 
         # Get potential hydrogen reading from hardware
         # Assumed potential hydrogen is only enabled output
-        response_string = self.process_command("R", processing_seconds=0.6)
+        response_string = self.process_command("R", processing_seconds=1.2) # was 0.6
         potential_hydrogen_raw_value = float(response_string)
 
         # Set significant figures based off error magnitude

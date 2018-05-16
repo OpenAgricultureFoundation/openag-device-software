@@ -9,6 +9,9 @@ from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
 
+# TODO: Check for unrealistic output values
+
+
 class T6713(Peripheral):
     """ Co2 sensor. """
 
@@ -46,7 +49,7 @@ class T6713(Peripheral):
         self.health = 100
 
         # Perform initial health check
-        self.check_health()
+        self.check_health(retry=True)
             
 
     def setup(self):
@@ -67,9 +70,9 @@ class T6713(Peripheral):
         self.logger.debug("Sensor is warming up")
 
         # Wait at least 2 minutes for sensor to stabilize
-        start_time = time.time()
-        while time.time() - start_time < 120:
-            time.sleep(1)
+        # start_time = time.time()
+        # while time.time() - start_time < 120:
+        #     time.sleep(1)
 
         # Make sure sensor finishes warming mode
         while True:
@@ -112,7 +115,7 @@ class T6713(Peripheral):
 ############################# Main Helper Functions ###########################
 
 
-    def check_health(self):
+    def check_health(self, retry=False):
         """ Checks health by reading status from sensor hardware and verifying 
             sensor not in error condition. """
 
@@ -122,9 +125,14 @@ class T6713(Peripheral):
             if status.error_condition:
                 raise ValueError("Sensor hardware has error condition")
         except:
-            self.error = "Failed health check"
-            self.logger.exception(self.error)
-            self.mode = Modes.ERROR
+            if retry:
+                self.logger.exception("Failed health check")
+                self.logger.debug("Retrying health check")
+                self.check_health()
+            else:
+                self.error = "Failed health check"
+                self.logger.exception(self.error)
+                self.mode = Modes.ERROR
             return
 
         # Sensor is healthy!
@@ -182,7 +190,7 @@ class T6713(Peripheral):
         # Send read co2 command then read co2
         with threading.Lock():
             self.i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01]) 
-            time.sleep(0.1)
+            # time.sleep(0.1)
             _, _, msb, lsb = self.i2c.read(4, disable_mux=True) # don't re-set mux channel
 
         # Convert co2 data
@@ -222,6 +230,7 @@ class T6713(Peripheral):
             # Send read status command then read status
             with threading.Lock():
                 self.i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01]) 
+                time.sleep(0.1)
                 _, _, status_msb, status_lsb = self.i2c.read(4, disable_mux=True)                 
 
             # Parse status bytes
@@ -241,7 +250,7 @@ class T6713(Peripheral):
             return status
 
         except:
-            self.logger.exception("Unable to readBad status reading")
+            self.logger.exception("Unable to read status, bad reading")
             self._missed_readings += 1
 
 
@@ -305,7 +314,8 @@ class T6713(Peripheral):
     @co2.setter
     def co2(self, value):
         """ Safely updates co2 in environment state each time
-            it is changed. """   
+            it is changed. """ 
+        self.logger.debug("co2@deco={}".format(value))  
         self._co2 = value
         self.report_environment_sensor_value(self.name, self.co2_name, value)
         self.report_peripheral_sensor_value(self.co2_name, value)
