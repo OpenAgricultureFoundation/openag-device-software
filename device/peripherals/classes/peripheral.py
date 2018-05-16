@@ -78,6 +78,7 @@ class Peripheral:
     def mode(self, value):
         """ Safely updates peripheral mode in device state object. """
         self._mode = value
+        self.logger.debug("mode = {}".format(value))
         with threading.Lock():
             if self.name not in self.state.peripherals:
                 self.state.peripherals[self.name] = {}

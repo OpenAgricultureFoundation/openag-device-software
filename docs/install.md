@@ -36,6 +36,8 @@ sudo ./install.sh
 ### Run software
 ```
 ./run.sh
+./run.sh --simulate # to run w/simulated hardware
+./run.sh --no-device # to only run app (useful to manipulate data in admin console)
 ```
 
 ## Next steps
