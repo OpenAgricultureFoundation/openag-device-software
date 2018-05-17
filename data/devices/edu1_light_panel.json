@@ -26,8 +26,8 @@
                 "communication": {
                     "bus": "2", 
                     "mux": "0x77", 
-                    "channel": "1", 
-                    "address": "0x3c"
+                    "channel": "3", 
+                    "address": "0x47"
                 }
             }
         }

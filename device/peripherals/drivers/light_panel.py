@@ -612,7 +612,9 @@ class LightPanel(Peripheral):
         # Verify value in request
         try:
             channel_name, output_percent = request["value"].split(",")
+            self.logger.debug("channel_name = {}".format(channel_name))
             output_percent = float(output_percent)
+            self.logger.debug("output_percent = {}".format(output_percent))
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
@@ -708,6 +710,7 @@ class LightPanel(Peripheral):
 
     def turn_off_output(self):
         """ Turns off output. Sets all channel output percents to 0%. """
+        self.logger.debug("Turning off channel outputs")
         
         # Build channel output percent dict
         channel_outputs = self.build_channel_outputs(output_percent=0)
