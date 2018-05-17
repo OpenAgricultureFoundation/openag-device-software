@@ -78,6 +78,7 @@ class Peripheral:
     def mode(self, value):
         """ Safely updates peripheral mode in device state object. """
         self._mode = value
+        self.logger.debug("mode = {}".format(value))
         with threading.Lock():
             if self.name not in self.state.peripherals:
                 self.state.peripherals[self.name] = {}
@@ -386,6 +387,11 @@ class Peripheral:
                 self.request = None
                 self.process_event(request)
 
+            # Check for transition to reset or shutdown
+            transition_modes = [Modes.RESET, Modes.SHUTDOWN]
+            if self.mode in transition_modes:
+                break
+
             # Update every 100ms
             time.sleep(0.1)
 
@@ -399,6 +405,9 @@ class Peripheral:
 
         # Clear error state
         self.error = Errors.NONE
+
+        # Reset health
+        self.health = 100
 
         # Transition to init
         self.mode = Modes.INIT
@@ -744,7 +753,14 @@ class Peripheral:
 
     def magnitude(self, x):
         """ Gets magnitude of provided value. """
+
+        # Check for zero condition
+        if x == 0:
+            return 0
+
+        # Calculate magnitude and return
         return int(math.floor(math.log10(x)))
+
 
 
     def get_bit_from_byte(self, bit, byte):

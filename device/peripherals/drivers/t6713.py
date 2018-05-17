@@ -1,15 +1,15 @@
 # Import python modules
 import logging, time, threading
 
-# Import dataclasses
-from typing import NamedTuple
-
 # Import peripheral parent class
 from device.peripherals.classes.peripheral import Peripheral
 
 # Import device modes and errors
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
+
+
+# TODO: Check for unrealistic output values
 
 
 class T6713(Peripheral):
@@ -49,24 +49,32 @@ class T6713(Peripheral):
         self.health = 100
 
         # Perform initial health check
-        self.check_health()
+        self.check_health(retry=True)
             
 
     def setup(self):
         """ Sets up sensor. Useful for sensors with warm up times >200ms """
-        self.logger.debug("Setting up sensor")
+        self.logger.debug("Setting up sensor, mode={}".format(self.mode))
 
         # Disable ABC auto-calibration logic
         try:
             self.disable_abc_logic()
+            # TODO: Should we factory reset calibration?
         except:
             self.error = "Failed disable abc logic"
             self.logger.exception(self.error)
             self.mode = Modes.ERROR
             return
 
-        # Wait for sensor to finish warming by polling status register
+        # Warm up sensor
         self.logger.debug("Sensor is warming up")
+
+        # Wait at least 2 minutes for sensor to stabilize
+        # start_time = time.time()
+        # while time.time() - start_time < 120:
+        #     time.sleep(1)
+
+        # Make sure sensor finishes warming mode
         while True:
             status = self.read_status()
             if not status.warm_up_mode:
@@ -107,7 +115,7 @@ class T6713(Peripheral):
 ############################# Main Helper Functions ###########################
 
 
-    def check_health(self):
+    def check_health(self, retry=False):
         """ Checks health by reading status from sensor hardware and verifying 
             sensor not in error condition. """
 
@@ -117,9 +125,14 @@ class T6713(Peripheral):
             if status.error_condition:
                 raise ValueError("Sensor hardware has error condition")
         except:
-            self.error = "Failed health check"
-            self.logger.exception(self.error)
-            self.mode = Modes.ERROR
+            if retry:
+                self.logger.exception("Failed health check")
+                self.logger.debug("Retrying health check")
+                self.check_health()
+            else:
+                self.error = "Failed health check"
+                self.logger.exception(self.error)
+                self.mode = Modes.ERROR
             return
 
         # Sensor is healthy!
@@ -174,16 +187,11 @@ class T6713(Peripheral):
         # Sensor is not simulated
         self.logger.debug("Reading co2 value from hardware")
 
-        # Send read command
+        # Send read co2 command then read co2
         with threading.Lock():
             self.i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01]) 
-        
-        # Wait for sensor to process
-        time.sleep(0.1) 
-
-        # Read sensor data
-        with threading.Lock():
-            _, _, msb, lsb = self.i2c.read(4) 
+            # time.sleep(0.1)
+            _, _, msb, lsb = self.i2c.read(4, disable_mux=True) # don't re-set mux channel
 
         # Convert co2 data
         co2 = float(msb*256 + lsb)
@@ -219,16 +227,11 @@ class T6713(Peripheral):
         self.logger.debug("Reading status from sensor hardware")
 
         try:
-            # Send read status command
+            # Send read status command then read status
             with threading.Lock():
                 self.i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01]) 
-            
-            # Wait for sensor to process
-            time.sleep(0.1) 
-
-            # Read sensor data
-            with threading.Lock():
-                _, _, status_msb, status_lsb = i2c.read(4) 
+                time.sleep(0.1)
+                _, _, status_msb, status_lsb = self.i2c.read(4, disable_mux=True)                 
 
             # Parse status bytes
             status = Status(
@@ -247,7 +250,7 @@ class T6713(Peripheral):
             return status
 
         except:
-            self.logger.exception("Unable to readBad status reading")
+            self.logger.exception("Unable to read status, bad reading")
             self._missed_readings += 1
 
 
@@ -276,7 +279,7 @@ class T6713(Peripheral):
             return
 
         # Sensor is not simulated
-        self.logger.debug("Disable abc logic on sensor hardware")
+        self.logger.debug("Disabling abc logic on sensor hardware")
 
         # Send enable command
         with threading.Lock():
@@ -311,7 +314,8 @@ class T6713(Peripheral):
     @co2.setter
     def co2(self, value):
         """ Safely updates co2 in environment state each time
-            it is changed. """   
+            it is changed. """ 
+        self.logger.debug("co2@deco={}".format(value))  
         self._co2 = value
         self.report_environment_sensor_value(self.name, self.co2_name, value)
         self.report_peripheral_sensor_value(self.co2_name, value)
@@ -320,12 +324,36 @@ class T6713(Peripheral):
 ############################### Data Classes ##################################
 
 
-class Status(NamedTuple):
-    error_condition: bool
-    flash_error: bool
-    calibration_error: bool
-    rs232: bool
-    rs485: bool
-    i2c: bool
-    warm_up_mode: bool
-    single_point_calibration: bool
+class Status:
+    def __init__(self, error_condition, flash_error, calibration_error, rs232, rs485, i2c, warm_up_mode, single_point_calibration):
+        self.error_condition = error_condition
+        self.flash_error = flash_error
+        self.calibration_error = calibration_error
+        self.rs232 = rs232
+        self.rs485 = rs485
+        self.i2c = i2c
+        self.warm_up_mode = warm_up_mode
+        self.single_point_calibration = single_point_calibration
+
+
+    def __str__(self):
+        return "Status(" \
+                "error_condition={error_condition}, " \
+                "flash_error={flash_error}, " \
+                "calibration_error={calibration_error}, " \
+                "rs232={rs232}, " \
+                "rs485={rs485}, " \
+                "i2c={i2c}, " \
+                "warm_up_mode={warm_up_mode}, " \
+                "single_point_calibration={single_point_calibration})" \
+                .format(
+                    error_condition = self.error_condition,
+                    flash_error = self.flash_error,
+                    calibration_error = self.calibration_error,
+                    rs232 = self.rs232,
+                    rs485 = self.rs485,
+                    i2c = self.i2c,
+                    warm_up_mode = self.warm_up_mode,
+                    single_point_calibration = self.single_point_calibration,
+                )
+

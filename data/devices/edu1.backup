@@ -23,7 +23,7 @@
                 "communication": {
                     "bus": "2", 
                     "mux": "0x77", 
-                    "channel": "2", 
+                    "channel": "1", 
                     "address": "0x40"
                 }
             }
@@ -46,34 +46,8 @@
                 "communication": {
                     "bus": "2", 
                     "mux": "0x77", 
-                    "channel": "2", 
+                    "channel": "1", 
                     "address": "0x15"
-                }
-            }
-        },
-        {
-            "name": "AtlasPH-1",
-            "type": "AtlasPH",
-            "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
-            "parameters": {
-                "setup": {
-                    "name": "Atlas Potential Hydrogen Sensor EZO",
-                    "file_name": "atlas_ph_ezo"
-                },
-                "variables": {
-                    "sensor": {
-                        "potential_hydrogen": "water_potential_hydrogen"
-                    },
-                    "actuator": null,
-                    "compensation": {
-                        "temperature_celcius": "water_temperature_celcius"
-                    }
-                },
-                "communication": {
-                    "bus": "2", 
-                    "mux": "0x77", 
-                    "channel": "4", 
-                    "address": "0x63"
                 }
             }
         },
@@ -98,8 +72,90 @@
                 "communication": {
                     "bus": "2", 
                     "mux": "0x77", 
-                    "channel": "4", 
+                    "channel": "1", 
                     "address": "0x64"
+                }
+            }
+        },
+        {
+            "name": "AtlasPH-1",
+            "type": "AtlasPH",
+            "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Potential Hydrogen Sensor EZO",
+                    "file_name": "atlas_ph_ezo"
+                },
+                "variables": {
+                    "sensor": {
+                        "potential_hydrogen": "water_potential_hydrogen"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": "water_temperature_celcius"
+                    }
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x63"
+                }
+            }
+        },
+        {
+            "name": "AtlasDO-1",
+            "type": "AtlasDO",
+            "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Dissolved Oxygen Sensor EZO",
+                    "file_name": "atlas_do_ezo"
+                },
+                "variables": {
+                    "sensor": {
+                        "dissolved_oxygen_mg_l": "water_dissolved_oxygen_mg_l"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": "water_temperature_celcius",
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm",
+                        "pressure_kpa": "water_pressure_kpa"
+                    }
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x61"
+                }
+            }
+        },
+        {
+            "name": "LightPanel-1",
+            "type": "LightPanel",
+            "uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+            "parameters": {
+                "setup": {
+                    "name": "Light Panel Taurus Actuator",
+                    "uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+                    "file_name": "light_panel_taurus"
+                },
+                "variables": {
+                    "sensor": {
+                        "intensity_watts": "light_intensity_watts",
+                        "spectrum_normalized_percentage_dict": "light_spectrum_taurus",
+                        "illumination_distance_cm": "light_illumination_distance_cm"
+                    },
+                    "actuator": {
+                        "channel_output_percent_dict": "light_channel_output_percent_dict"
+                    }
+                },
+                "communication": {
+                    "bus": "2", 
+                    "mux": "0x77", 
+                    "channel": "1", 
+                    "address": "0x3c"
                 }
             }
         }
