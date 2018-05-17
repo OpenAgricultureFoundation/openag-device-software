@@ -25,7 +25,7 @@
                 "communication": {
                     "bus": "2", 
                     "mux": "0x77", 
-                    "channel": "1", 
+                    "channel": "4", 
                     "address": "0x64"
                 }
             }

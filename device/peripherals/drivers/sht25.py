@@ -240,11 +240,11 @@ class SHT25(Peripheral):
         # Sensor is not simulated
         self.logger.debug("Reading user register")
 
-        # Send read user register
+        # Get register content
         with threading.Lock():
             self.i2c.write([0xE7])
-            # TODO: we might need a few ms delay here
-            register_content = self.i2c.read(1)
+            time.sleep(0.1)
+            register_content = self.i2c.read(1, disable_mux=True)[0]
 
         # Parse register content
         self.logger.debug("register_content = 0x{:02X}".format(register_content))

@@ -1,9 +1,6 @@
 # Import standard python modules
 import logging, time, threading, json
 
-# Import scipy
-import scipy.interpolate
-
 # Import peripheral parent class
 from device.peripherals.classes.peripheral import Peripheral
 
@@ -260,8 +257,7 @@ class LightPanel(Peripheral):
             output_coefficient_list.append(entry["intensity_normalized"])
 
         # Calculate output percent from linear interpolation of output percent map
-        interpolate_output_percent = scipy.interpolate.interp1d(output_coefficient_list, output_percent_list)
-        output_percent = float(interpolate_output_percent(channel_output_coefficient))
+        output_percent = self.interpolate(output_coefficient_list, output_percent_list, channel_output_coefficient)
 
         # Set significant figures
         output_percent = round(output_percent, 2)
@@ -297,9 +293,7 @@ class LightPanel(Peripheral):
             self.logger.debug("Desired illumination distance: {}cm, max calibrated distance: {}cm".format(distance, max(distance_list)))
 
         # Calculate intensity from linear interpolation of planar distance map then return value
-        interpolate_intensity = scipy.interpolate.interp1d(distance_list, intensity_list)
-        channel_intensity = float(interpolate_intensity(distance))
-
+        channel_intensity = self.interpolate(distance_list, intensity_list, distance)
         return channel_intensity
 
 
