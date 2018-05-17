@@ -99,17 +99,14 @@ if __name__ == "__main__":
         channel = None
         address = None
     elif "--edu1" in sys.argv:
-        print("Config: PFC-EDU v1 -- CONFIGURE ME")
-        bus = None
-        mux =None
-        channel = None
-        address = None
-    else:
-        print("Config: Default")
+        print("Config: PFC-EDU v1")
         bus = 2
-        mux =0x77
-        channel = 1
+        mux = 0x77
+        channel = 3
         address = 0x47
+    else:
+        print("Please specify a device:\n  --fs1\n  --edu1")
+        sys.exit(0)
 
     # Get run options from command line args
     if '--no-mux' in sys.argv:
@@ -157,6 +154,11 @@ if __name__ == "__main__":
         i2c.write([channel])
         sys.exit()
 
+    # Read power down register
+    if logging_enabled: print("Reading power down register value")
+    byte = i2c.read_register(0x40)
+    print("Power Down Register Byte: 0x{:02X}".format(byte))
+
     # Set output
     if set_on:
         turn_on()
@@ -166,6 +168,3 @@ if __name__ == "__main__":
         fade_all()
     elif set_fade_individual:
         fade_individual()
-
-
-
