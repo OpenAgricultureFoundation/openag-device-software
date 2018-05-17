@@ -4,3 +4,4 @@ djangorestframework==3.7.3
 jsonschema==2.6.0
 scipy==1.0.1
 pytest==3.5.1
+pytest-django==3.2.1

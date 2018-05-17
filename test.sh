@@ -19,5 +19,13 @@ fi
 # Activate the python env for this bash process
 source $DIR/venv/bin/activate
 
-# remove the -s to not show print()s from the test code.
-python -m pytest -s tests
+# Note remove the pytest -s arg to not show print()s from the test code.
+
+if [ $# -eq 0 ]; then
+  # No command line args to this script, so run all tests:
+  python -m pytest -s tests 
+else
+  # Run any tests passed on the command line of this script:
+  python -m pytest -s $@
+fi
+
