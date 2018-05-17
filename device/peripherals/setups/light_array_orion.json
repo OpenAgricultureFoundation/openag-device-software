@@ -1,9 +1,9 @@
 {
-	"name":  "Light Panel Taurus Actuator",
+	"name":  "Light Array Orion Actuator",
 	"version": "1",
-	"uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
-	"module_name": "light_panel",
-	"class_name": "LightPanel",
+	"uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+	"module_name": "light_array",
+	"class_name": "LightArray",
 	"parameters": {
 		"variables": {
 			"sensors": {
@@ -36,22 +36,26 @@
 			}
 		},	
 		"communication": {
-			"bus": {
-				"type": "integer",
-				"default": 2
-			},
-			"mux": {
-				"type": "string",
-				"default": "0x77"
-			},
-			"channel": {
-				"type": "integer",
-				"default": 1
-			},
-			"address": {
-				"type": "integer",
-				"default": "0x47"
-			}
+			"devices": [
+				{
+					"bus": {
+						"type": "integer",
+						"default": 2
+					},
+					"mux": {
+						"type": "string",
+						"default": "0x77"
+					},
+					"channel": {
+						"type": "integer",
+						"default": 1
+					},
+					"address": {
+						"type": "integer",
+						"default": "0x47"
+					}
+				}
+			]
 		}
 	},
 	"channel_configs": [
@@ -276,16 +280,6 @@
 		    "value": {
 		        "default": "CW1",
 		        "unit": "Channel"
-		    },
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Set Channel Output",
-		    "description": "Sets channel output to percent.",
-		    "value": {
-		        "default": "CW1, 100",
-		        "unit": "Channel, %"
 		    },
 		    "sequence": null,
 		    "is_manual": true

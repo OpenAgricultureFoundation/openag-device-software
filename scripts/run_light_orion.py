@@ -141,19 +141,14 @@ if __name__ == "__main__":
     set_fade_individual_sequential = False
 
     # Get device config from command line args
-    if "--hz1" in sys.argv:
-        print("Config: Hazel v1")
+    if "--smhz1" in sys.argv:
+        print("Config: Small Hazel v1")
         devices = [
             {"bus": 2, "mux": 0x77, "channel": 2, "address": 0x47, "x": 0, "y": 0},
             {"bus": 2, "mux": 0x77, "channel": 3, "address": 0x47, "x": 1, "y": 0}
         ]
     else:
-        print("Config: Default")
-        devices = [
-            {"bus": 2, "mux": 0x77, "channel": 2, "address": 0x47, "x": 0, "y": 0},
-            {"bus": 2, "mux": 0x77, "channel": 3, "address": 0x47, "x": 1, "y": 0},
-            {"bus": 2, "mux": 0x77, "channel": 4, "address": 0x47, "x": 2, "y": 0}
-        ]
+        print("Please specify configuration:\n  --smhz1")
 
     # Get run options from command line args
     if "--logging" in sys.argv:

@@ -1,6 +1,6 @@
 [
 	{
-		"key": "light_channel_output_percent_dict",
+		"key": "light_channel_output_percents",
 		"info": {
 			"name": {
 				"brief": "Output",
@@ -9,7 +9,7 @@
 			"unit": {
 				"brief": "%",
 				"verbose": "Percent",
-				"type": "number"
+				"type": "object"
 			}
 		}
 	}

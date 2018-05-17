@@ -12,10 +12,6 @@ from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
 # TODO: Refactor this module to clean up flow / naming
-# TODO: Add static type checking
-# TODO: Add better value capture method for events...e.g. not just a single
-#       value named value, give options for dropdowns, toggle buttons, etc
-
 
 class LightPanel(Peripheral):
     """ A multichannel light panel. """
@@ -39,9 +35,9 @@ class LightPanel(Peripheral):
 
         # Initialize variable names
         self.intensity_name = self.parameters["variables"]["sensor"]["intensity_watts"]
-        self.spectrum_name = self.parameters["variables"]["sensor"]["spectrum_normalized_percentage_dict"]
+        self.spectrum_name = self.parameters["variables"]["sensor"]["spectrum_channel_percents"]
         self.illumination_distance_name = self.parameters["variables"]["sensor"]["illumination_distance_cm"]
-        self.channel_output_name = self.parameters["variables"]["actuator"]["channel_output_percent_dict"]
+        self.channel_output_name = self.parameters["variables"]["actuator"]["channel_output_percents"]
 
         # Initialize channel configs
         self.load_channel_configs()
@@ -401,6 +397,8 @@ class LightPanel(Peripheral):
             self.response = self.process_turn_off_channel_event(request)
         elif request["type"] == "Fade Channel":
             self.process_fade_channel_event(request)
+        elif request["type"] == "Set Channel Output":
+            self.response = self.process_set_channel_output_event(request)
         else:
             message = "Unknown event request type!"
             self.logger.info(message)
@@ -602,6 +600,47 @@ class LightPanel(Peripheral):
             return
 
 
+    def process_set_channel_output_event(self, request):
+        """ Processes turn off event. """
+        self.logger.debug("Processing set channel output event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            response = {"status": 400, "message": "Must be in manual mode."}
+            return response
+
+        # Verify value in request
+        try:
+            channel_name, output_percent = request["value"].split(",")
+            output_percent = float(output_percent)
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            return response
+
+        # Check channel name in channel outputs
+        if channel_name not in self.channel_outputs.keys():
+            response = {"status": 400, "message": "Invalid channel name."}
+            return response
+
+        # Check valid channel output percent
+        if output_percent < 0 or output_percent > 100:
+            response = {"status": 400, "message": "Invalid channel name."}
+            return response
+
+        # Execute request
+        try:
+            self.set_channel_output(channel_name, output_percent)
+            response = {"status": 200, "message": "Set light channel `{}` to {}%!".format(channel_name, output_percent)}
+            return response
+        except Exception as e:
+            self.error = "Unable to turn light channel `{}` to {}%".format(channel_name, output_percent)
+            self.logger.exception(self.error)
+            self.mode = Modes.ERROR
+            response = {"status": 500, "message": self.error}
+            return response
+
+
 ############################# Hardware Interactions ###########################
 
 
@@ -623,6 +662,28 @@ class LightPanel(Peripheral):
             self.logger.exception("Unable to set channel outputs")
             self._missed_readings += 1
         self.update_health()
+
+
+    def set_channel_output(self, channel_name, output_percent):
+        """ Sets channel output on hardware. Converts each channel output 
+            percent to output byte then sends update command to hardware. 
+            Assumes channel config dict keys are verified. """
+
+        # Update channel outputs
+        output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
+        software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
+        channel_outputs = self.channel_outputs
+        channel_outputs[channel_name] = output_percent
+        self.channel_outputs = channel_outputs
+       
+        # Check if sensor is simulated
+        if self.simulate:
+            self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+            return
+            
+        # Sensor is not simulated
+        self.logger.info("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+        self.i2c.write([0x30+software_channel, output_byte, 0x00])
 
 
 ################# Hardware Interaction Helper Functions #######################

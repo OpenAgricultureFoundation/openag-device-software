@@ -1,17 +1,17 @@
 {	
     "format": "openag-standard-v1",
-    "name": "PFC-EDU - Light Panel Only",
+    "name": "Small Hazelnut - Light Array Only",
     "version": "1",
-    "uuid": "7be845ec-216c-4898-9bcf-f533764b7c26",
+    "uuid": "65dba26a-f9b4-48d7-a8d5-d180645cf4c6",
     "peripherals": [
         {
-            "name": "LightPanel-1",
-            "type": "LightPanel",
+            "name": "LightArray-1",
+            "type": "LightArray",
             "uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
             "parameters": {
-                "setup": {
-                    "name": "Light Panel Taurus Actuator",
-                    "file_name": "light_panel_taurus"
+               "setup": {
+                    "name": "Light Array Orion Actuator",
+                    "file_name": "light_array_orion"
                 },
                 "variables": {
                     "sensor": {
@@ -24,10 +24,10 @@
                     }
                 },
                 "communication": {
-                    "bus": "2", 
-                    "mux": "0x77", 
-                    "channel": "1", 
-                    "address": "0x3c"
+                    "devices": [
+                        {"bus": 2, "mux": "0x77", "channel": 0, "address": "0x47", "x": 0, "y": 0},
+                        {"bus": 2, "mux": "0x77", "channel": 1, "address": "0x47", "x": 1, "y": 0}
+                    ]
                 }
             }
         }

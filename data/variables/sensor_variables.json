@@ -98,16 +98,16 @@
 		}
 	},
 	{
-		"key": "light_spectrum_taurus",
+		"key": "light_spectrum_channel_percents",
 		"info": {
 			"name": {
 				"brief": "Spectrum",
-				"verbose": "Light Spectrum Taurus"
+				"verbose": "Light Spectrum Channel Percents"
 			},
 			"unit": {
 				"brief": "%",
 				"verbose": "Percent",
-				"type": "normalized_percentage_array"
+				"type": "object"
 			}
 		}
 	},
@@ -136,20 +136,6 @@
 				"brief": "ppm",
 				"verbose": "Parts Per Million",
 				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "nutrient_spectrum_virgo",
-		"info": {
-			"name": {
-				"brief": "Nutrient Spectrum",
-				"verbose": "Nutrient Spectrum Virgo"
-			},
-			"unit": {
-				"brief": "N,P,K",
-				"verbose": "Nitrogen, Phosphorus, Potassium",
-				"type": "normalized_percentage_array"
 			}
 		}
 	}
