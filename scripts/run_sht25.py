@@ -28,13 +28,13 @@ if __name__ == "__main__":
         print("Config: PFC-EDU v1")
         bus = 2
         mux =0x77
-        channel = 1
+        channel = 2
         address = 0x40
     else:
         print("Config: Default")
         bus = 2
         mux =0x77
-        channel = 1
+        channel = 2
         address = 0x40
 
     # Get run options from command line args

@@ -2,6 +2,5 @@ Django==1.11.4
 psycopg2-binary==2.7.4
 djangorestframework==3.7.3
 jsonschema==2.6.0
-scipy==1.0.1
 pytest==3.5.1
 pytest-django==3.2.1

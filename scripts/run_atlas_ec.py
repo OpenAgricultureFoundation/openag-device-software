@@ -22,19 +22,19 @@ if __name__ == "__main__":
         print("Config: Food Server Rack v1")
         bus = 2
         mux =0x77
-        channel = 1
+        channel = 4
         address = 0x64
     elif "--edu1" in sys.argv:
         print("Config: PFC-EDU v1")
         bus = 2
         mux =0x77
-        channel = 1
+        channel = 4
         address = 0x64
     else:
         print("Config: Default")
         bus = 2
         mux =0x77
-        channel = 1
+        channel = 4
         address = 0x64
 
     # Get run options from command line args

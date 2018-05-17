@@ -30,21 +30,6 @@ class Atlas(Peripheral):
         self.establish_i2c_connection()
 
 
-
-        # # Initialize i2c mux parameters
-        # self.parameters = self.config["parameters"]
-        # self.bus = int(self.parameters["communication"]["bus"])
-        # self.mux = int(self.parameters["communication"]["mux"], 16) # Convert from hex string
-        # self.channel = int(self.parameters["communication"]["channel"])
-        # self.address = int(self.parameters["communication"]["address"], 16) # Convert from hex string
-        
-        # # Initialize I2C communication if sensor not simulated
-        # if not self.simulate:
-        #     self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-        #         self.bus, self.mux, self.channel, self.address))
-        #     self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
-
-
     def process_command(self, command_string, processing_seconds, 
             num_response_bytes=31, read_retry=True, read_response=True):
         """ Sends command string to device, waits for processing seconds, then
@@ -105,7 +90,7 @@ class Atlas(Peripheral):
 ############################# Main Helper Functions ###########################
 
 
-    def perform_initial_health_check(self):
+    def check_health(self):
         """ Performs initial health check by reading device status. """
         self.logger.info("Performing initial health check")
 
@@ -141,7 +126,7 @@ class Atlas(Peripheral):
         self.logger.debug("Enabling protocol lock in hardware")
 
         # Send enable protocol lock command to hardware
-        self.process_command("Plock,1", processing_seconds=0.3)
+        self.process_command("Plock,1", processing_seconds=0.6) # was 0.3
 
 
     def disable_protocol_lock(self):
@@ -156,7 +141,7 @@ class Atlas(Peripheral):
         self.logger.debug("Disabling protocol lock in hardware")
 
         # Send disable protocol lock command to hardware
-        self.process_command("Plock,0", processing_seconds=0.3)
+        self.process_command("Plock,0", processing_seconds=0.6) # was 0.3
 
 
     def enable_led(self):
