@@ -320,6 +320,7 @@ class DeviceManager:
         self.create_controller_managers()
         self.spawn_controller_threads()
 
+#debugrob: if in simulated mode, the peripherals NEVER initialize!  need to figure out how to save their state (need mode != init).
         # Wait for all threads to initialize
         while not self.all_threads_initialized():
             time.sleep(0.2)
@@ -380,6 +381,8 @@ class DeviceManager:
         # Kills peripheral and controller threads
         self.kill_peripheral_threads()
         self.kill_controller_threads()
+        self.recipe.stop()
+        self.event.stop()
 
         # Clear errors
         self.error = Errors.NONE
@@ -821,14 +824,16 @@ class DeviceManager:
 
     def kill_peripheral_threads(self):
         """ Kills all peripheral threads. """
-        for peripheral_name in self.peripherals:
-            self.peripherals[peripheral_name].thread_is_active = False
+#debugrob: TODO this needs work
+        #for peripheral_name in self.state.peripherals:
+        #    self.state.peripherals[peripheral_name].thread_is_active = False
 
 
     def kill_controller_threads(self):
         """ Kills all controller threads. """
-        for controller_name in self.controller:
-            self.controller[controller_name].thread_is_active = False
+#debugrob: TODO this needs work
+        #for controller_name in self.state.controller:
+        #    self.state.controller[controller_name].thread_is_active = False
 
 
     def shutdown_peripheral_threads(self):

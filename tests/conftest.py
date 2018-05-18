@@ -5,7 +5,6 @@ from django.conf import settings
 # This is similar to what occurs in the `manage.py`
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
 
-
 # `pytest` automatically calls this function once when tests are run.
 def pytest_configure():
     settings.DEBUG = False
@@ -16,11 +15,21 @@ def pytest_configure():
     # )
     django.setup()
 
+# Configure access to our database. We need to do this to run the tests.
+@pytest.fixture(scope='session')
+def django_db_setup():
+    settings.DATABASES['default'] = {
+        'USER': 'openag',
+        'PASSWORD': 'openag',
+        'NAME': 'openag_brain',
+        'ENGINE': 'django.db.backends.postgresql',
+    }
 
-#debugrob: get DB creation errors, how do we set the correct postgres DB user?
-# give django database access to all tests 
-#@pytest.fixture(autouse=True)
-#def enable_db_access_for_all_tests(db):
-#    pass
+# Give django database access to all tests.
+# The alternative is to mark just the test functions that need DB access with:
+#    @pytest.mark.django_db
+@pytest.fixture(autouse=True)
+def enable_db_access_for_all_tests(db):
+    pass
 
 

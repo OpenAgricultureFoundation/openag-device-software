@@ -376,14 +376,26 @@ class RecipeManager:
 
     def spawn(self):
         """ Spawns recipe thread. """
+        self._stop_event = threading.Event() # so we can stop this thread
         self.thread = threading.Thread(target=self.run_state_machine)
         self.thread.daemon = True
         self.thread.start()
 
 
+    def stop(self):
+        self._stop_event.set()
+
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+
     def run_state_machine(self):
         """ Runs recipe state machine. """
         while True:
+            if self.stopped():
+                break
+                        
             if self.mode == Modes.INIT:
                 self.run_init_mode()
             if self.mode == Modes.NORECIPE:
