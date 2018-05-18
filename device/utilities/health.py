@@ -18,6 +18,16 @@ class Health:
                 self.healthy, self.percent, self.minimum, self.updates)
 
 
+    def report_success(self):
+        """ Reports sucessful update. """
+        self.update(successful=True)
+
+
+    def report_failure(self):
+        """ Reports failed update. """
+        self.update(successful=False)
+
+
     def update(self, successful):
         """ Updates health. """
 

@@ -1,10 +1,9 @@
 # Import standard python libraries
-import fcntl, io, time, logging
+import fcntl, io, time, logging, threading
 from ctypes import *
 import struct
 
 
-# TODO: handle opening / closing dunders, etc.
 # TODO: test if atlas sensors work with single file manager
 # TODO: add more descriptive error messages
 
@@ -46,9 +45,36 @@ class I2C(object):
             self.frw = io.open("/dev/i2c-" + str(bus), "r+b", buffering=0)
 
 
+    def __del__(self):
+        """Clean up any resources used by the I2c instance."""
+        self.close()
+
+
+    def __enter__(self):
+        """Context manager enter function."""
+        # Just return this object so it can be used in a with statement, like
+        # with I2C(..) as i2c:
+        #     # do stuff!
+        return self
+
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit function, ensures resources are cleaned up."""
+        self.close()
+        return False  # Don't suppress exceptions.
+
+
     def write(self, byte_list, disable_mux=False):
         """ Writes byte list to device. Converts byte list to byte array then 
             sends bytes. Returns error message. """
+
+        # Verify byte list is a list
+        if type(byte_list) != list:
+            raise ValueError("byte_list must be a list")
+
+        # Verify byte list is a list of ints
+        if type(byte_list[0]) != int:
+            raise ValueError("byt_list must be a list of ints")
 
         # Handle mux interactions
         error = self.manage_mux(disable_mux=disable_mux)
@@ -62,16 +88,17 @@ class I2C(object):
         byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
 
         # Check if i2c is simulated
-        if self.simulated:
+        if self.simulate:
             self.logger.debug("Simulating writing: {}".format(byte_string))
             return None
 
         # I2c is not simulated!
         try:
-            self.logger.debug("Writing: {}".format(byte_string))
-            fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
-            self.fw.write(byte_array)
-            return None
+            with threading.Lock():
+                self.logger.debug("Writing: {}".format(byte_string))
+                fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
+                self.fw.write(byte_array)
+                return None
         except:
             return "Write failed" # TODO: handle specific exceptions
 
@@ -87,22 +114,24 @@ class I2C(object):
             return error
 
         # Check if i2c is simulated
-        if self.simulated:
+        if self.simulate:
             self.logger.debug("Simulating writing: {}".format(bytes_))
             return None
 
         # I2c is not simulated!
         try:
-            self.logger.debug("Writing: {}".format(bytes_))
-            fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
-            self.fw.write(bytes)
-            return None
+            with threading.Lock():
+                self.logger.debug("Writing: {}".format(bytes_))
+                fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
+                self.fw.write(bytes)
+                return None
         except:
             return "Write raw failed" # TODO: handle specific exceptions
 
 
     def read(self, num_bytes, disable_mux=False):
         """ Reads num bytes from device. Returns byte array. """
+        self.logger.debug("Reading {} bytes".format(num_bytes))
 
         # Handle mux interactions
         error = self.manage_mux(disable_mux=disable_mux)
@@ -120,12 +149,13 @@ class I2C(object):
 
         # I2c is not simulated!
         try:
-            fcntl.ioctl(self.fr, self.I2C_SLAVE, self.address)
-            raw_bytes = self.fr.read(num_bytes)
-            byte_array = bytearray(raw_bytes)
-            byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
-            self.logger.debug("Read: {}".format(byte_string))
-            return byte_array, None
+            with threading.Lock():
+                fcntl.ioctl(self.fr, self.I2C_SLAVE, self.address)
+                raw_bytes = self.fr.read(num_bytes)
+                byte_array = bytearray(raw_bytes)
+                byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
+                self.logger.debug("Read: {}".format(byte_string))
+                return byte_array, None
         except:
             return None, "Read failed" # TODO: handle specific exceptions
 
@@ -148,10 +178,11 @@ class I2C(object):
 
         # I2c is not simulated!
         try:
-            self.fr = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
-            bytes_ = self.fr.read(num_bytes)
-            self.logger.debug("Read raw: {}".format(bytes_))
-            return bytes_, None
+            with threading.Lock():
+                self.fr = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
+                bytes_ = self.fr.read(num_bytes)
+                self.logger.debug("Read raw: {}".format(bytes_))
+                return bytes_, None
         except:
             return None, "Read raw failed" # TODO: handle specific exceptions
 
@@ -174,16 +205,17 @@ class I2C(object):
 
         # I2c is not simulated!
         try:
-            reg = c_uint8(register_address)
-            result = c_uint8()
-            request = self.make_i2c_rdwr_data([
-                (self.address, 0, 1, pointer(reg)), # write cmd register
-                (self.address, self.I2C_M_RD, 1, pointer(result)) # read 1 byte as result
-            ])
-            fcntl.ioctl(self.frw.fileno(), self.I2C_RDWR, request)
-            byte_ = result.value
-            self.logger.debug("Read register: {}".format(byte_))
-            return byte_, None
+            with threading.Lock():
+                reg = c_uint8(register_address)
+                result = c_uint8()
+                request = self.make_i2c_rdwr_data([
+                    (self.address, 0, 1, pointer(reg)), # write cmd register
+                    (self.address, self.I2C_M_RD, 1, pointer(result)) # read 1 byte as result
+                ])
+                fcntl.ioctl(self.frw.fileno(), self.I2C_RDWR, request)
+                byte_ = result.value
+                self.logger.debug("Read register: {}".format(byte_))
+                return byte_, None
         except:
             return None, "Read register failed" # TODO: handle specific exceptions
 
@@ -192,11 +224,11 @@ class I2C(object):
         """ Sets mux to channel if enabled. """
 
         # Check if mux requires update
-        if not self.mux_enabled and disable_mux:
+        if not self.mux_enabled or disable_mux:
             return None
 
         # Build byte array and string
-        channel_byte = 0x01 << channel
+        channel_byte = 0x01 << self.channel
         byte_list = [channel_byte]
         byte_array = bytearray(byte_list)
         byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
@@ -209,19 +241,21 @@ class I2C(object):
 
         # Mux is not simulated!
         try:
-            self.logger.debug("Setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
-                self.mux, self.channel, channel_byte))
-            fcntl.ioctl(self.fw, self.I2C_SLAVE, self.mux)
-            self.fw.write(byte_array)
+            with threading.Lock():
+                self.logger.debug("Setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
+                    self.mux, self.channel, channel_byte))
+                fcntl.ioctl(self.fw, self.I2C_SLAVE, self.mux)
+                self.fw.write(byte_array)
         except:
-            return "Manage mux failed" # TODO; handle specific exceptions
+            return "Manage mux failed" # TODO: handle specific exceptions
 
 
     def close(self):
         """ Closes device. """
-        self.fw.close()
-        self.fr.close()
-        self.frw.close()
+        if not self.simulate:
+            self.fw.close()
+            self.fr.close()
+            self.frw.close()
 
 
 ################################# Helper Functions ############################

@@ -5,6 +5,10 @@ import logging, time
 from device.utilities.health import Health
 
 
+
+# TODO: delete this.....until we have another driver class type
+
+
 class Driver:
     """ A device driver for the lowest level of hardware interactions with an IC. """
     health = Health()
