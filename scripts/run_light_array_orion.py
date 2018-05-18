@@ -9,7 +9,7 @@ import time, logging
 from device.comms.i2c import I2C
 
 
-class LightArrayTaurus:
+class LightArrayOrion:
     """ An array of taurus light panels. """
 
     # Fade parameters
@@ -176,7 +176,7 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.DEBUG)
 
     # Instantiate light array taurus
-    light_array_taurus = LightArrayTaurus(devices)
+    light_array_taurus = LightArrayOrion(devices)
 
     # Set output
     if set_on:

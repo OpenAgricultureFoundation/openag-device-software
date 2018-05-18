@@ -57,26 +57,18 @@ class LightPanel(Peripheral):
         self.distance = None
         self.health = 100
 
-        # Start with light panel off
-        self.turn_off_output()
-
         # Perform initial health check
-        self.perform_initial_health_check()
+        self.check_health()
 
 
     def setup(self):
         """ Sets up actuator. Useful for actuators with warm up times >200ms """
-        
-        # Check for simulated sensor
-        if self.simulate:
-            self.logger.info("Simulating sensor setup")
-            return
-        else:
-            self.logger.debug("Setting up sensor")
+        self.logger.debug("Setting up sensor")
 
         # Setup sensor
         try:    
-            # TODO: Do something
+           # Start with light panel off
+            self.turn_off_output()
             self.logger.debug("Successfully setup sensor")
         except:
             self.logger.exception("Sensor setup failed")
@@ -155,19 +147,23 @@ class LightPanel(Peripheral):
             self.channel_config_dict[channel_key] = channel_config
 
 
-    def perform_initial_health_check(self):
-        """ Performs initial health check by TODO: this. """
+    def check_health(self):
+        """ Performs initial health check by reading power down register and
+            verifying device is powered on. """
 
         # Check for simulated sensor
         if self.simulate:
             self.logger.info("Simulating initial health check")
             return
-        else:
-            self.logger.info("Performing initial health check")
+        
+        # Sensor is not simulated!
+        self.logger.info("Performing initial health check")
 
-        # Check sensor health
+        # Interact with hardware
         try:
-            # TODO: Do something
+            power_down_byte = self.read_power_down_register()
+            if power_down_byte != 0x00:
+                raise ValueError("Invalid power down byte")
             self.logger.debug("Passed initial health check")
         except:
             self.logger.exception("Failed initial health check")
@@ -654,15 +650,21 @@ class LightPanel(Peripheral):
             for channel_name, output_percent in channel_outputs.items():
                 output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
                 software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
-                if not self.simulate:
-                    self.i2c.write([0x30+software_channel, output_byte, 0x00])
-                else:
-                    self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-            self.channel_outputs = channel_outputs
+                self.channel_outputs = channel_outputs
+
+                # Check if sensor is simulated
+                if self.simulate:
+                    self.logger.debug("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+                    return
+
+                # Sensor is not simulated!
+                self.logger.debug("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+                self.i2c.write([0x30+software_channel, output_byte, 0x00])
         except:
             self.channel_outputs = None
             self.logger.exception("Unable to set channel outputs")
             self._missed_readings += 1
+        
         self.update_health()
 
 
@@ -680,12 +682,25 @@ class LightPanel(Peripheral):
        
         # Check if sensor is simulated
         if self.simulate:
-            self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+            self.logger.debug("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
             return
             
         # Sensor is not simulated
-        self.logger.info("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+        self.logger.debug("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
         self.i2c.write([0x30+software_channel, output_byte, 0x00])
+
+
+    def read_power_down_register(self):
+        """ Reads power down register and return byte. """
+
+        # Check if sensor is simulated
+        if self.simulate:
+            self.logger.debug("Simulating reading power down register")
+            return 0x00
+
+        # Sensor is not simulated!
+        self.logger.debug("Reading power down register")
+        return self.i2c.read_register(0x40)
 
 
 ################# Hardware Interaction Helper Functions #######################

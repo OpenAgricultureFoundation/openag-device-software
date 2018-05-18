@@ -65,148 +65,6 @@ class Peripheral:
         self.setup_uuid = self.setup_dict["uuid"]
 
 
-########################## Setter & Getter Functions ##########################
-
-
-    @property
-    def mode(self):
-        """ Gets mode value. """
-        return self._mode
-
-
-    @mode.setter
-    def mode(self, value):
-        """ Safely updates peripheral mode in device state object. """
-        self._mode = value
-        self.logger.debug("mode = {}".format(value))
-        with threading.Lock():
-            if self.name not in self.state.peripherals:
-                self.state.peripherals[self.name] = {}
-            self.state.peripherals[self.name]["mode"] = value
-
-
-    @property
-    def commanded_mode(self):
-        """ Gets commanded mode from shared state object. """
-        if self.name in self.state.peripherals and \
-            "commanded_mode" in self.state.peripherals[self.name]:
-            return self.state.peripherals[self.name]["commanded_mode"]
-        else:
-            return None
-
-
-    @commanded_mode.setter
-    def commanded_mode(self, value):
-        """ Safely updates commanded mode in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["commanded_mode"] = value
-
-
-    @property
-    def setup_uuid(self):
-        """ Gets setup uuid from shared state object. """
-        if self.name in self.state.peripherals and \
-            "setup_uuid" in self.state.peripherals[self.name]:
-            return self.state.peripherals[self.name]["setup_uuid"]
-        else:
-            return None
-
-
-    @setup_uuid.setter
-    def setup_uuid(self, value):
-        """ Safely updates setup uuid in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["setup_uuid"] = value
-
-
-    @property
-    def sampling_interval_seconds(self):
-        """ Gets sampling interval from shared state object. """
-        if self.name in self.state.peripherals and \
-            "stored" in self.state.peripherals[self.name] and \
-            "sampling_interval_seconds" in self.state.peripherals[self.name]["stored"]:
-            return self.state.peripherals[self.name]["stored"]["sampling_interval_seconds"]
-        else:
-            self.sampling_interval_seconds = self._default_sampling_interval_seconds
-            return self._default_sampling_interval_seconds
-
-
-    @sampling_interval_seconds.setter
-    def sampling_interval_seconds(self, value):
-        """ Safely updates sampling interval in state object. """
-        with threading.Lock():
-            if "stored" not in self.state.peripherals[self.name]:
-                self.state.peripherals[self.name]["stored"] = {}
-            self.state.peripherals[self.name]["stored"]["sampling_interval_seconds"] = value
-
-
-    @property
-    def request(self):
-        """ Gets request from shared state object. """
-        if self.name in self.state.peripherals and \
-            "request" in self.state.peripherals[self.name]:
-            return self.state.peripherals[self.name]["request"]
-        else:
-            return None
-
-
-    @request.setter
-    def request(self, value):
-        """ Safely updates request in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["request"] = value
-
-
-    @property
-    def response(self):
-        """ Gets response from shared state object. """
-        if self.name in self.state.peripherals and \
-            "response" in self.state.peripherals[self.name]:
-            return self.state.peripherals[self.name]["response"]
-        else:
-            return None
-
-
-    @response.setter
-    def response(self, value):
-        """ Safely updates request in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["response"] = value
-
-
-    @property
-    def error(self):
-        """ Gets error value. """
-        return self._error
-
-
-    @error.setter
-    def error(self, value):
-        """ Safely updates peripheral in shared state. """
-        self._error= value
-        with threading.Lock():
-            if self.name not in self.state.peripherals:
-                self.state.peripherals[self.name] = {}
-            self.state.peripherals[self.name]["error"] = value
-
-
-    @property
-    def health(self):
-        """ Gets health value. """
-        return self._health
-
-
-    @health.setter
-    def health(self, value):
-        """ Safely updates health in device state each time 
-            it is c hanged. """
-        self._health = value
-        self.logger.debug("Health: {}".format(value))
-        with threading.Lock():
-            self.report_health(self._health)
-
-
-
 ############################ State Machine Functions ##########################
 
 
@@ -470,6 +328,34 @@ class Peripheral:
             self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
                 self.bus, self.mux, self.channel, self.address))
             self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
+
+
+    def establish_i2c_connections(self): 
+        """ Establishes i2c connections. Gets i2c parameters from config and 
+            opens i2c communication if sensor is not simulated. """
+
+        # Get device parameters
+        self.device_params = self.parameters["communication"]["devices"]
+
+        # Initialize devices 
+        self.devices = []
+        for device_param in self.device_params:
+            bus = device_param["bus"]
+            address = int(device_param["address"], 16)
+            mux = int(device_param["mux"], 16)
+            channel = device_param["channel"]
+            device = Device(bus, mux, channel, address)
+
+            # Open i2c communication if sensor not simulated
+            if not self.simulate:
+                self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
+                    self.bus, self.mux, self.channel, self.address))
+                device.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
+
+            self.logger.debug("Created device: {}".format(device))
+
+            # Append to devices
+            self.devices.append(device)
 
 
     def load_setup_dict_from_file(self): 
@@ -747,6 +633,148 @@ class Peripheral:
         return response
 
 
+########################## Setter & Getter Functions ##########################
+
+
+    @property
+    def mode(self):
+        """ Gets mode value. """
+        return self._mode
+
+
+    @mode.setter
+    def mode(self, value):
+        """ Safely updates peripheral mode in device state object. """
+        self._mode = value
+        self.logger.debug("mode = {}".format(value))
+        with threading.Lock():
+            if self.name not in self.state.peripherals:
+                self.state.peripherals[self.name] = {}
+            self.state.peripherals[self.name]["mode"] = value
+
+
+    @property
+    def commanded_mode(self):
+        """ Gets commanded mode from shared state object. """
+        if self.name in self.state.peripherals and \
+            "commanded_mode" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["commanded_mode"]
+        else:
+            return None
+
+
+    @commanded_mode.setter
+    def commanded_mode(self, value):
+        """ Safely updates commanded mode in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["commanded_mode"] = value
+
+
+    @property
+    def setup_uuid(self):
+        """ Gets setup uuid from shared state object. """
+        if self.name in self.state.peripherals and \
+            "setup_uuid" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["setup_uuid"]
+        else:
+            return None
+
+
+    @setup_uuid.setter
+    def setup_uuid(self, value):
+        """ Safely updates setup uuid in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["setup_uuid"] = value
+
+
+    @property
+    def sampling_interval_seconds(self):
+        """ Gets sampling interval from shared state object. """
+        if self.name in self.state.peripherals and \
+            "stored" in self.state.peripherals[self.name] and \
+            "sampling_interval_seconds" in self.state.peripherals[self.name]["stored"]:
+            return self.state.peripherals[self.name]["stored"]["sampling_interval_seconds"]
+        else:
+            self.sampling_interval_seconds = self._default_sampling_interval_seconds
+            return self._default_sampling_interval_seconds
+
+
+    @sampling_interval_seconds.setter
+    def sampling_interval_seconds(self, value):
+        """ Safely updates sampling interval in state object. """
+        with threading.Lock():
+            if "stored" not in self.state.peripherals[self.name]:
+                self.state.peripherals[self.name]["stored"] = {}
+            self.state.peripherals[self.name]["stored"]["sampling_interval_seconds"] = value
+
+
+    @property
+    def request(self):
+        """ Gets request from shared state object. """
+        if self.name in self.state.peripherals and \
+            "request" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["request"]
+        else:
+            return None
+
+
+    @request.setter
+    def request(self, value):
+        """ Safely updates request in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["request"] = value
+
+
+    @property
+    def response(self):
+        """ Gets response from shared state object. """
+        if self.name in self.state.peripherals and \
+            "response" in self.state.peripherals[self.name]:
+            return self.state.peripherals[self.name]["response"]
+        else:
+            return None
+
+
+    @response.setter
+    def response(self, value):
+        """ Safely updates request in state object. """
+        with threading.Lock():
+            self.state.peripherals[self.name]["response"] = value
+
+
+    @property
+    def error(self):
+        """ Gets error value. """
+        return self._error
+
+
+    @error.setter
+    def error(self, value):
+        """ Safely updates peripheral in shared state. """
+        self._error= value
+        with threading.Lock():
+            if self.name not in self.state.peripherals:
+                self.state.peripherals[self.name] = {}
+            self.state.peripherals[self.name]["error"] = value
+
+
+    @property
+    def health(self):
+        """ Gets health value. """
+        return self._health
+
+
+    @health.setter
+    def health(self, value):
+        """ Safely updates health in device state each time 
+            it is c hanged. """
+        self._health = value
+        self.logger.debug("Health: {}".format(value))
+        with threading.Lock():
+            self.report_health(self._health)
+
+
+
 ############################# Utility Functions ###############################
 
     # TODO: Move these into another file..
@@ -817,4 +845,36 @@ class Peripheral:
         y = m * x
         return y
 
+
+########################## Data Classes ##########################
+
+
+class Health:
+    def __init__(self, minimum=80, num_update_readings=20)
+        self.value = 100
+        self.minimum = minimum
+        self.num_update_readings = readings
+        self.readings_count = 0
+        self.missed_readings = 0
+
+    def __str__(self):
+        return "Health(\
+            value={}, minimum={}, num_update_reading={}, readings_count={}" \
+            "missed_readings={})".format(self.value, self.minimum, self.num_update_readings 
+                self.readings_count, self.missed_readings)
+
+
+class Device:
+    def __init__(self, name, bus, mux, channel, address):
+        self.name = name
+        self.bus = bus
+        self.mux = mux
+        self.channel = channel
+        self.address = address
+        self.i2c = None
+        self.health = Health()
+
+    def __str__(self):
+        return "Device(name={}, bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}, i2c={}, health={})".format(
+            self.name, self.bus, self.mux, self.channel, self.address, self.i2c, self.health)
 
