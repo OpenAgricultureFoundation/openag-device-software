@@ -16,13 +16,6 @@ class Peripheral:
     _mode = None
     _error = None
 
-    # Initialize health metrics
-    _health = None
-    _minimum_health = 80.0
-    _missed_readings = 0
-    _readings_count = 0
-    _readings_per_health_update = 20
-
     # Initialize thread terminator
     thread_is_active = True
 
@@ -36,7 +29,7 @@ class Peripheral:
     def __init__(self, name, state, config, simulate=False):
         """ Initializes peripheral. """
 
-        # Initialize passed in arguments
+        # Initialize passed in parameters
         self.name = name
         self.state = state
         self.config = config
@@ -47,10 +40,6 @@ class Peripheral:
         logger = logging.getLogger(__name__)
         self.logger = logging.LoggerAdapter(logger, extra)
 
-        # Log simulation mode if enabled
-        if self.simulate:
-            self.logger.info("Simulating sensor")
-
         # Initialize modes and errors
         self.mode = Modes.INIT
         self.error = Errors.NONE
@@ -58,11 +47,16 @@ class Peripheral:
         # Load config parameters
         self.parameters = self.config["parameters"]
 
-        # Load setup dict
-        self.load_setup_dict_from_file()
-
-        # Load setup uuid
+        # Load setup dict and uuid
+        self.setup_dict = self.load_setup_dict_from_file()
         self.setup_uuid = self.setup_dict["uuid"]
+
+
+############################ Child Functions ##################################
+
+    
+    def check_health(self):
+        raise NotImplementedError
 
 
 ############################ State Machine Functions ##########################
@@ -95,8 +89,8 @@ class Peripheral:
             elif self.mode == Modes.SHUTDOWN:
                 self.run_shutdown_mode()
             else:
-                self.error = Errors.INVALID_MODE
-                self.logger.critical("Entered invalid mode")
+                self.error = "Invalid mode"
+                self.logger.critical(self.error)
 
 
     def run_init_mode(self):
@@ -258,14 +252,8 @@ class Peripheral:
         """ Runs reset mode. Clears error state then transitions to INIT. """
         self.logger.info("Entered RESET")
 
-        # Reset sensor
+        # Reset peripheral
         self.reset()
-
-        # Clear error state
-        self.error = Errors.NONE
-
-        # Reset health
-        self.health = 100
 
         # Transition to init
         self.mode = Modes.INIT
@@ -311,58 +299,59 @@ class Peripheral:
 ############################# Main Helper Functions ###########################
 
 
-    def establish_i2c_connection(self): 
-        """ Establishes i2c connection. Gets i2c parameters from config and 
-            opens i2c communication if sensor is not simulated. """
+    # def establish_i2c_connection(self): 
+    #     """ Establishes i2c connection. Gets i2c parameters from config and 
+    #         opens i2c communication if sensor is not simulated. """
 
-        # Get basic i2c parameters
-        self.bus = int(self.parameters["communication"]["bus"])
-        self.address = int(self.parameters["communication"]["address"], 16)
+    #     # Get basic i2c parameters
+    #     self.bus = int(self.parameters["communication"]["bus"])
+    #     self.address = int(self.parameters["communication"]["address"], 16)
 
-        # Get mux i2c parameters TODO: if enabled
-        self.mux = int(self.parameters["communication"]["mux"], 16)
-        self.channel = int(self.parameters["communication"]["channel"])
+    #     # Get mux i2c parameters TODO: if enabled
+    #     self.mux = int(self.parameters["communication"]["mux"], 16)
+    #     self.channel = int(self.parameters["communication"]["channel"])
 
-        # Open i2c communication if sensor not simulated
-        if not self.simulate:
-            self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-                self.bus, self.mux, self.channel, self.address))
-            self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
+    #     # Open i2c communication if sensor not simulated
+    #     if not self.simulate:
+    #         self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
+    #             self.bus, self.mux, self.channel, self.address))
+    #         self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
 
 
-    def establish_i2c_connections(self): 
-        """ Establishes i2c connections. Gets i2c parameters from config and 
-            opens i2c communication if sensor is not simulated. """
+    # def establish_i2c_connections(self): 
+    #     """ Establishes i2c connections. Gets i2c parameters from config and 
+    #         opens i2c communication if sensor is not simulated. """
 
-        # Get device parameters
-        self.device_params = self.parameters["communication"]["devices"]
+    #     # Get device parameters
+    #     self.device_params = self.parameters["communication"]["devices"]
 
-        # Initialize devices 
-        self.devices = []
-        for device_param in self.device_params:
-            bus = device_param["bus"]
-            address = int(device_param["address"], 16)
-            mux = int(device_param["mux"], 16)
-            channel = device_param["channel"]
-            device = Device(bus, mux, channel, address)
+    #     # Initialize devices 
+    #     self.devices = []
+    #     for device_param in self.device_params:
+    #         bus = device_param["bus"]
+    #         address = int(device_param["address"], 16)
+    #         mux = int(device_param["mux"], 16)
+    #         channel = device_param["channel"]
+    #         device = Device(bus, mux, channel, address)
 
-            # Open i2c communication if sensor not simulated
-            if not self.simulate:
-                self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-                    self.bus, self.mux, self.channel, self.address))
-                device.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
+    #         # Open i2c communication if sensor not simulated
+    #         if not self.simulate:
+    #             self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
+    #                 self.bus, self.mux, self.channel, self.address))
+    #             device.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
 
-            self.logger.debug("Created device: {}".format(device))
+    #         self.logger.debug("Created device: {}".format(device))
 
-            # Append to devices
-            self.devices.append(device)
+    #         # Append to devices
+    #         self.devices.append(device)
 
 
     def load_setup_dict_from_file(self): 
         """ Loads setup dict from setup filename parameter. """
         self.logger.debug("Loading setup file")
         file_name = self.parameters["setup"]["file_name"]
-        self.setup_dict = json.load(open("device/peripherals/setups/" + file_name + ".json"))
+        setup_dict = json.load(open("device/peripherals/setups/" + file_name + ".json"))
+        return setup_dict
 
 
     # TODO: change this name
@@ -474,27 +463,27 @@ class Peripheral:
             self.state.peripherals[self.name]["reported_actuator"][variable] = value
 
 
-    def update_health(self):
-        """ Updates sensor health. """
+    # def update_health(self):
+    #     """ Updates sensor health. """
 
-        # Increment readings count
-        self._readings_count += 1
+    #     # Increment readings count
+    #     self._readings_count += 1
 
-        # Update health after specified number of readings
-        if self._readings_count == self._readings_per_health_update:
-            good_readings = self._readings_per_health_update - self._missed_readings
-            health = float(good_readings) / self._readings_per_health_update * 100
-            self.health = int(health)
+    #     # Update health after specified number of readings
+    #     if self._readings_count == self._readings_per_health_update:
+    #         good_readings = self._readings_per_health_update - self._missed_readings
+    #         health = float(good_readings) / self._readings_per_health_update * 100
+    #         self.health = int(health)
 
-            # Check health is satisfactory
-            if self.health < self._minimum_health:
-                self.logger.warning("Unacceptable sensor health")
+    #         # Check health is satisfactory
+    #         if self.health < self._minimum_health:
+    #             self.logger.warning("Unacceptable sensor health")
 
-                # Set error
-                self.error = Errors.FAILED_HEALTH_CHECK
+    #             # Set error
+    #             self.error = Errors.FAILED_HEALTH_CHECK
 
-                # Transition to error mode
-                self.mode = Modes.ERROR
+    #             # Transition to error mode
+    #             self.mode = Modes.ERROR
 
 
 
@@ -849,32 +838,32 @@ class Peripheral:
 ########################## Data Classes ##########################
 
 
-class Health:
-    def __init__(self, minimum=80, num_update_readings=20)
-        self.value = 100
-        self.minimum = minimum
-        self.num_update_readings = readings
-        self.readings_count = 0
-        self.missed_readings = 0
+# class Health:
+#     def __init__(self, minimum=80, num_update_readings=20)
+#         self.value = 100
+#         self.minimum = minimum
+#         self.num_update_readings = readings
+#         self.readings_count = 0
+#         self.missed_readings = 0
 
-    def __str__(self):
-        return "Health(\
-            value={}, minimum={}, num_update_reading={}, readings_count={}" \
-            "missed_readings={})".format(self.value, self.minimum, self.num_update_readings 
-                self.readings_count, self.missed_readings)
+#     def __str__(self):
+#         return "Health(\
+#             value={}, minimum={}, num_update_reading={}, readings_count={}" \
+#             "missed_readings={})".format(self.value, self.minimum, self.num_update_readings 
+#                 self.readings_count, self.missed_readings)
 
 
-class Device:
-    def __init__(self, name, bus, mux, channel, address):
-        self.name = name
-        self.bus = bus
-        self.mux = mux
-        self.channel = channel
-        self.address = address
-        self.i2c = None
-        self.health = Health()
+# class Device:
+#     def __init__(self, name, bus, mux, channel, address):
+#         self.name = name
+#         self.bus = bus
+#         self.mux = mux
+#         self.channel = channel
+#         self.address = address
+#         self.i2c = None
+#         self.health = Health()
 
-    def __str__(self):
-        return "Device(name={}, bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}, i2c={}, health={})".format(
-            self.name, self.bus, self.mux, self.channel, self.address, self.i2c, self.health)
+#     def __str__(self):
+#         return "Device(name={}, bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}, i2c={}, health={})".format(
+#             self.name, self.bus, self.mux, self.channel, self.address, self.i2c, self.health)
 

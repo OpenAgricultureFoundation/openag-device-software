@@ -8,9 +8,7 @@ class Health:
         
         self.updates = updates
         self.minimum = minimum
-        self.healthy = True
-        self.percent = 100
-        self.queue = []
+        self.reset()
 
 
     def __str__(self):
@@ -49,3 +47,10 @@ class Health:
             self.healthy = False
         else:
             self.healthy = True
+
+
+    def reset(self):
+        """ Resets health. """
+        self.healthy = True
+        self.percent = 100
+        self.queue = []

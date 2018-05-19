@@ -7,9 +7,10 @@ from device.peripherals.classes.peripheral import Peripheral
 # Import drivers
 from device.drivers.dac5578 import DAC5578
 
-# Import device modes and errors
+# Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
+from device.utilities.health import Health
 
 
 class LightArray(Peripheral):
@@ -32,15 +33,16 @@ class LightArray(Peripheral):
         # Get device parameters
         self.panels = self.parameters["communication"]["panels"]
 
-        # Initialize devices
+        # Initialize panel drivers
         self.dac5578s = []
         for panel in self.panels:
-            name = panel["name"]
-            bus = panel["bus"]
-            address = int(panel["address"], 16)
-            mux = int(panel["mux"], 16)
-            channel = panel["channel"]
-            dac5578 = DAC5578(name, bus, address, mux=mux, channel=channel)
+            dac5578 = DAC5578(
+                name = panel["name"],
+                bus = panel["bus"],
+                address = int(panel["address"], 16), 
+                mux = int(panel["mux"], 16), 
+                channel = panel["channel"],
+            )
             self.dac5578s.append(dac5578)
 
         # Initialize variable names
@@ -53,6 +55,9 @@ class LightArray(Peripheral):
         self.load_channel_configs()
         self.parse_channel_configs()
 
+        # Initialize health parameter
+        self.health = Health(health_minimum=80, health_updates=10)
+
 
     def initialize(self):
         """ Initializes sensor. Performs initial health check.
@@ -62,13 +67,12 @@ class LightArray(Peripheral):
         self.logger.debug("Initializing sensor")
 
         # Set initial parameters
-        self.intensity = 0
+        self.intensity = None
         self.spectrum = None
         self.distance = None
-        self.health = 100
 
         # Perform initial health check
-        self.check_health()
+        self.check_health() 
 
 
     def setup(self):
@@ -118,13 +122,27 @@ class LightArray(Peripheral):
         """ Resets sensor. """
         self.logger.info("Resetting sensor")
 
+        # Reset peripheral health & clear error
+        self.health.reset()
+        self.error = None
+
+        # Reset driver health
+        for dac5578 in self.dac5578s:
+            dac5578.health.reset()
+
         # Clear reported values
         self.clear_reported_values()
+
+        # Reset complete!
         self.logger.debug("Successfully reset sensor")
 
 
     def shutdown(self):
         """ Shuts down actuator. """
+
+        # Reset driver health
+        for dac5578 in self.dac5578s:
+            dac5578.health.reset()
 
         # Clear reported values
         self.clear_reported_values()
@@ -162,16 +180,9 @@ class LightArray(Peripheral):
             verifying device is powered on. """
         self.logger.info("Checking health")
 
-        # Interact with hardware
-        try:
-            power_down_byte = self.read_power_down_register()
-            if power_down_byte != 0x00:
-                raise ValueError("Invalid power down byte")
-            self.logger.debug("Passed initial health check")
-        except:
-            self.logger.exception("Failed initial health check")
-            self.error = Errors.FAILED_HEALTH_CHECK
-            self.mode = Modes.ERROR
+        # Check driver health
+        for dac5578 in self.dac5578s:
+            ...
 
 
     def update_channel_outputs(self):
@@ -645,6 +656,29 @@ class LightArray(Peripheral):
 ############################# Hardware Interactions ###########################
 
 
+
+    def set_outputs(self, sw_outputs):
+
+        # Convert software channels to hardware channels
+        # e.g. {"WW": 80, "FR": 40} -> {3: 80, 6: 40}
+        hw_outputs = self.get_hw_outputs(sw_outputs)
+
+        # Set outpus on panel drivers
+        for dac5578 in self.dac5578s:
+            error = dac5578.set_outputs(hw_outputs)
+
+
+
+
+
+
+
+
+
+
+
+
+
     def set_channel_outputs(self, channel_outputs):
         """ Sets channel outputs on hardware. Converts each channel output 
             percent to output byte then sends update command to hardware. 
@@ -680,39 +714,39 @@ class LightArray(Peripheral):
         #     self.mode = Modes.ERROR
 
 
-    def set_channel_output(self, channel_name, output_percent):
-        """ Sets channel output on hardware. Converts each channel output 
-            percent to output byte then sends update command to hardware. 
-            Assumes channel config dict keys are verified. """
+    # def set_channel_output(self, channel_name, output_percent):
+    #     """ Sets channel output on hardware. Converts each channel output 
+    #         percent to output byte then sends update command to hardware. 
+    #         Assumes channel config dict keys are verified. """
 
-        # Update channel outputs
-        output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
-        software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
-        channel_outputs = self.channel_outputs
-        channel_outputs[channel_name] = output_percent
-        self.channel_outputs = channel_outputs
+    #     # Update channel outputs
+    #     output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
+    #     software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
+    #     channel_outputs = self.channel_outputs
+    #     channel_outputs[channel_name] = output_percent
+    #     self.channel_outputs = channel_outputs
        
-        # Check if sensor is simulated
-        if self.simulate:
-            self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-            return
+    #     # Check if sensor is simulated
+    #     if self.simulate:
+    #         self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+    #         return
             
-        # Sensor is not simulated
-        self.logger.info("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-        self.i2c.write([0x30+software_channel, output_byte, 0x00])
+    #     # Sensor is not simulated
+    #     self.logger.info("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
+    #     self.i2c.write([0x30+software_channel, output_byte, 0x00])
 
 
-    def read_power_down_register(self):
-        """ Reads power down register and return byte. """
+    # def read_power_down_register(self):
+    #     """ Reads power down register and return byte. """
 
-        # Check if sensor is simulated
-        if self.simulate:
-            self.logger.debug("Simulating reading power down register")
-            return 0x00
+    #     # Check if sensor is simulated
+    #     if self.simulate:
+    #         self.logger.debug("Simulating reading power down register")
+    #         return 0x00
 
-        # Sensor is not simulated!
-        self.logger.debug("Reading power down register")
-        return self.i2c.read_register(0x40)
+    #     # Sensor is not simulated!
+    #     self.logger.debug("Reading power down register")
+    #     return self.i2c.read_register(0x40)
 
 
 ################# Hardware Interaction Helper Functions #######################

@@ -3,6 +3,9 @@ import fcntl, io, time, logging, threading
 from ctypes import *
 import struct
 
+# Import device utilities
+from device.utilities.logger import Logger
+
 
 # TODO: test if atlas sensors work with single file manager
 # TODO: add more descriptive error messages
@@ -34,9 +37,15 @@ class I2C(object):
 
         # Initialize logger instance
         logger_name = "I2C({})".format(self.name)
-        extra = {'console_name':logger_name, 'file_name': logger_name}
-        logger = logging.getLogger(__name__)
-        self.logger = logging.LoggerAdapter(logger, extra)
+        self.logger = Logger(
+            name = logger_name,
+            dunder_name = __name__,
+        )
+
+
+        # extra = {'console_name':logger_name, 'file_name': logger_name}
+        # logger = logging.getLogger(__name__)
+        # self.logger = logging.LoggerAdapter(logger, extra)
 
         # Initialize file managers
         if not self.simulate:
