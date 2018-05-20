@@ -15,6 +15,7 @@ class Logger:
 		extra = {'console_name':name, 'file_name': name}
 		logger = logging.getLogger(dunder_name)
 		self.logger = logging.LoggerAdapter(logger, extra)
+		self.debug("Instantiated")
 
 
 	def debug(self, message):

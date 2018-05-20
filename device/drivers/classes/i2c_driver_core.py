@@ -19,6 +19,12 @@ class I2CDriverCore:
 		# Initialize parameters
 		self.simulate = simulate
 
+		# Initialize logger
+		self.logger = Logger(
+		    name = logger_name,
+		    dunder_name = dunder_name,
+		)
+
 		# Initialize I2C
 		self.i2c = I2C(
 			name = i2c_name,
@@ -28,11 +34,3 @@ class I2CDriverCore:
 			channel = channel,
 			simulate = simulate,
 		)
-
-		# Initialize logger
-		self.logger = Logger(
-		    name = logger_name,
-		    dunder_name = dunder_name,
-		)
-
-		

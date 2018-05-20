@@ -14,7 +14,7 @@ class DriverManager:
 
 
 	def __init__(self, logger_name: str, dunder_name: str, 
-		health_minimum: int = 80, health_updates: int = 20) -> None:
+		health_minimum: int = 60, health_updates: int = 5) -> None:
 		""" Initializes I2C driver. """
 
 		# Initialize logger

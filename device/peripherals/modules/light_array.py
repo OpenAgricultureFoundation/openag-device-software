@@ -14,17 +14,11 @@ from device.utilities.health import Health
 
 
 class LightArray(Peripheral):
-    """ A multichannel light panel. """
-
-    # Initialize sensor variables
-    _intensity = None
-    _spectrum = None
-    _distance = None
-    _channel_outputs = None
+    """ A light array of panels with DAC5578s controlling light output. """
 
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates sensor. Instantiates parent class, and initializes 
+        """ Instantiates light array. Instantiates parent class, and initializes 
             sensor variable name. """
 
         # Instantiate parent class
@@ -60,19 +54,19 @@ class LightArray(Peripheral):
 
 
     def initialize(self):
-        """ Initializes sensor. Performs initial health check.
+        """ Initializes light array. Performs initial health check.
             Finishes within 200ms.  """
 
         # Initialize sensor
-        self.logger.debug("Initializing sensor")
+        self.logger.debug("Initializing")
 
         # Set initial parameters
         self.intensity = None
         self.spectrum = None
         self.distance = None
 
-        # Perform initial health check
-        self.check_health() 
+        # Probe health
+        self.probe() 
 
 
     def setup(self):
@@ -175,14 +169,13 @@ class LightArray(Peripheral):
             self.channel_config_dict[channel_key] = channel_config
 
 
-    def check_health(self):
-        """ Checks health by reading power down register and
-            verifying device is powered on. """
-        self.logger.info("Checking health")
+    def probe(self):
+        """ Probes health. """
+        self.logger.info("Probing health")
 
         # Check driver health
         for dac5578 in self.dac5578s:
-            ...
+            error = dac5578.probe()
 
 
     def update_channel_outputs(self):
@@ -383,6 +376,11 @@ class LightArray(Peripheral):
         self.intensity = None
         self.spectrum = None
         self.distance = None
+
+
+
+
+
 
 
 ################# Peripheral Specific Event Functions #########################
@@ -658,6 +656,7 @@ class LightArray(Peripheral):
 
 
     def set_outputs(self, sw_outputs):
+        """ Sets channel outputs. """
 
         # Convert software channels to hardware channels
         # e.g. {"WW": 80, "FR": 40} -> {3: 80, 6: 40}
@@ -666,87 +665,7 @@ class LightArray(Peripheral):
         # Set outpus on panel drivers
         for dac5578 in self.dac5578s:
             error = dac5578.set_outputs(hw_outputs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def set_channel_outputs(self, channel_outputs):
-        """ Sets channel outputs on hardware. Converts each channel output 
-            percent to output byte then sends update command to hardware. 
-            Assumes channel config dict keys are verified. """
-
-        # TODO: add health on individual device level
-        self.channel_outputs = channel_outputs
-
-        for device in self.devices:
-            self.logger.debug("Setting channel outputs for device: {}".format(device))
-
-            for channel_name, output_percent in channel_outputs.items():
-                output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
-                software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
-
-                # Check if sensor is simulated
-                if self.simulate:
-                    self.logger.debug("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-                else:
-                    # Sensor is not simulated!
-                    self.logger.debug("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-                    device.i2c.write([0x30+software_channel, output_byte, 0x00])
         
-
-        # TODO: clean up health monitoring / graceful failure
-        # Needs to operate on a individual light panel basis
-        # This is a hack...
-        # self.health = good_devices / (good_devices + bad_devices) * 100
-
-        # if self.health < self._minimum_health:
-        #     self.error = "Failed health check"
-        #     self.logger.warning(self.error)
-        #     self.mode = Modes.ERROR
-
-
-    # def set_channel_output(self, channel_name, output_percent):
-    #     """ Sets channel output on hardware. Converts each channel output 
-    #         percent to output byte then sends update command to hardware. 
-    #         Assumes channel config dict keys are verified. """
-
-    #     # Update channel outputs
-    #     output_byte = 255 - int(output_percent*2.55) # 255 is off, 0 is on
-    #     software_channel = self.channel_config_dict[channel_name]["channel"]["software"]
-    #     channel_outputs = self.channel_outputs
-    #     channel_outputs[channel_name] = output_percent
-    #     self.channel_outputs = channel_outputs
-       
-    #     # Check if sensor is simulated
-    #     if self.simulate:
-    #         self.logger.info("Simulating writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-    #         return
-            
-    #     # Sensor is not simulated
-    #     self.logger.info("Writing to dac: software_channel={} output_byte={}".format(software_channel, output_byte))
-    #     self.i2c.write([0x30+software_channel, output_byte, 0x00])
-
-
-    # def read_power_down_register(self):
-    #     """ Reads power down register and return byte. """
-
-    #     # Check if sensor is simulated
-    #     if self.simulate:
-    #         self.logger.debug("Simulating reading power down register")
-    #         return 0x00
-
-    #     # Sensor is not simulated!
-    #     self.logger.debug("Reading power down register")
-    #     return self.i2c.read_register(0x40)
 
 
 ################# Hardware Interaction Helper Functions #######################
@@ -976,7 +895,11 @@ class LightArray(Peripheral):
     @property
     def spectrum(self):
         """ Gets spectrum value. """
-        return self._spectrum
+        try:
+            return self._spectrum
+        except NameError:
+            self._spectrum = None
+            return self._spectrum
 
 
     @spectrum.setter
@@ -1033,7 +956,11 @@ class LightArray(Peripheral):
     @property
     def intensity(self):
         """ Gets intensity value. """
-        return self._intensity
+        try:
+            return self._intensity
+        except NameError:
+            self._intensity = None
+            return self._intensity
 
 
     @intensity.setter
@@ -1089,7 +1016,11 @@ class LightArray(Peripheral):
     @property
     def distance(self):
         """ Gets intensity value. """
-        return self._distance
+        try:
+            return self._distance
+        except NameError:
+            self._distance = None
+            return self._distance
 
 
     @distance.setter
@@ -1146,7 +1077,11 @@ class LightArray(Peripheral):
     @property
     def channel_outputs(self):
         """ Gets channel outputs percent value. """
-        return self._channel_outputs
+        try:
+            return self._channel_outputs
+        except NameError:
+            self._channel_outputs = None
+            return self._channel_outputs
 
 
     @channel_outputs.setter
