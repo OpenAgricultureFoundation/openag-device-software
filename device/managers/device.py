@@ -851,6 +851,7 @@ class DeviceManager:
 ################################# Events ######################################
 
 
+# debugrob, not being called by createDeviceEvent() in dashboard.html...
     def process_event(self, request):
         """ Processes an event. Gets request parameters, executes request, returns 
             response. """

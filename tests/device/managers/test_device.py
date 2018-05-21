@@ -20,7 +20,7 @@ def test_device_manager_initial_state():
     assert dm.all_controllers_initialized() == True # no contr to init is OK
 
 
-def test_device_manager_states():
+def test_device_manager_state_machine():
     # enable simulation mode, since our CI test systems won't have I2C 
     os.environ['SIMULATE'] = "true"
 

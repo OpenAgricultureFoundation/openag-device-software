@@ -1,6 +1,12 @@
 import pytest
+from device.state import State
 
-@pytest.mark.skip(reason="Not implemented yet")
-def test_x():
-    assert False, "debugrob, write these tests"
+def test_state():
+    # state is pretty simple, so just make sure it has empty dicts
+    s = State()
+    assert list( s.device.keys() ) == []
+    assert list( s.environment.keys() ) == []
+    assert list( s.recipe.keys() ) == []
+    assert list( s.peripherals.keys() ) == []
+    assert list( s.controllers.keys() ) == []
 
