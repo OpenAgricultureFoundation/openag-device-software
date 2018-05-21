@@ -34,6 +34,7 @@ class RecipeManager:
         self.state = state
         self.mode = Modes.INIT
         self.error = Errors.NONE
+        self._stop_event = threading.Event() # so we can stop this thread
 
 
     @property
@@ -381,9 +382,20 @@ class RecipeManager:
         self.thread.start()
 
 
+    def stop(self):
+        self._stop_event.set()
+
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
+
     def run_state_machine(self):
         """ Runs recipe state machine. """
         while True:
+            if self.stopped():
+                break
+                        
             if self.mode == Modes.INIT:
                 self.run_init_mode()
             if self.mode == Modes.NORECIPE:

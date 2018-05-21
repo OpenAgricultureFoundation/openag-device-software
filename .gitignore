@@ -4,3 +4,4 @@ __pycache__/
 .DS_Store
 *.sqlite3
 *.log
+.pytest_cache/
