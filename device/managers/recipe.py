@@ -34,6 +34,7 @@ class RecipeManager:
         self.state = state
         self.mode = Modes.INIT
         self.error = Errors.NONE
+        self._stop_event = threading.Event() # so we can stop this thread
 
 
     @property
@@ -376,7 +377,6 @@ class RecipeManager:
 
     def spawn(self):
         """ Spawns recipe thread. """
-        self._stop_event = threading.Event() # so we can stop this thread
         self.thread = threading.Thread(target=self.run_state_machine)
         self.thread.daemon = True
         self.thread.start()

@@ -22,11 +22,11 @@ class EventManager:
     def __init__(self, state):
         """ Initialize event handler. """
         self.state = state
+        self._stop_event = threading.Event() # so we can stop this thread
 
 
     def spawn(self, delay=None):
         """ Spawns event thread. """
-        self._stop_event = threading.Event() # so we can stop this thread
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.thread.start()
