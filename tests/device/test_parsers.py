@@ -2,7 +2,7 @@ import pytest
 from device.parsers import RecipeParser
 
 #------------------------------------------------------------------------------
-def test_RecipeParser_no_recipe():
+def test_recipe_parser_no_recipe():
     # should except for no recipe
     with pytest.raises( KeyError ):
         recipe_dict = {}
@@ -10,7 +10,7 @@ def test_RecipeParser_no_recipe():
         transitions = recipe_parser.parse( recipe_dict )
 
 #------------------------------------------------------------------------------
-def test_RecipeParser_minimum_recipe():
+def test_recipe_parser_minimum_recipe():
     # test a minimum recipe
     minimum_dict = {}
     minimum_dict['environments'] = {'env1': {'name':'1'}}
@@ -21,17 +21,11 @@ def test_RecipeParser_minimum_recipe():
     recipe_parser = RecipeParser()
     transitions = recipe_parser.parse( minimum_dict )
     hours_transitions = [{'minute': 0, 'phase': '2', 'cycle': '4', 'environment_name': '1', 'environment_state': {}}, {'minute': 300, 'phase': '2', 'cycle': '4', 'environment_name': '1', 'environment_state': {}}, {'minute': 600, 'phase': '2', 'cycle': '4', 'environment_name': '1', 'environment_state': {}}, {'minute': 900, 'phase': 'End', 'cycle': 'End', 'environment_name': 'End', 'environment_state': {}}]
-    assert transitions == hours_transitions
+    assert transitions == hours_transitions, "Transitions do not match"
             
     # test an alternative cycle duration
     minimum_dict['phases'][0]['cycles'][0] = cycle_mins # replace hours
     transitions = recipe_parser.parse( minimum_dict )
     mins_transitions = [{'minute': 0, 'phase': '2', 'cycle': '4', 'environment_name': '1', 'environment_state': {}}, {'minute': 6, 'phase': '2', 'cycle': '4', 'environment_name': '1', 'environment_state': {}}, {'minute': 12, 'phase': '2', 'cycle': '4', 'environment_name': '1', 'environment_state': {}}, {'minute': 18, 'phase': 'End', 'cycle': 'End', 'environment_name': 'End', 'environment_state': {}}]
-    assert transitions == mins_transitions
-
-#debugrob: 
-    #a = 2
-    #assert a % 2 == 0, "value was odd, should be even"
-    #assert 4 == 5
-    #assert dict1 == dict2
+    assert transitions == mins_transitions, "Transitions do not match"
 

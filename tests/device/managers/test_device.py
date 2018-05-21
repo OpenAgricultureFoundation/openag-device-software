@@ -4,7 +4,7 @@ from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
 
-def test_DeviceManager_initial_state():
+def test_device_manager_initial_state():
     dm = DeviceManager()
     assert dm.mode == Modes.INIT
     assert dm.error == Errors.NONE
@@ -20,7 +20,7 @@ def test_DeviceManager_initial_state():
     assert dm.all_controllers_initialized() == True # no contr to init is OK
 
 
-def test_DeviceManager_states():
+def test_device_manager_states():
     # enable simulation mode, since our CI test systems won't have I2C 
     os.environ['SIMULATE'] = "true"
 
@@ -49,7 +49,7 @@ def test_DeviceManager_states():
 
 
 @pytest.mark.skip(reason="Not implemented yet")
-def test_DeviceManager_state_machine():
+def test_device_manager_state_machine():
     dm = DeviceManager()
     dm.run_state_machine()
     assert False, "debugrob, write these tests"
