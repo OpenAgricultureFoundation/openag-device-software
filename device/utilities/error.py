@@ -1,13 +1,16 @@
 # Import standard python modules
-from typing import Optional, List
+from typing import Optional, List, overload
 
 
 class Error:
 	""" Manages errors with trace. """
 
-
-	def __init__(self) -> None:
-		self._trace: List[str] = []
+	def __init__(self, message: Optional[str] = None) -> None:
+		""" Initializes error. Can pass in initial error message. """
+		if message == None:
+			self._trace: List[str] = []
+		else:
+			self._trace: List[str] = [str(message)]
 
 
 	def __str__(self) -> str:
@@ -28,7 +31,14 @@ class Error:
 		self._trace = []
 
 
-	@property
+	def exists(self) -> bool:
+		""" Check if error exists. """
+		if len(self._trace) > 0:
+			return True
+		else:
+			return False
+
+
 	def latest(self) -> Optional[str]:
 		""" Returns latest error. """
 		if len(self._trace) > 0:
@@ -36,7 +46,7 @@ class Error:
 		else:
 			return None
 
-	@property
+
 	def earliest(self) -> Optional[str]:
 		""" Return earliest error. """
 		if len(self._trace) > 0:
@@ -45,7 +55,6 @@ class Error:
 			return None
 
 
-	@property
 	def previous(self) -> Optional[str]:
 		""" Returns previous error. """
 		if len(self._trace) > 1:
@@ -65,6 +74,6 @@ class Error:
 		# Build and return response
 		response = ""
 		for error in self._trace[:-1]:
-			response += "({}) <- ".format(error)
+			response += "({}) -> ".format(error)
 		response += "({})".format(self._trace[-1])
 		return response

@@ -50,3 +50,15 @@ def interpolate(x_list, y_list, x):
     # Calculate interpolated value and return
     y = m * x
     return y
+
+
+
+def discretize(minimum: int, maximum: int, value: float) -> dict:
+    """ Discretizes a value across a range. """
+
+    discretized_value = value / (maximum - minimum + 1)
+    output = {}
+    for counter in range(minimum, maximum + 1):
+        output[counter] = discretized_value
+
+    return output

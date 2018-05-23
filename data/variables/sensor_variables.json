@@ -112,6 +112,20 @@
 		}
 	},
 	{
+		"key": "light_spectrum_nanometer_percent",
+		"info": {
+			"name": {
+				"brief": "Spectrum",
+				"verbose": "Light Spectrum Nanometer Percent"
+			},
+			"unit": {
+				"brief": "nm: %",
+				"verbose": "Nanometer: Percent",
+				"type": "object"
+			}
+		}
+	},
+	{
 		"key": "light_illumination_distance_cm",
 		"info": {
 			"name": {

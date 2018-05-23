@@ -13,10 +13,10 @@
 						"default": "light_intensity_watts"
 					}
 				},
-				"spectrum_channel_percents": {
+				"spectrum_nanometer_percent": {
 					"name": {
 						"type": "string",
-						"default": "light_spectrum_channel_percents"
+						"default": "light_spectrum_nanometer_percent"
 					}
 				},
 				"illumination_distance_cm": {

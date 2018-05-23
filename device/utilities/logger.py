@@ -23,7 +23,7 @@ class Logger:
 			environment. If in test environment, prepends message with 
 			logger name. """
 		if "pytest" in sys.modules:
-			self.logger.debug(self.name + ": " + message)
+			self.logger.debug(self.name + ": " + str(message))
 		else:
 			self.logger.debug(message)
 
@@ -33,7 +33,7 @@ class Logger:
 			environment. If in test environment, prepends message with 
 			logger name. """
 		if "pytest" in sys.modules:
-			self.logger.info(self.name + ": " + message)
+			self.logger.info(self.name + ": " + str(message))
 		else:
 			self.logger.info(message)
 
@@ -43,7 +43,7 @@ class Logger:
 			environment. If in test environment, prepends message with 
 			logger name. """
 		if "pytest" in sys.modules:
-			self.logger.warning(self.name + ": " + message)
+			self.logger.warning(self.name + ": " + str(message))
 		else:
 			self.logger.warning(message)
 
@@ -53,7 +53,7 @@ class Logger:
 			environment. If in test environment, prepends message with 
 			logger name. """
 		if "pytest" in sys.modules:
-			self.logger.error(self.name + ": " + message)
+			self.logger.error(self.name + ": " + str(message))
 		else:
 			self.logger.error(message)
 
@@ -63,6 +63,6 @@ class Logger:
 			environment. If in test environment, prepends message with 
 			logger name. """
 		if "pytest" in sys.modules:
-			self.logger.critical(self.name + ": " + message)
+			self.logger.critical(self.name + ": " + str(message))
 		else:
 			self.logger.critical(message)
