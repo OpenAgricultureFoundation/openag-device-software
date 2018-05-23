@@ -320,7 +320,6 @@ class DeviceManager:
         self.create_controller_managers()
         self.spawn_controller_threads()
 
-#debugrob: if in simulated mode, the peripherals NEVER initialize!  need to figure out how to save their state (need mode != init).
         # Wait for all threads to initialize
         while not self.all_threads_initialized():
             time.sleep(0.2)
@@ -567,11 +566,13 @@ class DeviceManager:
         # TODO: Validate recipe cultivars with database cultivars
         # TODO: Validate recipe cultivation methods with database cultivation methods
 
-        # Create recipe entry if new or update existing
+        # Update existing recipe or create a new one
         for recipe in recipes:
-            if RecipeModel.objects.filter(uuid=recipe["uuid"]).exists():
-                RecipeModel.objects.update(uuid=recipe["uuid"], json=json.dumps(recipe))
-            else:
+            try:
+                r = RecipeModel.objects.get(uuid=recipe["uuid"])
+                r.json=json.dumps(recipe)
+                r.save()
+            except app.models.DoesNotExist as e:
                 RecipeModel.objects.create(json=json.dumps(recipe))
 
 

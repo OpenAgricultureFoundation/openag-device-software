@@ -172,3 +172,5 @@ class RecipeTransitionModel(models.Model):
     class Meta:
         verbose_name = "Recipe Transition"
         verbose_name_plural = "Recipe Transitions"
+
+

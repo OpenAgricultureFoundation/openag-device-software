@@ -14,3 +14,5 @@ fi
 # How to log into postgres interactively:
 # psql --username=openag openag_brain 
 
+# On OSX, this will make the postgres server start automatically:
+# brew services start postgresql

@@ -506,10 +506,10 @@ class RecipeManager:
         or equal to current timestamp then transitions to NORMAL. """
         self.logger.info("Entered QUEUED")
         while True:
-# debugrob, is this a busy wait, e.g. does it spin too fast and consume the CPU?   Perhaps it needs a bit of sleep?
             if self.start_timestamp_minutes >= self.current_timestamp_minutes:
                 self.mode = Modes.NORMAL
                 break
+            time.sleep(0.1) # 100ms
 
 
     def run_normal_mode(self):
