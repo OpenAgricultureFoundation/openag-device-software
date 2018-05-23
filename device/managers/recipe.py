@@ -482,6 +482,7 @@ class RecipeManager:
 
             # Set recipe name
             self.recipe_name = recipe_dict["name"]
+            self.logger.info("Started: {}".format( self.recipe_name ))
 
             # Load recipe start time, if not set, start recipe immediately
             if self.commanded_start_timestamp_minutes != None:
@@ -527,15 +528,22 @@ class RecipeManager:
 
             # Check for transition to PAUSE
             if self.commanded_mode == Modes.PAUSE:
+                self.logger.info("Received request to transition from NORMAL to PAUSE")
                 self.mode = self.commanded_mode
                 self.commanded_mode = Modes.NONE
                 break
 
             # Check for transition to STOP
             if self.commanded_mode == Modes.STOP:
-                self.logger.info("Recipe received request to transition from NORMAL to STOP")
+                self.logger.info("Received request to transition from NORMAL to STOP")
                 self.mode = self.commanded_mode
                 self.commanded_mode = Modes.NONE
+                break
+
+#debugrob: Jake - is this correct?  I can't see how a recipe ever ends when it is done processing phases/cycles...
+            if self.current_phase == 'End' and self.current_cycle == 'End':
+                self.logger.info("Recipe is over, so transition from NORMAL to STOP")
+                self.mode = Modes.STOP
                 break
 
             # Update thread every 100ms
