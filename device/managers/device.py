@@ -19,6 +19,9 @@ from device.state import State
 from device.managers.recipe import RecipeManager
 from device.managers.event import EventManager
 
+# Import IoT communications (to the backend) manager 
+from iot.iot_manager import IoTManager
+
 # Import database models
 from app.models import StateModel
 from app.models import EventModel
@@ -81,6 +84,8 @@ class DeviceManager:
     event = EventManager(state)
     # post_save.connect(event.process, sender=EventModel)
 
+    # Initialize the IoT communications manager object
+    iot = IoTManager( state )
 
     # Initialize peripheral and controller managers
     peripheral_managers = None
@@ -233,7 +238,7 @@ class DeviceManager:
         if delay != None:
             time.sleep(delay)
 
-        self.logger.info("Spawing device thread")
+        self.logger.info("Spawning device thread")
 
         # Start state machine
         self.logger.info("Started state machine")
@@ -312,6 +317,9 @@ class DeviceManager:
         # Spawn event thread
         self.event.spawn()
 
+        # Spawn iot thread
+        self.iot.spawn()
+
         # Create peripheral managers and spawn threads
         self.create_peripheral_managers()
         self.spawn_peripheral_threads()
@@ -382,6 +390,7 @@ class DeviceManager:
         self.kill_controller_threads()
         self.recipe.stop()
         self.event.stop()
+        self.iot.stop()
 
         # Clear errors
         self.error = Errors.NONE

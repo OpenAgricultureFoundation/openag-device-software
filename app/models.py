@@ -174,3 +174,13 @@ class RecipeTransitionModel(models.Model):
         verbose_name_plural = "Recipe Transitions"
 
 
+class IoTConfigModel( models.Model ):
+    lastConfigVersion = models.IntegerField()
+    device_id = models.TextField()
+
+    class Meta:
+        verbose_name = "IoTConfig"
+        verbose_name_plural = "IoTConfigs"
+        get_latest_by="lastConfigVersion"
+
+

@@ -42,6 +42,7 @@ class EventManager:
 
     def run(self):
         """ Runs event manager. """
+        self.logger.info("Spawning event thread")
         while True:
             if self.stopped():
                 break

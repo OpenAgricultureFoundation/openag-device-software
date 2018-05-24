@@ -13,6 +13,7 @@ from app.models import SensorVariableModel
 from app.models import ActuatorVariableModel
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+from app.models import IoTConfigModel
 
 
 class StateAdmin(admin.ModelAdmin):
@@ -69,3 +70,10 @@ admin.site.register(CultivarModel, CultivarAdmin)
 class CultivationMethodAdmin(admin.ModelAdmin):
 	list_display = ("uuid", "name", "json")
 admin.site.register(CultivationMethodModel, CultivationMethodAdmin)
+
+
+class IoTConfigAdmin(admin.ModelAdmin):
+	list_display = ("lastConfigVersion", "device_id")
+admin.site.register(IoTConfigModel, IoTConfigAdmin)
+
+
