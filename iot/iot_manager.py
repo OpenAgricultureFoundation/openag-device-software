@@ -9,6 +9,11 @@ from app.models import IoTConfigModel
 #from iot.iot_pubsub import IotPubSub
 #debugrob: use above later.  first get this thread receiving data to publish and commands to process.
 
+"""
+So i see 2 cases. The first is state which we want updated as fast as possible as frequently as possible, however to start i might just send all state every second to a cloud table that removes the old entry of state each time it receives a new one so there is only ever one instance of state in the table. That is what Manu will poll to get the most up to date device information. Then, the second one is environment history which is stored forever but infrequently updated (e.g. every few minutes). For this i think i makes the most sense to read directly from the environment table that already exists and send payloads the cloud. Upon payload receive confirmation, turn the 'is_synced' flag in the database ON.
+There is also the new events case (e.g. start a recipe, etc) that we need to figure out.
+"""
+
 
 class IoTManager:
     """ Manages IoT communications to the Google cloud backend MQTT service """
