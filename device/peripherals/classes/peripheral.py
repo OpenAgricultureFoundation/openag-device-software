@@ -4,6 +4,7 @@ import logging, time, threading, math, json
 # Import device modes and errors
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
+from device.utilities.logger import Logger
 
 # Import device comms
 from device.comms.i2c import I2C
@@ -36,9 +37,10 @@ class Peripheral:
         self.simulate = simulate
 
         # Initialize logger
-        extra = {'console_name':self.name, 'file_name': self.name}
-        logger = logging.getLogger(__name__)
-        self.logger = logging.LoggerAdapter(logger, extra)
+        self.logger = {
+            name = self.name,
+            dunder_name = __name__,
+        }
 
         # Initialize modes and errors
         self.mode = Modes.INIT
@@ -50,16 +52,6 @@ class Peripheral:
         # Load setup dict and uuid
         self.setup_dict = self.load_setup_dict_from_file()
         self.setup_uuid = self.setup_dict["uuid"]
-
-
-############################ Child Functions ##################################
-
-    
-    def check_health(self):
-        raise NotImplementedError
-
-
-############################ State Machine Functions ##########################
 
 
     def spawn(self):
@@ -296,195 +288,12 @@ class Peripheral:
                 last_update_seconds = time.time()
 
 
-############################# Main Helper Functions ###########################
-
-
-    # def establish_i2c_connection(self): 
-    #     """ Establishes i2c connection. Gets i2c parameters from config and 
-    #         opens i2c communication if sensor is not simulated. """
-
-    #     # Get basic i2c parameters
-    #     self.bus = int(self.parameters["communication"]["bus"])
-    #     self.address = int(self.parameters["communication"]["address"], 16)
-
-    #     # Get mux i2c parameters TODO: if enabled
-    #     self.mux = int(self.parameters["communication"]["mux"], 16)
-    #     self.channel = int(self.parameters["communication"]["channel"])
-
-    #     # Open i2c communication if sensor not simulated
-    #     if not self.simulate:
-    #         self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-    #             self.bus, self.mux, self.channel, self.address))
-    #         self.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
-
-
-    # def establish_i2c_connections(self): 
-    #     """ Establishes i2c connections. Gets i2c parameters from config and 
-    #         opens i2c communication if sensor is not simulated. """
-
-    #     # Get device parameters
-    #     self.device_params = self.parameters["communication"]["devices"]
-
-    #     # Initialize devices 
-    #     self.devices = []
-    #     for device_param in self.device_params:
-    #         bus = device_param["bus"]
-    #         address = int(device_param["address"], 16)
-    #         mux = int(device_param["mux"], 16)
-    #         channel = device_param["channel"]
-    #         device = Device(bus, mux, channel, address)
-
-    #         # Open i2c communication if sensor not simulated
-    #         if not self.simulate:
-    #             self.logger.info("Initializing i2c bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}".format(
-    #                 self.bus, self.mux, self.channel, self.address))
-    #             device.i2c = I2C(bus=self.bus, mux=self.mux, channel=self.channel, address=self.address)
-
-    #         self.logger.debug("Created device: {}".format(device))
-
-    #         # Append to devices
-    #         self.devices.append(device)
-
-
     def load_setup_dict_from_file(self): 
         """ Loads setup dict from setup filename parameter. """
         self.logger.debug("Loading setup file")
         file_name = self.parameters["setup"]["file_name"]
         setup_dict = json.load(open("device/peripherals/setups/" + file_name + ".json"))
         return setup_dict
-
-
-    # TODO: change this name
-    def report_environment_sensor_value(self, sensor, variable, value, simple=False):
-        self.report_sensor_value(sensor, variable, value, simple)
-    def report_sensor_value(self, sensor, variable, value, simple=False):
-        """ Report sensor value to environment sensor dict and reported sensor 
-            stats dict. """
-
-        # Force simple if value is None (don't want to try averaging `None`)
-        if value == None:
-            simple = True
-
-        with threading.Lock():
-            # Update individual instantaneous
-            by_type = self.state.environment["reported_sensor_stats"]["individual"]["instantaneous"]
-            if variable not in by_type:
-                by_type[variable] = {}
-            by_var = self.state.environment["reported_sensor_stats"]["individual"]["instantaneous"][variable]
-            by_var[sensor] = value
-
-            if simple:
-                # Update simple sensor value with reported value
-                self.state.environment["sensor"]["reported"][variable] = value
-
-            else:
-                # Update individual average
-                by_type = self.state.environment["reported_sensor_stats"]["individual"]["average"]
-                if variable not in by_type:
-                    by_type[variable] = {}
-                if sensor not in by_type:
-                    by_type[sensor] = {"value": value, "samples": 1}
-                else:
-                    stored_value = by_type[sensor]["value"]
-                    stored_samples = by_type[sensor]["samples"]
-                    new_samples = (stored_samples + 1)
-                    new_value = (stored_value * stored_samples + value) / new_samples
-                    by_type[sensor]["value"] = new_value
-                    by_type[sensor]["samples"] = new_samples
-
-                # Update group instantaneous
-                by_var_i = self.state.environment["reported_sensor_stats"]["individual"]["instantaneous"][variable]
-                num_sensors = 0
-                total = 0
-                for sensor in by_var_i:
-                    if by_var_i[sensor] != None:
-                        total += by_var_i[sensor]
-                        num_sensors += 1
-                new_value = total / num_sensors
-                self.state.environment["reported_sensor_stats"]["group"]["instantaneous"][variable] = {"value": new_value, "samples": num_sensors}
-
-                # Update group average
-                by_type = self.state.environment["reported_sensor_stats"]["group"]["average"]
-                if variable not in by_type:
-                    by_type[variable] = {"value": value, "samples": 1}
-                else:
-                    stored_value = by_type[variable]["value"]
-                    stored_samples = by_type[variable]["samples"]
-                    new_samples = (stored_samples + 1)
-                    new_value = (stored_value * stored_samples + value) / new_samples
-                    by_type[variable]["value"] = new_value
-                    by_type[variable]["samples"] = new_samples
-
-                # Update simple sensor value with instantaneous group value
-                self.state.environment["sensor"]["reported"][variable] = self.state.environment["reported_sensor_stats"]["group"]["instantaneous"][variable]["value"]
-
-
-    # TODO: report_environment_actuator_value vs. report_peripheral_...
-    # TODO: report desired...
-
-    def report_actuator_value(self, actuator, variable, value):
-        """ Reports an actuator value. """
-        with threading.Lock():
-            self.state.environment["actuator"]["reported"][variable] = value
-
-
-    def set_desired_actuator_value(self, actuator, variable, value):
-        """ Sets and actuators desried value. """
-        with threading.Lock():
-            self.state.environment["actuator"]["desired"][variable] = value
-
-
-    def report_health(self, value):
-        """ Reports a peripherals health. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["health"] = value
-
-
-    # TODO: remove this
-    def report_peripheral_value(self, variable, value):
-        """ Reports a peripherals value to peripheral dict in shared state. """
-        with threading.Lock():
-            self.state.peripherals[self.name][variable] = value
-
-
-    def report_peripheral_sensor_value(self, variable, value):
-        """ Reports a peripherals sensor value to peripheral dict in shared state. """
-        with threading.Lock():
-            if "reported_sensor" not in self.state.peripherals[self.name]:
-                self.state.peripherals[self.name]["reported_sensor"] = {}
-            self.state.peripherals[self.name]["reported_sensor"][variable] = value
-
-
-    def report_peripheral_actuator_value(self, variable, value):
-        """ Reports a peripherals actuator value to peripheral dict in shared state. """
-        with threading.Lock():
-            if "reported_actuator" not in self.state.peripherals[self.name]:
-                self.state.peripherals[self.name]["reported_actuator"] = {}
-            self.state.peripherals[self.name]["reported_actuator"][variable] = value
-
-
-    # def update_health(self):
-    #     """ Updates sensor health. """
-
-    #     # Increment readings count
-    #     self._readings_count += 1
-
-    #     # Update health after specified number of readings
-    #     if self._readings_count == self._readings_per_health_update:
-    #         good_readings = self._readings_per_health_update - self._missed_readings
-    #         health = float(good_readings) / self._readings_per_health_update * 100
-    #         self.health = int(health)
-
-    #         # Check health is satisfactory
-    #         if self.health < self._minimum_health:
-    #             self.logger.warning("Unacceptable sensor health")
-
-    #             # Set error
-    #             self.error = Errors.FAILED_HEALTH_CHECK
-
-    #             # Transition to error mode
-    #             self.mode = Modes.ERROR
-
 
 
 ############################## Event Functions ################################
@@ -746,7 +555,6 @@ class Peripheral:
                 self.state.peripherals[self.name] = {}
             self.state.peripherals[self.name]["error"] = value
 
-
     @property
     def health(self):
         """ Gets health value. """
@@ -761,109 +569,3 @@ class Peripheral:
         self.logger.debug("Health: {}".format(value))
         with threading.Lock():
             self.report_health(self._health)
-
-
-
-############################# Utility Functions ###############################
-
-    # TODO: Move these into another file..
-
-    def magnitude(self, x):
-        """ Gets magnitude of provided value. """
-
-        # Check for zero condition
-        if x == 0:
-            return 0
-
-        # Calculate magnitude and return
-        return int(math.floor(math.log10(x)))
-
-
-
-    def get_bit_from_byte(self, bit, byte):
-        """ Gets a bit from a byte. """
-        
-        # Check but value 0-7
-        if bit not in range(0, 8):
-            self.logger.warning("Tried to get invalid bit from byte")
-            return None
-
-        # Get bit value
-        mask = 0x1 << bit
-        return (byte & mask) >> bit
-
-
-    def interpolate(self, x_list, y_list, x):
-        """ Interpolates value for x from x_list and y_list. """
-
-        # Verify x_list and y_list are same length
-        if len(x_list) != len(y_list):
-            raise ValueError("x_list and y_list must be same length")
-
-        # Verify x_list is sorted
-        if not all(x_list[i] <= x_list[i+1] for i in range(len(x_list)-1)):
-            raise ValueError("x_list must be sorted")
-
-        # Verify x in range of x_list
-        if x < x_list[0] or x > x_list[-1]:
-            raise ValueError("x is not in range of x_list")
-
-        # Check if x matches entry in x_list
-        if x in x_list:
-            index = x_list.index(x)
-            return y_list[index]
-
-        # Get index of smallest element greater than x
-        for index in range(len(x_list)):
-            if x_list[index] > x:
-                break
-        index = index - 1
-
-        # Get values for calculating slope
-        x0 = x_list[index]
-        x1 = x_list[index + 1]
-        y0 = y_list[index]
-        y1 = y_list[index + 1]
-
-        print(x0, x1, y0, y1)
-
-        # Calculate slope
-        m = (y1 - y0) / (x1 - x0)
-
-        # Calculate interpolated value and return
-        y = m * x
-        return y
-
-
-########################## Data Classes ##########################
-
-
-# class Health:
-#     def __init__(self, minimum=80, num_update_readings=20)
-#         self.value = 100
-#         self.minimum = minimum
-#         self.num_update_readings = readings
-#         self.readings_count = 0
-#         self.missed_readings = 0
-
-#     def __str__(self):
-#         return "Health(\
-#             value={}, minimum={}, num_update_reading={}, readings_count={}" \
-#             "missed_readings={})".format(self.value, self.minimum, self.num_update_readings 
-#                 self.readings_count, self.missed_readings)
-
-
-# class Device:
-#     def __init__(self, name, bus, mux, channel, address):
-#         self.name = name
-#         self.bus = bus
-#         self.mux = mux
-#         self.channel = channel
-#         self.address = address
-#         self.i2c = None
-#         self.health = Health()
-
-#     def __str__(self):
-#         return "Device(name={}, bus={}, mux=0x{:02X}, channel={}, address=0x{:02X}, i2c={}, health={})".format(
-#             self.name, self.bus, self.mux, self.channel, self.address, self.i2c, self.health)
-

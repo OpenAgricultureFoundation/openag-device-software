@@ -150,13 +150,6 @@ class LightArray(Peripheral):
             self.mode = Modes.ERROR
 
 
-
-
-
-
-
-
-
     def clear_reported_values(self):
         """ Clears values reported to shared state. """
         self.intensity = None
@@ -178,12 +171,6 @@ class LightArray(Peripheral):
         for channel_config in self.channel_configs:
             channel_key = channel_config["name"]["brief"]
             self.channel_config_dict[channel_key] = channel_config
-
-
-
-
-
-
 
 
     @property

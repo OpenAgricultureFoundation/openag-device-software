@@ -52,7 +52,7 @@ class DAC5578Core(I2CDriverCore):
 
         # Check for errors
         if error.exists():
-            error.report("Unable to set output")
+            error.report("Core unable to set output")
             self.logger.error(error.trace)
             return error
 
@@ -68,7 +68,7 @@ class DAC5578Core(I2CDriverCore):
 
         # Run through each output
         first = True
-        for channel, percent in outputs:
+        for channel, percent in outputs.items():
 
             # Lock thread since we rely on mux not changing
             with threading.Lock():
@@ -80,9 +80,9 @@ class DAC5578Core(I2CDriverCore):
                 else:
                     error = self.set_output(channel, percent, disable_mux=True)
 
-                # Check for errors
-                if error.exists:
-                    error.report("Unable to set outputs")
+                # Check for errorsdac5578_core
+                if error.exists():
+                    error.report("Core unable to set outputs")
                     self.logger.error(error)
                     return error
 

@@ -61,6 +61,8 @@ class DAC5578Manager(DriverManager):
             Returns none on success, error on failure. """
         self.logger.debug("Setting output on channel {} to: {}%".format(channel, percent))
 
+        # TODO: Check if device is shutdown
+
         # Set output
         error = self.core.set_output(channel, percent)
 
@@ -80,6 +82,8 @@ class DAC5578Manager(DriverManager):
         """ Sets output channels to output percents. Only sets mux once. """
         self.logger.debug("Setting outputs: {}".format(outputs))
 
+        # TODO: Check if device is shutdown
+
         # Set outputs
         error = self.core.set_outputs(outputs)
 
@@ -97,7 +101,7 @@ class DAC5578Manager(DriverManager):
 
     def probe(self, retry: bool = False, interval_ms: int = 200) -> Error:
         """ Probes health of dac5578. """
-        self.logger.debug("Probing dac5578, retry={}, interval_ms={}".format(
+        self.logger.debug("Probing, retry={}, interval_ms={}".format(
             retry, interval_ms))
 
         # Read power register

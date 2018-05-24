@@ -66,3 +66,13 @@ class Logger:
 			self.logger.critical(self.name + ": " + str(message))
 		else:
 			self.logger.critical(message)
+
+
+	def exception(self, message):
+		""" Reports standard logging exception message if in normal runtime
+			environment. If in test environment, prepends message with 
+			logger name. """
+		if "pytest" in sys.modules:
+			self.logger.exception(self.name + ": " + str(message))
+		else:
+			self.logger.exception(message)
