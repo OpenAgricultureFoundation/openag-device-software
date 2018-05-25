@@ -5,3 +5,4 @@ __pycache__/
 *.sqlite3
 *.log
 .pytest_cache/
+registration/data/
