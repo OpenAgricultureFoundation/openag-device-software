@@ -11,7 +11,7 @@ from app.models import EventModel
 
 class EventManager:
     """ Manages events. """
-    _timeout = 10
+    _timeout = 10  # seconds
 
     # Initialize logger
     extra = {"console_name":"Device", "file_name": "device"}

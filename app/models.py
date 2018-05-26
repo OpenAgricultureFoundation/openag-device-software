@@ -175,12 +175,11 @@ class RecipeTransitionModel(models.Model):
 
 
 class IoTConfigModel( models.Model ):
-    lastConfigVersion = models.IntegerField()
-    device_id = models.TextField()
+    last_config_version = models.IntegerField()
 
     class Meta:
         verbose_name = "IoTConfig"
         verbose_name_plural = "IoTConfigs"
-        get_latest_by="lastConfigVersion"
+        get_latest_by="last_config_version"
 
 

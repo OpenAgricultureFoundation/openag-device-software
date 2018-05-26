@@ -16,13 +16,12 @@ class Migration(migrations.Migration):
             name='IoTConfigModel',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('lastConfigVersion', models.IntegerField()),
-                ('device_id', models.TextField()),
+                ('last_config_version', models.IntegerField()),
             ],
             options={
                 'verbose_name': 'IoTConfig',
                 'verbose_name_plural': 'IoTConfigs',
-                'get_latest_by': 'lastConfigVersion',
+                'get_latest_by': 'last_config_version',
             },
         ),
     ]

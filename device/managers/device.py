@@ -59,7 +59,7 @@ class DeviceManager:
         "sensor": {"desired": {}, "reported": {}},
         "actuator": {"desired": {}, "reported": {}},
         "reported_sensor_stats": {
-        "individual": {
+            "individual": {
                 "instantaneous": {},
                 "average": {}
             },
@@ -86,6 +86,7 @@ class DeviceManager:
 
     # Initialize the IoT communications manager object
     iot = IoTManager( state )
+    latest_publish_timestamp = 0
 
     # Initialize peripheral and controller managers
     peripheral_managers = None
@@ -350,6 +351,11 @@ class DeviceManager:
             if time.time() - self.latest_environment_timestamp > 60*10:
                 self.store_environment()
 
+            # Once a minute, publish any changed values
+            if time.time() - self.latest_publish_timestamp > 60:
+                self.latest_publish_timestamp = time.time()
+                self.iot.publish()
+
             # Check for events
             request = self.request
             if self.request != None:
@@ -581,7 +587,7 @@ class DeviceManager:
                 r = RecipeModel.objects.get(uuid=recipe["uuid"])
                 r.json=json.dumps(recipe)
                 r.save()
-            except app.models.DoesNotExist as e:
+            except:
                 RecipeModel.objects.create(json=json.dumps(recipe))
 
 

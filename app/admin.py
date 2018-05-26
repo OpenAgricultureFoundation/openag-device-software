@@ -73,7 +73,7 @@ admin.site.register(CultivationMethodModel, CultivationMethodAdmin)
 
 
 class IoTConfigAdmin(admin.ModelAdmin):
-	list_display = ("lastConfigVersion", "device_id")
+	list_display = ["last_config_version"]
 admin.site.register(IoTConfigModel, IoTConfigAdmin)
 
 

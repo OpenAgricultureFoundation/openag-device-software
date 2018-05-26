@@ -1,17 +1,33 @@
 # Import python modules
-import logging, time, threading, os, sys, datetime, json
-
-#debugrob: use DB storage in place of config.json (see recipe.py for example)
-# Import database models
-from app.models import IoTConfigModel
+import logging, time, threading, os, sys, datetime, json, sys, traceback, copy
 
 # Import the IoT communications class
-#from iot.iot_pubsub import IotPubSub
-#debugrob: use above later.  first get this thread receiving data to publish and commands to process.
+from iot.iot_pubsub import IoTPubSub
 
 """
-So i see 2 cases. The first is state which we want updated as fast as possible as frequently as possible, however to start i might just send all state every second to a cloud table that removes the old entry of state each time it receives a new one so there is only ever one instance of state in the table. That is what Manu will poll to get the most up to date device information. Then, the second one is environment history which is stored forever but infrequently updated (e.g. every few minutes). For this i think i makes the most sense to read directly from the environment table that already exists and send payloads the cloud. Upon payload receive confirmation, turn the 'is_synced' flag in the database ON.
-There is also the new events case (e.g. start a recipe, etc) that we need to figure out.
+Jake:
+So i see 2 cases. The first is state which we want updated as fast as possible
+as frequently as possible, however to start i might just send all state every
+second to a cloud table that removes the old entry of state each time it
+receives a new one so there is only ever one instance of state in the table.
+That is what Manu will poll to get the most up to date device information.
+
+Then, the second one is environment history which is stored forever but
+infrequently updated (e.g. every few minutes). For this I think it makes the
+most sense to read directly from the environment table that already exists and
+send payloads the cloud. Upon payload receive confirmation, turn the
+'is_synced' flag in the database ON.
+
+There is also the new events case (e.g. start a recipe, etc) that we need to
+figure out.  
+
+debugrob
+What if I send the entire state on first connection (and save it), then each
+minute look for diffs and just send the diffs?
+
+Should I write that to a local table then have this thread pick it up and send
+it?
+
 """
 
 
@@ -23,14 +39,25 @@ class IoTManager:
     logger = logging.getLogger( 'iot' )
     logger = logging.LoggerAdapter(logger, extra)
 
-    # place holder for thread object
+    # Place holder for thread object.
     thread = None
 
+    # Keep track of the previous values that we have published.  
+    # We only publish a value if it changes.
+    prev_vars = None
+
     def __init__(self, state):
-        """ Class constructort """
+        """ Class constructor """
         self.state = state
         self.error = None
         self._stop_event = threading.Event() # so we can stop this thread
+        try:
+            self.iot = IoTPubSub() 
+        except( Exception ) as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.logger.critical( "Exception creating class: {}".format( e ))
+            traceback.print_tb( exc_traceback, file=sys.stdout )
+            exit( 1 )
 
 
     @property
@@ -48,37 +75,11 @@ class IoTManager:
 #            self.state.iot["error"] = value
 
 
-#    @property
-#    def commanded_mode(self):
-#        """ Gets commanded mode from shared state. """
-#        if "commanded_mode" in self.state.recipe:
-#            return self.state.recipe["commanded_mode"]
-#        else:
-#            return None
-#
-#    @commanded_mode.setter
-#    def commanded_mode(self, value):
-#        """ Safely updates commanded mode in shared state. """
-#        with threading.Lock():
-#            self.state.recipe["commanded_mode"] = value
-
-
     def spawn(self):
         self.logger.info("Spawing IoT thread")
         self.thread = threading.Thread( target=self.thread_proc )
         self.thread.daemon = True
         self.thread.start()
-#debugrob: use this code to save IoT config message version
-        """
-        try:
-            c = IoTConfigModel.objects.latest()
-            c.lastConfigVersion = 1
-            c.device_id = 'debugrob'
-            c.save()
-        except:
-            IoTConfigModel.objects.create( lastConfigVersion = 1,
-                                           device_id = 'debugrob' )
-        """
 
 
     def stop(self):
@@ -90,12 +91,32 @@ class IoTManager:
         return self._stop_event.is_set()
 
 
-    def thread_proc(self):
-#debugrob: what do I do here?
+    def publish( self ):
+        vars_dict = self.state.environment["reported_sensor_stats"] \
+            ["individual"]["instantaneous"]
+
+        # Keep a copy of the first set of values (usually None).
+        if self.prev_vars == None:
+            self.prev_vars = copy.deepcopy( vars_dict )
+
+        # for each value, only publish the ones that have changed.
+        for var in vars_dict:
+            if self.prev_vars[var] != vars_dict[var]:
+                self.prev_vars[var] = copy.deepcopy( vars_dict[var] )
+                self.iot.publishEnvVar( var, vars_dict[var] )
+
+        """
+#debugrob: later:
+    self.iot.publishCommandReply( commandName, valuesJsonString )
+        """
+
+    def thread_proc( self ):
         while True:
             if self.stopped():
                 break
-            time.sleep(0.1)
+            # send and receive messages over IoT
+            self.iot.process_network_events() 
+            time.sleep( 0.1 )
 
 
 
