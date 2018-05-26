@@ -118,6 +118,9 @@ class IoTPubSub:
             message_obj['var'] = varName
             message_obj['values'] = values
 
+#debugrob: values must be formated like this:  (look at the old code)
+# "{'values':[{'name':'temp', 'type':'float', 'value':'19.991489'},{'name':'RH', 'type':'float', 'value':'32.724899'}]}"
+
             message_json = json.dumps( message_obj ) # dict obj to JSON string
 
             # Publish the message to the MQTT topic. qos=1 means at least once
