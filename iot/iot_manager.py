@@ -69,7 +69,7 @@ class IoTManager:
     @error.setter
     def error(self, value):
         """ Safely updates recipe error in shared state. """
-        self._error= value
+        self._error = value
 #debugrob: need iot dict in state if we do this
 #        with threading.Lock():
 #            self.state.iot["error"] = value

@@ -116,10 +116,35 @@ class IoTPubSub:
             message_obj['exp'] = self.args.experiment
             message_obj['treat'] = self.args.treatment
             message_obj['var'] = varName
-            message_obj['values'] = values
 
-#debugrob: values must be formated like this:  (look at the old code)
-# "{'values':[{'name':'temp', 'type':'float', 'value':'19.991489'},{'name':'RH', 'type':'float', 'value':'32.724899'}]}"
+            # format our json values
+            count = 0
+            valuesJson = "{'values':["
+            for vname in values:
+                val = values[vname]
+
+                if count > 0:
+                    valuesJson += ","
+                count += 1
+
+                if isinstance( val, float ):
+                    val = '{0:.2f}'.format( val )
+                    valuesJson += \
+                        "{'name':'%s', 'type':'float', 'value':%s}" % \
+                            ( vname, val )
+
+                elif isinstance( val, int ):
+                    valuesJson += \
+                        "{'name':'%s', 'type':'int', 'value':%s}" % \
+                            ( vname, val )
+
+                else: # assume str
+                    valuesJson += \
+                        "{'name':'%s', 'type':'str', 'value':'%s'}" % \
+                            ( vname, val )
+
+            valuesJson += "]}"
+            message_obj['values'] = valuesJson
 
             message_json = json.dumps( message_obj ) # dict obj to JSON string
 
@@ -133,7 +158,9 @@ class IoTPubSub:
             return True
 
         except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.critical( "publishEnvVar: Exception: {}".format( e ))
+            traceback.print_tb( exc_traceback, file=sys.stdout )
             return False
 
 
@@ -581,24 +608,4 @@ def validDictKey( d, key ):
                 publishCommandReply( client, mqtt_topic, 
                     args.experiment, args.treatment, data )
                 continue 
-
-            # at this point, we must have an env-var json object?
-            if 't_id' not in data:  
-                self.logger.critical('iot_pubsub: received unknown data.')
-                continue 
-
-#            values = ''
-#            if 'values' in data:
-#                values = data['values'] # a complex json style string
-#
-#            # continue processing the data here
-#            self.logger.debug( 'iot_pubsub: %s[%s], %s[%s], values:%s' % 
-#                    ( TREAT[ data['t_id'] ]['name'], data['t_id'], 
-#                      tvars[ data['v_id'] ]['name'], data['v_id'], 
-#                      values ))
-
-#            publishEnvVar( varName, values )
-
-        except( Exception ) as e:
-            self.logger.critical( "iot_pubsub: Exception reading data:", e )
 """
