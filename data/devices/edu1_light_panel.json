@@ -25,9 +25,9 @@
                 },
                 "communication": {
                     "bus": "2", 
+                    "address": "0x47",
                     "mux": "0x77", 
-                    "channel": "3", 
-                    "address": "0x47"
+                    "channel": "3"
                 }
             }
         }

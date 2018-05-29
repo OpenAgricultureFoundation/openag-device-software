@@ -260,6 +260,7 @@ class I2C(object):
                     self.mux, self.channel, channel_byte))
                 fcntl.ioctl(self.fw, self.I2C_SLAVE, self.mux)
                 self.fw.write(byte_array)
+                return Error(None)
         except IOError:
             return Error("Unable to set mux due to IO error")
 
