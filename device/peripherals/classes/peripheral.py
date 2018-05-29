@@ -37,10 +37,10 @@ class Peripheral:
         self.simulate = simulate
 
         # Initialize logger
-        self.logger = {
+        self.logger = Logger(
             name = self.name,
             dunder_name = __name__,
-        }
+        )
 
         # Initialize modes and errors
         self.mode = Modes.INIT
@@ -292,7 +292,7 @@ class Peripheral:
         """ Loads setup dict from setup filename parameter. """
         self.logger.debug("Loading setup file")
         file_name = self.parameters["setup"]["file_name"]
-        setup_dict = json.load(open("device/peripherals/setups/" + file_name + ".json"))
+        setup_dict = json.load(open("device/peripherals/" + file_name + ".json"))
         return setup_dict
 
 
@@ -540,32 +540,17 @@ class Peripheral:
             self.state.peripherals[self.name]["response"] = value
 
 
-    @property
-    def error(self):
-        """ Gets error value. """
-        return self._error
+    # @property
+    # def error(self):
+    #     """ Gets error value. """
+    #     return self._error
 
 
-    @error.setter
-    def error(self, value):
-        """ Safely updates peripheral in shared state. """
-        self._error= value
-        with threading.Lock():
-            if self.name not in self.state.peripherals:
-                self.state.peripherals[self.name] = {}
-            self.state.peripherals[self.name]["error"] = value
-
-    @property
-    def health(self):
-        """ Gets health value. """
-        return self._health
-
-
-    @health.setter
-    def health(self, value):
-        """ Safely updates health in device state each time 
-            it is c hanged. """
-        self._health = value
-        self.logger.debug("Health: {}".format(value))
-        with threading.Lock():
-            self.report_health(self._health)
+    # @error.setter
+    # def error(self, value):
+    #     """ Safely updates peripheral in shared state. """
+    #     self._error= value
+    #     with threading.Lock():
+    #         if self.name not in self.state.peripherals:
+    #             self.state.peripherals[self.name] = {}
+    #         self.state.peripherals[self.name]["error"] = value

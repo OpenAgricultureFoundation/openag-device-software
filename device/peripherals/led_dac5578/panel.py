@@ -15,6 +15,10 @@ from device.drivers.dac5578.manager import DAC5578Manager as DAC5578
 class LEDPanel:
     """ An led panel controlled by a dac5578. """
 
+    # Initialize shutdown state
+    is_shutdown: bool = False
+
+
     def __init__(self, name, channel_configs, bus, address, mux=None, channel=None, simulate=False):
         """ Instantiates panel. """
 
@@ -24,7 +28,7 @@ class LEDPanel:
             dunder_name = __name__,
         )
         
-        # Instantiate name and channel configs
+        # Initialize name and channel configs
         self.name = name
         self.channel_configs = channel_configs
 
@@ -38,14 +42,13 @@ class LEDPanel:
             simulate = simulate,
         )
 
-        # Instantiate health & probe
+        # Initialize health
         self.health = self.dac5578.health
-        self.probe = self.dac5578.probe
-
  
+
     def initialize(self) -> Error:
         """ Initializes panel by probing driver with retry enabled. """
-        self.logger.debug("Initializing")
+        self.logger.debug("Initializing panel")
 
         # Probe dac
         error = self.dac5578.probe(retry=True)
@@ -61,10 +64,32 @@ class LEDPanel:
         return Error(None)
 
 
+    def shutdown(self):
+        """ Shutdown panel. """
+        self.logger.debug("Shutting down")
+        self.dac5578.shutdown()
+        self.is_shutdown = True
+
+
+    def reset(self):
+        """ Resets panel. """
+        self.logger.debug("Resetting")
+        self.dac5578.reset()
+        self.is_shutdown = False
+
+
     def set_output(self, channel_name: str, percent: float) -> Error:
         """ Sets output on dac. Converts channel name to channel number 
             then sets output on dac. """
         self.logger.debug("Setting output on channel {} to: {}".format(channel_name, percent))
+
+        # Verify panel is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set output, panel is shutdown")
+
+        # Verify panel is healthy
+        if not self.health.healthy:
+            return Error("Unable to set output, panel is unhealthy")
 
         # Convert channel name to channel number
         channel_number, error = self.get_channel_number(channel_name)
@@ -96,6 +121,14 @@ class LEDPanel:
         """ Sets outputs on dac. Converts channel names to channel numbers 
             then sets outputs on dac. """
         self.logger.debug("Setting outputs: {}".format(outputs))
+
+        # Verify panel is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set outputs, panel is shutdown")
+
+        # Verify panel is healthy
+        if not self.health.healthy:
+            return Error("Unable to set outputs, panel is unhealthy")
 
         # Convert channel names to channel numbers
         converted_outputs = {}
@@ -136,10 +169,13 @@ class LEDPanel:
         self.logger.debug("Setting spd, distance={}cm, intensity={}W, spectrum={}".format(
             desired_distance_cm, desired_intensity_watts, desired_spectrum_nm_percent))
 
-        # Check if panel is healthy
+        # Verify panel is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set spd, panel is shutdown")
+
+        # Verify panel is healthy
         if not self.health.healthy:
-            error = Error("Unable to set outputs, panel is not healthy")
-            self.logger.debug(error.latest())
+            return Error("Unable to set spd, panel is unhealthy")
 
         # Approximate spectral power distribution
         try:

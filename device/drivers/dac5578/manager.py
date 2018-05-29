@@ -46,14 +46,13 @@ class DAC5578Manager(DriverManager):
     def reset(self) -> None:
         """ Reset dac5578. """
         self.logger.debug("Resetting")
-        self.core.turn_on()
         self.is_shutdown = False
 
 
     def shutdown(self) -> None:
         """ Shutdown dac5578. """
         self.logger.debug("Shutting down")
-        self.core.turn_off()
+        self.is_shutdown = True
 
 
     def set_output(self, channel: int, percent: int, disable_mux: bool = False) -> Error:
@@ -61,7 +60,13 @@ class DAC5578Manager(DriverManager):
             Returns none on success, error on failure. """
         self.logger.debug("Setting output on channel {} to: {}%".format(channel, percent))
 
-        # TODO: Check if device is shutdown
+        # Verify dac is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set output, dac is shutdown")
+
+        # Verify dac is healthy
+        if not self.health.healthy:
+            return Error("Unable to set output, dac is unhealthy")
 
         # Set output
         error = self.core.set_output(channel, percent)
@@ -82,7 +87,13 @@ class DAC5578Manager(DriverManager):
         """ Sets output channels to output percents. Only sets mux once. """
         self.logger.debug("Setting outputs: {}".format(outputs))
 
-        # TODO: Check if device is shutdown
+        # Verify dac is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set outputs, dac is shutdown")
+
+        # Verify dac is healthy
+        if not self.health.healthy:
+            return Error("Unable to set outputs, dac is unhealthy")
 
         # Set outputs
         error = self.core.set_outputs(outputs)

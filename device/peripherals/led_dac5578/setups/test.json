@@ -1,12 +1,12 @@
 {
-	"name":  "Light Array Orion Actuator",
+	"name":  "LED Array Test Actuator",
 	"version": "1",
-	"uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
-	"module_name": "led_dac5578.manager",
+	"uuid": "61996386-5799-4a43-9e53-4c7d0a3c8bf1",
+	"module_name": "led_dac5578/manager",
 	"class_name": "LEDManager",
 	"parameters": {
 		"variables": {
-			"sensor": {
+			"sensors": {
 				"intensity_watts": {
 					"name": {
 						"type": "string",
@@ -26,7 +26,7 @@
 					} 
 				}
 			},
-			"actuator": {
+			"actuators": {
 				"channel_output_percents": {
 					"name": {
 						"type": "string",
@@ -59,144 +59,62 @@
 		}
 	},
 	"channel_configs": [
-		{
-			"name": {
-				"brief": "FR",
-				"verbose": "Far Red"
-			},
-			"channel": {
-				"hardware": 1,
-				"software": 6
-			},
-			"planar_distance_map": [
-				{"z_cm": 5, "intensity_watts": 50},
-				{"z_cm": 10, "intensity_watts": 25},
-				{"z_cm": 15, "intensity_watts": 13},
-				{"z_cm": 20, "intensity_watts": 6}
-			],
-			"output_percent_map": [
-				{"output_percent": 100, "intensity_normalized": 1},
-				{"output_percent": 75, "intensity_normalized": 0.75},
-				{"output_percent": 50, "intensity_normalized": 0.5},
-				{"output_percent": 25, "intensity_normalized": 0.25},
-				{"output_percent": 0, "intensity_normalized": 0}
-			]
-		},
-		{
-			"name": {
-				"brief": "CW1",
-				"verbose": "Cool White #1"
-			},
-			"channel": {
-				"hardware": 2,
-				"software": 4
-			},
-			"planar_distance_map": [
-				{"z_cm": 5, "intensity_watts": 100},
-				{"z_cm": 10, "intensity_watts": 75},
-				{"z_cm": 15, "intensity_watts": 50},
-				{"z_cm": 20, "intensity_watts": 25}
-			],
-			"output_percent_map": [
-				{"output_percent": 100, "intensity_normalized": 1},
-				{"output_percent": 75, "intensity_normalized": 0.75},
-				{"output_percent": 50, "intensity_normalized": 0.5},
-				{"output_percent": 25, "intensity_normalized": 0.25},
-				{"output_percent": 0, "intensity_normalized": 0}
-			]
-		},
-		{
-			"name": {
-				"brief": "CW2",
-				"verbose": "Cool White #2"
-			},
-			"channel": {
-				"hardware": 3,
-				"software": 2
-			},
-			"planar_distance_map": [
-				{"z_cm": 5, "intensity_watts": 100},
-				{"z_cm": 10, "intensity_watts": 75},
-				{"z_cm": 15, "intensity_watts": 50},
-				{"z_cm": 20, "intensity_watts": 25}
-			],
-			"output_percent_map": [
-				{"output_percent": 100, "intensity_normalized": 1},
-				{"output_percent": 75, "intensity_normalized": 0.75},
-				{"output_percent": 50, "intensity_normalized": 0.5},
-				{"output_percent": 25, "intensity_normalized": 0.25},
-				{"output_percent": 0, "intensity_normalized": 0}
-			]
-		},
-		{
-			"name": {
-				"brief": "CW3",
-				"verbose": "Cool White #3"
-			},
-			"channel": {
-				"hardware": 4,
-				"software": 0
-			},
-			"planar_distance_map": [
-				{"z_cm": 5, "intensity_watts": 100},
-				{"z_cm": 10, "intensity_watts": 75},
-				{"z_cm": 15, "intensity_watts": 50},
-				{"z_cm": 20, "intensity_watts": 25}
-			],
-			"output_percent_map": [
-				{"output_percent": 100, "intensity_normalized": 1},
-				{"output_percent": 75, "intensity_normalized": 0.75},
-				{"output_percent": 50, "intensity_normalized": 0.5},
-				{"output_percent": 25, "intensity_normalized": 0.25},
-				{"output_percent": 0, "intensity_normalized": 0}
-			]
-		},
-		{
-			"name": {
-				"brief": "CW4",
-				"verbose": "Cool White #4"
-			},
-			"channel": {
-				"hardware": 4,
-				"software": 7
-			},
-			"planar_distance_map": [
-				{"z_cm": 5, "intensity_watts": 100},
-				{"z_cm": 10, "intensity_watts": 75},
-				{"z_cm": 15, "intensity_watts": 50},
-				{"z_cm": 20, "intensity_watts": 25}
-			],
-			"output_percent_map": [
-				{"output_percent": 100, "intensity_normalized": 1},
-				{"output_percent": 75, "intensity_normalized": 0.75},
-				{"output_percent": 50, "intensity_normalized": 0.5},
-				{"output_percent": 25, "intensity_normalized": 0.25},
-				{"output_percent": 0, "intensity_normalized": 0}
-			]
-		},
-		{
-			"name": {
-				"brief": "WW",
-				"verbose": "Warm White"
-			},
-			"channel": {
-				"hardware": 6,
-				"software": 5
-			},
-			"planar_distance_map": [
-				{"z_cm": 5, "intensity_watts": 75},
-				{"z_cm": 10, "intensity_watts": 55},
-				{"z_cm": 15, "intensity_watts": 25},
-				{"z_cm": 20, "intensity_watts": 12.5}
-			],
-			"output_percent_map": [
-				{"output_percent": 100, "intensity_normalized": 1},
-				{"output_percent": 75, "intensity_normalized": 0.75},
-				{"output_percent": 50, "intensity_normalized": 0.5},
-				{"output_percent": 25, "intensity_normalized": 0.25},
-				{"output_percent": 0, "intensity_normalized": 0}
-			]
-		}
+	    {
+	        "name": {
+	            "brief": "FR",
+	            "verbose": "Far Red"
+	        },
+	        "channel": {
+	            "hardware": 1,
+	            "software": 6
+	        },
+	        "spectrum_nm_percent": {
+	            "400-499": 20,
+	            "500-599": 80,
+	            "600-699": 20
+	        },
+	        "planar_distance_map": [
+	            {"distance_cm": 5, "intensity_watts": 100},
+	            {"distance_cm": 10, "intensity_watts": 50},
+	            {"distance_cm": 15, "intensity_watts": 25},
+	            {"distance_cm": 20, "intensity_watts": 12}
+	        ],
+	        "output_percent_map": [
+	            {"output_percent": 100, "intensity_percent": 100},
+	            {"output_percent": 75, "intensity_percent": 66},
+	            {"output_percent": 50, "intensity_percent": 33},
+	            {"output_percent": 25, "intensity_percent": 0},
+	            {"output_percent": 0, "intensity_percent": 0}
+	        ]
+	    },
+	    {
+	        "name": {
+	            "brief": "WW",
+	            "verbose": "Warm White"
+	        },
+	        "channel": {
+	            "hardware": 2,
+	            "software": 7
+	        },
+	        "spectrum_nm_percent": {
+	            "400-499": 20,
+	            "500-599": 60,
+	            "600-699": 20
+	        },
+	        "planar_distance_map": [
+	            {"distance_cm": 5, "intensity_watts": 100},
+	            {"distance_cm": 10, "intensity_watts": 50},
+	            {"distance_cm": 15, "intensity_watts": 25},
+	            {"distance_cm": 20, "intensity_watts": 12}
+	        ],
+	        "output_percent_map": [
+	            {"output_percent": 100, "intensity_percent": 100},
+	            {"output_percent": 75, "intensity_percent": 66},
+	            {"output_percent": 50, "intensity_percent": 33},
+	            {"output_percent": 25, "intensity_percent": 0},
+	            {"output_percent": 0, "intensity_percent": 0}
+	        ]
+	    }
 	],
 	"events": [
 		{

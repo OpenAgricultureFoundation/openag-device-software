@@ -1,3 +1,7 @@
+# Import standard python modules
+import threading
+
+
 def set_nested_dict_safely(nested_dict, keys, value):  
     """ Safely sets value in nested dict. """
     with threading.Lock():

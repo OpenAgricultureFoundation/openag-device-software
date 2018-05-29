@@ -5,26 +5,26 @@ import sys
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.led_dac5578.array import Array
+    from device.peripherals.led_dac5578.array import LEDArray
 except:
     # ... if running tests from same dir as panel.py
     sys.path.append("../../../")
-    from device.peripherals.led_dac5578.array import Array
+    from device.peripherals.led_dac5578.array import LEDArray
 
 
 panel_configs = [
     {
         "name": "Test-1",
         "bus": 2,
-        "address": 0x47,
-        "mux": 0x77,
+        "address": "0x47",
+        "mux": "0x77",
         "channel": 0,
     },
     {
         "name": "Test-2",
         "bus": 2,
-        "address": 0x47,
-        "mux": 0x77,
+        "address": "0x47",
+        "mux": "0x77",
         "channel": 1,
     }
 ]
@@ -141,3 +141,16 @@ def test_set_outputs_unknown_channel_name():
     outputs = {"XX": 92.1, "WW": 72.2}
     error = array.set_outputs(outputs)
     assert error.exists() == True
+
+
+def test_set_spd():
+    array = LEDArray("Test", panel_configs, channel_configs, simulate = True)
+    channel_outputs, output_spectrum_nm_percent, output_intensity_watts, error = array.set_spd(
+        desired_distance_cm = desired_distance_cm, 
+        desired_intensity_watts = desired_intensity_watts, 
+        desired_spectrum_nm_percent = desired_spectrum_nm_percent,
+    )
+    assert error.exists() == False
+    assert channel_outputs == {'FR': 0.46, 'WW': 0.54}
+    assert output_spectrum_nm_percent == {'400-449': 12.27, '449-499': 12.27, '500-549': 42.44, '550-559': 8.49, '600-649': 12.27, '650-699': 12.27}
+    assert output_intensity_watts == 81.52
