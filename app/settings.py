@@ -153,9 +153,7 @@ LOGGING = {
         },
         'device': {
             'handlers': ['device_console', 'device_file'],
-            #debugrob, do NOT check this in!
-            #'level': 'DEBUG',
-            'level': 'INFO',
+            'level': 'DEBUG',
         },
         'iot': {
             'handlers': ['iot_console', 'iot_file'],
