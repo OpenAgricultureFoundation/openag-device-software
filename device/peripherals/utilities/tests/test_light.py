@@ -93,7 +93,7 @@ def test_individual():
 	channel_spd_matrix = light.build_channel_spd_matrix(
 	    channel_configs = channel_configs,
 	    distance = desired_distance_cm,
-	    desired_spd = desired_spd,
+	    reference_spd = desired_spd,
 	)
 	assert channel_spd_matrix.tolist() == [[10.0, 10.0], [10.0, 10.0], [40.0, 30.0], [8.0, 6.0], [10.0, 10.0], [10.0, 10.0]]
 
@@ -141,7 +141,7 @@ def test_individual():
 	assert output_spectrum_dict == {'400-449': 12.27, '449-499': 12.27, '500-549': 42.44, '550-559': 8.49, '600-649': 12.27, '650-699': 12.27}
 
 
-def test_integration():
+def test_approximate_spd():
 	channel_outputs, output_spectrum_nm_percent, output_intensity_watts = light.approximate_spd(
 		channel_configs = channel_configs, 
 		desired_distance_cm = desired_distance_cm, 
@@ -151,3 +151,20 @@ def test_integration():
 	assert channel_outputs == {'FR': 0.46, 'WW': 0.54}
 	assert output_spectrum_nm_percent == {'400-449': 12.27, '449-499': 12.27, '500-549': 42.44, '550-559': 8.49, '600-649': 12.27, '650-699': 12.27}
 	assert output_intensity_watts == 81.52
+
+
+def tests_calculate_resultant_spd():
+
+	desired_spd = light.calculate_desired_spd(
+	    intensity_watts = desired_intensity_watts,
+	    spectrum_nm_percent = desired_spectrum_nm_percent
+	)
+
+	output_spectrum_nm_percent, output_intensity_watts = light.calculate_resultant_spd(
+		channel_configs = channel_configs, 
+		reference_spd = desired_spd, 
+		channel_outputs = {'FR': 0.46, 'WW': 0.54}, 
+		distance = desired_distance_cm,
+	)
+	assert output_intensity_watts == 81.52
+	assert output_spectrum_nm_percent == {'400-449': 12.27, '449-499': 12.27, '500-549': 42.44, '550-559': 8.49, '600-649': 12.27, '650-699': 12.27}

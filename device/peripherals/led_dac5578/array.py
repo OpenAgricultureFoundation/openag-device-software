@@ -177,12 +177,12 @@ class LEDArray:
             else:
                 self.health.report_success()
 
-        # Check if array is still healthy and return
+        # Check if array is still healthy
         if not self.health.healthy:
             error = Error("Unacceptable array health after set outputs")
             return error
 
-        # Healthy!
+        # Success!
         self.logger.debug("Successfully set outputs") 
         return Error(None)
 
@@ -264,37 +264,6 @@ class LEDArray:
         # Successfully turned off
         self.logger.debug("Successfully turned off")
         return Error(None)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # def fade_concurrently(self):

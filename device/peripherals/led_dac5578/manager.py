@@ -233,6 +233,7 @@ class LEDManager(PeripheralManager, LEDEventMixin):
     @channel_outputs.setter
     def channel_outputs(self, value: dict) -> None:
         """ Sets channel outputs value in shared state. """
+        self.logger.debug("Reporting channel outputs")
         self.state.set_environment_reported_actuator_value(self.name, self.channel_outputs_name, value)
         self.state.set_peripheral_reported_actuator_value(self.name, self.channel_outputs_name, value)
 

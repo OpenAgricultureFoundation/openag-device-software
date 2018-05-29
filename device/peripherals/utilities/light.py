@@ -69,8 +69,9 @@ def translate_spd(from_spd, to_spd):
 
 
 
-def build_channel_spd_matrix(channel_configs, distance, desired_spd):
-    """ Builds channel spectral power distribution matrix. """
+def build_channel_spd_matrix(channel_configs, distance, reference_spd):
+    """ Builds channel spectral power distribution matrix from channel configs
+        at distance with spectral bands that match the reference spd. """
 
     channel_spd_matrix = []
     for channel_config in channel_configs:
@@ -87,7 +88,7 @@ def build_channel_spd_matrix(channel_configs, distance, desired_spd):
         # Translate channel spd to match wavelength bands of desired spd
         translated_channel_spd = translate_spd(
             from_spd = scaled_channel_spd,
-            to_spd = desired_spd,
+            to_spd = reference_spd,
         )
 
         # Build channel spd vector and append to matrix
@@ -162,13 +163,22 @@ def deconstruct_spd_vector(spd_vector, decimals):
 
 
 def dictify_vector(vector, reference_dict):
-    """ Converts output spd vector into its dictionary representation. """
+    """ Converts vector into dictionary representation with keys from reference dict. """
     dict_ = {}
     index = 0
     for key, _ in reference_dict.items():
         dict_[key] = vector[index]
         index += 1
     return dict_
+
+
+def vectorize_dict(dict_):
+    """ Converts dict into vector representation. """
+    list_ = []
+    for _, value in dict_.items():
+        list_.append(value)
+    vector  = numpy.array(list_)
+    return vector
 
 
 def approximate_spd(channel_configs, desired_distance_cm, 
@@ -183,7 +193,7 @@ def approximate_spd(channel_configs, desired_distance_cm,
     channel_spd_matrix = build_channel_spd_matrix(
         channel_configs = channel_configs,
         distance = desired_distance_cm,
-        desired_spd = desired_spd,
+        reference_spd = desired_spd,
     )
 
     desired_spd_vector = build_desired_spd_vector(
@@ -217,3 +227,37 @@ def approximate_spd(channel_configs, desired_distance_cm,
     )
 
     return channel_output_dict, output_spectrum_dict, output_intensity_watts
+
+
+
+def calculate_resultant_spd(channel_configs, reference_spd, channel_outputs, distance):
+    """ Generates spd from provided channel outputs at distance. Returns 
+        spd with the same spectral bands as the reference spd. """
+
+    channel_spd_matrix = build_channel_spd_matrix(
+        channel_configs = channel_configs,
+        distance = distance,
+        reference_spd = reference_spd,
+    )
+
+    channel_output_vector = vectorize_dict(
+        dict_ = channel_outputs,
+    )
+
+    output_spd_vector = calculate_output_spd(
+        channel_spd_matrix = channel_spd_matrix,
+        channel_output_vector = channel_output_vector, 
+    )
+
+    output_spectrum_vector, output_intensity_watts = deconstruct_spd_vector(
+        spd_vector = output_spd_vector,
+        decimals = 2,
+    )
+
+    output_spectrum_dict = dictify_vector(
+        vector = output_spectrum_vector,
+        reference_dict = reference_spd,
+    )
+
+    return output_spectrum_dict, output_intensity_watts
+
