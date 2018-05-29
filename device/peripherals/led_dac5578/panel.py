@@ -215,3 +215,13 @@ class LEDPanel:
         # Channel name not found
         error = Error("Unknown channel name: `{}`".format(channel_name))
         return None, error
+
+
+    def build_channel_outputs(self, value: float) -> dict:
+        """ Build channel outputs. Sets each channel to provided value. """
+
+        channel_outputs = {}
+        for channel_config in self.channel_configs:
+            name = channel_config["name"]["brief"]
+            channel_outputs[name] = value
+        return channel_outputs

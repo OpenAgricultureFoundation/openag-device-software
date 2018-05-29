@@ -20,8 +20,6 @@ class State(object):
         """ Report sensor value to environment sensor dict and reported sensor 
             stats dict. """
 
-        # TODO: Can we make this less complicated?
-
         # Force simple if value is None (don't want to try averaging `None`)
         if value == None:
             simple = True
@@ -49,8 +47,6 @@ class State(object):
                 self.environment["sensor"]["desired"] = {}
             if "reported" not in self.environment["sensor"]:
                 self.environment["sensor"]["reported"] = {}
-
-
 
             # Update individual instantaneous
             by_type = self.environment["reported_sensor_stats"]["individual"]["instantaneous"]

@@ -256,7 +256,10 @@ class DeviceViewer:
             for peripheral_name in peripheral_dict:
                 individual_peripheral_dict = peripheral_dict[peripheral_name]
                 modes[peripheral_name] = individual_peripheral_dict["mode"]
-                healths[peripheral_name] = individual_peripheral_dict["health"]
+
+                # TODO: re-instate this
+                # healths[peripheral_name] = individual_peripheral_dict["health"]
+                healths[peripheral_name] = None
 
         # Return thread modes
         return modes, healths

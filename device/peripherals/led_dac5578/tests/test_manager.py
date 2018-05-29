@@ -1,5 +1,5 @@
 # Import standard python libraries
-import sys, os
+import sys, os, json
 
 # Import module...
 try:
@@ -10,42 +10,17 @@ except:
     # ... if running tests from same dir as panel.py
     sys.path.append("../../../")
     from device.peripherals.led_dac5578.manager import LEDManager
-    os.chdir("../../../")
-
+    
 # Import shared memory
 from device.state import State
 
+# Change directory for importing files
+os.chdir("../../../")
 
-config = {
-    "name": "LightArray-1",
-    "type": "LightArray",
-    "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
-    "parameters": {
-       "setup": {
-            "name": "Test Setup",
-            "file_name": "led_dac5578/setups/test"
-        },
-        "variables": {
-            "sensor": {
-                "intensity_watts": "light_intensity_watts",
-                "spectrum_nm_percent": "light_spectrum_nm_percent",
-                "illumination_distance_cm": "light_illumination_distance_cm"
-            },
-            "actuator": {
-                "channel_output_percents": "light_channel_output_percents"
-            }
-        },
-        "communication": {
-            "panels": [
-                {"name": "Test-1", "bus": 2, "mux": "0x77", "channel": 0, "address": "0x47", "x": 0, "y": 0},
-                {"name": "Test-2", "bus": 2, "mux": "0x77", "channel": 1, "address": "0x47", "x": 1, "y": 0},
-                {"name": "Test-3", "bus": 2, "mux": "0x77", "channel": 2, "address": "0x47", "x": 2, "y": 0}
-            ]
-        },
+# Import test config
+config = json.load(open("device/peripherals/led_dac5578/tests/test_config.json"))
 
-    }
-}
-
+# Set testing variable values
 desired_distance_cm = 5
 desired_intensity_watts = 100
 desired_spectrum_nm_percent = {
@@ -56,6 +31,7 @@ desired_spectrum_nm_percent = {
     "600-649": 10,
     "650-699": 10}
 
+# Initialize state
 state = State()
 
 

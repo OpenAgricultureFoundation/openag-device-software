@@ -112,7 +112,7 @@
 		}
 	},
 	{
-		"key": "light_spectrum_nanometer_percent",
+		"key": "light_spectrum_nm_percent",
 		"info": {
 			"name": {
 				"brief": "Spectrum",

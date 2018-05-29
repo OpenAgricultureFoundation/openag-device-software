@@ -6,7 +6,7 @@
 	"class_name": "LEDManager",
 	"parameters": {
 		"variables": {
-			"sensors": {
+			"sensor": {
 				"intensity_watts": {
 					"name": {
 						"type": "string",
@@ -26,7 +26,7 @@
 					} 
 				}
 			},
-			"actuators": {
+			"actuator": {
 				"channel_output_percents": {
 					"name": {
 						"type": "string",

@@ -53,6 +53,10 @@ class LEDArray:
         # Instantiate health
         self.health = Health(updates=5, minimum=60)
 
+        # Initialize light panel utility functions
+        self.get_channel_number = self.panels[0].get_channel_number
+        self.build_channel_outputs = self.panels[0].build_channel_outputs
+
 
     def initialize(self) -> Error:
         """ Initializes array. Initializes all panels in array. """
@@ -224,11 +228,30 @@ class LEDArray:
         return channel_outputs, output_spectrum_nm_percent, output_intensity_watts, Error(None)
 
 
+    def turn_on(self) -> Error:
+        """ Turns off light panel. """  
+        self.logger.debug("Turning on")
+
+        # Build channel outputs and set to 100%
+        channel_outputs = self.build_channel_outputs(100)
+        error = self.set_outputs(channel_outputs)
+
+        # Check for errors
+        if error.exists():
+            error.report("Unable to turn on")
+            self.logger.debug(error.trace)
+            return error
+
+        # Successfully turned off
+        self.logger.debug("Successfully turned on")
+        return Error(None)
+
+
     def turn_off(self) -> Error:
         """ Turns off light panel. """  
         self.logger.debug("Turning off")
 
-        # Build channel outputs and set
+        # Build channel outputs and set to 0%
         channel_outputs = self.build_channel_outputs(0)
         error = self.set_outputs(channel_outputs)
 
@@ -241,27 +264,180 @@ class LEDArray:
         # Successfully turned off
         self.logger.debug("Successfully turned off")
         return Error(None)
-        
-
-    def get_channel_number(self, channel_name: str) -> Tuple[Optional[int], Error]:
-        """ Gets channel number from channel name. """
-        
-        # Look for channel name in channel configs
-        for channel_config in self.channel_configs:
-            if channel_config["name"]["brief"] == channel_name:
-                channel_number = int(channel_config["channel"]["software"])
-                return channel_number, Error(None)
-       
-        # Channel name not found
-        error = Error("Unknown channel name: `{}`".format(channel_name))
-        return None, error
 
 
-    def build_channel_outputs(self, value: float) -> dict:
-        """ Build channel outputs. Sets each channel to provided value. """
 
-        channel_outputs = {}
-        for channel_config in self.channel_configs:
-            name = channel_config["name"]["brief"]
-            channel_outputs[name] = value
-        return channel_outputs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def fade_concurrently(self):
+#     """ Fades output concurrently forever. Exits on new event. """
+#     self.logger.debug("Fading concurrently")
+
+#     # Use previously used illumination distance or first distance in entry if prev is none
+#     if self.distance == None:
+#         self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
+
+
+#     # Run fade loop until new event
+#     while True:
+
+#         # Fade up
+#         for output_percent in range(0, 100, 10):
+#             self.intensity = output_percent
+#             channel_outputs = self.build_channel_outputs(output_percent)
+#             self.set_channel_outputs(channel_outputs)
+#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+#             # Check for events
+#             if self.request != None:
+#                 request = self.request
+#                 self.request = None
+#                 self.process_event(request)
+#                 return
+
+#             # Update every 100ms
+#             time.sleep(0.1)
+
+#         # Fade down
+#         for output_percent in range(100, 0, -10):
+#             self.intensity = output_percent
+#             channel_outputs = self.build_channel_outputs(output_percent)
+#             self.set_channel_outputs(channel_outputs)
+#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+
+#             # Check for events
+#             if self.request != None:
+#                 request = self.request
+#                 self.request = None
+#                 self.process_event(request)
+#                 return
+
+#             # Update every 100ms
+#             time.sleep(0.1)
+
+
+# def fade_sequentially(self):
+#     """ Fades output sequentially, forever. Exits on new event. """
+#     self.logger.debug("Fading sequentially")
+
+#     # Use previously used illumination distance or first distance in entry if prev is none
+#     if self.distance == None:
+#         self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
+
+#     # Run fade loop until new event
+#     while True:
+
+#         for channel_config in self.channel_configs:
+#             channel_name = channel_config["name"]["brief"]
+#             # Fade up
+#             for output_percent in range(0, 100, 10):
+#                 self.intensity = output_percent
+#                 channel_outputs = self.build_channel_outputs(output_percent, enable_channel_name=channel_name)
+#                 self.set_channel_outputs(channel_outputs)
+#                 self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+#                 # Check for events
+#                 if self.request != None:
+#                     request = self.request
+#                     self.request = None
+#                     self.process_event(request)
+#                     return
+
+#                 # Update every 100ms
+#                 time.sleep(0.1)
+
+#             # Fade down
+#             for output_percent in range(100, 0, -10):
+#                 self.intensity = output_percent
+#                 channel_outputs = self.build_channel_outputs(output_percent, enable_channel_name=channel_name)
+#                 self.set_channel_outputs(channel_outputs)
+#                 self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+
+
+#                 # Check for events
+#                 if self.request != None:
+#                     request = self.request
+#                     self.request = None
+#                     self.process_event(request)
+#                     return
+
+#                 # Update every 100ms
+#                 time.sleep(0.1)
+
+
+# def fade_channel_output(self, channel_name):
+#     """ Fades output channel forever. Exits on new event. """
+#     self.logger.debug("Fading channel")
+
+#     # Turn off all channels
+#     self.turn_off_output()
+
+#     # Use previously used illumination distance or first distance in entry if prev is none
+#     if self.distance == None:
+#         self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
+
+#     # Run fade loop until new event
+#     while True:
+
+#         # Fade up
+#         for output_percent in range(0, 100, 10):
+#             self.intensity = output_percent
+#             self.channel_outputs[channel_name] = output_percent # TODO: copy the dict and pass in, dont need to set twice (here + in set function)
+#             self.set_channel_outputs(self.channel_outputs)
+#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
+
+#             # Check for events
+#             if self.request != None:
+#                 request = self.request
+#                 self.request = None
+#                 self.process_event(request)
+#                 return
+
+#             # Update every 100ms
+#             time.sleep(0.1)
+
+#         # Fade down
+#         for output_percent in range(100, 0, -10):
+#             self.intensity = output_percent
+#             self.channel_outputs[channel_name] = output_percent # TODO: copy the dict and pass in, dont need to set twice (here + in set function)
+#             self.set_channel_outputs(self.channel_outputs)
+#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
+
+#             # Check for events
+#             if self.request != None:
+#                 request = self.request
+#                 self.request = None
+#                 self.process_event(request)
+#                 return
+
+#             # Update every 100ms
+#             time.sleep(0.1)
