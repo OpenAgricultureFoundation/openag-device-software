@@ -46,13 +46,16 @@ class IoTManager:
     # We only publish a value if it changes.
     prev_vars = None
 
-    def __init__(self, state):
+
+    def __init__( self, state, ref_device_manager ):
         """ Class constructor """
         self.state = state
+        self.ref_device_manager = ref_device_manager
         self.error = None
         self._stop_event = threading.Event() # so we can stop this thread
         try:
-            self.iot = IoTPubSub() 
+            # pass in the callback that receives commands
+            self.iot = IoTPubSub( self.command_received ) 
         except( Exception ) as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.critical( "Exception creating class: {}".format( e ))
@@ -60,34 +63,83 @@ class IoTManager:
             exit( 1 )
 
 
+    # This is a callback that is called by the IoTPubSub class when this 
+    # device receives commands from the UI.
+    def command_received( self, command, arg0, arg1 ):
+        """
+        Process commands received from the backend (UI).
+        """
+        try:
+            """
+#debugrob: later:
+    self.iot.publishCommandReply( commandName, valuesJsonString )
+            """
+
+            if command == IoTPubSub.CMD_START:
+                recipe_json = arg0
+                recipe_dict = json.loads( arg0 )
+
+                # Make sure we have a valid recipe uuid
+                if 'uuid' not in recipe_dict or \
+                    None == recipe_dict["uuid"] or \
+                    0 == len( recipe_dict["uuid"] ):
+                        self.logger.error( \
+                                "command_received: missing recipe UUID")
+                        return
+                recipe_uuid = recipe_dict['uuid']
+            
+                # first stop any recipe that may be running
+                self.ref_device_manager.process_stop_recipe_event()
+
+                # put this recipe in our DB (by uuid)
+                self.ref_device_manager.load_recipe_json( recipe_json )
+
+                # start this recipe from our DB (by uuid)
+                self.ref_device_manager.process_start_recipe_event( \
+                        recipe_uuid )
+                return
+
+            if command == IoTPubSub.CMD_STOP:
+                self.ref_device_manager.process_stop_recipe_event()
+                return
+
+            self.logger.error( "command_received: Unknown command: {}".format( \
+                command ))
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.logger.critical( "Exception in command_received(): %s" % e)
+            traceback.print_tb( exc_traceback, file=sys.stdout )
+            return False
+
+
     @property
-    def error(self):
+    def error( self ):
         """ Gets error value. """
         return self._error
 
 
     @error.setter
-    def error(self, value):
+    def error( self, value ):
         """ Safely updates recipe error in shared state. """
         self._error = value
-#debugrob: need iot dict in state if we do this
+#TODO: need iot dict in state if we do this
 #        with threading.Lock():
 #            self.state.iot["error"] = value
 
 
-    def spawn(self):
+    def spawn( self ):
         self.logger.info("Spawing IoT thread")
         self.thread = threading.Thread( target=self.thread_proc )
         self.thread.daemon = True
         self.thread.start()
 
 
-    def stop(self):
+    def stop( self ):
         self.logger.info("Stopping IoT thread")
         self._stop_event.set()
 
 
-    def stopped(self):
+    def stopped( self ):
         return self._stop_event.is_set()
 
 
@@ -104,11 +156,6 @@ class IoTManager:
             if self.prev_vars[var] != vars_dict[var]:
                 self.prev_vars[var] = copy.deepcopy( vars_dict[var] )
                 self.iot.publishEnvVar( var, vars_dict[var] )
-
-        """
-#debugrob: later:
-    self.iot.publishCommandReply( commandName, valuesJsonString )
-        """
 
     def thread_proc( self ):
         while True:

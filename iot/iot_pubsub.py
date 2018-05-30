@@ -29,23 +29,6 @@ from app.models import IoTConfigModel
 
 
 #------------------------------------------------------------------------------
-# some constants for parsing received commands 
-COMMANDS    = 'commands'
-MESSAGEID   = 'messageId'
-CMD         = 'command'
-ARG0        = 'arg0'
-ARG1        = 'arg1'
-CMD_RUN     = 'runtreatment' 
-CMD_STOP    = 'stoptreatment'
-CMD_LOAD    = 'loadrecipeintovariable'
-CMD_ADD     = 'addvariabletotreatment' 
-CMD_EXIT    = 'exittreatments'
-CMD_STATUS  = 'status'
-CMD_NOOP    = 'noop'
-CMD_RESET   = 'reset'
-
-
-#------------------------------------------------------------------------------
 class IoTPubSub:
     """ Manages IoT communications to the Google cloud backend MQTT service """
 
@@ -53,6 +36,19 @@ class IoTPubSub:
     extra = {"console_name":"IoT", "file_name": "IoT"}
     logger = logging.getLogger( 'iot' )
     logger = logging.LoggerAdapter( logger, extra )
+
+
+    # Class constants for parsing received commands 
+    COMMANDS    = 'commands'
+    MESSAGEID   = 'messageId'
+    CMD         = 'command'
+    ARG0        = 'arg0'
+    ARG1        = 'arg1'
+    CMD_START   = 'START_RECIPE' 
+    CMD_STOP    = 'STOP_RECIPE'
+    #CMD_STATUS  = 'STATUS'
+    #CMD_NOOP    = 'NOOP'
+    #CMD_RESET   = 'RESET'
 
 
     # Class member vars
@@ -68,9 +64,12 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
-    def __init__( self ):
-        """ Class constructor """
-        self.get_env_vars() # get our settings from env. vars.
+    def __init__( self, command_received_callback ):
+        """ 
+        Class constructor 
+        """
+        self.command_received_callback = command_received_callback
+        self.args = self.get_env_vars() # get our settings from env. vars.
         self.deviceId = self.args.device_id 
 
         # read our IoT config settings from the DB (if they exist).
@@ -112,7 +111,7 @@ class IoTPubSub:
         try:
             message_obj = {}
             message_obj['messageType'] = messageType
-#debugrob: remove experiment and treatment from the system - later
+#debugrob TODO: remove experiment and treatment from the system - later
             message_obj['exp'] = self.args.experiment
             message_obj['treat'] = self.args.treatment
             message_obj['var'] = varName
@@ -264,49 +263,49 @@ class IoTPubSub:
         Return an IoTArgs.
         """
         try:
-            self.args = self.IoTArgs()
+            args = self.IoTArgs()
 
-            self.args.project_id = os.environ.get('GCLOUD_PROJECT')
-            if None == self.args.project_id:
-                self.logger.critical('iot_pubsub: validate_env_var: '
+            args.project_id = os.environ.get('GCLOUD_PROJECT')
+            if None == args.project_id:
+                self.logger.critical('iot_pubsub: get_env_vars: '
                     'Missing GCLOUD_PROJECT environment variable.')
                 exit(1)
 
-            self.args.cloud_region = os.environ.get('GCLOUD_REGION')
-            if None == self.args.cloud_region:
-                self.logger.critical('iot_pubsub: validate_env_var: '
+            args.cloud_region = os.environ.get('GCLOUD_REGION')
+            if None == args.cloud_region:
+                self.logger.critical('iot_pubsub: get_env_vars: '
                     'Missing GCLOUD_REGION environment variable.')
                 exit(1)
 
-            self.args.registry_id = os.environ.get('GCLOUD_DEV_REG')
-            if None == self.args.registry_id:
-                self.logger.critical('iot_pubsub: validate_env_var: '
+            args.registry_id = os.environ.get('GCLOUD_DEV_REG')
+            if None == args.registry_id:
+                self.logger.critical('iot_pubsub: get_env_vars: '
                     'Missing GCLOUD_DEV_REG environment variable.')
                 exit(1)
 
-            self.args.device_id = os.environ.get('DEVICE_ID')
-            if None == self.args.device_id:
-                self.logger.critical('iot_pubsub: validate_env_var: '
+            args.device_id = os.environ.get('DEVICE_ID')
+            if None == args.device_id:
+                self.logger.critical('iot_pubsub: get_env_vars: '
                     'Missing DEVICE_ID environment variable.')
                 exit(1)
 
-            self.args.private_key_file = os.environ.get('IOT_PRIVATE_KEY')
-            if None == self.args.private_key_file:
-                self.logger.critical('iot_pubsub: validate_env_var: '
+            args.private_key_file = os.environ.get('IOT_PRIVATE_KEY')
+            if None == args.private_key_file:
+                self.logger.critical('iot_pubsub: get_env_vars: '
                     'Missing IOT_PRIVATE_KEY environment variable.')
                 exit(1)
 
-            self.args.ca_certs = os.environ.get('CA_CERTS')
-            if None == self.args.ca_certs:
-                self.logger.critical('iot_pubsub: validate_env_var: '
+            args.ca_certs = os.environ.get('CA_CERTS')
+            if None == args.ca_certs:
+                self.logger.critical('iot_pubsub: get_env_vars: '
                     'Missing CA_CERTS environment variable.')
                 exit(1)
 
         except Exception as e:
-            self.logger.critical('iot_pubsub: validate_env_var: {}'.format(e))
+            self.logger.critical('iot_pubsub: get_env_vars: {}'.format(e))
             exit(1)
 
-        return self.args
+        return args
 
 
     #--------------------------------------------------------------------------
@@ -317,60 +316,33 @@ class IoTPubSub:
         """
         try:
             # validate keys
-            if not validDictKey( d, CMD ):
-                self.logger.error( 'Message is missing %s key.' % CMD )
+            if not validDictKey( d, self.CMD ):
+                self.logger.error( 'Message is missing %s key.' % self.CMD )
                 return False
-            if not validDictKey( d, ARG0 ):
-                self.logger.error( 'Message is missing %s key.' % ARG0 )
+            if not validDictKey( d, self.ARG0 ):
+                self.logger.error( 'Message is missing %s key.' % self.ARG0 )
                 return False
-            if not validDictKey( d, ARG1 ):
-                self.logger.error( 'Message is missing %s key.' % ARG1 )
+            if not validDictKey( d, self.ARG1 ):
+                self.logger.error( 'Message is missing %s key.' % self.ARG1 )
                 return False
 
             # validate the command
-            commands = [CMD_RUN, CMD_STOP, CMD_LOAD, CMD_ADD, CMD_EXIT, 
-                    CMD_STATUS, CMD_NOOP, CMD_RESET]
-            cmd = d[CMD].lower() # compare string command in lower case
+            commands = [self.CMD_START, self.CMD_STOP]
+            cmd = d[ self.CMD ].upper() # compare string command in upper case
             if cmd not in commands:
-                self.logger.error( '%s is not a valid command.' % d[CMD] )
+                self.logger.error( '%s is not a valid command.' % d[ self.CMD])
                 return False
 
             self.logger.debug('Received command messageId=%s %s %s %s' % 
-                    (messageId, d[CMD], d[ARG0], d[ARG1]))
+                    (messageId, d[self.CMD], d[self.ARG0], d[self.ARG1]))
 
             # write the binary brain command to the FIFO
             # (the brain will validate the args)
-            if cmd == CMD_RUN or \
-               cmd == CMD_STOP:
+            if cmd == self.CMD_START or \
+               cmd == self.CMD_STOP:
+                # arg0: JSON recipe string (for start, nothing for stop)
                 self.logger.info( 'Command: %s' % cmd )
-#debugrob: don't ever send treatment ID as arg0 from UI, not used.
-#debugrob: write event to jbrain
-                return True
-
-            if cmd == CMD_LOAD:
-                # arg0: variable name (depends on hard coded hardware config).
-                # arg1: JSON recipe string (about 1.8KB).
-                self.logger.info( 'Command: %s variable: %s recipe: %s' % \
-                    ( cmd, d[ARG0], d[ARG1] ))
-#debugrob: write event to jbrain
-                return True
-
-
-            if cmd == CMD_ADD:
-                # arg1: variable name (depends on hard coded hardware config).
-                self.logger.info( 'Command: %s variable: %s' % \
-                    ( cmd, d[ARG1] ))
-#debugrob: don't ever send treatment ID as arg0 from UI, not used.
-#debugrob: how to write event to jbrain?
-                return True
-
-
-            if cmd == CMD_EXIT or \
-            cmd == CMD_STATUS or \
-            cmd == CMD_NOOP or \
-            cmd == CMD_RESET:
-                self.logger.info( 'Command: %s' % cmd )
-#debugrob: how to write event to jbrain?
+                self.command_received_callback( cmd, d[self.ARG0], None )
                 return True
 
         except Exception as e:
@@ -388,17 +360,19 @@ class IoTPubSub:
             config MQTT message.
         """
         try:
-            if not validDictKey( d, COMMANDS ):
-                self.logger.error( 'Message is missing %s key.' % COMMANDS )
+            if not validDictKey( d, self.COMMANDS ):
+                self.logger.error( 'Message is missing %s key.' % \
+                        self.COMMANDS )
                 return
     
-            if not validDictKey( d, MESSAGEID ):
-                self.logger.error( 'Message is missing %s key.' % MESSAGEID )
+            if not validDictKey( d, self.MESSAGEID ):
+                self.logger.error( 'Message is missing %s key.' % \
+                        self.MESSAGEID )
                 return 
     
             # unpack an array of commands from the dict
-            for cmd in d[ COMMANDS ]:
-                self.parseCommand( cmd, d[ MESSAGEID ] )
+            for cmd in d[ self.COMMANDS ]:
+                self.parseCommand( cmd, d[ self.MESSAGEID ] )
     
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -478,7 +452,9 @@ def on_publish( unused_client, ref_self, unused_mid):
 #------------------------------------------------------------------------------
 # private
 def on_message( unused_client, ref_self, message ):
-    """Callback when the device receives a message on a subscription."""
+    """
+    Callback when the device receives a message on a subscription.
+    """
     payload = message.payload.decode( 'utf-8' )
     # message is a paho.mqtt.client.MQTTMessage, these are all properties:
     ref_self.logger.debug('Received message:\n  {}\n  topic={}\n  Qos={}\n  '
@@ -592,20 +568,3 @@ def validDictKey( d, key ):
 
 
 
-
-#debugrob: delete later
-"""
-            # safely try to convert the data we read into a dict
-            try:
-                # make a py dict from JSON string
-                data = json.loads( data_bytes ) 
-            except( Exception ) as e:
-                self.logger.error('iot_pubsub: read invalid data from pipe.')
-                continue
-
-            # verify which json object this is
-            if 'command_reply' in data:  # does the dict contain this key ?
-                publishCommandReply( client, mqtt_topic, 
-                    args.experiment, args.treatment, data )
-                continue 
-"""
