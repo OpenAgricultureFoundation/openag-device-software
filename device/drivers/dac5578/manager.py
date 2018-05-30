@@ -145,3 +145,89 @@ class DAC5578Manager(DriverManager):
             self.logger.info("Probe failed after retries, shutting down")
             self.shutdown()
             return error
+
+
+    def turn_on(self, channel: Optional[int] = None) -> Error:
+        """ Turns on all channels if no channel is specified. """
+
+        # Set channel or channels
+        if channel != None:
+            self.logger.debug("Turning on channel {}".format(channel))
+            error = self.set_output(channel, 100)
+        else:
+            self.logger.debug("Turning on all channels")
+            outputs = {0: 100, 1: 100, 2: 100, 3: 100, 4: 100, 5: 100, 6: 100, 7: 100}
+            error = self.set_outputs(outputs)
+
+        # Check for errors
+        if error.exists():
+            error.report("Manager unable to turn on")
+            return error
+        else:
+            return Error(None)
+
+
+    def turn_off(self, channel: Optional[int] = None) -> Error:
+        """ Turns on all channels if no channel is specified. """
+
+        # Set channel or channels
+        if channel != None:
+            self.logger.debug("Turning off channel {}".format(channel))
+            error = self.set_output(channel, 0)
+        else:
+            self.logger.debug("Turning off all channels")
+            outputs = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
+            error = self.set_outputs(outputs)
+
+        # Check for errors
+        if error.exists():
+            error.report("Manager unable to turn off")
+            return error
+        else:
+            return Error(None)
+
+
+    def fade(self, cycles: int, channel: Optional[int] = None) -> Error:
+        """ Fades through all channels if no channel is specified. """
+        self.logger.debug("Fading {channel}".format(channel = "all channels" if \
+            channel == None else "channel: " + str(channel)))
+
+        # Turn off channels
+        outputs = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
+        error = self.set_outputs(outputs)
+
+        # Set channel or channels
+        if channel != None:
+            minimum = args.channel
+            maximum = args.channel + 1
+        else:
+            minimum = 0
+            maximum = 8
+
+        # Repeat for number of specified cycles
+        for i in range(cycles):
+
+            # Cycle through channels
+            for channel in range(minimum, maximum):
+
+                # Fade up
+                for value in range(0, 100, 10):
+                    self.logger.info("Channel {}: {}%".format(channel, value))
+                    outputs[channel] = value
+                    error = self.set_output(channel, value)
+                    if error.exists():
+                        self.logger.warning("Error: {}".format(error.trace))
+                        return error
+                    time.sleep(0.1)
+
+                # Fade down
+                for value in range(100, 0, -10):
+                    self.logger.info("Channel {}: {}%".format(channel, value))
+                    outputs[channel] = value
+                    error = self.set_output(channel, value)
+                    if error.exists():
+                        self.logger.warning("Error: {}".format(error.trace))
+                        return error
+                    time.sleep(0.1)
+
+        return Error(None)

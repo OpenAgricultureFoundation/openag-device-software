@@ -74,6 +74,6 @@ class Error:
 		# Build and return response
 		response = ""
 		for error in self._trace[:-1]:
-			response += "({}) -> ".format(error)
-		response += "({})".format(self._trace[-1])
+			response += "{} -> ".format(error)
+		response += "{}".format(self._trace[-1])
 		return response
