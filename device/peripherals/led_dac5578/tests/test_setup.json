@@ -80,12 +80,12 @@
 	            {"distance_cm": 20, "intensity_watts": 12}
 	        ],
 	        "output_percent_map": [
-	            {"output_percent": 100, "intensity_percent": 100},
-	            {"output_percent": 75, "intensity_percent": 66},
-	            {"output_percent": 50, "intensity_percent": 33},
-	            {"output_percent": 25, "intensity_percent": 0},
-	            {"output_percent": 0, "intensity_percent": 0}
-	        ]
+				{"output_percent": 0, "intensity_percent": 0},
+				{"output_percent": 25, "intensity_percent": 25},
+				{"output_percent": 50, "intensity_percent": 50},
+				{"output_percent": 75, "intensity_percent": 75},
+				{"output_percent": 100, "intensity_percent": 100}
+			]
 	    },
 	    {
 	        "name": {
@@ -108,12 +108,12 @@
 	            {"distance_cm": 20, "intensity_watts": 12}
 	        ],
 	        "output_percent_map": [
-	            {"output_percent": 100, "intensity_percent": 100},
-	            {"output_percent": 75, "intensity_percent": 66},
-	            {"output_percent": 50, "intensity_percent": 33},
-	            {"output_percent": 25, "intensity_percent": 0},
-	            {"output_percent": 0, "intensity_percent": 0}
-	        ]
+				{"output_percent": 0, "intensity_percent": 0},
+				{"output_percent": 25, "intensity_percent": 25},
+				{"output_percent": 50, "intensity_percent": 50},
+				{"output_percent": 75, "intensity_percent": 75},
+				{"output_percent": 100, "intensity_percent": 100}
+			]
 	    }
 	],
 	"events": [

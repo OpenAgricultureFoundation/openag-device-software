@@ -1,5 +1,6 @@
 # Import standard python modules
 from typing import Tuple, Optional 
+import time
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -201,6 +202,93 @@ class LEDPanel:
         self.logger.debug("Successfully set spd, output: channels={}, spectrum={}, intensity={}W".format(
             channel_outputs, output_spectrum_nm_percent, output_intensity_watts))
         return channel_outputs, output_spectrum_nm_percent, output_intensity_watts, Error(None)
+
+
+    def turn_on(self, channel_name: Optional[str] = None) -> Error:
+        """ Turns on all channels if no channel is specified. """
+
+        # Set channel or channels
+        if channel_name != None:
+            self.logger.debug("Turning on channel: {}".format(channel_name))
+            error = self.set_output(channel_name, 100)
+        else:
+            self.logger.debug("Turning on all channels")
+            channel_outputs = self.build_channel_outputs(100)
+            error = self.set_outputs(channel_outputs)
+
+        # Check for errors
+        if error.exists():
+            error.report("Panel unable to turn on")
+            return error
+        else:
+            return Error(None)
+
+
+    def turn_off(self, channel_name: Optional[str] = None) -> Error:
+        """ Turns off all channels if no channel is specified. """
+
+        # Set channel or channels
+        if channel_name != None:
+            self.logger.debug("Turning off channel: {}".format(channel_name))
+            error = self.set_output(channel_name, 0)
+        else:
+            self.logger.debug("Turning off all channels")
+            channel_outputs = self.build_channel_outputs(0)
+            error = self.set_outputs(channel_outputs)
+
+        # Check for errors
+        if error.exists():
+            error.report("Panel unable to turn off")
+            return error
+        else:
+            return Error(None)
+
+
+    def fade(self, cycles: int, channel_name: Optional[str] = None) -> Error:
+        """ Fades through all channels if no channel is specified. """
+        self.logger.debug("Fading {channel}".format(channel = "all channels" if \
+            channel_name == None else "channel: " + channel_name))
+
+        # Turn off channels
+        error = self.turn_off()
+
+        # Check for errors
+        if error.exists():
+            error.report("Panel unable to fade")
+            return error
+
+        # Set channel or channels
+        if channel_name != None:
+            channel_names = [channel_name]
+        else:
+            channel_outputs = self.build_channel_outputs(0)
+            channel_names = channel_outputs.keys()
+
+        # Repeat for number of specified cycles
+        for i in range(cycles):
+
+            # Cycle through channels
+            for channel_name in channel_names:
+
+                # Fade up
+                for value in range(0, 100, 10):
+                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    error = self.set_output(channel_name, value)
+                    if error.exists():
+                        self.logger.warning("Error: {}".format(error.trace))
+                        return error
+                    time.sleep(0.1)
+
+                # Fade down
+                for value in range(100, 0, -10):
+                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    error = self.set_output(channel_name, value)
+                    if error.exists():
+                        self.logger.warning("Error: {}".format(error.trace))
+                        return error
+                    time.sleep(0.1)
+
+        return Error(None)
 
 
     def get_channel_number(self, channel_name: str) -> Tuple[Optional[int], Error]:

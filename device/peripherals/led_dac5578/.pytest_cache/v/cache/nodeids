@@ -1,0 +1,7 @@
+[
+  "tests/test_panel.py::test_init",
+  "tests/test_panel.py::test_initialize",
+  "tests/test_panel.py::test_set_output",
+  "tests/test_panel.py::test_set_outputs",
+  "tests/test_panel.py::test_set_spd"
+]

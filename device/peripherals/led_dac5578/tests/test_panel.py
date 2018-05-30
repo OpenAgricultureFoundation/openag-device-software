@@ -1,76 +1,26 @@
 # Import standard python libraries
-import sys
+import sys, os, json
 
 # Import module...
 try:
 	# ... if running tests from project root
 	sys.path.append(".")
-	from device.peripherals.led_dac5578.panel import Panel
+	from device.peripherals.led_dac5578.panel import LEDPanel
 except:
 	# ... if running tests from same dir as panel.py
 	sys.path.append("../../../")
-	from device.peripherals.led_dac5578.panel import Panel
+	from device.peripherals.led_dac5578.panel import LEDPanel
 
+# Change directory for importing files
+os.chdir("../../../")
 
-channel_configs = [
-    {
-        "name": {
-            "brief": "FR",
-            "verbose": "Far Red"
-        },
-        "channel": {
-            "hardware": 1,
-            "software": 6
-        },
-        "spectrum_nm_percent": {
-            "400-499": 20,
-            "500-599": 80,
-            "600-699": 20
-        },
-        "planar_distance_map": [
-            {"distance_cm": 5, "intensity_watts": 100},
-            {"distance_cm": 10, "intensity_watts": 50},
-            {"distance_cm": 15, "intensity_watts": 25},
-            {"distance_cm": 20, "intensity_watts": 12}
-        ],
-        "output_percent_map": [
-            {"output_percent": 100, "intensity_percent": 100},
-            {"output_percent": 75, "intensity_percent": 66},
-            {"output_percent": 50, "intensity_percent": 33},
-            {"output_percent": 25, "intensity_percent": 0},
-            {"output_percent": 0, "intensity_percent": 0}
-        ]
-    },
-    {
-        "name": {
-            "brief": "WW",
-            "verbose": "Warm White"
-        },
-        "channel": {
-            "hardware": 2,
-            "software": 7
-        },
-        "spectrum_nm_percent": {
-            "400-499": 20,
-            "500-599": 60,
-            "600-699": 20,
-        },
-        "planar_distance_map": [
-            {"distance_cm": 5, "intensity_watts": 100},
-            {"distance_cm": 10, "intensity_watts": 50},
-            {"distance_cm": 15, "intensity_watts": 25},
-            {"distance_cm": 20, "intensity_watts": 12}
-        ],
-        "output_percent_map": [
-            {"output_percent": 100, "intensity_percent": 100},
-            {"output_percent": 75, "intensity_percent": 66},
-            {"output_percent": 50, "intensity_percent": 33},
-            {"output_percent": 25, "intensity_percent": 0},
-            {"output_percent": 0, "intensity_percent": 0}
-        ]
-    }
-]
+# Import test config
+setup = json.load(open("device/peripherals/led_dac5578/tests/test_setup.json"))
 
+# Load channel configs
+channel_configs = setup["channel_configs"]
+
+# Set desired setpoints
 desired_distance_cm = 5
 desired_intensity_watts = 100
 desired_spectrum_nm_percent = {
@@ -83,7 +33,7 @@ desired_spectrum_nm_percent = {
 
 
 def test_init():
-	panel = Panel(
+	panel = LEDPanel(
 		name = "Test",
 		channel_configs = channel_configs,
 		bus = 2,
@@ -95,12 +45,12 @@ def test_init():
 
 
 def test_initialize():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDPanel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 	panel.initialize()
 
 
 def test_set_output():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDPanel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 
 	# Standard case
 	error = panel.set_output("FR", 90.0)
@@ -112,7 +62,7 @@ def test_set_output():
 
 
 def test_set_outputs():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDPanel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 
 	# Standard case
 	outputs = {"FR": 10, "WW": 50}
@@ -121,7 +71,7 @@ def test_set_outputs():
 
 
 def test_set_spd():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDPanel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 	channel_outputs, output_spectrum_nm_percent, output_intensity_watts, error = panel.set_spd(
 		desired_distance_cm = desired_distance_cm, 
 		desired_intensity_watts = desired_intensity_watts, 

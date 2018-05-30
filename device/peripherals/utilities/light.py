@@ -4,6 +4,7 @@ import numpy
 # Import device utilities
 from device.utilities import math
 
+# TODO: Verify spectrums sum to 100%
 
 def calculate_desired_spd(intensity_watts, spectrum_nm_percent):
     """ Calculates desired spd. """
@@ -58,15 +59,16 @@ def translate_spd(from_spd, to_spd):
             minimum, maximum = list(map(int, wavelength_band.split("-")))
             if wavelength in range(minimum, maximum + 1):
                 translated_channel_spd[wavelength_band] += intensity
-                break;
+                break
+
 
     # Round output intensity
     for wavelength_band, intensity in translated_channel_spd.items():
-        translated_channel_spd[wavelength_band] = round(intensity, 3)
+        rounded_intensity = float("{:.3f}".format(intensity))
+        translated_channel_spd[wavelength_band] = rounded_intensity
 
     # Return translated spd
     return translated_channel_spd
-
 
 
 def build_channel_spd_matrix(channel_configs, distance, reference_spd):
@@ -129,7 +131,8 @@ def calculate_channel_output_vector(channel_spd_matrix, desired_spd_vector):
     # Create channel output vector
     channel_output_vector = []
     for scaled_channel_output in scaled_channel_outputs:
-        channel_output_vector.append(round(scaled_channel_output, 2))
+        rounded_channel_output = float("{:.2f}".format(scaled_channel_output))
+        channel_output_vector.append(rounded_channel_output)
 
     # Return channel output vector
     return channel_output_vector
@@ -149,17 +152,83 @@ def dictify_channel_output_vector(channel_configs, channel_output_vector):
     channel_output_dict = {}
     for index, channel_config in enumerate(channel_configs):
         name = channel_config["name"]["brief"]
-        channel_output_dict[name] = channel_output_vector[index]
+        channel_output_dict[name] = channel_output_vector[index] * 100
     return channel_output_dict
 
 
-def deconstruct_spd_vector(spd_vector, decimals):
-	""" Deconstructs vector, returns normalized vector with intensity. """
-	intensity = sum(spd_vector)
-	new_spd_vector = []
-	for element in spd_vector:
-		new_spd_vector.append(round(float(element) / intensity * 100, decimals))
-	return new_spd_vector, round(intensity, decimals)
+def convert_channel_output_intensity(output_percent_map, output_intensity):
+    """ Converts output setpoint to output intensity from 
+        provided output percent map. """
+    intensity_list = []
+    setpoint_list = []
+    for entry in output_percent_map:
+        intensity_list.append(entry["intensity_percent"])
+        setpoint_list.append(entry["setpoint_percent"])
+    output_setpoint = math.interpolate(intensity_list, setpoint_list, output_intensity)
+    rounded_output_setpoint = float("{:.2f}".format(output_setpoint))
+    return rounded_output_setpoint
+
+
+def convert_channel_output_intensities(channel_configs, output_intensities):
+    """ Converts channel output setpoints to channel output intensites from 
+        provided channel configs. """
+    output_setpoints = {}
+    for channel_name, output_intensity in output_intensities.items():
+        for channel_config in channel_configs:
+            name = channel_config["name"]["brief"]
+            if channel_name == name:
+                output_percent_map = channel_config["output_percent_map"]
+                output_setpoint = convert_channel_output_intensity(
+                    output_percent_map = output_percent_map,
+                    output_intensity = output_intensity,
+                )
+                output_setpoints[channel_name] = output_setpoint
+                break
+    return output_setpoints
+
+
+def convert_channel_output_setpoint(output_percent_map, output_setpoint):
+    """ Converts output setpoint to output intensity from 
+        provided output percent map. """
+    intensity_list = []
+    setpoint_list = []
+    for entry in output_percent_map:
+        intensity_list.append(entry["intensity_percent"])
+        setpoint_list.append(entry["setpoint_percent"])
+    output_intensity = math.interpolate(setpoint_list, intensity_list, output_setpoint)
+    rounded_output_intensity = float("{:.2f}".format(output_intensity))
+    return rounded_output_intensity
+
+
+def convert_channel_output_setpoints(channel_configs, output_setpoints):
+    """ Converts channel output setpoints to channel output intensites from 
+        provided channel configs. """
+    output_intensities = {}
+    for channel_name, output_setpoint in output_setpoints.items():
+        for channel_config in channel_configs:
+            name = channel_config["name"]["brief"]
+            if channel_name == name:
+                output_percent_map = channel_config["output_percent_map"]
+                output_intensity = convert_channel_output_setpoint(
+                    output_percent_map = output_percent_map,
+                    output_setpoint = output_setpoint,
+                )
+                output_intensities[channel_name] = output_intensity
+                break
+    return output_intensities
+
+
+def deconstruct_spd_vector(spd_vector):
+    """ Deconstructs vector, returns normalized vector with intensity. """
+    intensity = sum(spd_vector)
+    rounded_intensity = float("{:.2f}".format(intensity))
+    new_spd_vector = []
+    for element in spd_vector:
+        value = float(element) / intensity * 100
+        rounded_value = float("{:.2f}".format(value))
+        new_spd_vector.append(rounded_value)
+
+    return new_spd_vector, rounded_intensity
 
 
 def dictify_vector(vector, reference_dict):
@@ -176,13 +245,13 @@ def vectorize_dict(dict_):
     """ Converts dict into vector representation. """
     list_ = []
     for _, value in dict_.items():
-        list_.append(value)
+        list_.append(value / 100.0)
     vector  = numpy.array(list_)
     return vector
 
 
 def approximate_spd(channel_configs, desired_distance_cm, 
-	desired_intensity_watts, desired_spectrum_nm_percent):
+    desired_intensity_watts, desired_spectrum_nm_percent):
     """ Approximates spectral power distribution. """
 
     desired_spd = calculate_desired_spd(
@@ -201,24 +270,28 @@ def approximate_spd(channel_configs, desired_distance_cm,
         desired_intensity_watts = desired_intensity_watts,
     )
 
-    channel_output_vector = calculate_channel_output_vector(
+    channel_output_intensities_vector = calculate_channel_output_vector(
         channel_spd_matrix = channel_spd_matrix, 
         desired_spd_vector = desired_spd_vector,
     )
 
-    channel_output_dict = dictify_channel_output_vector(
+    channel_output_intensities_dict = dictify_channel_output_vector(
         channel_configs = channel_configs,
-        channel_output_vector = channel_output_vector,
+        channel_output_vector = channel_output_intensities_vector,
+    )
+
+    channel_output_setpoints_dict = convert_channel_output_intensities(
+        channel_configs = channel_configs,
+        output_intensities = channel_output_intensities_dict,
     )
 
     output_spd_vector = calculate_output_spd(
         channel_spd_matrix = channel_spd_matrix,
-        channel_output_vector = channel_output_vector, 
+        channel_output_vector = channel_output_intensities_vector, 
     )
 
     output_spectrum_vector, output_intensity_watts = deconstruct_spd_vector(
-        spd_vector = output_spd_vector,
-        decimals = 2,
+        spd_vector = output_spd_vector
     )
 
     output_spectrum_dict = dictify_vector(
@@ -226,11 +299,11 @@ def approximate_spd(channel_configs, desired_distance_cm,
         reference_dict = desired_spd,
     )
 
-    return channel_output_dict, output_spectrum_dict, output_intensity_watts
+    return channel_output_setpoints_dict, output_spectrum_dict, output_intensity_watts
 
 
 
-def calculate_resultant_spd(channel_configs, reference_spd, channel_outputs, distance):
+def calculate_resultant_spd(channel_configs, reference_spd, channel_output_setpoints, distance):
     """ Generates spd from provided channel outputs at distance. Returns 
         spd with the same spectral bands as the reference spd. """
 
@@ -240,8 +313,13 @@ def calculate_resultant_spd(channel_configs, reference_spd, channel_outputs, dis
         reference_spd = reference_spd,
     )
 
+    channel_output_intensities = convert_channel_output_setpoints(
+        channel_configs = channel_configs,
+        output_setpoints = channel_output_setpoints,
+    )
+
     channel_output_vector = vectorize_dict(
-        dict_ = channel_outputs,
+        dict_ = channel_output_intensities,
     )
 
     output_spd_vector = calculate_output_spd(
@@ -251,7 +329,6 @@ def calculate_resultant_spd(channel_configs, reference_spd, channel_outputs, dis
 
     output_spectrum_vector, output_intensity_watts = deconstruct_spd_vector(
         spd_vector = output_spd_vector,
-        decimals = 2,
     )
 
     output_spectrum_dict = dictify_vector(

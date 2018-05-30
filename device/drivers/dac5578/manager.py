@@ -193,13 +193,17 @@ class DAC5578Manager(DriverManager):
             channel == None else "channel: " + str(channel)))
 
         # Turn off channels
-        outputs = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
-        error = self.set_outputs(outputs)
+        self.turn_off()
+
+        # Check for errors
+        if error.exists():
+            error.report("Panel unable to fade")
+            return error
 
         # Set channel or channels
         if channel != None:
-            minimum = args.channel
-            maximum = args.channel + 1
+            minimum = channel
+            maximum = channel + 1
         else:
             minimum = 0
             maximum = 8
