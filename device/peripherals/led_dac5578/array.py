@@ -1,5 +1,6 @@
 # Import standard python modules
 from typing import Tuple, Optional, List
+import time
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -247,166 +248,108 @@ class LEDArray:
         return Error(None)
 
 
-    def turn_off(self) -> Error:
-        """ Turns off light panel. """  
-        self.logger.debug("Turning off")
+    def turn_on(self, channel_name: Optional[str] = None) -> Error:
+        """ Turns on all channels if no channel is specified. """
 
-        # Build channel outputs and set to 0%
-        channel_outputs = self.build_channel_outputs(0)
-        error = self.set_outputs(channel_outputs)
+        # Set channel or channels
+        if channel_name != None:
+            self.logger.debug("Turning on channel: {}".format(channel_name))
+            error = self.set_output(channel_name, 100)
+        else:
+            self.logger.debug("Turning on all channels")
+            channel_outputs = self.build_channel_outputs(100)
+            error = self.set_outputs(channel_outputs)
 
         # Check for errors
         if error.exists():
-            error.report("Unable to turn off")
-            self.logger.debug(error.trace)
+            error.report("Panel unable to turn on")
+            return error
+        else:
+            return Error(None)
+
+
+    def turn_off(self, channel_name: Optional[str] = None) -> Error:
+        """ Turns off all channels if no channel is specified. """
+
+        # Set channel or channels
+        if channel_name != None:
+            self.logger.debug("Turning off channel: {}".format(channel_name))
+            error = self.set_output(channel_name, 0)
+        else:
+            self.logger.debug("Turning off all channels")
+            channel_outputs = self.build_channel_outputs(0)
+            error = self.set_outputs(channel_outputs)
+
+        # Check for errors
+        if error.exists():
+            error.report("Panel unable to turn off")
+            return error
+        else:
+            return Error(None)
+
+
+    def fade(self, cycles: int, channel_name: Optional[str] = None) -> Error:
+        """ Fades through all channels if no channel is specified. """
+        self.logger.debug("Fading {channel}".format(channel = "all channels" if \
+            channel_name == None else "channel: " + channel_name))
+
+        # Turn off channels
+        error = self.turn_off()
+
+        # Check for errors
+        if error.exists():
+            error.report("Array unable to fade")
             return error
 
-        # Successfully turned off
-        self.logger.debug("Successfully turned off")
+        # Set channel or channels
+        if channel_name != None:
+            channel_names = [channel_name]
+        else:
+            channel_outputs = self.build_channel_outputs(0)
+            channel_names = channel_outputs.keys()
+
+        # Repeat for number of specified cycles
+        for i in range(cycles):
+            
+            # Cycle through channels
+            for channel_name in channel_names:
+
+                # Fade up
+                for value in range(0, 100, 10):
+
+                    # Send value to all panels
+                    for panel in self.panels:
+                        self.logger.info("Panel: {} Channel {}: {}%".format(panel.name, channel_name, value))
+                        error = panel.set_output(channel_name, value)
+                        if error.exists():
+                            self.logger.warning("Error: {}".format(error.trace))
+                            return error
+                    time.sleep(0.1)
+
+                # Fade down
+                for value in range(100, 0, -10):
+                    
+                    # Send value to all panels
+                    for panel in self.panels:
+                        self.logger.info("Panel: {} Channel {}: {}%".format(panel.name, channel_name, value))
+                        error = panel.set_output(channel_name, value)
+                        if error.exists():
+                            self.logger.warning("Error: {}".format(error.trace))
+                            return error
+                    time.sleep(0.1)
+
         return Error(None)
 
 
-# def fade_concurrently(self):
-#     """ Fades output concurrently forever. Exits on new event. """
-#     self.logger.debug("Fading concurrently")
-
-#     # Use previously used illumination distance or first distance in entry if prev is none
-#     if self.distance == None:
-#         self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
 
 
-#     # Run fade loop until new event
-#     while True:
 
-#         # Fade up
-#         for output_percent in range(0, 100, 10):
-#             self.intensity = output_percent
-#             channel_outputs = self.build_channel_outputs(output_percent)
-#             self.set_channel_outputs(channel_outputs)
-#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
+    #             # Check for events
+    #             if self.request != None:
+    #                 request = self.request
+    #                 self.request = None
+    #                 self.process_event(request)
+    #                 return
 
-#             # Check for events
-#             if self.request != None:
-#                 request = self.request
-#                 self.request = None
-#                 self.process_event(request)
-#                 return
-
-#             # Update every 100ms
-#             time.sleep(0.1)
-
-#         # Fade down
-#         for output_percent in range(100, 0, -10):
-#             self.intensity = output_percent
-#             channel_outputs = self.build_channel_outputs(output_percent)
-#             self.set_channel_outputs(channel_outputs)
-#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
-
-
-#             # Check for events
-#             if self.request != None:
-#                 request = self.request
-#                 self.request = None
-#                 self.process_event(request)
-#                 return
-
-#             # Update every 100ms
-#             time.sleep(0.1)
-
-
-# def fade_sequentially(self):
-#     """ Fades output sequentially, forever. Exits on new event. """
-#     self.logger.debug("Fading sequentially")
-
-#     # Use previously used illumination distance or first distance in entry if prev is none
-#     if self.distance == None:
-#         self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
-
-#     # Run fade loop until new event
-#     while True:
-
-#         for channel_config in self.channel_configs:
-#             channel_name = channel_config["name"]["brief"]
-#             # Fade up
-#             for output_percent in range(0, 100, 10):
-#                 self.intensity = output_percent
-#                 channel_outputs = self.build_channel_outputs(output_percent, enable_channel_name=channel_name)
-#                 self.set_channel_outputs(channel_outputs)
-#                 self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
-
-#                 # Check for events
-#                 if self.request != None:
-#                     request = self.request
-#                     self.request = None
-#                     self.process_event(request)
-#                     return
-
-#                 # Update every 100ms
-#                 time.sleep(0.1)
-
-#             # Fade down
-#             for output_percent in range(100, 0, -10):
-#                 self.intensity = output_percent
-#                 channel_outputs = self.build_channel_outputs(output_percent, enable_channel_name=channel_name)
-#                 self.set_channel_outputs(channel_outputs)
-#                 self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(channel_outputs, self.distance)
-
-
-#                 # Check for events
-#                 if self.request != None:
-#                     request = self.request
-#                     self.request = None
-#                     self.process_event(request)
-#                     return
-
-#                 # Update every 100ms
-#                 time.sleep(0.1)
-
-
-# def fade_channel_output(self, channel_name):
-#     """ Fades output channel forever. Exits on new event. """
-#     self.logger.debug("Fading channel")
-
-#     # Turn off all channels
-#     self.turn_off_output()
-
-#     # Use previously used illumination distance or first distance in entry if prev is none
-#     if self.distance == None:
-#         self.distance = self.channel_configs[0]["planar_distance_map"][0]["z_cm"]  
-
-#     # Run fade loop until new event
-#     while True:
-
-#         # Fade up
-#         for output_percent in range(0, 100, 10):
-#             self.intensity = output_percent
-#             self.channel_outputs[channel_name] = output_percent # TODO: copy the dict and pass in, dont need to set twice (here + in set function)
-#             self.set_channel_outputs(self.channel_outputs)
-#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
-
-#             # Check for events
-#             if self.request != None:
-#                 request = self.request
-#                 self.request = None
-#                 self.process_event(request)
-#                 return
-
-#             # Update every 100ms
-#             time.sleep(0.1)
-
-#         # Fade down
-#         for output_percent in range(100, 0, -10):
-#             self.intensity = output_percent
-#             self.channel_outputs[channel_name] = output_percent # TODO: copy the dict and pass in, dont need to set twice (here + in set function)
-#             self.set_channel_outputs(self.channel_outputs)
-#             self.intensity, self.spectrum = self.calculate_output_intensity_and_spectrum(self.channel_outputs, self.distance)
-
-#             # Check for events
-#             if self.request != None:
-#                 request = self.request
-#                 self.request = None
-#                 self.process_event(request)
-#                 return
-
-#             # Update every 100ms
-#             time.sleep(0.1)
+    #             # Update every 100ms
+    #             time.sleep(0.1)

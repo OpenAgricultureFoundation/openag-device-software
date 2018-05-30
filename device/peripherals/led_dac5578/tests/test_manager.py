@@ -43,7 +43,6 @@ def test_init():
         simulate = True,
     )
 
-
 def test_initialize():
     array = LEDManager("Test", state, config, simulate = True)
     array.initialize()

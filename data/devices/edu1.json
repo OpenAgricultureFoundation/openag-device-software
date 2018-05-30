@@ -5,6 +5,32 @@
     "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
     "peripherals": [
         {
+            "name": "LEDPanel-1",
+            "type": "LEDDAC5578",
+            "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+            "parameters": {
+               "setup": {
+                    "name": "LED Panel Taurus Actuator",
+                    "file_name": "led_dac5578/setups/taurus"
+                },
+                "variables": {
+                    "sensor": {
+                        "intensity_watts": "light_intensity_watts",
+                        "spectrum_nm_percent": "light_spectrum_nm_percent",
+                        "illumination_distance_cm": "light_illumination_distance_cm"
+                    },
+                    "actuator": {
+                        "channel_output_percents": "light_channel_output_percents"
+                    }
+                },
+                "communication": {
+                    "panels": [
+                        {"name": "LP-1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
+                    ]
+                }
+            }
+        },
+        {
             "name": "SHT25-1",
             "type": "SHT25",
             "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",

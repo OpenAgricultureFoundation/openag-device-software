@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Small Hazelnut - LED Array Only",
+    "name": "Small Hazelnut",
     "version": "1",
     "uuid": "65dba26a-f9b4-48d7-a8d5-d180645cf4c6",
     "peripherals": [
@@ -25,9 +25,8 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP-00", "bus": 2, "mux": "0x77", "channel": 0, "address": "0x47", "x": 0, "y": 0},
-                        {"name": "LP-10", "bus": 2, "mux": "0x77", "channel": 1, "address": "0x47", "x": 1, "y": 0},
-                        {"name": "LP-20", "bus": 2, "mux": "0x77", "channel": 2, "address": "0x47", "x": 2, "y": 0}
+                        {"name": "LP-1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0},
+                        {"name": "LP-2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
                     ]
                 }
             }

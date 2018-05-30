@@ -14,7 +14,7 @@ from device.drivers.dac5578.manager import DAC5578Manager as DAC5578
 
 
 class LEDPanel:
-    """ An led panel controlled by a dac5578. """
+    """ An led panel controlled by a DAC5578. """
 
     # Initialize shutdown state
     is_shutdown: bool = False
