@@ -70,11 +70,6 @@ class IoTManager:
         Process commands received from the backend (UI).
         """
         try:
-            """
-#debugrob: later:
-    self.iot.publishCommandReply( commandName, valuesJsonString )
-            """
-
             if command == IoTPubSub.CMD_START:
                 recipe_json = arg0
                 recipe_dict = json.loads( arg0 )
@@ -97,10 +92,14 @@ class IoTManager:
                 # start this recipe from our DB (by uuid)
                 self.ref_device_manager.process_start_recipe_event( \
                         recipe_uuid )
+
+                # record that we processed this command
+                self.iot.publishCommandReply( command, recipe_json )
                 return
 
             if command == IoTPubSub.CMD_STOP:
                 self.ref_device_manager.process_stop_recipe_event()
+                self.iot.publishCommandReply( command, '' )
                 return
 
             self.logger.error( "command_received: Unknown command: {}".format( \
@@ -156,6 +155,7 @@ class IoTManager:
             if self.prev_vars[var] != vars_dict[var]:
                 self.prev_vars[var] = copy.deepcopy( vars_dict[var] )
                 self.iot.publishEnvVar( var, vars_dict[var] )
+
 
     def thread_proc( self ):
         while True:

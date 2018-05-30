@@ -106,12 +106,12 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
-    def publishEnvVar( self, varName, values, messageType = 'EnvVar' ):
+    def publishEnvVar( self, varName, valuesDict, messageType = 'EnvVar' ):
         """ Publish a single environment variable. """
         try:
             message_obj = {}
             message_obj['messageType'] = messageType
-#debugrob TODO: remove experiment and treatment from the system - later
+#TODO: remove experiment and treatment from the SYSTEM - later.  Involves changing the UI queries too...
             message_obj['exp'] = self.args.experiment
             message_obj['treat'] = self.args.treatment
             message_obj['var'] = varName
@@ -119,8 +119,8 @@ class IoTPubSub:
             # format our json values
             count = 0
             valuesJson = "{'values':["
-            for vname in values:
-                val = values[vname]
+            for vname in valuesDict:
+                val = valuesDict[vname]
 
                 if count > 0:
                     valuesJson += ","
@@ -177,10 +177,17 @@ class IoTPubSub:
                 self.logger.error( 
                         "publishCommandReply: missing valuesJsonString" )
                 return False
+
+            valuesDict = {}
+            value = {}
+            value['name'] = 'recipe'
+            value['type'] = 'string'
+            value['value'] = valuesJsonString
+            valuesDict['values'] = [value] # new list of one value
     
             # publish the command reply as an env. var.
             self.publishEnvVar( varName = commandName,      
-                                values = valuesJsonString,
+                                valuesDict = valuesDict,
                                 messageType = 'CommandReply' )
             return True
 

@@ -540,7 +540,6 @@ class RecipeManager:
                 self.commanded_mode = Modes.NONE
                 break
 
-#debugrob: Jake - is this correct?  I can't see how a recipe ever ends when it is done processing phases/cycles...
             if self.current_phase == 'End' and self.current_cycle == 'End':
                 self.logger.info("Recipe is over, so transition from NORMAL to STOP")
                 self.mode = Modes.STOP
