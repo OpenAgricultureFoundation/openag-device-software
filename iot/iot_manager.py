@@ -127,7 +127,7 @@ class IoTManager:
 
 
     def spawn( self ):
-        self.logger.info("Spawing IoT thread")
+        self.logger.info("Spawning IoT thread")
         self.thread = threading.Thread( target=self.thread_proc )
         self.thread.daemon = True
         self.thread.start()
