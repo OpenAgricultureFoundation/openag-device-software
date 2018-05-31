@@ -1,5 +1,0 @@
-[
-  "scripts/run_core.py::test_init",
-  "scripts/run_core.py::test_read_power_register",
-  "scripts/run_core.py::test_set_output"
-]

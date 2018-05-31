@@ -6,11 +6,11 @@
     "peripherals": [
         {
             "name": "LEDArray-1",
-            "type": "LEDArray",
+            "type": "LEDDAC5578",
             "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
             "parameters": {
                "setup": {
-                    "name": "LED Array Orion Actuator",
+                    "name": "LEDDAC5578 Array Orion Actuator",
                     "file_name": "led_dac5578/setups/orion"
                 },
                 "variables": {
@@ -25,8 +25,8 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP-1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0},
-                        {"name": "LP-2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
+                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0},
+                        {"name": "LP2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "x": 0, "y": 0}
                     ]
                 }
             }

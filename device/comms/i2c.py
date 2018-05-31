@@ -89,7 +89,7 @@ class I2C(object):
 
         # Check for mux error
         if error.exists():
-            error.report("Write failed")
+            error.report("I2C write failed")
             return error
 
         # Build byte array and string
@@ -109,7 +109,7 @@ class I2C(object):
                 self.fw.write(byte_array)
                 return Error(None)
         except IOError:
-            error = Error("Write failed due to IO error")
+            error = Error("I2C write failed due to IO error")
             return error
 
 
@@ -121,7 +121,7 @@ class I2C(object):
 
         # Check for mux error
         if error.exists():
-            error.report("Unable to write raw")
+            error.report("I2C unable to write raw")
             return error
 
         # Check if i2c is simulated
@@ -137,7 +137,7 @@ class I2C(object):
                 self.fw.write(bytes)
                 return Error(None)
         except IOError:
-            return Error("Unable to write raw due to IO error")
+            return Error("I2C unable to write raw due to IO error")
 
 
     def read(self, num_bytes, disable_mux=False):
@@ -149,7 +149,7 @@ class I2C(object):
 
         # Check for mux error
         if error.exists():
-            error.report("Unable to read")
+            error.report("I2C unable to read")
             return None, error
 
         # Check if i2c is simulated
@@ -169,7 +169,7 @@ class I2C(object):
                 self.logger.debug("Read: {}".format(byte_string))
                 return byte_array, Error(None)
         except IOError:
-            return None, Error("Unable to read due to IO error")
+            return None, Error("I2C unable to read due to IO error")
 
 
     def read_raw(self, num_bytes, disable_mux=False):
@@ -180,7 +180,7 @@ class I2C(object):
 
         # Check for mux error
         if error.exists():
-            error.report("Unable to read raw")
+            error.report("I2C unable to read raw")
             return None, error
 
         # Check if i2c is simulated
@@ -197,7 +197,7 @@ class I2C(object):
                 self.logger.debug("Read raw: {}".format(bytes_))
                 return bytes_, Error(None)
         except IOError:
-            return None, Error("Unable to read raw due to IO error")
+            return None, Error("I2C unable to read raw due to IO error")
 
 
     def read_register(self, register_address, disable_mux=False):
@@ -208,7 +208,7 @@ class I2C(object):
 
         # Check for mux error
         if error.exists():
-            error.report("Unable to read register")
+            error.report("I2C unable to read register")
             return None, error
 
         # Check if i2c is simulated
@@ -231,7 +231,7 @@ class I2C(object):
                 self.logger.debug("Read register: {}".format(byte_))
                 return byte_, Error(None)
         except IOError:
-            return None, Error("Unable to read register due to IO error")
+            return None, Error("I2C unable to read register due to IO error")
 
 
     def manage_mux(self, disable_mux=False):
@@ -262,7 +262,7 @@ class I2C(object):
                 self.fw.write(byte_array)
                 return Error(None)
         except IOError:
-            return Error("Unable to set mux due to IO error")
+            return Error("I2C unable to set mux due to IO error")
 
 
     def close(self):

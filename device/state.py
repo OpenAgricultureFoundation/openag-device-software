@@ -136,8 +136,18 @@ class State(object):
         return get_nested_dict_safely(self.environment, ["actuator", "desired", variable]) 
 
 
+    def set_peripheral_value(self, peripheral, variable, value):
+        """ Sets peripheral to shared peripheral state. """
+        set_nested_dict_safely(self.peripherals, [peripheral, variable], value)         
+
+
+    def get_peripheral_value(self, peripheral, variable):
+        """ Gets peripheral value from shared peripheral state. """
+        return get_nested_dict_safely(self.peripherals, [peripheral, variable])
+
+
     def set_peripheral_reported_sensor_value(self, peripheral, variable, value):
-        """ Sets reported sensor vperipheralalue to shared peripheral state. """
+        """ Sets reported sensor value to shared peripheral state. """
         set_nested_dict_safely(self.peripherals, [peripheral, "sensor", "reported", variable], value)          
 
 
@@ -174,3 +184,4 @@ class State(object):
     def get_peripheral_desired_actuator_value(self, peripheral, variable):
         """ Gets desired actuator value from shared peripheral state. """
         return get_nested_dict_safely(self.peripherals, [peripheral, "actuator", "desired", variable]) 
+

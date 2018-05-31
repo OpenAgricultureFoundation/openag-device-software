@@ -21,7 +21,7 @@ class PeripheralManager:
     thread_is_active = True
 
     # Initialize timing variabless
-    _default_sampling_interval_seconds = 10
+    _default_sampling_interval_seconds = 5
     _min_sampling_interval_seconds = 2
     last_update_seconds = None
     last_update_interval_seconds = None
@@ -52,6 +52,21 @@ class PeripheralManager:
         # Load setup dict and uuid
         self.setup_dict = self.load_setup_dict_from_file()
         self.setup_uuid = self.setup_dict["uuid"]
+
+
+    @property
+    def health(self) -> None:
+        """ Gets health value. """
+        return self.state.get_peripheral_value(self.name, "health")
+
+
+    @health.setter
+    def health(self, value: dict) -> None:
+        """ Sets health value in shared state. """
+        self.state.set_peripheral_value(self.name, "health", value)
+
+
+    # TODO: Use state functions on remaining properties
 
 
     @property

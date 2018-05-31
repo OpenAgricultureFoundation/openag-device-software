@@ -11,13 +11,15 @@ from device.utilities.health import Health
 from device.peripherals.utilities import light
 
 # Import led panel
-from device.peripherals.led_dac5578.panel import LEDPanel
+from device.peripherals.led_dac5578.panel import Panel
 
 
-class LEDArray:
-
-    # Initialize shutdown state
-    is_shutdown: bool = False
+class Array(object):
+    """ An array of LED panels. """
+    
+    _is_shutdown: bool = False
+    _min_health: float = 40.0
+    channel_outputs: dict = {}
 
 
     def __init__(self, name: str, panel_configs: dict, channel_configs: dict, 
@@ -27,7 +29,7 @@ class LEDArray:
 
         # Instantiate logger
         self.logger = Logger(
-            name = "LEDArray({})".format(name),
+            name = "Array({})".format(name),
             dunder_name = __name__,
         )
 
@@ -35,13 +37,10 @@ class LEDArray:
         self.panel_configs = panel_configs
         self.channel_configs = channel_configs
 
-
-        self.logger.debug("panel_configs = {}".format(panel_configs))
-
         # Instantiate all panels in array
-        self.panels: List[LEDPanel] = []
+        self.panels: List[Panel] = []
         for panel_config in panel_configs:
-            self.panels.append(LEDPanel(
+            self.panels.append(Panel(
                 name = panel_config["name"], 
                 channel_configs = channel_configs,
                 bus = int(panel_config["bus"]), 
@@ -51,12 +50,35 @@ class LEDArray:
                 simulate = simulate,
             ))
 
-        # Instantiate health
-        self.health = Health(updates=5, minimum=60)
-
         # Initialize light panel utility functions
         self.get_channel_number = self.panels[0].get_channel_number
         self.build_channel_outputs = self.panels[0].build_channel_outputs
+
+
+    @property
+    def health(self):
+        """ Calculates health percentage from number of healthy panels over
+            total number of panels. """
+        num_healthy = len([panel for panel in self.panels if panel.healthy])
+        return num_healthy / len(self.panels) * 100.0
+
+
+    @property
+    def healthy(self):
+        """ Calculates healthyness by comparing health to min health. """
+        return self.health > self._min_health
+
+
+    @property
+    def is_shutdown(self) -> bool:
+        """ Returns device shutdown status from health or if manually set. """
+        return self._is_shutdown or not self.healthy
+
+
+    @is_shutdown.setter
+    def is_shutdown(self, value: bool) -> bool:
+        """ Shutsdown array. """
+        self._is_shutdown = value
 
 
     def initialize(self) -> Error:
@@ -64,26 +86,22 @@ class LEDArray:
         self.logger.debug("Initializing array")
 
         # Initialize all panels
-        panel_error_traces = []
         for panel in self.panels:
-            error = panel.initialize()
 
-            # Check for error and update health
-            if error.exists():
-                panel_error_traces.append(error.trace)
-                self.health.report_failure()
-            else:
-                self.health.report_success()
+            # Try to initialize panel until successful or shuts down
+            while not panel.is_shutdown:
+                error = panel.initialize()
 
-        # Log errors for now. TODO: do something smarter
-        self.logger.debug("panel_error_traces = {}".format(panel_error_traces))
+                # Check if successful
+                if not error.exists():
+                    break
 
-        # Check if array is still healthy and return
-        if not self.health.healthy:
-            error = Error("Unacceptable array health after initialization")
+        # Check if array became unhealthy
+        if not self.healthy:
+            error.report("Unable to initialize array")
             return error
 
-        # Healthy!
+        # Successfully initialized!
         self.logger.debug("Initialization successful")
         return Error(None)
 
@@ -110,32 +128,26 @@ class LEDArray:
         if self.is_shutdown:
             return Error("Unable to set output, array is shutdown")
 
-        # Verify array is healthy
-        if not self.health.healthy:
-            return Error("Unable to set output, array is unhealthy")
+        # Update stored channel outputs
+        self.channel_outputs[channel_name] = percent
 
         # Set output on all panels
         for panel in self.panels:
 
-            # Only set outputs on healthy, non-shutdown panels
-            if not panel.health.healthy or panel.is_shutdown:
-                continue
+            # Try to set ouput on panel until successful or shuts down
+            while not panel.is_shutdown:
+                error = panel.set_output(channel_name, percent)
 
-            # Set output on pannel
-            error = panel.set_output(channel_name, percent)
+                # Check if successful
+                if not error.exists():
+                    break
 
-            # Check for error and update health
-            if error.exists():
-                self.health.report_failure()
-            else:
-                self.health.report_success()
-
-        # Check if array is still healthy and return
-        if not self.health.healthy:
-            error = Error("Unacceptable array health after set output")
+        # Check if array became unhealthy
+        if not self.healthy:
+            error.report("Array unable to set output, became too unhealthy")
             return error
 
-        # Healthy!
+        # Successfully set output!
         self.logger.debug("Set output successful")
         return Error(None)
 
@@ -148,10 +160,9 @@ class LEDArray:
         if self.is_shutdown:
             return Error("Unable to set outputs, array is shutdown")
 
-        # Verify array is healthy
-        if not self.health.healthy:
-            return Error("Unable to set outputs, array is unhealthy")
-
+        # Update stored channel outputs
+        self.channel_outputs = outputs
+        
         # Check outputs are valid
         for name, percent in outputs.items():
             number, error = self.get_channel_number(name)
@@ -162,29 +173,24 @@ class LEDArray:
                 self.logger.debug(error.trace)
                 return error
 
-        # Set output on all panels that are healthy
+        # Set outputs on all panels
         for panel in self.panels:
 
-            # Only set outputs on healthy, non-shutdown panels
-            if not panel.health.healthy or panel.is_shutdown:
-                continue
+            # Try to set ouput on panel until successful or shuts down
+            while not panel.is_shutdown:
+                error = panel.set_outputs(outputs)
 
-            # Set output on panel
-            error = panel.set_outputs(outputs)
+                # Check if successful
+                if not error.exists():
+                    break
 
-            # Check for error and update health
-            if error.exists():
-                self.health.report_failure()
-            else:
-                self.health.report_success()
-
-        # Check if array is still healthy
-        if not self.health.healthy:
-            error = Error("Unacceptable array health after set outputs")
+        # Check if array became unhealthy
+        if not self.healthy:
+            error.report("Array unable to set outputs, became too unhealthy")
             return error
 
-        # Success!
-        self.logger.debug("Successfully set outputs") 
+        # Successfully set outputs!
+        self.logger.debug("Set outputs successful")
         return Error(None)
 
 
@@ -198,10 +204,6 @@ class LEDArray:
         # Verify array is not shutdown
         if self.is_shutdown:
             return Error("Unable to set outputs, array is shutdown")
-
-        # Verify array is healthy
-        if not self.health.healthy:
-            return Error("Unable to set outputs, array is unhealthy")
 
         # Approximate spectral power distribution
         try:
@@ -227,25 +229,6 @@ class LEDArray:
         self.logger.debug("Successfully set spd, output: channels={}, spectrum={}, intensity={}W".format(
             channel_outputs, output_spectrum_nm_percent, output_intensity_watts))
         return channel_outputs, output_spectrum_nm_percent, output_intensity_watts, Error(None)
-
-
-    def turn_on(self) -> Error:
-        """ Turns off light panel. """  
-        self.logger.debug("Turning on")
-
-        # Build channel outputs and set to 100%
-        channel_outputs = self.build_channel_outputs(100)
-        error = self.set_outputs(channel_outputs)
-
-        # Check for errors
-        if error.exists():
-            error.report("Unable to turn on")
-            self.logger.debug(error.trace)
-            return error
-
-        # Successfully turned off
-        self.logger.debug("Successfully turned on")
-        return Error(None)
 
 
     def turn_on(self, channel_name: Optional[str] = None) -> Error:
@@ -286,70 +269,3 @@ class LEDArray:
             return error
         else:
             return Error(None)
-
-
-    def fade(self, cycles: int, channel_name: Optional[str] = None) -> Error:
-        """ Fades through all channels if no channel is specified. """
-        self.logger.debug("Fading {channel}".format(channel = "all channels" if \
-            channel_name == None else "channel: " + channel_name))
-
-        # Turn off channels
-        error = self.turn_off()
-
-        # Check for errors
-        if error.exists():
-            error.report("Array unable to fade")
-            return error
-
-        # Set channel or channels
-        if channel_name != None:
-            channel_names = [channel_name]
-        else:
-            channel_outputs = self.build_channel_outputs(0)
-            channel_names = channel_outputs.keys()
-
-        # Repeat for number of specified cycles
-        for i in range(cycles):
-            
-            # Cycle through channels
-            for channel_name in channel_names:
-
-                # Fade up
-                for value in range(0, 100, 10):
-
-                    # Send value to all panels
-                    for panel in self.panels:
-                        self.logger.info("Panel: {} Channel {}: {}%".format(panel.name, channel_name, value))
-                        error = panel.set_output(channel_name, value)
-                        if error.exists():
-                            self.logger.warning("Error: {}".format(error.trace))
-                            return error
-                    time.sleep(0.1)
-
-                # Fade down
-                for value in range(100, 0, -10):
-                    
-                    # Send value to all panels
-                    for panel in self.panels:
-                        self.logger.info("Panel: {} Channel {}: {}%".format(panel.name, channel_name, value))
-                        error = panel.set_output(channel_name, value)
-                        if error.exists():
-                            self.logger.warning("Error: {}".format(error.trace))
-                            return error
-                    time.sleep(0.1)
-
-        return Error(None)
-
-
-
-
-
-    #             # Check for events
-    #             if self.request != None:
-    #                 request = self.request
-    #                 self.request = None
-    #                 self.process_event(request)
-    #                 return
-
-    #             # Update every 100ms
-    #             time.sleep(0.1)

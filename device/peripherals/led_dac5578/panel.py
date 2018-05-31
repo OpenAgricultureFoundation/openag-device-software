@@ -5,25 +5,26 @@ import time
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.error import Error
+from device.utilities.health import Health
 
 # Import peripheral utilities
 from device.peripherals.utilities import light
 
 # Import device drivers
-from device.drivers.dac5578.manager import DAC5578Manager as DAC5578
+from device.drivers.dac5578 import DAC5578
 
 
-class LEDPanel:
+class Panel:
     """ An led panel controlled by a DAC5578. """
 
     # Initialize shutdown state
-    is_shutdown: bool = False
+    _is_shutdown: bool = False
 
 
     def __init__(self, name, channel_configs, bus, address, mux=None, channel=None, simulate=False):
         """ Instantiates panel. """
 
-        # Instantiate logger
+        # Initialize logger
         self.logger = Logger(
             name = "LEDPanel({})".format(name),
             dunder_name = __name__,
@@ -33,7 +34,7 @@ class LEDPanel:
         self.name = name
         self.channel_configs = channel_configs
 
-        # Instantiate driver
+        # Initialize driver
         self.dac5578 = DAC5578(
             name = name,
             bus = bus,
@@ -43,8 +44,25 @@ class LEDPanel:
             simulate = simulate,
         )
 
-        # Initialize health
-        self.health = self.dac5578.health
+        # Initialize health metrics
+        self.health = Health(updates = 5, minimum = 60)
+
+
+    @property
+    def healthy(self):
+        """ Returns healthyness from health manager. """
+        return self.health.healthy
+
+
+    @property
+    def is_shutdown(self) -> bool:
+        """ Returns device shutdown status from health or if manually set. """
+        return self._is_shutdown or not self.healthy
+
+
+    @is_shutdown.setter
+    def is_shutdown(self, value: bool) -> bool:
+        self._is_shutdown = value
  
 
     def initialize(self) -> Error:
@@ -52,31 +70,32 @@ class LEDPanel:
         self.logger.debug("Initializing panel")
 
         # Probe dac
-        error = self.dac5578.probe(retry=True)
+        error = self.dac5578.probe()
 
-        # Check for errors
+        # Check for errors and update health
         if error.exists():
-            error.report("Panel initialization failed")
-            self.logger.warning(error)
+            error.report("Unable to initialize panel")
+            self.health.report_failure()
             return error
-        
-        # Success!
+        else:
+            self.health.report_success()
+
+        # Initialization successful!
         self.logger.debug("Successfully initialized")
         return Error(None)
-
-
-    def shutdown(self):
-        """ Shutdown panel. """
-        self.logger.debug("Shutting down")
-        self.dac5578.shutdown()
-        self.is_shutdown = True
 
 
     def reset(self):
         """ Resets panel. """
         self.logger.debug("Resetting")
-        self.dac5578.reset()
+        self.health.reset()
         self.is_shutdown = False
+
+
+    def shutdown(self):
+        """ Shutdown panel. """
+        self.logger.debug("Shutting down")
+        self.is_shutdown = True
 
 
     def set_output(self, channel_name: str, percent: float) -> Error:
@@ -84,13 +103,9 @@ class LEDPanel:
             then sets output on dac. """
         self.logger.debug("Setting output on channel {} to: {}".format(channel_name, percent))
 
-        # Verify panel is not shutdown
+        # Check panel is not shutdown
         if self.is_shutdown:
             return Error("Unable to set output, panel is shutdown")
-
-        # Verify panel is healthy
-        if not self.health.healthy:
-            return Error("Unable to set output, panel is unhealthy")
 
         # Convert channel name to channel number
         channel_number, error = self.get_channel_number(channel_name)
@@ -101,19 +116,22 @@ class LEDPanel:
             return error
 
         # Check if panel is healthy
-        if not self.health.healthy:
+        if not self.healthy:
             error = Error("Unable to set outputs, panel is not healthy")
             self.logger.debug(error.latest())
 
         # Set output on DAC
-        error = self.dac5578.set_output(channel_number, percent)
+        error = self.dac5578.write_output(channel_number, percent)
 
-        # Check for errors
+        # Check for errors and update health
         if error.exists():
             error.report("Panel unable to set output")
+            self.health.report_failure()
             return error
+        else:
+            self.health.report_success()
         
-        # Success!
+        # Successfully set output!
         self.logger.debug("Successfully set output")
         return Error(None)
 
@@ -123,13 +141,9 @@ class LEDPanel:
             then sets outputs on dac. """
         self.logger.debug("Setting outputs: {}".format(outputs))
 
-        # Verify panel is not shutdown
+        # Check panel is not shutdown
         if self.is_shutdown:
             return Error("Unable to set outputs, panel is shutdown")
-
-        # Verify panel is healthy
-        if not self.health.healthy:
-            return Error("Unable to set outputs, panel is unhealthy")
 
         # Convert channel names to channel numbers
         converted_outputs = {}
@@ -146,19 +160,22 @@ class LEDPanel:
             converted_outputs[number] = percent
 
         # Check if panel is healthy
-        if not self.health.healthy:
+        if not self.healthy:
             error = Error("Unable to set outputs, panel is not healthy")
             self.logger.debug(error.latest())
 
         # Set outputs on dacs
-        error = self.dac5578.set_outputs(converted_outputs)
+        error = self.dac5578.write_outputs(converted_outputs)
 
-        # Check for errors
+        # Check for errors and update health
         if error.exists():
             error.report("Panel unable to set outputs")
+            self.health.report_failure()
             return error
+        else:
+            self.health.report_success()
         
-        # Success!
+        # Successfully set outputs!
         self.logger.debug("Successfully set outputs")
         return Error(None)
 
@@ -173,10 +190,6 @@ class LEDPanel:
         # Verify panel is not shutdown
         if self.is_shutdown:
             return Error("Unable to set spd, panel is shutdown")
-
-        # Verify panel is healthy
-        if not self.health.healthy:
-            return Error("Unable to set spd, panel is unhealthy")
 
         # Approximate spectral power distribution
         try:
@@ -194,7 +207,7 @@ class LEDPanel:
         # Set channel outputs
         error = self.set_outputs(channel_outputs)
 
-        # Check for errors
+        # Check for errors, no need to update health, handled in set outputs
         if error.exists():
             return None, None, None, error
 
@@ -207,6 +220,10 @@ class LEDPanel:
     def turn_on(self, channel_name: Optional[str] = None) -> Error:
         """ Turns on all channels if no channel is specified. """
 
+        # Check panel is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set outputs, panel is shutdown")
+
         # Set channel or channels
         if channel_name != None:
             self.logger.debug("Turning on channel: {}".format(channel_name))
@@ -216,7 +233,7 @@ class LEDPanel:
             channel_outputs = self.build_channel_outputs(100)
             error = self.set_outputs(channel_outputs)
 
-        # Check for errors
+        # Check for errors, no need to update health, handled in set outputs
         if error.exists():
             error.report("Panel unable to turn on")
             return error
@@ -227,6 +244,10 @@ class LEDPanel:
     def turn_off(self, channel_name: Optional[str] = None) -> Error:
         """ Turns off all channels if no channel is specified. """
 
+        # Check panel is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set outputs, panel is shutdown")
+
         # Set channel or channels
         if channel_name != None:
             self.logger.debug("Turning off channel: {}".format(channel_name))
@@ -236,7 +257,7 @@ class LEDPanel:
             channel_outputs = self.build_channel_outputs(0)
             error = self.set_outputs(channel_outputs)
 
-        # Check for errors
+        # Check for errors, no need to update health, handled in set outputs
         if error.exists():
             error.report("Panel unable to turn off")
             return error
@@ -249,10 +270,14 @@ class LEDPanel:
         self.logger.debug("Fading {channel}".format(channel = "all channels" if \
             channel_name == None else "channel: " + channel_name))
 
+        # Check panel is not shutdown
+        if self.is_shutdown:
+            return Error("Unable to set outputs, panel is shutdown")
+
         # Turn off channels
         error = self.turn_off()
 
-        # Check for errors
+        # Check for errors, no need to update health
         if error.exists():
             error.report("Panel unable to fade")
             return error

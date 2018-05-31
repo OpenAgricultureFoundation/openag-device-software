@@ -9,7 +9,7 @@ from device.utilities import math
 def calculate_desired_spd(intensity_watts, spectrum_nm_percent):
     """ Calculates desired spd. """
     for wavelength_band, percent in spectrum_nm_percent.items():
-        spectrum_nm_percent[wavelength_band] = intensity_watts * percent / 100
+        spectrum_nm_percent[wavelength_band] = intensity_watts * percent / 100.0
     return spectrum_nm_percent
 
 
@@ -152,7 +152,7 @@ def dictify_channel_output_vector(channel_configs, channel_output_vector):
     channel_output_dict = {}
     for index, channel_config in enumerate(channel_configs):
         name = channel_config["name"]["brief"]
-        channel_output_dict[name] = channel_output_vector[index] * 100
+        channel_output_dict[name] = channel_output_vector[index] * 100.0
     return channel_output_dict
 
 
@@ -224,7 +224,10 @@ def deconstruct_spd_vector(spd_vector):
     rounded_intensity = float("{:.2f}".format(intensity))
     new_spd_vector = []
     for element in spd_vector:
-        value = float(element) / intensity * 100
+        if intensity != 0:
+            value = float(element) / intensity * 100.0
+        else:
+            value = 0
         rounded_value = float("{:.2f}".format(value))
         new_spd_vector.append(rounded_value)
 

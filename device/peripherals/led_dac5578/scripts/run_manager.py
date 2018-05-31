@@ -5,11 +5,11 @@ import sys, os, json, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.led_dac5578.manager import LEDManager
+    from device.peripherals.led_dac5578.manager import LEDDAC5578
 except:
     # ... if running tests from same dir as manager.py
     sys.path.append("../../../")
-    from device.peripherals.led_dac5578.manager import LEDManager
+    from device.peripherals.led_dac5578.manager import LEDDAC5578
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -61,12 +61,12 @@ if __name__ == "__main__":
         print("Configuring for pfc-edu v1.0")
         device_config = json.load(open("data/devices/edu1.json"))
         peripheral_config = device_config["peripherals"][0]
-        led_dac5578 = LEDManager("SMHZ1", state, peripheral_config)
+        led_dac5578 = LEDDAC5578("SMHZ1", state, peripheral_config)
     elif args.smhz1:
         print("Configuring for small-hazelnut v1.0")
         device_config = json.load(open("data/devices/smhz1.json"))
         peripheral_config = device_config["peripherals"][0]
-        led_dac5578 = LEDManager("SMHZ1", state, peripheral_config)
+        led_dac5578 = LEDDAC5578("SMHZ1", state, peripheral_config)
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
@@ -125,11 +125,17 @@ if __name__ == "__main__":
 
         # Check if fading
         elif args.fade:
-            print("Fading {channel}".format(channel = "all channels" if args.channel == None else "channel: " + str(args.channel)))
+            print("Fading {channel}".format(channel = "all channels" if \
+                args.channel == None else "channel: " + str(args.channel)))
             led_dac5578.mode = Modes.MANUAL
             led_dac5578.process_event({"type": "Fade"})
+
+            print("did this return?")
             if led_dac5578.response["status"] != 200:
                 print("Error: {}".format(led_dac5578.response["message"]))
+            else:
+                print(led_dac5578.response["message"])
+        
         # Check if setting spd
         elif args.spectrum != None:
 
