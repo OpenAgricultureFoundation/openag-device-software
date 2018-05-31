@@ -1,9 +1,4 @@
 [
-  "tests/test_dac5578.py::test_init",
-  "tests/test_dac5578.py::test_write_output",
-  "tests/test_dac5578.py::test_write_outputs",
-  "tests/test_dac5578.py::test_read_power_register",
-  "tests/test_dac5578.py::test_probe",
-  "tests/test_dac5578.py::test_turn_on",
-  "tests/test_dac5578.py::test_turn_off"
+  "tests/test_atlas_ec.py::test_init",
+  "tests/test_atlas_ec.py::test_read_info"
 ]

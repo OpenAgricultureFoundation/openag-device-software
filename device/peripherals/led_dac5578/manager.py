@@ -44,7 +44,7 @@ class LEDDAC5578(PeripheralManager, EventMixin):
         self.channel_outputs_name = self.parameters["variables"]["actuator"]["channel_output_percents"]
 
         # Instantiate LED array
-        self.array = Array(self.name, self.panel_configs, self.channel_configs, self.simulate)
+        self.array = Array(self.name, self.panel_configs, self.channel_configs, simulate=self.simulate)
 
 
     @property
@@ -56,8 +56,8 @@ class LEDDAC5578(PeripheralManager, EventMixin):
     @spectrum.setter
     def spectrum(self, value: dict) -> None:
         """ Sets spectrum value in shared state. """
-        self.state.set_environment_reported_sensor_value(self.name, self.spectrum_name, value, simple=True)
         self.state.set_peripheral_reported_sensor_value(self.name, self.spectrum_name, value)
+        self.state.set_environment_reported_sensor_value(self.name, self.spectrum_name, value, simple=True)
 
 
     @property
@@ -79,8 +79,8 @@ class LEDDAC5578(PeripheralManager, EventMixin):
     @intensity.setter
     def intensity(self, value: float) -> None:
         """ Sets intensity value in shared state. """
-        self.state.set_environment_reported_sensor_value(self.name, self.intensity_name, value, simple=True)
         self.state.set_peripheral_reported_sensor_value(self.name, self.intensity_name, value)
+        self.state.set_environment_reported_sensor_value(self.name, self.intensity_name, value, simple=True)
 
 
     @property
@@ -102,8 +102,8 @@ class LEDDAC5578(PeripheralManager, EventMixin):
     @distance.setter
     def distance(self, value: float) -> None:
         """ Sets distance value in shared state. """
-        self.state.set_environment_reported_sensor_value(self.name, self.distance_name, value, simple=True)
         self.state.set_peripheral_reported_sensor_value(self.name, self.distance_name, value)
+        self.state.set_environment_reported_sensor_value(self.name, self.distance_name, value, simple=True)
 
 
     @property
@@ -125,9 +125,8 @@ class LEDDAC5578(PeripheralManager, EventMixin):
     @channel_outputs.setter
     def channel_outputs(self, value: dict) -> None:
         """ Sets channel outputs value in shared state. """
-        self.logger.debug("Reporting channel outputs")
-        self.state.set_environment_reported_actuator_value(self.channel_outputs_name, value)
         self.state.set_peripheral_reported_actuator_value(self.name, self.channel_outputs_name, value)
+        self.state.set_environment_reported_actuator_value(self.channel_outputs_name, value)
 
 
     @property

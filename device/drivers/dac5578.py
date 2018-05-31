@@ -11,11 +11,11 @@ from device.utilities.error import Error
 from device.utilities import bitwise
 
 class DAC5578:
-    """ Driver core for DAC5578 digital to analog converter. """
+    """ Driver for DAC5578 digital to analog converter. """
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
                 channel: Optional[int] = None, simulate: bool = False) -> None:
-        """ Initializes DAC5578 Core. """
+        """ Initializes DAC5578. """
 
         # Initialize parameters
         self.simulate = simulate
