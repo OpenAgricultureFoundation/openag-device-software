@@ -11,14 +11,14 @@ from device.utilities.health import Health
 from device.peripherals.utilities import light
 
 # Import device drivers
-from device.peripherals.modeules.atlas_ec.driver import AtlasECDriver
+from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 
 
 class AtlasECSensor:
     """ Atlas EC sensor instance. """
 
-
-    def __init__(self, name, channel_configs, bus, address, mux=None, channel=None, simulate=False):
+    def __init__(self, name: str, bus: int, address: str, mux: str = None, 
+        channel: int = None, simulate: bool = False) -> None:
         """ Instantiates panel. """
 
         # Initialize logger
@@ -27,9 +27,8 @@ class AtlasECSensor:
             dunder_name = __name__,
         )
         
-        # Initialize name and channel configs
+        # Initialize name
         self.name = name
-        self.channel_configs = channel_configs
 
         # Initialize driver
         self.driver = AtlasECDriver(
@@ -43,7 +42,11 @@ class AtlasECSensor:
 
         # Initialize health metrics
         self.health = Health(updates = 5, minimum = 60)
-        self.healthy = self.health.healthy
+
+
+    @property
+    def healthy(self):
+        return self.health.healthy
 
 
     def initialize(self) -> Error:
@@ -132,20 +135,8 @@ class AtlasECSensor:
 
 
     def reset(self):
+        """ Resets sensor. """
         self.health.reset()
-
-
-    def shutdown(self):
-        ...
-
-
-        # Send enable sleep command to sensor hardware
-        # try:
-        #     self.enable_sleep_mode()
-        #     self.logger.debug("Successfully shutdown sensor")
-        # except:
-        #     self.logger.exception("Sensor shutdown failed")
-        #     self.mode = Modes.ERROR
 
 
     def probe(self):
@@ -165,7 +156,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
             return error
 
@@ -173,13 +164,63 @@ class AtlasECSensor:
         return Error(None)
 
 
+    def read_electrical_conductivity(self) -> Tuple[Optional[float], Error]:
+        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
+
+        # Send commands until success or becomes too healthy
+        while self.healthy:
+
+            # Send command
+            ec, error = self.driver.read_electrical_conductivity()
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to read electrical conductivity, became too unhealthy")
+            return None, error
+
+        # Successfuly read electrical conductivity!
+        return ec, Error(None)
+
+
+    def set_compensation_temperature(self, value: float) -> Error:
+        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
+
+        # Send commands until success or becomes too healthy
+        while self.healthy:
+
+            # Send command
+            error = self.driver.set_compensation_temperature(value)
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to set compensation temperature, became too unhealthy")
+            return error
+
+        # Successfuly set compensation temperature!
+        return Error(None)
+
+
     def enable_led(self) -> Error:
         """ Tries to enable protocol lock until successful or becomes too unhealthy. """
 
-        # Send commands until success of becomes too healthy
+        # Send commands until success or becomes too healthy
         while self.healthy:
 
-            # Send probe
+            # Send command
             error = self.driver.enable_led()
 
             # Check for errors:
@@ -190,7 +231,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to enable led, became too unhealthy")
             return error
 
@@ -215,7 +256,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to set probe type, became too unhealthy")
             return error
 
@@ -240,7 +281,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to enable protocol lock, became too unhealthy")
             return error
 
@@ -266,7 +307,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to enable electrical conductivity output, became too unhealthy")
             return error
 
@@ -292,7 +333,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to disable total dissolved solids output, became too unhealthy")
             return error
 
@@ -318,7 +359,7 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to disable salinity output, became too unhealthy")
             return error
 
@@ -344,9 +385,140 @@ class AtlasECSensor:
                 break
 
         # Check if sensor became unhealthy
-        if not self.health.healthy:
+        if not self.healthy:
             error.report("Sensor unable to disable specific gravity output, became too unhealthy")
             return error
 
         # Successfuly disabled specific gravity output!
+        return Error(None)
+
+
+
+    def take_dry_calibration_reading(self) -> Error:
+        """ Tries to take dry calibration reading until successful or 
+            becomes too unhealthy. """
+
+        # Send commands until success of becomes too healthy
+        while self.healthy:
+
+            # Send probe
+            error = self.driver.take_dry_calibration_reading()
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to take dry calibration reading, became too unhealthy")
+            return error
+
+        # Successfuly took dry calibration reading!
+        return Error(None)
+
+
+    def take_single_point_calibration_reading(self, value: float) -> Error:
+        """ Tries to take single point calibration reading until successful or 
+            becomes too unhealthy. """
+
+        # Send commands until success of becomes too healthy
+        while self.healthy:
+
+            # Send probe
+            error = self.driver.take_single_point_calibration_reading(value)
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to take single point calibration reading, became too unhealthy")
+            return error
+
+        # Successfuly took single point calibration reading!
+        return Error(None)
+
+
+    def take_low_point_calibration_reading(self, value: float) -> Error:
+        """ Tries to take low point calibration reading until successful or 
+            becomes too unhealthy. """
+
+        # Send commands until success of becomes too healthy
+        while self.healthy:
+
+            # Send probe
+            error = self.driver.take_low_point_calibration_reading(value)
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to take low point calibration reading, became too unhealthy")
+            return error
+
+        # Successfuly took low point calibration reading!
+        return Error(None)
+
+
+    def take_high_point_calibration_reading(self, value: float) -> Error:
+        """ Tries to take high point calibration reading until successful or 
+            becomes too unhealthy. """
+
+        # Send commands until success of becomes too healthy
+        while self.healthy:
+
+            # Send probe
+            error = self.driver.take_high_point_calibration_reading(value)
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to take high point calibration reading, became too unhealthy")
+            return error
+
+        # Successfuly took high point calibration reading!
+        return Error(None)
+
+
+    def clear_calibration_readings(self) -> Error:
+        """ Tries to clear calibration readings until successful or 
+            becomes too unhealthy. """
+
+        # Send commands until success of becomes too healthy
+        while self.healthy:
+
+            # Send probe
+            error = self.driver.clear_calibration_readings()
+
+            # Check for errors:
+            if error.exists():
+                self.health.report_failure()
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
+        if not self.healthy:
+            error.report("Sensor unable to clear calibration readings, became too unhealthy")
+            return error
+
+        # Successfuly cleared calibration readings!
         return Error(None)

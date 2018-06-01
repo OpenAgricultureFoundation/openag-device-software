@@ -6,17 +6,13 @@ try:
     # ... if running tests from project root
     sys.path.append(".")
     from device.peripherals.led_dac5578.manager import LEDDAC5578
-    # from device.peripherals.led_dac5578.events import LEDEventMixin
 except:
     # ... if running tests from same dir as events.py
     sys.path.append("../../../")
     from device.peripherals.led_dac5578.manager import LEDDAC5578
-    # from device.peripherals.led_dac5578.events import LEDEventMixin
 
 # Import device utilities
 from device.utilities.modes import Modes
-
-# Import peripheral managerLEDDAC5578
 
 # Import shared memory
 from device.state import State

@@ -11,15 +11,15 @@ from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import led array and events
 from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
-from device.peripherals.modules.atlas_ec.events import EventMixin
+from device.peripherals.modules.atlas_ec.events import AtlasECEvents
 
 
-class AtlasEC(PeripheralManager, EventMixin):
+class AtlasEC(PeripheralManager, AtlasECEvents):
     """ Manages an Atlas Scientific electrical conductivity sensor. """
 
-    # Initialize temperature compensation parameters
-    _temperature_threshold_celcius = 0.1
-    _prev_temperature_celcius = 0
+    # Initialize compensation temperature parameters
+    _temperature_threshold = 0.1 # celcius
+    _prev_temperature = 0 # celcius
 
 
     def __init__(self, *args, **kwargs):
@@ -33,13 +33,13 @@ class AtlasEC(PeripheralManager, EventMixin):
         self.electrical_conductivity_name = self.parameters["variables"]["sensor"]["electrical_conductivity_ms_cm"]
         self.temperature_name = self.parameters["variables"]["compensation"]["temperature_celcius"]
 
-        # Initialize driver
+        # Initialize sensor
         self.sensor = AtlasECSensor(
             name = self.name, 
             bus = self.parameters["communication"]["bus"], 
-            mux = self.parameters["communication"]["mux"],
+            mux = int(self.parameters["communication"]["mux"], 16),
             channel = self.parameters["communication"]["channel"],
-            address = self.parameters["communication"]["address"], 
+            address = int(self.parameters["communication"]["address"], 16), 
             simulate = self.simulate,
         )
 
@@ -52,7 +52,9 @@ class AtlasEC(PeripheralManager, EventMixin):
 
     @electrical_conductivity.setter
     def electrical_conductivity(self, value: float) -> None:
-        """ Sets electrical conductivity value in shared state. Does not update enironment from calibration mode. """
+        """ Sets electrical conductivity value in s    manager.initialize()
+    assert manager.mode == Mode.ERROR
+    assert Falsehared state. Does not update enironment from calibration mode. """
         self.state.set_peripheral_reported_sensor_value(self.name, self.electrical_conductivity_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(self.name, self.electrical_conductivity_name, value)
@@ -85,7 +87,7 @@ class AtlasEC(PeripheralManager, EventMixin):
         self.logger.debug("Initialized successfully")
 
 
-    def setup(self):
+    def setup(self) -> None:
         """ Sets up manager. Programs device operation parameters into 
             sensor driver circuit. """
         self.logger.debug("Setting up sensor")
@@ -104,14 +106,37 @@ class AtlasEC(PeripheralManager, EventMixin):
         self.logger.debug("Successfully setup!")   
 
 
-    def update(self):
+    def update(self) -> None:
         """ Updates sensor when in normal mode. """
-        self.update_compensation_temperature()
-        self.update_electrical_conductivity()
-        self.update_health()
-                
 
-    def reset(self):
+        # Update compensation temperature if new value
+        if self.new_compensation_temperature():
+
+            # Set compensation temperature
+            error = self.sensor.set_compensation_temperature()
+
+            # Check for errors
+            if error.exists():
+                error.report("Manager unable to update")
+                self.logger.warning(error.trace)
+                self.mode = Modes.ERROR
+                return
+
+        # Read electrical conductivity
+        ec, error = self.sensor.read_electrical_conductivity()
+
+        # Check for errors:
+        if error.exists():
+            error.report("Manager unable to update")
+            self.logger.warning(error.trace)
+            self.mode = Modes.ERROR
+            return
+
+        # Update health
+        self.health = self.sensor.health.percent
+
+
+    def reset(self) -> None:
         """ Resets sensor. """
         self.logger.info("Resetting")
 
@@ -125,65 +150,33 @@ class AtlasEC(PeripheralManager, EventMixin):
         self.logger.debug("Successfully reset!")
 
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """ Shuts down sensor. """
         self.logger.info("Shutting down sensor")
 
         # Clear reported values
         self.clear_reported_values()
 
-        # Shutdown sensor
-        self.sensor.shutdown()
 
-        # Send enable sleep command to sensor hardware
-        try:
-            self.enable_sleep_mode()
-            self.logger.debug("Successfully shutdown sensor")
-        except:
-            self.logger.exception("Sensor shutdown failed")
-            self.mode = Modes.ERROR
+    def new_compensation_temperature(self) -> bool:
+        """ Check if there is a new compensation temperature value. """
 
-
-
-    def update_electrical_conductivity(self):
-        """ Updates sensor electrical conductivity. """
-        self.logger.debug("Getting electrical conductivity")
-        try:
-            self.electrical_conductivity_ms_cm = self.read_electrical_conductivity_ms_cm()
-        except:
-            self.logger.exception("Unable to update electrical conductivity, bad reading")
-            self._missed_readings += 1
-
-
-    def update_compensation_temperature(self):
-        """ Updates sensor compensation temperature on if temperature value exists
-            in shared state. Only sets on new values greater than threshold. """
-
-        # Don't update compensation temperature from calibrate mode
+        # Check if calibrating
         if self.mode == Modes.CALIBRATE:
-            self.logger.debug("No need to update compensation temperature when in CALIBRATE mode")
-            return
+            return False
 
-        # Check if there is a temperature value in shared state to compensate with
-        temperature_celcius = self.temperature_celcius
-        if temperature_celcius == None:
-            self.logger.debug("No temperature value in shared state to compensate with")
-            return
+        # Check if compensation temperature exists
+        if self.temperature == None:
+            return False
 
-        # Check if temperature value on sensor requires an update
-        temperature_delta_celcius = abs(self._prev_temperature_celcius - temperature_celcius)
-        if temperature_delta_celcius < self._temperature_threshold_celcius:
-            self.logger.debug("Device temperature compensation does not require update, value within threshold")
-            return
+        # Check if temperature value sufficiently different
+        if abs(self.temperature - self._prev_temperature) < self._temperature_threshold:
+            return False
 
-        # Update sensor temperature compensation value
-        self._prev_temperature_celcius = temperature_celcius
-        try:
-            self.set_compensation_temperature_celcius(temperature_celcius)
-        except:
-            self.logger.warning("Unable to set sensor compensation temperature")
+        # New compensation temperature exists!
+        return True
 
 
-    def clear_reported_values(self):
+    def clear_reported_values(self) -> None:
         """ Clears reported values. """
         self.electrical_conductivity = None

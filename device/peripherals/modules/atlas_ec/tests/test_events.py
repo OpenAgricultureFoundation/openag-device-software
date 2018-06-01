@@ -27,6 +27,7 @@ peripheral_config = device_config["peripherals"][0]
 # Initialize state
 state = State()
 
+
 def test_init():
     manager = AtlasEC(
         name = "Test",
@@ -36,31 +37,52 @@ def test_init():
     )
 
 
-def test_initialize():
+def test_dry_calibration():
     manager = AtlasEC("Test", state, peripheral_config, simulate = True)
-    manager.initialize()
+    manager.mode = Modes.CALIBRATE
+    manager.process_event(
+        request = {"type": "Dry Calibration"}
+    )
     assert manager.mode == Modes.ERROR
+    assert manager.response["status"] == 500
 
 
-def test_setup():
+def test_single_point_calibration():
     manager = AtlasEC("Test", state, peripheral_config, simulate = True)
-    manager.setup()
+    manager.mode = Modes.CALIBRATE
+    manager.process_event(
+        request = {"type": "Single Point Calibration", "value": 7.0},
+    )
     assert manager.mode == Modes.ERROR
+    assert manager.response["status"] == 500
 
 
-def test_update():
+def test_low_point_calibration():
     manager = AtlasEC("Test", state, peripheral_config, simulate = True)
-    manager.update()
+    manager.mode = Modes.CALIBRATE
+    manager.process_event(
+        request = {"type": "Low Point Calibration", "value": 4.0}
+
+    )
     assert manager.mode == Modes.ERROR
+    assert manager.response["status"] == 500
 
 
-def test_reset():
+def test_high_point_calibration():
     manager = AtlasEC("Test", state, peripheral_config, simulate = True)
-    manager.reset()
-    assert True
+    manager.mode = Modes.CALIBRATE
+    manager.process_event(
+        request = {"type": "High Point Calibration", "value": 10.0},
+    )
+    assert manager.mode == Modes.ERROR
+    assert manager.response["status"] == 500
 
 
-def test_shutdown():
+def test_clear_calibration():
     manager = AtlasEC("Test", state, peripheral_config, simulate = True)
-    manager.shutdown()
-    assert True
+    manager.mode = Modes.CALIBRATE
+    manager.process_event(
+        request = {"type": "Clear Calibration"}
+    )
+    assert manager.mode == Modes.ERROR
+    assert manager.response["status"] == 500

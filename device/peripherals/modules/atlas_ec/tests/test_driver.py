@@ -110,3 +110,9 @@ def test_take_high_point_calibration_reading():
     driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
     error = driver.take_high_point_calibration_reading(10.0)
     assert error.exists() == True
+
+
+def test_clear_calibration_readings():
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    error = driver.clear_calibration_readings()
+    assert error.exists() == True

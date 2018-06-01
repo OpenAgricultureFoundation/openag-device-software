@@ -3,7 +3,7 @@ from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 
 
-class PeripheralEventMixin:
+class PeripheralEvents:
     """ Event mixin for peripherals. """
 
 

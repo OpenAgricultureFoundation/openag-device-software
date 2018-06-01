@@ -314,19 +314,19 @@ class AtlasECDriver(AtlasDriver):
         return Error(None)
 
 
-    def clear_calibration_data(self) -> Error:
-        """ Commands sensor to clear calibration data. """
-        self.logger.info("Clearing calibration data.")
+    def clear_calibration_readings(self) -> Error:
+        """ Commands sensor to clear calibration readings. """
+        self.logger.info("Clearing calibration readings.")
 
         # Send command
         _, error = self.process_command("Cal,clear", processing_seconds=0.3)
 
         # Check for errors
         if error.exists():
-            error.report("Driver unable to clear calibration data")
+            error.report("Driver unable to clear calibration readings")
             return error
 
-        # Successfully cleared calibration data!
+        # Successfully cleared calibration readings!
         return Error(None)
 
 
