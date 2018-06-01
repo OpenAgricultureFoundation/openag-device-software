@@ -23,10 +23,10 @@
                     }
                 },
                 "communication": {
-                    "bus": "2", 
+                    "bus": 2, 
                     "address": "0x64",
                     "mux": "0x77", 
-                    "channel": "4"
+                    "channel": 4
                 }
             }
         }

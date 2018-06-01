@@ -41,7 +41,7 @@ class AtlasECDriver(AtlasDriver):
     def read_electrical_conductivity(self) -> Tuple[float, Error]:
         """ Reads electrical conductivity from sensor, sets significant 
             figures based off error magnitude, returns value in mS/cm. """
-        self.logger.debug("Reading electrical conductivity value from hardware")
+        self.logger.info("Reading electrical conductivity value from hardware")
 
         # Get electrical conductivity reading from hardware
         # Assumes electrical conductivity is only enabled output
@@ -71,7 +71,7 @@ class AtlasECDriver(AtlasDriver):
 
     def set_compensation_temperature(self, temperature: float) -> Error:
         """ Commands sensor to set compensation temperature. """
-        self.logger.debug("Setting compensation temperature")
+        self.logger.info("Setting compensation temperature")
 
         # Send command
         command = "T,{}".format(temperature)
@@ -336,7 +336,7 @@ class AtlasECDriver(AtlasDriver):
             stamp matches. """
 
         # Read info from device
-        sensor_type, firmware_version, error = self.read_info()
+        self.sensor_type, self.firmware_version, error = self.read_info()
 
         # Check if simulating
         if self.simulate:
@@ -350,7 +350,7 @@ class AtlasECDriver(AtlasDriver):
             return error
 
         # Check for correct sensor type
-        if sensor_type != "EC":
+        if self.sensor_type != "EC":
             error = Error("Driver probe failed, incorrect sensor type. `{}` != `EC`".format(sensor_type))
             return error
 

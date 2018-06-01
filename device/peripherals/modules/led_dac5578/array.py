@@ -11,7 +11,7 @@ from device.utilities.health import Health
 from device.peripherals.utilities import light
 
 # Import led panel
-from device.peripherals.led_dac5578.panel import Panel
+from device.peripherals.modules.led_dac5578.panel import Panel
 
 
 class Array(object):

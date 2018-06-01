@@ -7,10 +7,10 @@ from device.utilities.modes import Modes
 from device.utilities.error import Error
 
 # Import peripheral event mixin
-from device.peripherals.classes.event_mixin import PeripheralEventMixin
+from device.peripherals.classes.peripheral_events import PeripheralEvents
 
 
-class EventMixin(PeripheralEventMixin):
+class Events(PeripheralEvents):
     """ Event mixin for led array. """
 
 

@@ -11,14 +11,14 @@ from device.utilities.error import Error
 from device.peripherals.utilities import light
 
 # Import peripheral parent class
-from device.peripherals.classes.manager import PeripheralManager
+from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import led array and events
-from device.peripherals.led_dac5578.array import Array
-from device.peripherals.led_dac5578.events import EventMixin
+from device.peripherals.modules.led_dac5578.array import Array
+from device.peripherals.modules.led_dac5578.events import Events
 
 
-class LEDDAC5578(PeripheralManager, EventMixin):
+class LEDDAC5578(PeripheralManager, Events):
     """ Manages an LED array controlled by a dac5578. """
 
     _prev_desired_intensity = None

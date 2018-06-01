@@ -5,20 +5,20 @@ import sys, os, json
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.led_dac5578.manager import LEDDAC5578
+    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578
 except:
     # ... if running tests from same dir as panel.py
-    sys.path.append("../../../")
-    from device.peripherals.led_dac5578.manager import LEDDAC5578
+    sys.path.append("../../../../")
+    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578
     
 # Import shared memory
 from device.state import State
 
 # Change directory for importing files
-os.chdir("../../../")
+os.chdir("../../../../")
 
 # Import test config
-device_config = json.load(open("device/peripherals/led_dac5578/tests/test_config.json"))
+device_config = json.load(open("device/peripherals/modules/led_dac5578/tests/config.json"))
 peripheral_config = device_config["peripherals"][0]
 
 # Set testing variable values

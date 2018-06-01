@@ -7,7 +7,7 @@
             "parameters": {
                "setup": {
                     "name": "Test Setup",
-                    "file_name": "led_dac5578/tests/test_setup"
+                    "file_name": "led_dac5578/tests/setup"
                 },
                 "variables": {
                     "sensor": {

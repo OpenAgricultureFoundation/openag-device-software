@@ -27,8 +27,9 @@ class AtlasECSensor:
             dunder_name = __name__,
         )
         
-        # Initialize name
+        # Initialize name and simulation status
         self.name = name
+        self.simulate = simulate
 
         # Initialize driver
         self.driver = AtlasECDriver(
@@ -51,6 +52,10 @@ class AtlasECSensor:
 
     def initialize(self) -> Error:
         """ Initializes sensor. """
+
+        # Check if simulating
+        if self.simulate:
+            return Error(None)
         
         # Probe driver
         error = self.probe()
@@ -66,13 +71,17 @@ class AtlasECSensor:
 
     def setup(self) -> Error:
         """ Sets up sensor. """
-        
+
+        # Check if simulating
+        if self.simulate:
+            return Error(None)
+
         # Enable led
         error = self.enable_led()
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Set probe type
@@ -80,22 +89,22 @@ class AtlasECSensor:
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Check if using new firmware
+
         if self.driver.firmware_version < 1.95:
             # Successfuly setup older firmware!
+            self.logger.warning("Using old circuit stamp (version {}), consider upgrading".format(self.driver.firmware_version))
             return Error(None)
-        else:
-            self.logger.warning("Using old circuit stamp, consider upgrading")
 
         # Enable protocol lock
         error = self.enable_protocol_lock()
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Enable electrical conductivity output
@@ -103,7 +112,7 @@ class AtlasECSensor:
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Disable total dissolved solids output
@@ -111,7 +120,7 @@ class AtlasECSensor:
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Disable salinity output
@@ -119,7 +128,7 @@ class AtlasECSensor:
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Disable specific gravity output
@@ -127,7 +136,7 @@ class AtlasECSensor:
 
         # Check for errors:
         if error.exists():
-            error.report("Sensor unable to be setup")
+            error.report("Sensor setup failed")
             return error
 
         # Setup successful!
@@ -166,6 +175,10 @@ class AtlasECSensor:
 
     def read_electrical_conductivity(self) -> Tuple[Optional[float], Error]:
         """ Tries to enable protocol lock until successful or becomes too unhealthy. """
+
+        # Check if simulating
+        if self.simulate:
+            return 2.1, Error(None)
 
         # Send commands until success or becomes too healthy
         while self.healthy:

@@ -581,10 +581,7 @@ class DeviceManager:
         # Get peripheral setups
         peripheral_setups = []
         # for filepath in glob.glob("device/peripherals/setups/*.json"):
-        for filepath in glob.glob("device/peripherals/*/setups/*.json"):
-            # if "test.json" in filepath:
-            #     self.logger.debug("Exculding peripheral setup file: {}".format(filepath))
-            #     continue
+        for filepath in glob.glob("device/peripherals/modules/*/setups/*.json"):
             self.logger.debug("Loading peripheral setup file: {}".format(filepath))
             peripheral_setups.append(json.load(open(filepath)))
 
@@ -705,7 +702,7 @@ class DeviceManager:
                 continue
 
             # Get peripheral module and class name
-            module_name = "device.peripherals.modules" + peripheral_setup_dict["module_name"]
+            module_name = "device.peripherals.modules." + peripheral_setup_dict["module_name"]
             class_name = peripheral_setup_dict["class_name"]
 
             # Import peripheral library

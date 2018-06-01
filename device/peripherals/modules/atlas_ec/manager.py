@@ -52,9 +52,7 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
 
     @electrical_conductivity.setter
     def electrical_conductivity(self, value: float) -> None:
-        """ Sets electrical conductivity value in s    manager.initialize()
-    assert manager.mode == Mode.ERROR
-    assert Falsehared state. Does not update enironment from calibration mode. """
+        """ Sets electrical conductivity value in shared state. Does not update enironment from calibration mode. """
         self.state.set_peripheral_reported_sensor_value(self.name, self.electrical_conductivity_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(self.name, self.electrical_conductivity_name, value)
@@ -97,7 +95,7 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
 
         # Check for errors:
         if error.exists():
-            error.report("Manager unable to be setup")
+            error.report("Manager setup failed")
             self.logger.warning(error.trace)
             self.mode = Modes.ERROR
             return
@@ -132,9 +130,10 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
             self.mode = Modes.ERROR
             return
 
-        # Update health
+        # Update ec and health
         self.health = self.sensor.health.percent
-
+        self.electrical_conductivity = ec
+        
 
     def reset(self) -> None:
         """ Resets sensor. """

@@ -1,7 +1,8 @@
 [
-  "tests/test_manager.py::test_init",
-  "tests/test_manager.py::test_initialize",
-  "tests/test_manager.py::test_setup",
-  "tests/test_manager.py::test_update",
-  "tests/test_manager.py::test_shutdown"
+  "tests/test_array.py::test_init",
+  "tests/test_array.py::test_initialize",
+  "tests/test_array.py::test_set_output",
+  "tests/test_array.py::test_set_outputs_standard_case",
+  "tests/test_array.py::test_set_outputs_unknown_channel_name",
+  "tests/test_array.py::test_set_spd"
 ]

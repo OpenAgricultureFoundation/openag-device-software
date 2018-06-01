@@ -127,10 +127,10 @@ class AtlasDriver:
 
     def read_info(self) -> Tuple[str, float, Error]:
         """ Gets info about sensor type and firmware version. Note: EC, 2.0. """
-        self.logger.debug("Reading info from hardware")
+        self.logger.info("Reading info from hardware")
 
         # Send command
-        response, error = self.process_command("i", processing_seconds=0.6) # was 0.3
+        response, error = self.process_command("i", processing_seconds=0.3)
 
         # Check for errors
         if error.exists():
@@ -149,7 +149,7 @@ class AtlasDriver:
 
     def read_status(self) -> Tuple[Optional[str], Optional[float], Error]:
         """ Reads status from device. """
-        self.logger.debug("Reading status from hardware")
+        self.logger.info("Reading status from hardware")
 
         # Send read status command to hardware
         response, error = self.process_command("Status", processing_seconds=0.3)

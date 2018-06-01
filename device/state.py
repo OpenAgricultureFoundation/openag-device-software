@@ -16,38 +16,17 @@ class State(object):
     controllers = {}  
 
 
+
     def set_environment_reported_sensor_value(self, sensor, variable, value, simple=False):
-        """ Report sensor value to environment sensor dict and reported sensor 
-            stats dict. """
+        """ Sets reported sensor value to shared environment state. """
+
+        # TODO: Clean this up
 
         # Force simple if value is None (don't want to try averaging `None`)
         if value == None:
             simple = True
 
         with threading.Lock():
-
-            # Verify dict structure
-            if "reported_sensor_stats" not in self.environment:
-                self.environment["reported_sensor_stats"] = {}
-            if "individual" not in self.environment["reported_sensor_stats"]:
-                self.environment["reported_sensor_stats"]["individual"] = {}
-            if "instantaneous" not in self.environment["reported_sensor_stats"]:
-                self.environment["reported_sensor_stats"]["individual"]["instantaneous"] = {}
-            if "average" not in self.environment["reported_sensor_stats"]["individual"]:
-                self.environment["reported_sensor_stats"]["individual"]["average"] = {}
-            if "group" not in self.environment["reported_sensor_stats"]:
-                self.environment["reported_sensor_stats"]["group"] = {}
-            if "instantaneous" not in self.environment["reported_sensor_stats"]["group"]:
-                self.environment["reported_sensor_stats"]["group"]["instantaneous"] = {}
-            if "average" not in self.environment["reported_sensor_stats"]["group"]:
-                self.environment["reported_sensor_stats"]["group"]["average"] = {}
-            if "sensor" not in self.environment:
-                self.environment["sensor"] = {}
-            if "desired" not in self.environment["sensor"]:
-                self.environment["sensor"]["desired"] = {}
-            if "reported" not in self.environment["sensor"]:
-                self.environment["sensor"]["reported"] = {}
-
             # Update individual instantaneous
             by_type = self.environment["reported_sensor_stats"]["individual"]["instantaneous"]
             if variable not in by_type:
@@ -83,7 +62,7 @@ class State(object):
                         total += by_var_i[sensor]
                         num_sensors += 1
                 new_value = total / num_sensors
-                self.environment[variable] = {"value": new_value, "samples": num_sensors}
+                self.environment["reported_sensor_stats"]["group"]["instantaneous"][variable] = {"value": new_value, "samples": num_sensors}
 
                 # Update group average
                 by_type = self.environment["reported_sensor_stats"]["group"]["average"]

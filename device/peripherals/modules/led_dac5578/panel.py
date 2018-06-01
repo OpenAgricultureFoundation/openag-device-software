@@ -11,7 +11,7 @@ from device.utilities.health import Health
 from device.peripherals.utilities import light
 
 # Import device drivers
-from device.drivers.dac5578 import DAC5578
+from device.peripherals.common.dac5578.driver import DAC5578
 
 
 class Panel:

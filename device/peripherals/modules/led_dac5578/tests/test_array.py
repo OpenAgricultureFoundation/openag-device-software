@@ -5,22 +5,22 @@ import sys, os, json
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.led_dac5578.array import Array
+    from device.peripherals.modules.led_dac5578.array import Array
 except:
     # ... if running tests from same dir as panel.py
-    sys.path.append("../../../")
-    from device.peripherals.led_dac5578.array import Array
+    sys.path.append("../../../../")
+    from device.peripherals.modules.led_dac5578.array import Array
 
 # Change directory for importing files
-os.chdir("../../../")
+os.chdir("../../../../")
 
 # Import test device config
-device_config = json.load(open("device/peripherals/led_dac5578/tests/test_config.json"))
+device_config = json.load(open("device/peripherals/modules/led_dac5578/tests/config.json"))
 peripheral_config = device_config["peripherals"][0]
 panel_configs = peripheral_config["parameters"]["communication"]["panels"]
 
 # Import test peripheral setup
-peripheral_setup = json.load(open("device/peripherals/led_dac5578/tests/test_setup.json"))
+peripheral_setup = json.load(open("device/peripherals/modules/led_dac5578/tests/setup.json"))
 channel_configs = peripheral_setup["channel_configs"]
 
 # Initialize test desired spd

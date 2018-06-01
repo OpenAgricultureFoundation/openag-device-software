@@ -5,17 +5,17 @@ import sys, os, json
 try:
 	# ... if running tests from project root
 	sys.path.append(".")
-	from device.peripherals.led_dac5578.panel import Panel
+	from device.peripherals.modules.led_dac5578.panel import Panel
 except:
 	# ... if running tests from same dir as panel.py
-	sys.path.append("../../../")
-	from device.peripherals.led_dac5578.panel import Panel
+	sys.path.append("../../../../")
+	from device.peripherals.modules.led_dac5578.panel import Panel
 
 # Change directory for importing files
-os.chdir("../../../")
+os.chdir("../../../../")
 
 # Import test peripheral setup
-peripheral_setup = json.load(open("device/peripherals/led_dac5578/tests/test_setup.json"))
+peripheral_setup = json.load(open("device/peripherals/modules/led_dac5578/tests/wsetup.json"))
 channel_configs = peripheral_setup["channel_configs"]
 
 
