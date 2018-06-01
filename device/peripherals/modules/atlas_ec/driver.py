@@ -1,5 +1,5 @@
 # Import standard python modules
-import time, threading
+import time
 from typing import Optional, Tuple
 
 # Import device comms
@@ -8,12 +8,13 @@ from device.comms.i2c import I2C
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.error import Error
+from device.utilities import math
 
 # Import parent class
-from device.drivers.classes.atlas import Atlas
+from device.peripherals.classes.atlas_driver import AtlasDriver
 
 
-class AtlasEC(Atlas):
+class AtlasECDriver(AtlasDriver):
     """ Driver for AtlasEC electrical conductivity sensor. """
 
     # Initialize sensor properties
@@ -22,45 +23,19 @@ class AtlasEC(Atlas):
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
                 channel: Optional[int] = None, simulate: bool = False) -> None:
-        """ Initializes AtlasEC. """
+        """ Initializes driver. """
 
-        # Initialize parameters
-        self.simulate = simulate
-
-        # Initialize logger
-        self.logger = Logger(
-            name = "AtlasEC-({})".format(name),
-            dunder_name = __name__,
-        )
-
-        # Initialize I2C
-        self.i2c = I2C(
-            name = "AtlasEC-{}".format(name),
-            bus = bus,
-            address = address,
+        super().__init__(
+            name = name, 
+            bus = bus, 
+            address = address, 
             mux = mux,
             channel = channel,
+            logger_name = "AtlasECDriver-{}".format(name), 
+            i2c_name = "AtlasEC-{}".format(name), 
+            dunder_name = __name__, 
             simulate = simulate,
         )
-
-
-    def read_info(self) -> Tuple[str, float, Error]:
-        """ Gets info about sensor type and firmware version. Note: EC, 2.0"""
-        self.logger.debug("Reading info from hardware")
-
-        # Send command
-        response, error = self.process_command("i", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Unable to read info")
-            return None, None, error
-
-        # Parse response
-        command, sensor_type, firmware_version = response_message.split(",")
-
-        # Successfully read info!
-        return sensor_type, float(firmware_version), Error(None)
 
 
     def read_electrical_conductivity(self) -> Tuple[float, Error]:
@@ -75,7 +50,7 @@ class AtlasEC(Atlas):
         # Check for errors
         if error.exists():
             error.report("Unable to read electrical conductivity")
-            return None, Error
+            return None, error
 
         # Parse response
         electrical_conductivity_us_cm = float(response)
@@ -85,7 +60,7 @@ class AtlasEC(Atlas):
 
         # Set significant figures based off error magnitude
         error_value = electrical_conductivity * self._electrical_conductivity_accuracy_percent / 100
-        error_magnitude = self.magnitude(error_value)
+        error_magnitude = math.magnitude(error_value)
         significant_figures = error_magnitude * -1
         electrical_conductivity = round(electrical_conductivity, significant_figures) # TODO: Does this work well on a BBB?
 
@@ -104,7 +79,7 @@ class AtlasEC(Atlas):
 
         # Check for error
         if error.exists():
-            error.append("Driver unable to set compensation temperature")
+            error.report("Driver unable to set compensation temperature")
             return error
 
         # Successfully set compensation temperature!
@@ -236,7 +211,7 @@ class AtlasEC(Atlas):
         self.logger.info("Disabling specific gravity output in hardware")
 
         # Send command
-        self.process_command("O,SG,0", processing_seconds=0.3)
+        _, error = self.process_command("O,SG,0", processing_seconds=0.3)
 
         # Check for errors
         if error.exists():
@@ -247,7 +222,7 @@ class AtlasEC(Atlas):
         return Error(None)
 
 
-    def set_probe_type(self, value) -> Error:
+    def set_probe_type(self, value: str) -> Error:
         """ Commands sensor to set probe type to value. """
         self.logger.info("Setting probe type in hardware")
 
@@ -360,7 +335,24 @@ class AtlasEC(Atlas):
             from sensor and verifies no communication errors and circuit 
             stamp matches. """
 
-        # TODO: Write function
+        # Read info from device
+        sensor_type, firmware_version, error = self.read_info()
+
+        # Check if simulating
+        if self.simulate:
+            self.sensor_type = "EC"
+            self.firmware_version = 2.0
+            error = Error(None)
+
+        # Check for errors:
+        if error.exists():
+            error.report("Driver probe failed")
+            return error
+
+        # Check for correct sensor type
+        if sensor_type != "EC":
+            error = Error("Driver probe failed, incorrect sensor type. `{}` != `EC`".format(sensor_type))
+            return error
 
         # Probe successful!
         return Error(None)

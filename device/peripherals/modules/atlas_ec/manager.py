@@ -1,18 +1,17 @@
 # Import standard python modules
-import threading
 from typing import Optional, Tuple, Dict
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.logger import Logger
+from device.utilities.health import Health
 from device.utilities.error import Error
 
 # Import peripheral parent class
-from device.peripherals.classes.manager import PeripheralManager
+from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import led array and events
-from device.drivers.atlas_ec import AtlasEC as AtlasECSensor
-from device.peripherals.atlas_ec.events import EventMixin
+from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
+from device.peripherals.modules.atlas_ec.events import EventMixin
 
 
 class AtlasEC(PeripheralManager, EventMixin):
@@ -32,15 +31,16 @@ class AtlasEC(PeripheralManager, EventMixin):
 
         # Initialize variable names
         self.electrical_conductivity_name = self.parameters["variables"]["sensor"]["electrical_conductivity_ms_cm"]
-        self.temperature_name = self.parameters["variables"]["sensor"]["temperature_celcius"]
+        self.temperature_name = self.parameters["variables"]["compensation"]["temperature_celcius"]
 
-        # Initialize sensor
-        self.sensor = AtlasECSensor(self.name, simulate=self.simulate)
-
-        # Initialize health
-        self.health_manager = Health(
-            minimum = 60,
-            updates = 5,
+        # Initialize driver
+        self.sensor = AtlasECSensor(
+            name = self.name, 
+            bus = self.parameters["communication"]["bus"], 
+            mux = self.parameters["communication"]["mux"],
+            channel = self.parameters["communication"]["channel"],
+            address = self.parameters["communication"]["address"], 
+            simulate = self.simulate,
         )
 
 
@@ -65,18 +65,18 @@ class AtlasEC(PeripheralManager, EventMixin):
 
 
     def initialize(self) -> None:
-        """ Initializes manager. """
+        """ Initializes manager."""
         self.logger.debug("Initializing")
 
-        # Set initial parameters
+        # Clear reported values
         self.clear_reported_values()
 
-        # Initialize array
+        # Initialize sensor
         error = self.sensor.probe()
 
         # Check for errors
         if error.exists():
-            error.report("Unable to initialize manager")
+            error.report("Manager unable to initialize")
             self.logger.warning(error.trace)
             self.mode = Modes.ERROR
             return
@@ -86,30 +86,22 @@ class AtlasEC(PeripheralManager, EventMixin):
 
 
     def setup(self):
-        """ Sets up sensor. Programs device operation parameters into 
-            sensor driver circuit. Transitions to NORMAL on completion 
-            and ERROR on error. """
+        """ Sets up manager. Programs device operation parameters into 
+            sensor driver circuit. """
         self.logger.debug("Setting up sensor")
 
-        try:
-            # Set firmware dependent settings
-            if self._firmware_version >= 1.95:
-                self.enable_protocol_lock()
-                self.enable_electrical_conductivity_output()
-                self.disable_total_dissolved_solids_output()
-                self.disable_salinity_output()
-                self.disable_specific_gravity_output()
-            else:
-                self.logger.warning("Using old circuit stamp, consider upgrading")
-            
-            # Set firmware independent settings
-            self.enable_led()
-            self.set_probe_type("1.0")
-            self.logger.debug("Successfully setup sensor")
-        except:
-            self.logger.Resetexception("Sensor setup failed")
-            self.mode = Modes.ERROR
+        # Setup sensor
+        error = self.sensor.setup()
 
+        # Check for errors:
+        if error.exists():
+            error.report("Manager unable to be setup")
+            self.logger.warning(error.trace)
+            self.mode = Modes.ERROR
+            return
+
+        # Successfully setup!
+        self.logger.debug("Successfully setup!")   
 
 
     def update(self):
@@ -119,45 +111,38 @@ class AtlasEC(PeripheralManager, EventMixin):
         self.update_health()
                 
 
-        def reset(self):
-            """ Resets sensor. """
-            self.logger.info("Resetting sensor")
+    def reset(self):
+        """ Resets sensor. """
+        self.logger.info("Resetting")
 
-            # Clear reported values
-            self.clear_reported_values()
-            self.logger.debug("Successfully reset sensor")
+        # Clear reported values
+        self.clear_reported_values()
 
+        # Reset sensor
+        self.sensor.reset()
 
-        def shutdown(self):
-            """ Shuts down sensor. """
-            self.logger.info("Shutting down sensor")
-
-            # Clear reported values
-            self.clear_reported_values()
-
-            # Send enable sleep command to sensor hardware
-            try:
-                self.enable_sleep_mode()
-                self.logger.debug("Successfully shutdown sensor")
-            except:
-                self.logger.exception("Sensor shutdown failed")
-                self.mode = Modes.ERROR
+        # Sucessfully reset!
+        self.logger.debug("Successfully reset!")
 
 
+    def shutdown(self):
+        """ Shuts down sensor. """
+        self.logger.info("Shutting down sensor")
 
-    def perform_initial_health_check(self, retry=False):
-        """ Performs initial health check by reading device status. """
+        # Clear reported values
+        self.clear_reported_values()
+
+        # Shutdown sensor
+        self.sensor.shutdown()
+
+        # Send enable sleep command to sensor hardware
         try:
-            sensor_type, self._firmware_version = self.read_info()
-            if sensor_type != "EC":
-                self.logger.critical("Incorrect circuit stamp. Expecting `EC`, received `{}`".format(sensor_type))
-                raise Exception("Incorrect circuit stamp type")
-            else:
-                self.logger.debug("Passed initial health check")
+            self.enable_sleep_mode()
+            self.logger.debug("Successfully shutdown sensor")
         except:
-            self.logger.exception("Failed initial health check")
-            self.error = Errors.FAILED_HEALTH_CHECK
+            self.logger.exception("Sensor shutdown failed")
             self.mode = Modes.ERROR
+
 
 
     def update_electrical_conductivity(self):
@@ -201,4 +186,4 @@ class AtlasEC(PeripheralManager, EventMixin):
 
     def clear_reported_values(self):
         """ Clears reported values. """
-        self.electrical_conductivity_ms_cm = None
+        self.electrical_conductivity = None

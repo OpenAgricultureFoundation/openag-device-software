@@ -705,7 +705,7 @@ class DeviceManager:
                 continue
 
             # Get peripheral module and class name
-            module_name = "device.peripherals." + peripheral_setup_dict["module_name"]
+            module_name = "device.peripherals.modules" + peripheral_setup_dict["module_name"]
             class_name = peripheral_setup_dict["class_name"]
 
             # Import peripheral library

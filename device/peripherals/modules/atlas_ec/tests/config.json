@@ -1,8 +1,4 @@
-{	
-    "format": "openag-standard-v1",
-    "name": "PFC EDU - Atlas EC Only",
-    "version": "1",
-    "uuid": "5e0610fe-a488-4f70-bb7b-8fe0830fccbb",
+{
     "peripherals": [
         {
             "name": "AtlasEC-1",
@@ -11,7 +7,7 @@
             "parameters": {
                 "setup": {
                     "name": "Atlas Electrical Conductivity Sensor EZO K1.0",
-                    "file_name": "atlas_ec_ezo_k1_0"
+                    "file_name": "atlas_ec/setups/k1_0"
                 },
                 "variables": {
                     "sensor": {
@@ -23,13 +19,12 @@
                     }
                 },
                 "communication": {
-                    "bus": "2", 
-                    "address": "0x64",
+                    "bus": 2, 
                     "mux": "0x77", 
-                    "channel": "4"
+                    "channel": 4,
+                    "address": "0x64"
                 }
             }
         }
-    ],
-    "controllers": null
+    ]
 }

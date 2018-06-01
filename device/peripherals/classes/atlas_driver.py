@@ -1,14 +1,42 @@
 # Import standard python modules
-import logging, time, threading
+import time
 from typing import Optional, Tuple, Dict
 
+# Import device comms
+from device.comms.i2c import I2C
+
 # Import device utilities
-from device.utilities.modes import Modes
+from device.utilities.logger import Logger
 from device.utilities.error import Error
+from device.utilities.modes import Modes
 
 
-class Atlas:
+class AtlasDriver:
     """ Parent class for atlas drivers. """
+
+    def __init__(self, name: str, bus: int, address: int, logger_name: str, 
+        i2c_name: str, dunder_name: str, mux: Optional[int] = None, 
+        channel: Optional[int] = None, simulate: bool = False) -> None:
+        """ Initializes AtlasEC. """
+
+        # Initialize parameters
+        self.simulate = simulate
+
+        # Initialize logger
+        self.logger = Logger(
+            name = logger_name,
+            dunder_name = dunder_name,
+        )
+
+        # Initialize I2C
+        self.i2c = I2C(
+            name = i2c_name,
+            bus = bus,
+            address = address,
+            mux = mux,
+            channel = channel,
+            simulate = simulate,
+        )
 
 
     def process_command(self, command_string: str, processing_seconds: float, 
@@ -97,6 +125,70 @@ class Atlas:
         return response_message, Error(None)
 
 
+    def read_info(self) -> Tuple[str, float, Error]:
+        """ Gets info about sensor type and firmware version. Note: EC, 2.0. """
+        self.logger.debug("Reading info from hardware")
+
+        # Send command
+        response, error = self.process_command("i", processing_seconds=0.6) # was 0.3
+
+        # Check for errors
+        if error.exists():
+            error.report("Unable to read info")
+            return None, None, error
+
+        # Parse response
+        command, sensor_type, firmware_version = response.split(",")
+
+        # Store firmware version
+        self.firmware_version = float(firmware_version)
+
+        # Successfully read info!
+        return sensor_type, self.firmware_version, Error(None)
+
+
+    def read_status(self) -> Tuple[Optional[str], Optional[float], Error]:
+        """ Reads status from device. """
+        self.logger.debug("Reading status from hardware")
+
+        # Send read status command to hardware
+        response, error = self.process_command("Status", processing_seconds=0.3)
+
+        # Check for errors
+        if error.exists():
+            error.report("Driver unable to read status")
+            return None, None, error
+
+        # Check for empty response message
+        if response == None:
+            error = Error("Driver unable to read status, received empty response message")
+            return None, None, error
+
+        # Parse response message
+        command, code, voltage = response.split(",")
+        self.logger.debug("Current voltage: {}V".format(voltage))
+
+        # Break out restart code
+        if code == "P":
+            prev_restart_reason = "Powered off"
+            self.logger.debug("Device previous restart due to powered off")
+        elif code == "S":
+            prev_restart_reason = "Software reset"
+            self.logger.debug("Device previous restart due to software reset")
+        elif code == "B":
+            prev_restart_reason = "Browned out"
+            self.logger.critical("Device browned out on previous restart")
+        elif code == "W":
+            prev_restart_reason = "Watchdog"
+            self.logger.debug("Device previous restart due to watchdog")
+        elif code == "U":
+            self.prev_restart_reason = "Unknown"
+            self.logger.warning("Device previous restart due to unknown")
+
+        # Successfully read status!
+        return prev_restart_reason, voltage, error
+
+
     def enable_protocol_lock(self) -> Error:
         """ Commands sensor to enable protocol lock. """
         self.logger.debug("Enabling protocol lock in hardware")
@@ -113,7 +205,7 @@ class Atlas:
         return Error(None)
 
 
-    def disable_protocol_lock_disable(self) -> Error:
+    def disable_protocol_lock(self) -> Error:
         """ Commands sensor to disable protocol lock. """
         self.logger.debug("Disabling protocol lock in hardware")
 
@@ -177,50 +269,3 @@ class Atlas:
         # Successfully enabled sleep mode!
         return Error(None)
 
-
-    def read_status(self) -> Tuple[Dict, Error]:
-        """ Reads status from device. """
-        self.logger.debug("Reading status from hardware")
-
-        # Send read status command to hardware
-        response_message, error = self.process_command("Status", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to read status")
-            return None, error
-
-        # Check for empty response message
-        if response_message == None:
-            error = Error("Driver unable to read status, received empty response message")
-            return None, error
-
-        # Parse response message
-        command, code, voltage = response_message.split(",")
-        self.logger.debug("Current voltage: {}V".format(voltage))
-
-        # Break out restart code
-        if code == "P":
-            prev_restart_reason = "Powered off"
-            self.logger.debug("Device previous restart due to powered off")
-        elif code == "S":
-            prev_restart_reason = "Software reset"
-            self.logger.debug("Device previous restart due to software reset")
-        elif code == "B":
-            prev_restart_reason = "Browned out"
-            self.logger.critical("Device browned out on previous restart")
-        elif code == "W":
-            prev_restart_reason = "Watchdog"
-            self.logger.debug("Device previous restart due to watchdog")
-        elif code == "U":
-            self.prev_restart_reason = "Unknown"
-            self.logger.warning("Device previous restart due to unknown")
-
-        # Build status dict
-        status = {
-            "prev_restart_reason": prev_restart_reason,
-            "voltage": voltage
-        }
-
-        # Successfully read status!
-        return status, error

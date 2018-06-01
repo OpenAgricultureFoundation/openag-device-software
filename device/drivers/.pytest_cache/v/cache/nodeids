@@ -1,4 +1,0 @@
-[
-  "tests/test_atlas_ec.py::test_init",
-  "tests/test_atlas_ec.py::test_read_info"
-]

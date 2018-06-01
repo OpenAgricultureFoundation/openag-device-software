@@ -1,11 +1,20 @@
+# Import standard python modules
+from typing import Optional, Tuple, List, Dict
+import time
+
+# Import device utilities
+from device.utilities.modes import Modes
+from device.utilities.error import Error
+
+# Import peripheral event mixin
+from device.peripherals.classes.peripheral_events import PeripheralEventMixin
 
 
+class EventMixin(PeripheralEventMixin):
+    """ Event mixin for led array. """
 
 
-
-
-
- 	def process_peripheral_specific_event(self, request):
+    def process_peripheral_specific_event(self, request):
         """ Processes and event. Gets request parameters, executes request, returns 
             response. """
 

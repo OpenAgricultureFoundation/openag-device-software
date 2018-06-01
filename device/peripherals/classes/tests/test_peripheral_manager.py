@@ -5,11 +5,11 @@ import sys, os
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.classes.manager import PeripheralManager
+    from device.peripherals.classes.peripheral_manager import PeripheralManager
 except:
     # ... if running tests from same dir as events.py
     sys.path.append("../../../")
-    from device.peripherals.classes.manager import PeripheralManager
+    from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import device utilities
 from device.utilities.logger import Logger

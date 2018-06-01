@@ -134,7 +134,7 @@ class I2C(object):
             with threading.Lock():
                 self.logger.debug("Writing: {}".format(bytes_))
                 fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
-                self.fw.write(bytes)
+                self.fw.write(bytes_)
                 return Error(None)
         except IOError:
             return Error("I2C unable to write raw due to IO error")

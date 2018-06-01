@@ -413,7 +413,7 @@ class PeripheralManager:
         """ Loads setup dict from setup filename parameter. """
         self.logger.debug("Loading setup file")
         file_name = self.parameters["setup"]["file_name"]
-        setup_dict = json.load(open("device/peripherals/" + file_name + ".json"))
+        setup_dict = json.load(open("device/peripherals/modules/" + file_name + ".json"))
         return setup_dict
 
 
