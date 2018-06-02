@@ -1,8 +1,4 @@
-{	
-    "format": "openag-standard-v1",
-    "name": "PFC EDU - Atlas DO Only",
-    "version": "1",
-    "uuid": "98d44119-331b-4019-9533-db731ecee672",
+{
     "peripherals": [
         {
             "name": "AtlasDO-1",
@@ -32,6 +28,5 @@
                 }
             }
         }
-    ],
-    "controllers": null
+    ]
 }

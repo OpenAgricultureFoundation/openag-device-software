@@ -1,8 +1,8 @@
 {
-	"name":  "Atlas Dissolved Oxygen Sensor EZO",
+	"name":  "Atlas Dissolved Oxygen Sensor Default",
 	"version": "1",
 	"uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
-	"module_name": "atlas_do",
+	"module_name": "atlas_do.manager",
 	"class_name": "AtlasDO",
 	"parameters": {
 		"variables": {

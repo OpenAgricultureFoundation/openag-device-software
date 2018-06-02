@@ -172,7 +172,7 @@ class AtlasECSensor(AtlasSensorMixin):
 
         # Check for correct sensor type
         if self.sensor_type != "EC":
-            error = Error("Sensor probe failed, incorrect sensor type. `{}` != `EC`".format(sensor_type))
+            error = Error("Sensor probe failed, incorrect sensor type. `{}` != `EC`".format(self.sensor_type))
             return error
 
         # Successfuly probed!

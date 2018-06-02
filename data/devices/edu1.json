@@ -36,8 +36,8 @@
             "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
             "parameters": {
                 "setup": {
-                    "name": "Atlas Electrical Conductivity Sensor EZO K1.0",
-                    "file_name": "atlas_ec/setups/k1_0"
+                    "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
+                    "file_name": "atlas_ec/setups/default_k1_0"
                 },
                 "variables": {
                     "sensor": {
@@ -62,7 +62,7 @@
             "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
             "parameters": {
                 "setup": {
-                    "name": "Atlas Potential Hydrogen Sensor EZO",
+                    "name": "Atlas Potential Hydrogen Sensor Default",
                     "file_name": "atlas_ph/setups/default"
                 },
                 "variables": {
@@ -79,6 +79,34 @@
                     "mux": "0x77", 
                     "channel": 4, 
                     "address": "0x63"
+                }
+            }
+        },
+        {
+            "name": "AtlasDO-1",
+            "type": "AtlasDO",
+            "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Dissolved Oxygen Sensor Default",
+                    "file_name": "atlas_do/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "dissolved_oxygen_mg_l": "water_dissolved_oxygen_mg_l"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": "water_temperature_celcius",
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm",
+                        "pressure_kpa": "water_pressure_kpa"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 4, 
+                    "address": "0x61"
                 }
             }
         }

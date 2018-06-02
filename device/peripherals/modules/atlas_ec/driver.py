@@ -15,7 +15,7 @@ from device.peripherals.classes.atlas_driver import AtlasDriver
 
 
 class AtlasECDriver(AtlasDriver):
-    """ Driver for AtlasEC electrical conductivity sensor. """
+    """ Driver for atlas electrical conductivity sensor. """
 
     # Initialize sensor properties
     _electrical_conductivity_accuracy_percent = 2

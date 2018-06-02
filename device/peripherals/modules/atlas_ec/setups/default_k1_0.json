@@ -1,5 +1,5 @@
 {
-    "name":  "Atlas Electrical Conductivity Sensor EZO K1.0",
+    "name":  "Atlas Electrical Conductivity Sensor Default (K1.0)",
     "version": "1",
     "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
     "module_name": "atlas_ec.manager",

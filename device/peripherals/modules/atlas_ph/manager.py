@@ -71,6 +71,9 @@ class AtlasPH(PeripheralManager, AtlasPHEvents):
         # Clear reported values
         self.clear_reported_values()
 
+        # Initialize health
+        self.health = self.sensor.health.percent
+
         # Initialize sensor
         error = self.sensor.probe()
 
@@ -98,6 +101,7 @@ class AtlasPH(PeripheralManager, AtlasPHEvents):
             error.report("Manager setup failed")
             self.logger.warning(error.trace)
             self.mode = Modes.ERROR
+            self.health = self.sensor.health.percent
             return
 
         # Successfully setup!
@@ -118,6 +122,7 @@ class AtlasPH(PeripheralManager, AtlasPHEvents):
                 error.report("Manager unable to update")
                 self.logger.warning(error.trace)
                 self.mode = Modes.ERROR
+                self.health = self.sensor.health.percent
                 return
 
         # Read potential hydrogen
@@ -128,6 +133,7 @@ class AtlasPH(PeripheralManager, AtlasPHEvents):
             error.report("Manager unable to update")
             self.logger.warning(error.trace)
             self.mode = Modes.ERROR
+            self.health = self.sensor.health.percent
             return
 
         # Update ec and health

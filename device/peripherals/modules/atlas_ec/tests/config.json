@@ -7,7 +7,7 @@
             "parameters": {
                 "setup": {
                     "name": "Atlas Electrical Conductivity Sensor EZO K1.0",
-                    "file_name": "atlas_ec/setups/k1_0"
+                    "file_name": "atlas_ec/setups/default_k1_0"
                 },
                 "variables": {
                     "sensor": {

@@ -10,31 +10,37 @@ from device.utilities.error import Error
 from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import led array and events
-from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
-from device.peripherals.modules.atlas_ec.events import AtlasECEvents
+from device.peripherals.modules.atlas_do.sensor import AtlasDOSensor
+from device.peripherals.modules.atlas_do.events import AtlasDOEvents
 
 
-class AtlasEC(PeripheralManager, AtlasECEvents):
-    """ Manages an Atlas Scientific electrical conductivity sensor. """
+class AtlasDO(PeripheralManager, AtlasDOEvents):
+    """ Manages an Atlas Scientific dissolved oxygen sensor. """
 
-    # Initialize compensation temperature parameters
+    # Initialize variable parameters
     _temperature_threshold = 0.1 # celcius
     _prev_temperature = 0
-
+    _pressure_threshold = 0.1 # kPa
+    _prev_pressure = 0
+    _electrical_conductivity_threshold = 0.1 # mS/cm
+    _prev_electrical_conductivity = 0
+    
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates manager Instantiates parent class, and initializes 
+        """ Instantiates manager. Instantiates parent class, and initializes 
             sensor variable name. """
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.electrical_conductivity_name = self.parameters["variables"]["sensor"]["electrical_conductivity_ms_cm"]
+        self.dissolved_oxygen_name = self.parameters["variables"]["sensor"]["dissolved_oxygen_mg_l"]
         self.temperature_name = self.parameters["variables"]["compensation"]["temperature_celcius"]
+        self.pressure_name = self.parameters["variables"]["compensation"]["pressure_kpa"]
+        self.electrical_conductivity_name = self.parameters["variables"]["compensation"]["electrical_conductivity_ms_cm"]
 
         # Initialize sensor
-        self.sensor = AtlasECSensor(
+        self.sensor = AtlasDOSensor(
             name = self.name, 
             bus = self.parameters["communication"]["bus"], 
             mux = int(self.parameters["communication"]["mux"], 16),
@@ -45,23 +51,35 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
 
 
     @property
-    def electrical_conductivity(self) -> None:
-        """ Gets electrical conductivity value. """
-        return self.state.get_peripheral_reported_sensor_value(self.name, self.electrical_conductivity_name)
+    def dissolved_oxygen(self) -> None:
+        """ Gets dissolved oxygen value. """
+        return self.state.get_peripheral_reported_sensor_value(self.name, self.dissolved_oxygen_name)
 
 
-    @electrical_conductivity.setter
-    def electrical_conductivity(self, value: float) -> None:
-        """ Sets electrical conductivity value in shared state. Does not update enironment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(self.name, self.electrical_conductivity_name, value)
+    @dissolved_oxygen.setter
+    def dissolved_oxygen(self, value: float) -> None:
+        """ Sets dissolved oxygen value in shared state. Does not update enironment from calibration mode. """
+        self.state.set_peripheral_reported_sensor_value(self.name, self.dissolved_oxygen_name, value)
         if self.mode != Modes.CALIBRATE:
-            self.state.set_environment_reported_sensor_value(self.name, self.electrical_conductivity_name, value)
+            self.state.set_environment_reported_sensor_value(self.name, self.dissolved_oxygen_name, value)
 
 
     @property
     def temperature(self) -> None:
         """ Gets compensation temperature value from shared environment state. """
         return self.state.get_environment_reported_sensor_value(self.temperature_name)
+
+
+    @property
+    def pressure(self) -> None:
+        """ Gets compensation pressure value from shared environment state. """
+        return self.state.get_environment_reported_sensor_value(self.pressure_name)
+
+
+    @property
+    def electrical_conductivity(self) -> None:
+        """ Gets compensation electrical conductivity value from shared environment state. """
+        return self.state.get_environment_reported_sensor_value(self.electrical_conductivity_name)
 
 
     def initialize(self) -> None:
@@ -71,11 +89,11 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
         # Clear reported values
         self.clear_reported_values()
 
-        # Initialize health
-        self.health = self.sensor.health.percent
-
         # Initialize sensor
         error = self.sensor.probe()
+
+        # Initialize health
+        self.health = self.sensor.health.percent
 
         # Check for errors
         if error.exists():
@@ -124,8 +142,36 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
                 self.health = self.sensor.health.percent
                 return
 
-        # Read electrical conductivity
-        ec, error = self.sensor.read_electrical_conductivity()
+        # Update compensation pressure if new value
+        if self.new_compensation_pressure():
+
+            # Set compensation temperature
+            error = self.sensor.set_compensation_pressure(self.pressure)
+
+            # Check for errors
+            if error.exists():
+                error.report("Manager unable to update")
+                self.logger.warning(error.trace)
+                self.mode = Modes.ERROR
+                self.health = self.sensor.health.percent
+                return
+
+        # Update compensation electrical conductivity if new value
+        if self.new_compensation_electrical_conductivity():
+
+            # Set compensation temperature
+            error = self.sensor.set_compensation_electrical_conductivity(self.electrical_conductivity)
+
+            # Check for errors
+            if error.exists():
+                error.report("Manager unable to update")
+                self.logger.warning(error.trace)
+                self.mode = Modes.ERROR
+                self.health = self.sensor.health.percent
+                return
+
+        # Read dissolved oxygen
+        do, error = self.sensor.read_dissolved_oxygen()
 
         # Check for errors:
         if error.exists():
@@ -137,8 +183,8 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
 
         # Update ec and health
         self.health = self.sensor.health.percent
-        self.electrical_conductivity = ec
-        
+        self.dissolved_oxygen = do
+
 
     def reset(self) -> None:
         """ Resets sensor. """
@@ -181,6 +227,44 @@ class AtlasEC(PeripheralManager, AtlasECEvents):
         return True
 
 
+    def new_compensation_pressure(self) -> bool:
+        """ Check if there is a new compensation pressure value. """
+
+        # Check if calibrating
+        if self.mode == Modes.CALIBRATE:
+            return False
+
+        # Check if compensation temperature exists
+        if self.pressure == None:
+            return False
+
+        # Check if pressure value sufficiently different
+        if abs(self.pressure - self._prev_pressure) < self._pressure_threshold:
+            return False
+
+        # New compensation pressure exists!
+        return True
+
+
+    def new_compensation_electrical_conductivity(self) -> bool:
+        """ Check if there is a new compensation electrical conductivity value. """
+
+        # Check if calibrating
+        if self.mode == Modes.CALIBRATE:
+            return False
+
+        # Check if compensation temperature exists
+        if self.electrical_conductivity == None:
+            return False
+
+        # Check if electrical conductivity value sufficiently different
+        if abs(self.electrical_conductivity - self._prev_electrical_conductivity) < self._electrical_conductivity_threshold:
+            return False
+
+        # New compensation electrical conductivity exists!
+        return True
+
+
     def clear_reported_values(self) -> None:
         """ Clears reported values. """
-        self.electrical_conductivity = None
+        self.dissolved_oxygen = None

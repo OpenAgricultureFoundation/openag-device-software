@@ -64,6 +64,12 @@ def test_disable_specific_gravity_output():
     assert error.exists() == True
 
 
+def test_probe():
+    sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
+    error = sensor.probe()
+    assert error.exists() == True
+
+
 def test_initialize():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.initialize()

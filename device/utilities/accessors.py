@@ -26,4 +26,4 @@ def get_peripheral_config(peripheral_configs: List, name: str) -> Dict:
     for peripheral_config in peripheral_configs:
         if peripheral_config["name"] == name:
             return peripheral_config
-    return None
+    raise KeyError("`{}` not in peripheral configs".format(name))

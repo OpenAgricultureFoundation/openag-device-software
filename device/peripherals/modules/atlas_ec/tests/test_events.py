@@ -8,21 +8,19 @@ try:
     from device.peripherals.modules.atlas_ec.manager import AtlasEC
 except:
     # ... if running tests from same dir as manger.py
-    sys.path.append("../../../../")
+    os.chdir("../../../../")
     from device.peripherals.modules.atlas_ec.manager import AtlasEC
 
 # Import device utilities
 from device.utilities.modes import Modes
+from device.utilities.accessors import get_peripheral_config
     
 # Import shared memory
 from device.state import State
 
-# Change directory for importing files
-os.chdir("../../../../")
-
 # Import test config
 device_config = json.load(open("device/peripherals/modules/atlas_ec/tests/config.json"))
-peripheral_config = device_config["peripherals"][0]
+peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-1")
 
 # Initialize state
 state = State()
