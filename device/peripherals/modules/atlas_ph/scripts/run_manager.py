@@ -8,11 +8,12 @@ try:
     from device.peripherals.modules.atlas_ph.manager import AtlasPH
 except:
     # ... if running tests from same dir as manager.py
-    sys.path.append("../../../../")
+    os.chdir("../../../../")
     from device.peripherals.modules.atlas_ph.manager import AtlasPH
 
 # Import device utilities
 from device.utilities.logger import Logger
+from device.utilities.accessors import get_peripheral_config
 
 # Import device state
 from device.state import State
@@ -20,24 +21,22 @@ from device.state import State
 # Initialize state
 state = State()
 
-# Change directory for importing files
-os.chdir("../../../../")
-
-# Setup parser
+# Setup parser basics
 parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Configs
+# Setup parser configs
 parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
 
-# Functions
+# Setup parser functions
 parser.add_argument("--update", action="store_true", help="updates sensor")
 parser.add_argument("--reset", action="store_true", help="resets sensor")
 parser.add_argument("--shutdown", action="store_true", help="shuts down sensor")
 
 
+# Run main
 if __name__ == "__main__":
 
     # Read in arguments
@@ -51,17 +50,22 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize core
+    # Initialize config
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
-        device_config = json.load(open("data/devices/edu1.json"))
-        peripheral_config = device_config["peripherals"][2] # TODO make a function to pull out from name
-        manager = AtlasPH("EDU1", state, peripheral_config)
-        manager.initialize()
-        manager.setup()
+        filepath = "data/devices/edu1.json"
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
+
+    # Initialize manager
+    device_config = json.load(open(filepath))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-1")
+    manager = AtlasPH("AtlasPH-1", state, peripheral_config)
+    print("Initializing...")
+    manager.initialize()
+    print("Setting up...")
+    manager.setup()
 
     # Check for loop
     if args.loop:
@@ -74,17 +78,17 @@ if __name__ == "__main__":
 
         # Check if updating
         if args.update:
-            print("Updating")
+            print("Updating...")
             manager.update()
 
         # Check if resetting
         if args.reset:
-            print("Resetting")
+            print("Resetting...")
             manager.reset()
 
         # Check if updating
         if args.shutdown:
-            print("Shutting down")
+            print("Shutting down...")
             manager.shutdown()
 
         # Check for new command if loop enabled

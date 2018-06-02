@@ -1,5 +1,5 @@
 # Import standard python libraries
-import sys, argparse, logging, time, shlex
+import sys, os, json, argparse, logging, time, shlex
 
 # Import driver module...
 try:
@@ -8,27 +8,29 @@ try:
     from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 except:
     # ... if running tests from same dir as driver.py
-    sys.path.append("../../../../")
+    os.chdir("../../../../")
     from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 # Import device utilities
 from device.utilities.logger import Logger
+from device.utilities.accessors import get_peripheral_config
 
-# Setup parser
+# Setup parser basics
 parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Configs
+# Setup parser configs
 parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
 
-# Functions
+# Setup parser functions
 parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
 parser.add_argument("-s", "--read-status", action="store_true", help="read sensor status")
 parser.add_argument("-r", "--read-ph", action="store_true", help="read pH")
 
 
+# Run main
 if __name__ == "__main__":
 
     # Read in arguments
@@ -42,13 +44,24 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize core
+    # Initialize config
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
-        driver = AtlasPHDriver("Test", 2, 0x64, mux=0x77, channel=4)
+        filepath = "data/devices/edu1.json"
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
+
+    # Initialize driver
+    device_config = json.load(open(filepath))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-1")        
+    driver = AtlasPHDriver(
+        name = "AtlasPH-1", 
+        bus = peripheral_config["parameters"]["communication"]["bus"], 
+        address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
+        mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 
+        channel = peripheral_config["parameters"]["communication"]["channel"],
+    )
 
     # Check for loop
     if args.loop:
