@@ -6,7 +6,7 @@
 	"class_name": "T6713",
 	"parameters": {
 		"variables": {
-			"sensors": {
+			"sensor": {
 				"co2": {
 					"name": {
 						"type": "string",
@@ -14,7 +14,7 @@
 					}
 				}
 			},
-			"actuators": null
+			"actuator": null
 		},	
 		"communication": {
 			"bus": {
@@ -60,7 +60,7 @@
 	],
 	"info": {
 		"variables": {
-			"sensors":{
+			"sensor":{
 				"co2": {
 					"range": [400, 2000],
 			        "accuracy": {
@@ -69,7 +69,7 @@
 			        "response_time_seconds": 180
 				}
 			},
-			"actuators": null
+			"actuator": null
 		}
 	}
 }

@@ -16,11 +16,36 @@ class State(object):
     controllers = {}  
 
 
-
     def set_environment_reported_sensor_value(self, sensor, variable, value, simple=False):
         """ Sets reported sensor value to shared environment state. """
 
         # TODO: Clean this up
+
+        # Ensure valid dict structure
+        if "reported_sensor_stats" not in self.environment:
+            self.environment["reported_sensor_stats"] = {}
+
+        # Individual
+        if "individual" not in self.environment["reported_sensor_stats"]:
+            self.environment["reported_sensor_stats"]["individual"] = {}
+        if "instantaneous" not in self.environment["reported_sensor_stats"]["individual"]:
+            self.environment["reported_sensor_stats"]["individual"]["instantaneous"] = {}
+        if "average" not in self.environment["reported_sensor_stats"]["individual"]:
+            self.environment["reported_sensor_stats"]["individual"]["average"] = {}
+
+        # Group
+        if "group" not in self.environment["reported_sensor_stats"]:
+            self.environment["reported_sensor_stats"]["group"] = {}
+        if "instantaneous" not in self.environment["reported_sensor_stats"]["group"]:
+            self.environment["reported_sensor_stats"]["group"]["instantaneous"] = {}
+        if "average" not in self.environment["reported_sensor_stats"]["group"]:
+            self.environment["reported_sensor_stats"]["group"]["average"] = {}
+
+        # Sensor
+        if "sensor" not in self.environment:
+            self.environment["sensor"] = {}
+        if "reported" not in self.environment["sensor"]:
+            self.environment["sensor"]["reported"] = {}
 
         # Force simple if value is None (don't want to try averaging `None`)
         if value == None:

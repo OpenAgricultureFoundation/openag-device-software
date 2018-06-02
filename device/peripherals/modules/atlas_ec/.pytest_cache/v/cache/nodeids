@@ -1,8 +1,17 @@
 [
-  "tests/test_events.py::test_init",
-  "tests/test_events.py::test_dry_calibration",
-  "tests/test_events.py::test_single_point_calibration",
-  "tests/test_events.py::test_low_point_calibration",
-  "tests/test_events.py::test_high_point_calibration",
-  "tests/test_events.py::test_clear_calibration"
+  "tests/test_sensor.py::test_init",
+  "tests/test_sensor.py::test_read_electrical_conductivity",
+  "tests/test_sensor.py::test_set_compensation_temperature",
+  "tests/test_sensor.py::test_set_probe_type",
+  "tests/test_sensor.py::test_enable_electrical_conductivity_output",
+  "tests/test_sensor.py::test_disable_total_dissolved_solids_output",
+  "tests/test_sensor.py::test_disable_salinity_output",
+  "tests/test_sensor.py::test_disable_specific_gravity_output",
+  "tests/test_sensor.py::test_initialize",
+  "tests/test_sensor.py::test_setup",
+  "tests/test_sensor.py::test_take_dry_calibration_reading",
+  "tests/test_sensor.py::test_single_point_calibration_reading",
+  "tests/test_sensor.py::test_take_low_point_calibration_reading",
+  "tests/test_sensor.py::test_take_high_point_calibration_reading",
+  "tests/test_sensor.py::test_clear_calibration_readings"
 ]

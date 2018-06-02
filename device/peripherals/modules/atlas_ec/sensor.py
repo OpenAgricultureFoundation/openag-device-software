@@ -7,14 +7,14 @@ from device.utilities.logger import Logger
 from device.utilities.error import Error
 from device.utilities.health import Health
 
-# Import peripheral utilities
-from device.peripherals.utilities import light
-
 # Import device drivers
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 
+# Import atlas sensor mixin
+from device.peripherals.classes.atlas_sensor import AtlasSensorMixin
 
-class AtlasECSensor:
+
+class AtlasECSensor(AtlasSensorMixin):
     """ Atlas EC sensor instance. """
 
     def __init__(self, name: str, bus: int, address: str, mux: str = None, 
@@ -43,11 +43,6 @@ class AtlasECSensor:
 
         # Initialize health metrics
         self.health = Health(updates = 5, minimum = 60)
-
-
-    @property
-    def healthy(self):
-        return self.health.healthy
 
 
     def initialize(self) -> Error:
@@ -93,10 +88,9 @@ class AtlasECSensor:
             return error
 
         # Check if using new firmware
-
-        if self.driver.firmware_version < 1.95:
+        if self.firmware_version < 1.95:
             # Successfuly setup older firmware!
-            self.logger.warning("Using old circuit stamp (version {}), consider upgrading".format(self.driver.firmware_version))
+            self.logger.warning("Using old circuit stamp (version {}), consider upgrading".format(self.firmware_version))
             return Error(None)
 
         # Enable protocol lock
@@ -154,10 +148,17 @@ class AtlasECSensor:
         # Probe until successful or unhealthy
         while self.healthy:
 
-            # Send probe
-            error = self.driver.probe()
+            # Read driver info
+            self.sensor_type, self.firmware_version, error = self.driver.read_info()
 
-            # Check for errors:
+           # Check if simulating
+            if self.simulate:
+               self.sensor_type = "EC"
+               self.firmware_version = 2.0
+               error = Error(None)
+               break
+
+           # Check for errors:
             if error.exists():
                 self.health.report_failure()
             else:
@@ -169,12 +170,17 @@ class AtlasECSensor:
             error.report("Sensor probe failed, became too unhealthy")
             return error
 
-        # Successfuly initialized!
+        # Check for correct sensor type
+        if self.sensor_type != "EC":
+            error = Error("Sensor probe failed, incorrect sensor type. `{}` != `EC`".format(sensor_type))
+            return error
+
+        # Successfuly probed!
         return Error(None)
 
 
     def read_electrical_conductivity(self) -> Tuple[Optional[float], Error]:
-        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
+        """ Tries to read electrical conductivity until successful or becomes too unhealthy. """
 
         # Check if simulating
         if self.simulate:
@@ -203,7 +209,7 @@ class AtlasECSensor:
 
 
     def set_compensation_temperature(self, value: float) -> Error:
-        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
+        """ Tries to set compensation temperature until successful or becomes too unhealthy. """
 
         # Send commands until success or becomes too healthy
         while self.healthy:
@@ -227,33 +233,8 @@ class AtlasECSensor:
         return Error(None)
 
 
-    def enable_led(self) -> Error:
-        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
-
-        # Send commands until success or becomes too healthy
-        while self.healthy:
-
-            # Send command
-            error = self.driver.enable_led()
-
-            # Check for errors:
-            if error.exists():
-                self.health.report_failure()
-            else:
-                self.health.report_success()
-                break
-
-        # Check if sensor became unhealthy
-        if not self.healthy:
-            error.report("Sensor unable to enable led, became too unhealthy")
-            return error
-
-        # Successfuly enabled led!
-        return Error(None)
-
-
     def set_probe_type(self, value: str) -> Error:
-        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
+        """ Tries to set probe type until successful or becomes too unhealthy. """
 
         # Send commands until success of becomes too healthy
         while self.healthy:
@@ -274,31 +255,6 @@ class AtlasECSensor:
             return error
 
         # Successfuly set probe type!
-        return Error(None)
-
-
-    def enable_protocol_lock(self) -> Error:
-        """ Tries to enable protocol lock until successful or becomes too unhealthy. """
-
-        # Send commands until success of becomes too healthy
-        while self.healthy:
-
-            # Send probe
-            error = self.driver.enable_protocol_lock()
-
-            # Check for errors:
-            if error.exists():
-                self.health.report_failure()
-            else:
-                self.health.report_success()
-                break
-
-        # Check if sensor became unhealthy
-        if not self.healthy:
-            error.report("Sensor unable to enable protocol lock, became too unhealthy")
-            return error
-
-        # Successfuly enabled protocol lock!
         return Error(None)
 
 

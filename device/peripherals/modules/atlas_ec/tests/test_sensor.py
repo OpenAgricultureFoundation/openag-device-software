@@ -24,8 +24,8 @@ def test_init():
 def test_read_electrical_conductivity():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     ec, error = sensor.read_electrical_conductivity()
-    assert error.exists() == True
-    assert ec == None
+    assert error.exists() == False
+    assert ec == 2.1
 
 
 def test_set_compensation_temperature():
@@ -34,21 +34,9 @@ def test_set_compensation_temperature():
     assert error.exists() == True
 
 
-def test_enable_led():
-    sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
-    error = sensor.enable_led()
-    assert error.exists() == True
-
-
 def test_set_probe_type():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.set_probe_type("1.0")
-    assert error.exists() == True
-
-
-def test_enable_protocol_lock():
-    sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
-    error = sensor.enable_protocol_lock()
     assert error.exists() == True
 
 
@@ -79,13 +67,13 @@ def test_disable_specific_gravity_output():
 def test_initialize():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.initialize()
-    assert error.exists() == True
+    assert error.exists() == False
 
 
 def test_setup():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.setup()
-    assert error.exists() == True
+    assert error.exists() == False
 
 
 def test_take_dry_calibration_reading():
@@ -94,7 +82,7 @@ def test_take_dry_calibration_reading():
     assert error.exists() == True
 
 
-def test_single_point_dry_calibration_reading():
+def test_single_point_calibration_reading():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.take_single_point_calibration_reading(7.0)
     assert error.exists() == True

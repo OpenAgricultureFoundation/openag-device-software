@@ -328,31 +328,3 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully cleared calibration readings!
         return Error(None)
-
-
-    def probe(self) -> Error:
-        """ Probes sensor to quickly check functionality. Reads info 
-            from sensor and verifies no communication errors and circuit 
-            stamp matches. """
-
-        # Read info from device
-        self.sensor_type, self.firmware_version, error = self.read_info()
-
-        # Check if simulating
-        if self.simulate:
-            self.sensor_type = "EC"
-            self.firmware_version = 2.0
-            error = Error(None)
-
-        # Check for errors:
-        if error.exists():
-            error.report("Driver probe failed")
-            return error
-
-        # Check for correct sensor type
-        if self.sensor_type != "EC":
-            error = Error("Driver probe failed, incorrect sensor type. `{}` != `EC`".format(sensor_type))
-            return error
-
-        # Probe successful!
-        return Error(None)

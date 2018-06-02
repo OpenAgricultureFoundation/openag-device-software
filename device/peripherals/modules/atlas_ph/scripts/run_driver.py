@@ -5,11 +5,11 @@ import sys, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
+    from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 except:
     # ... if running tests from same dir as driver.py
     sys.path.append("../../../../")
-    from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
+    from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -26,7 +26,7 @@ parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config
 # Functions
 parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
 parser.add_argument("-s", "--read-status", action="store_true", help="read sensor status")
-parser.add_argument("-r", "--read-ec", action="store_true", help="read electrical conductivity")
+parser.add_argument("-r", "--read-ph", action="store_true", help="read pH")
 
 
 if __name__ == "__main__":
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # Initialize core
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
-        driver = AtlasECDriver("Test", 2, 0x64, mux=0x77, channel=4)
+        driver = AtlasPHDriver("Test", 2, 0x64, mux=0x77, channel=4)
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
@@ -80,13 +80,13 @@ if __name__ == "__main__":
                 print("Voltage: {}".format(voltage))
 
         # Check if reading electrical conductivity
-        elif args.read_ec:
-            print("Reading electrical conductivity")
-            ec, error = driver.read_electrical_conductivity()
+        elif args.read_ph:
+            print("Reading pH")
+            ph, error = driver.read_potential_hydrogen()
             if error.exists():
                 print("Error: {}".format(error.trace))
             else:
-                print("EC: {} mS/cm".format(ec))
+                print("pH: {}".format(ph))
 
         # Check for new command if loop enabled
         if loop:

@@ -1,5 +1,5 @@
 # Import standard python modules
-import numpy
+import numpy, math
 
 
 def magnitude(x):
