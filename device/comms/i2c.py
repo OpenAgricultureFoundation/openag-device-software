@@ -9,8 +9,7 @@ from device.utilities.error import Error
 from device.comms.utilities.i2c import *
 
 
-# TODO: test if atlas sensors work with single file manager
-# TODO: handle more exception types
+# TODO: Handle more exception types / report smarter error messages
 
 
 class I2C(object):
@@ -46,9 +45,7 @@ class I2C(object):
 
         # Initialize file managers
         if not self.simulate:
-            self.fr = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
-            self.fw = io.open("/dev/i2c-" + str(bus), "wb", buffering=0)
-            self.frw = io.open("/dev/i2c-" + str(bus), "r+b", buffering=0)
+            self.device = io.open("/dev/i2c-" + str(bus), "r+b", buffering=0)
 
 
     def __del__(self):
@@ -105,8 +102,8 @@ class I2C(object):
         try:
             with threading.Lock():
                 self.logger.debug("Writing: {}".format(byte_string))
-                fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
-                self.fw.write(byte_array)
+                fcntl.ioctl(self.device, self.I2C_SLAVE, self.address)
+                self.device.write(byte_array)
                 return Error(None)
         except IOError:
             error = Error("I2C write failed due to IO error")
@@ -133,8 +130,8 @@ class I2C(object):
         try:
             with threading.Lock():
                 self.logger.debug("Writing: {}".format(bytes_))
-                fcntl.ioctl(self.fw, self.I2C_SLAVE, self.address)
-                self.fw.write(bytes_)
+                fcntl.ioctl(self.device, self.I2C_SLAVE, self.address)
+                self.device.write(bytes_)
                 return Error(None)
         except IOError:
             return Error("I2C unable to write raw due to IO error")
@@ -162,8 +159,8 @@ class I2C(object):
         # I2c is not simulated!
         try:
             with threading.Lock():
-                fcntl.ioctl(self.fr, self.I2C_SLAVE, self.address)
-                raw_bytes = self.fr.read(num_bytes)
+                fcntl.ioctl(self.device, self.I2C_SLAVE, self.address)
+                raw_bytes = self.device.read(num_bytes)
                 byte_array = bytearray(raw_bytes)
                 byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
                 self.logger.debug("Read: {}".format(byte_string))
@@ -192,8 +189,10 @@ class I2C(object):
         # I2c is not simulated!
         try:
             with threading.Lock():
-                self.fr = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
-                bytes_ = self.fr.read(num_bytes)
+
+                # TODO: Why are we opening this?
+                self.device = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
+                bytes_ = self.device.read(num_bytes)
                 self.logger.debug("Read raw: {}".format(bytes_))
                 return bytes_, Error(None)
         except IOError:
@@ -226,7 +225,7 @@ class I2C(object):
                     (self.address, 0, 1, pointer(reg)), # write cmd register
                     (self.address, self.I2C_M_RD, 1, pointer(result)) # read 1 byte as result
                 ])
-                fcntl.ioctl(self.frw.fileno(), self.I2C_RDWR, request)
+                fcntl.ioctl(self.device.fileno(), self.I2C_RDWR, request)
                 byte_ = result.value
                 self.logger.debug("Read register: {}".format(byte_))
                 return byte_, Error(None)
@@ -258,8 +257,8 @@ class I2C(object):
             with threading.Lock():
                 self.logger.debug("Setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
                     self.mux, self.channel, channel_byte))
-                fcntl.ioctl(self.fw, self.I2C_SLAVE, self.mux)
-                self.fw.write(byte_array)
+                fcntl.ioctl(self.device, self.I2C_SLAVE, self.mux)
+                self.device.write(byte_array)
                 return Error(None)
         except IOError:
             return Error("I2C unable to set mux due to IO error")
@@ -268,6 +267,4 @@ class I2C(object):
     def close(self):
         """ Closes device. """
         if not self.simulate:
-            self.fw.close()
-            self.fr.close()
-            self.frw.close()
+            self.device.close()
