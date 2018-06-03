@@ -5,11 +5,11 @@ import sys, os, json, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
+    from device.peripherals.modules.sht25.sensor import SHT25Sensor
 except:
     # ... if running tests from same dir as sensor.py
     os.chdir("../../../../")
-    from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
+    from device.peripherals.modules.sht25.sensor import SHT25Sensor
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -25,11 +25,13 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
 
 # Setup parser functions
-parser.add_argument("-i", "--initialize", action="store_true", help="initialize sensor")
-parser.add_argument("-s", "--setup", action="store_true", help="setup sensor")
-parser.add_argument("-p", "--probe", action="store_true", help="probe sensor")
-parser.add_argument("-r", "--reset", action="store_true", help="reset sensor")
-parser.add_argument("-ec", "--read-ec", action="store_true", help="read EC")
+parser.add_argument("--initialize", action="store_true", help="initialize sensor")
+parser.add_argument("--setup", action="store_true", help="setup sensor")
+parser.add_argument("--probe", action="store_true", help="probe sensor")
+parser.add_argument("--reset", action="store_true", help="reset sensor")
+parser.add_argument("--temperature", action="store_true", help="read temperature")
+parser.add_argument("--humidity", action="store_true", help="read humidity")
+
 
 # Run main
 if __name__ == "__main__":
@@ -55,9 +57,9 @@ if __name__ == "__main__":
 
     # Initialize sensor
     device_config = json.load(open(filepath))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-1")
-    sensor = AtlasECSensor(
-        name = "AtlasPH-1", 
+    peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-1")
+    sensor = SHT25Sensor(
+        name = "SHT25-1", 
         bus = peripheral_config["parameters"]["communication"]["bus"], 
         address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
         mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 
@@ -106,14 +108,23 @@ if __name__ == "__main__":
             sensor.reset()
             print("Sensor reset!")
 
-        # Check if reading electrical conductivity
-        elif args.read_ec:
-            print("Reading EC")
-            ec, error = sensor.read_electrical_conductivity()
+        # Check if reading temperature
+        elif args.temperature:
+            print("Reading temperature")
+            temperature, error = sensor.read_temperature()
             if error.exists():
                 print("Error: {}".format(error.trace))
             else:
-                print("EC: {} mS/cm".format(ec))
+                print("Temperature: {} C".format(temperature))
+
+        # Check if reading humidity
+        elif args.humidity:
+            print("Reading humidity")
+            humidity, error = sensor.read_humidity()
+            if error.exists():
+                print("Error: {}".format(error.trace))
+            else:
+                print("Humidity: {} %".format(humidity))
 
         # Check for new command if loop enabled
         if loop:

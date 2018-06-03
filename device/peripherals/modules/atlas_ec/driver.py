@@ -49,7 +49,7 @@ class AtlasECDriver(AtlasDriver):
 
         # Check for errors
         if error.exists():
-            error.report("Unable to read electrical conductivity")
+            error.report("Driver unable to read electrical conductivity")
             return None, error
 
         # Parse response

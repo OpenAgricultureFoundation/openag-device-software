@@ -38,7 +38,7 @@ class PeripheralManager:
 
         # Initialize logger
         self.logger = Logger(
-            name = self.name,
+            name = "Manager({})".format(self.name),
             dunder_name = __name__,
         )
 
@@ -245,7 +245,7 @@ class PeripheralManager:
             # Update every sampling interval
             self.last_update_interval_seconds = time.time() - self.last_update_seconds
             if self.sampling_interval_seconds < self.last_update_interval_seconds:
-                self.logger.debug("Updating peripheral, time_delta_seconds = {:.3f}".format(self.last_update_interval_seconds))
+                self.logger.debug("Updating peripheral, delta: {:.3f}".format(self.last_update_interval_seconds))
                 self.last_update_seconds = time.time()
                 self.update()
 

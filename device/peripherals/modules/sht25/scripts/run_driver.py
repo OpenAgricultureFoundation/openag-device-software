@@ -1,35 +1,34 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import sensor module...
+# Import driver module...
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
+    from device.peripherals.modules.sht25.driver import SHT25Driver
 except:
-    # ... if running tests from same dir as sensor.py
+    # ... if running tests from same dir as driver.py
     os.chdir("../../../../")
-    from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
+    from device.peripherals.modules.sht25.driver import SHT25Driver
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug sensor")
+parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Setup parser cnfigs
+# Setup parser configs
 parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
 
 # Setup parser functions
-parser.add_argument("-i", "--initialize", action="store_true", help="initialize sensor")
-parser.add_argument("-s", "--setup", action="store_true", help="setup sensor")
-parser.add_argument("-p", "--probe", action="store_true", help="probe sensor")
-parser.add_argument("-r", "--reset", action="store_true", help="reset sensor")
-parser.add_argument("-ec", "--read-ec", action="store_true", help="read EC")
+parser.add_argument("--temperature", action="store_true", help="read temperature")
+parser.add_argument("--humidity", action="store_true", help="read humidity")
+parser.add_argument("--user-register", action="store_true", help="read user register")
+
 
 # Run main
 if __name__ == "__main__":
@@ -45,6 +44,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
+
     # Initialize config
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
@@ -53,11 +53,11 @@ if __name__ == "__main__":
         print("Please specify a device configuraion")
         sys.exit(0)
 
-    # Initialize sensor
+    # Initialize driver
     device_config = json.load(open(filepath))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-1")
-    sensor = AtlasECSensor(
-        name = "AtlasPH-1", 
+    peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-1")        
+    driver = SHT25Driver(
+        name = "SHT25-1", 
         bus = peripheral_config["parameters"]["communication"]["bus"], 
         address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
         mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 
@@ -73,47 +73,32 @@ if __name__ == "__main__":
     # Loop forever
     while True:
 
-        # Check if initializing
-        if args.initialize:
-            print("Initalizing sensor")
-            error = sensor.initialize()
+        # Check if reading temperature
+        if args.temperature:
+            print("Reading temperature")
+            temperature, error = driver.read_temperature()
             if error.exists():
                 print("Error: {}".format(error.trace))
             else:
-                print("Sensor initialized!")
+                print("Temperature: {} C".format(temperature))
 
-        # Check if setting up
-        if args.setup:
-            print("Setting up sensor")
-            error = sensor.initialize()
+        # Check if reading humidity
+        elif args.humidity:
+            print("Reading humidity")
+            humidity, error = driver.read_humidity()
             if error.exists():
                 print("Error: {}".format(error.trace))
             else:
-                print("Sensor setup!")
+                print("Humidity: {} %".format(humidity))
 
-        # Check if probing
-        elif args.probe:
-            print("Probing sensor")
-            error = sensor.probe()
+        # Check if reading user register
+        elif args.user_register:
+            print("Reading user register")
+            user_register, error = driver.read_user_register()
             if error.exists():
                 print("Error: {}".format(error.trace))
             else:
-                print("Sensor is active!")
-
-        # Check if resetting
-        elif args.reset:
-            print("Resetting sensor")
-            sensor.reset()
-            print("Sensor reset!")
-
-        # Check if reading electrical conductivity
-        elif args.read_ec:
-            print("Reading EC")
-            ec, error = sensor.read_electrical_conductivity()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("EC: {} mS/cm".format(ec))
+                print("User Register: {}".format(user_register))
 
         # Check for new command if loop enabled
         if loop:

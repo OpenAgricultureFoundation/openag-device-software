@@ -11,11 +11,11 @@ from device.peripherals.classes.peripheral_events import PeripheralEvents
 
 
 class AtlasECEvents(PeripheralEvents):
-    """ Event mixin for led array. """
+    """ Event mixin for atlas electrical conductivity sensor. """
 
 
     def process_peripheral_specific_event(self, request: Dict) -> Dict:
-        """ Processes and event. Gets request parameters, executes request, returns 
+        """ Processes an event. Gets request parameters, executes request, returns 
             response. """
 
         # Execute request

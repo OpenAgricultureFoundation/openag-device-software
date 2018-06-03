@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "PC EDU",
+    "name": "PFC EDU",
     "version": "1",
     "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
     "peripherals": [
@@ -107,6 +107,29 @@
                     "mux": "0x77", 
                     "channel": 4, 
                     "address": "0x61"
+                }
+            }
+        },
+        {
+            "name": "SHT25-1",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor Default",
+                    "file_name": "sht25/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x40"
                 }
             }
         }
