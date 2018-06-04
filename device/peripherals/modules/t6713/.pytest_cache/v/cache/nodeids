@@ -1,0 +1,8 @@
+[
+  "tests/test_manager.py::test_init",
+  "tests/test_manager.py::test_initialize",
+  "tests/test_manager.py::test_setup",
+  "tests/test_manager.py::test_update",
+  "tests/test_manager.py::test_reset",
+  "tests/test_manager.py::test_shutdown"
+]

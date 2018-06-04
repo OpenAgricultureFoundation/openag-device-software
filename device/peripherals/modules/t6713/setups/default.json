@@ -2,7 +2,7 @@
 	"name":  "T6713 Co2 Sensor",
 	"version": "1",
 	"uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
-	"module_name": "t6713",
+	"module_name": "t6713.manager",
 	"class_name": "T6713",
 	"parameters": {
 		"variables": {
@@ -27,11 +27,11 @@
 			},
 			"channel": {
 				"type": "integer",
-				"default": 1
+				"default": 2
 			},
 			"address": {
 				"type": "string",
-				"default": "0x40"
+				"default": "0x15"
 			}
 		}
 	},
