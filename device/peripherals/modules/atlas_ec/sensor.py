@@ -23,7 +23,7 @@ class AtlasECSensor(AtlasSensorMixin):
 
         # Initialize logger
         self.logger = Logger(
-            name = "AtlasECSensor({})".format(name),
+            name = "Sensor({})".format(name),
             dunder_name = __name__,
         )
         
@@ -181,10 +181,13 @@ class AtlasECSensor(AtlasSensorMixin):
 
     def read_electrical_conductivity(self) -> Tuple[Optional[float], Error]:
         """ Tries to read electrical conductivity until successful or becomes too unhealthy. """
+        self.logger.debug("Reading electrical conductivity")
 
         # Check if simulating
         if self.simulate:
-            return 2.1, Error(None)
+            ec = 2.1
+            self.logger.info("EC: {} mS/cm".format(ec))
+            return ec, Error(None)
 
         # Send commands until success or becomes too healthy
         while self.healthy:
@@ -205,6 +208,7 @@ class AtlasECSensor(AtlasSensorMixin):
             return None, error
 
         # Successfuly read electrical conductivity!
+        self.logger.info("EC: {} mS/cm".format(ec))
         return ec, Error(None)
 
 
@@ -235,6 +239,7 @@ class AtlasECSensor(AtlasSensorMixin):
 
     def set_probe_type(self, value: str) -> Error:
         """ Tries to set probe type until successful or becomes too unhealthy. """
+        self.logger.info("Setting probe type: `{}`".format(value))
 
         # Send commands until success of becomes too healthy
         while self.healthy:

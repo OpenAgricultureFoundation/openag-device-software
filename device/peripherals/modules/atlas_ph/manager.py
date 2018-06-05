@@ -53,6 +53,7 @@ class AtlasPH(PeripheralManager, AtlasPHEvents):
     @potential_hydrogen.setter
     def potential_hydrogen(self, value: float) -> None:
         """ Sets potential hydrogen value in shared state. Does not update enironment from calibration mode. """
+        self.logger.info("pH: {}".format(value))
         self.state.set_peripheral_reported_sensor_value(self.name, self.potential_hydrogen_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(self.name, self.potential_hydrogen_name, value)

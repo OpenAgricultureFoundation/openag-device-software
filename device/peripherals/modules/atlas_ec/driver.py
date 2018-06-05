@@ -31,8 +31,8 @@ class AtlasECDriver(AtlasDriver):
             address = address, 
             mux = mux,
             channel = channel,
-            logger_name = "AtlasECDriver-{}".format(name), 
-            i2c_name = "AtlasEC-{}".format(name), 
+            logger_name = "Driver({})".format(name), 
+            i2c_name = name, 
             dunder_name = __name__, 
             simulate = simulate,
         )
@@ -41,7 +41,7 @@ class AtlasECDriver(AtlasDriver):
     def read_electrical_conductivity(self) -> Tuple[float, Error]:
         """ Reads electrical conductivity from sensor, sets significant 
             figures based off error magnitude, returns value in mS/cm. """
-        self.logger.info("Reading electrical conductivity value from hardware")
+        self.logger.debug("Reading electrical conductivity")
 
         # Get electrical conductivity reading from hardware
         # Assumes electrical conductivity is only enabled output
@@ -65,7 +65,7 @@ class AtlasECDriver(AtlasDriver):
         electrical_conductivity = round(electrical_conductivity, significant_figures) # TODO: Does this work well on a BBB?
 
         # Successfully read electical conductivity!
-        self.logger.debug("electrical_conductivity = {}".format(electrical_conductivity))
+        self.logger.debug("Electrical Conductivity: {}".format(electrical_conductivity))
         return electrical_conductivity, Error(None)
 
 
@@ -89,7 +89,7 @@ class AtlasECDriver(AtlasDriver):
     def enable_electrical_conductivity_output(self) -> Error:
         """ Commands sensor to enable electrical conductivity output when 
             reporting readings. """
-        self.logger.info("Enabling electrical conductivity output in hardware")
+        self.logger.info("Enabling electrical conductivity output")
 
         # Send command
         _, error = self.process_command("O,EC,1", processing_seconds=0.3)
@@ -106,14 +106,14 @@ class AtlasECDriver(AtlasDriver):
     def disable_electrical_conductivity_output(self) -> Error:
         """ Commands sensor to disable electrical conductivity output when 
             reporting readings. """
-        self.logger.info("Disabling electrical conductivity output in hardware")
+        self.logger.info("Disabling electrical conductivity")
 
         # Send command
         _, error = self.process_command("O,EC,0", processing_seconds=0.3)
 
         # Check for errors
         if error.exists():
-            error.report("Driver unable to disable electrical conductivity output")
+            error.report("Driver unable to disable electrical conductivity")
             return error
 
         # Successfully disabled electrical conductivity output!
@@ -123,7 +123,7 @@ class AtlasECDriver(AtlasDriver):
     def enable_total_dissolved_solids_output(self) -> Error:
         """ Commands sensor to enable total dissolved solids output when 
             reporting readings. """
-        self.logger.info("Enabling total dissolved solids output in hardware")
+        self.logger.info("Enabling total dissolved solids output")
 
         # Send command
         _, error = self.process_command("O,TDS,1", processing_seconds=0.3)
@@ -140,7 +140,7 @@ class AtlasECDriver(AtlasDriver):
     def disable_total_dissolved_solids_output(self) -> Error:
         """ Commands sensor to disable total dissolved solids output when 
             reporting readings. """
-        self.logger.info("Disabling total dissolved solids output in hardware")
+        self.logger.info("Disabling total dissolved solids output")
 
         # Send command
         _, error = self.process_command("O,TDS,0", processing_seconds=0.3)
@@ -157,7 +157,7 @@ class AtlasECDriver(AtlasDriver):
     def enable_salinity_output(self) -> Error:
         """ Commands sensor to enable salinity output when reporting 
             readings. """
-        self.logger.info("Enabling salinity output in hardware")
+        self.logger.info("Enabling salinity output")
 
         # Send command
         _, error = self.process_command("O,S,1", processing_seconds=0.3)
@@ -174,7 +174,7 @@ class AtlasECDriver(AtlasDriver):
     def disable_salinity_output(self) -> Error:
         """ Commands sensor to disable salinity output when reporting 
             readings. """
-        self.logger.info("Disabling salinity output in hardware")
+        self.logger.info("Disabling salinity output")
 
         # Send command
         _, error = self.process_command("O,S,0", processing_seconds=0.3)
@@ -191,7 +191,7 @@ class AtlasECDriver(AtlasDriver):
     def enable_specific_gravity_output(self) -> Error:
         """ Commands sensor to enable specific gravity output when reporting
             readings. """
-        self.logger.info("Enabling specific gravity output in hardware")
+        self.logger.info("Enabling specific gravity output")
 
         # Send command
         _, error = self.process_command("O,SG,1", processing_seconds=0.3)

@@ -48,6 +48,7 @@ class T6713(PeripheralManager, T6713Events):
     @carbon_dioxide.setter
     def carbon_dioxide(self, value: float) -> None:
         """ Sets carbon dioxide value in shared state. Does not update enironment from calibration mode. """
+        self.logger.debug("Co2: {} ppm".format(value))
         self.state.set_peripheral_reported_sensor_value(self.name, self.carbon_dioxide_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(self.name, self.carbon_dioxide_name, value)

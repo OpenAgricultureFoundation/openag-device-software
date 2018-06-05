@@ -48,6 +48,7 @@ class SHT25(PeripheralManager, SHT25Events):
     @temperature.setter
     def temperature(self, value: float) -> None:
         """ Sets temperature value in shared state. Does not update environment from calibration mode. """
+        self.logger.info("Temperature: {} C".format(value))
         self.state.set_peripheral_reported_sensor_value(self.name, self.temperature_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(self.name, self.temperature_name, value)
@@ -62,6 +63,7 @@ class SHT25(PeripheralManager, SHT25Events):
     @humidity.setter
     def humidity(self, value: float) -> None:
         """ Sets humidity value in shared state. Does not update environment from calibration mode. """
+        self.logger.info("Humidity: {} %".format(value))
         self.state.set_peripheral_reported_sensor_value(self.name, self.humidity_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(self.name, self.humidity_name, value)
