@@ -5,17 +5,17 @@
 ```
 Currently tested:
  - Beaglebone black | Stretch IoT | Debian 9.3
- - Should work on most *nix systems
+ - Should work on most *nix systems (OSX and Ubuntu are our development platforms)
 ```
 
 ### Clone repo
 ```
-git clone https://github.com/jakerye/openag-brain-quartz.git
+git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
 
 ### Go to repo directory
 ```
-cd openag-brain-quartz
+cd openag-device-software
 ```
 
 ### Run install script
@@ -23,12 +23,7 @@ cd openag-brain-quartz
 sudo ./install.sh
 ```
 
-## Create the database
-```
-./create_database.sh
-```
-
-## Set up a Python Environment
+## Set up a Python Environment and create our database
 ```
 ./setup_python.sh
 ```

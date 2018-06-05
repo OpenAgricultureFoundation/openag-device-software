@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, threading
+import logging, time, threading, random
 
 # Import peripheral parent class
 from device.peripherals.classes.peripheral import Peripheral
@@ -159,7 +159,7 @@ class SHT25(Peripheral):
         # Check for simulated sensor
         if self.simulate:
             self.logger.debug("Simulating reading temperature value from hardware")
-            temperature_celcius = 22.2
+            temperature_celcius = 22.2 + random.random()  # vary test value!
             self.logger.debug("temperature_celcius = {}".format(temperature_celcius))
             return temperature_celcius
        
@@ -194,7 +194,7 @@ class SHT25(Peripheral):
         # Check for simulated sensor
         if self.simulate:
             self.logger.debug("Simulating reading humidity value from hardware")
-            humidity_percent = 33.3
+            humidity_percent = 33.3 + random.random()  # vary test value!
             self.logger.debug("humidity_percent = {}".format(humidity_percent))
             return humidity_percent
 

@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'app',
-    'device'
+    'device',
+    'iot'
 ]
 
 MIDDLEWARE = [
@@ -133,7 +134,17 @@ LOGGING = {
             'filename': os.path.dirname(BASE_DIR) + "/log/device.log",
             'formatter': 'device_file',
         },
-
+        'iot_console': { 
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'device_console',
+        },
+        'iot_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.dirname(BASE_DIR) + "/log/iot.log",
+            'formatter': 'device_file',
+        }
     },
     'loggers': {
         'app': {
@@ -143,8 +154,12 @@ LOGGING = {
         'device': {
             'handlers': ['device_console', 'device_file'],
             'level': 'DEBUG',
+        },
+        'iot': {
+            'handlers': ['iot_console', 'iot_file'],
+            'level': 'DEBUG',
         }
-    },
+    }
 }
 
 LOGIN_REDIRECT_URL = 'home'
