@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, json, threading, os, sys, glob
+import logging, time, json, threading, os, sys, glob, uuid
 
 # Import django modules
 from django.db.models.signals import post_save
@@ -18,6 +18,9 @@ from device.state import State
 # Import device managers
 from device.managers.recipe import RecipeManager
 from device.managers.event import EventManager
+
+# Import IoT communications (to the backend) manager 
+from iot.iot_manager import IoTManager
 
 # Import database models
 from app.models import StateModel
@@ -56,7 +59,7 @@ class DeviceManager:
         "sensor": {"desired": {}, "reported": {}},
         "actuator": {"desired": {}, "reported": {}},
         "reported_sensor_stats": {
-        "individual": {
+            "individual": {
                 "instantaneous": {},
                 "average": {}
             },
@@ -81,7 +84,6 @@ class DeviceManager:
     event = EventManager(state)
     # post_save.connect(event.process, sender=EventModel)
 
-
     # Initialize peripheral and controller managers
     peripheral_managers = None
     controller_managers = None
@@ -91,6 +93,12 @@ class DeviceManager:
         """ Initializes device. """
         self.mode = Modes.INIT
         self.error = Errors.NONE
+
+        # Initialize the IoT communications manager object.  
+        # Pass in a ref. to this instance (self) so we can call the 
+        # start/stop recipe methods.
+        self.iot = IoTManager( self.state, self )
+        self.latest_publish_timestamp = 0
 
 
     @property
@@ -233,7 +241,7 @@ class DeviceManager:
         if delay != None:
             time.sleep(delay)
 
-        self.logger.info("Spawing device thread")
+        self.logger.info("Spawning device thread")
 
         # Start state machine
         self.logger.info("Started state machine")
@@ -312,6 +320,9 @@ class DeviceManager:
         # Spawn event thread
         self.event.spawn()
 
+        # Spawn iot thread
+        self.iot.spawn()
+
         # Create peripheral managers and spawn threads
         self.create_peripheral_managers()
         self.spawn_peripheral_threads()
@@ -341,6 +352,11 @@ class DeviceManager:
             # Store environment state in every 10 minutes 
             if time.time() - self.latest_environment_timestamp > 60*10:
                 self.store_environment()
+
+            # Once a minute, publish any changed values
+            if time.time() - self.latest_publish_timestamp > 60:
+                self.latest_publish_timestamp = time.time()
+                self.iot.publish()
 
             # Check for events
             request = self.request
@@ -380,6 +396,9 @@ class DeviceManager:
         # Kills peripheral and controller threads
         self.kill_peripheral_threads()
         self.kill_controller_threads()
+        self.recipe.stop()
+        self.event.stop()
+        self.iot.stop()
 
         # Clear errors
         self.error = Errors.NONE
@@ -540,6 +559,32 @@ class DeviceManager:
            CultivationMethodModel.objects.create(json=json.dumps(cultivation_method))
 
 
+    # Called by the IoTManager, when the UI sends a json recipe to load.
+    def load_recipe_json( self, recipe_json ):
+        """ Loads and verifies a recipe json string.  
+            Usually sent by the UI. """
+        self.logger.debug("Loading recipe json")
+        
+        # Get get recipe schema
+        recipe_schema = json.load( open( "data/schemas/recipe.json"))
+
+        # Validate recipes with schema
+        recipe = json.loads( recipe_json )
+        validate( recipe, recipe_schema )
+
+        # Make sure we have a valid recipe uuid
+        if None == recipe["uuid"] or 0 == len( recipe["uuid"] ):
+            recipe["uuid"] = str( uuid.uuid4() )
+
+        # Update existing recipe or create a new one
+        try:
+            r = RecipeModel.objects.get( uuid = recipe["uuid"] )
+            r.json = json.dumps( recipe )
+            r.save()
+        except:
+            RecipeModel.objects.create( json = json.dumps( recipe ))
+
+
     def load_recipe_files(self):
         """ Loads recipe file into database by creating new entries if 
             nonexistant or updating existing if existant. Verification depends
@@ -563,12 +608,15 @@ class DeviceManager:
         # TODO: Validate recipe cycle variables with recipe environments
         # TODO: Validate recipe cultivars with database cultivars
         # TODO: Validate recipe cultivation methods with database cultivation methods
+        # TODO: also do the same validation in above load_recipe_json()
 
-        # Create recipe entry if new or update existing
+        # Update existing recipe or create a new one
         for recipe in recipes:
-            if RecipeModel.objects.filter(uuid=recipe["uuid"]).exists():
-                RecipeModel.objects.update(uuid=recipe["uuid"], json=json.dumps(recipe))
-            else:
+            try:
+                r = RecipeModel.objects.get(uuid=recipe["uuid"])
+                r.json=json.dumps(recipe)
+                r.save()
+            except:
                 RecipeModel.objects.create(json=json.dumps(recipe))
 
 
@@ -822,14 +870,16 @@ class DeviceManager:
 
     def kill_peripheral_threads(self):
         """ Kills all peripheral threads. """
-        for peripheral_name in self.peripherals:
-            self.peripherals[peripheral_name].thread_is_active = False
+# TODO this needs work
+        #for peripheral_name in self.state.peripherals:
+        #    self.state.peripherals[peripheral_name].thread_is_active = False
 
 
     def kill_controller_threads(self):
         """ Kills all controller threads. """
-        for controller_name in self.controller:
-            self.controller[controller_name].thread_is_active = False
+# TODO this needs work
+        #for controller_name in self.state.controller:
+        #    self.state.controller[controller_name].thread_is_active = False
 
 
     def shutdown_peripheral_threads(self):
@@ -881,6 +931,9 @@ class DeviceManager:
         self.response = {"status": 200, "message": "Pretended to load recipe"}
 
 
+    # Also called from the IoTManager command receiver. 
+    # Need to save the json recipe to the DB first 
+    # (referenced here by UUID)
     def process_start_recipe_event(self, request_value):
         """ Processes load recipe event. """
         self.logger.debug("Processing start recipe event")
@@ -907,6 +960,7 @@ class DeviceManager:
                 break
 
 
+    # Also called from the IoTManager command receiver. 
     def process_stop_recipe_event(self):
         """ Processes load recipe event. """
         self.logger.debug("Processing stop recipe event")

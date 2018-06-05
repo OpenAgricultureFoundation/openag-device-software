@@ -34,10 +34,14 @@ ctrl + a, d
 screen -t brain -S brain
 ```
 
-### Source env and run brain
+### Run the brain on the beaglebone (see note below if on other platforms)
 ```
-source venv/bin/activate
 ./run.sh
+```
+
+### If you are not on a beablebone, you may want simulate the I2C bus.  (if you are on Linux or OSX doing development).  Use this command in place of the one above.
+```
+./simulation.sh
 ```
 
 ### Detatch from screen session

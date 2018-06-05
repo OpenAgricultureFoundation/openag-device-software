@@ -6,3 +6,5 @@ __pycache__/
 *.log
 *.mypy_cache*
 *.cache*
+.pytest_cache/
+registration/data/
