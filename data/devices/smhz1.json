@@ -1,0 +1,36 @@
+{	
+    "format": "openag-standard-v1",
+    "name": "Small Hazelnut",
+    "version": "1",
+    "uuid": "65dba26a-f9b4-48d7-a8d5-d180645cf4c6",
+    "peripherals": [
+        {
+            "name": "LEDArray-1",
+            "type": "LEDDAC5578",
+            "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+            "parameters": {
+               "setup": {
+                    "name": "LEDDAC5578 Array Orion Actuator",
+                    "file_name": "led_dac5578/setups/orion"
+                },
+                "variables": {
+                    "sensor": {
+                        "intensity_watts": "light_intensity_watts",
+                        "spectrum_nm_percent": "light_spectrum_nm_percent",
+                        "illumination_distance_cm": "light_illumination_distance_cm"
+                    },
+                    "actuator": {
+                        "channel_output_percents": "light_channel_output_percents"
+                    }
+                },
+                "communication": {
+                    "panels": [
+                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0},
+                        {"name": "LP2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "x": 0, "y": 0}
+                    ]
+                }
+            }
+        }
+    ],
+    "controllers": null
+}

@@ -26,7 +26,7 @@
 									"string", 
 									"number", 
 									"integer",
-									"normalized_percentage_array"]
+									"object"]
 							}
 						},
 						"required": ["brief", "verbose", "type"]

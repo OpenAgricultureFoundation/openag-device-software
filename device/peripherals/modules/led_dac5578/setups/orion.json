@@ -1,0 +1,351 @@
+{
+	"name":  "Light Array Orion Actuator",
+	"version": "1",
+	"uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+	"module_name": "led_dac5578.manager",
+	"class_name": "LEDDAC5578",
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"intensity_watts": {
+					"name": {
+						"type": "string",
+						"default": "light_intensity_watts"
+					}
+				},
+				"spectrum_nm_percent": {
+					"name": {
+						"type": "string",
+						"default": "light_spectrum_nm_percent"
+					}
+				},
+				"illumination_distance_cm": {
+					"name": {
+						"type": "string",
+						"default": "light_illumination_distance_cm"
+					} 
+				}
+			},
+			"actuator": {
+				"channel_output_percents": {
+					"name": {
+						"type": "string",
+						"default": "light_channel_output_percents"
+					}
+				}
+			}
+		},	
+		"communication": {
+			"panels": [
+				{
+					"bus": {
+						"type": "integer",
+						"default": 2
+					},
+					"mux": {
+						"type": "string",
+						"default": "0x77"
+					},
+					"channel": {
+						"type": "integer",
+						"default": 1
+					},
+					"address": {
+						"type": "integer",
+						"default": "0x47"
+					}
+				}
+			]
+		}
+	},
+	"channel_configs": [
+		{
+			"name": {
+				"brief": "FR",
+				"verbose": "Far Red"
+			},
+			"channel": {
+				"hardware": 1,
+				"software": 6
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 0,
+	            "500-599": 0,
+	            "600-699": 100
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 50},
+				{"distance_cm": 10, "intensity_watts": 25},
+				{"distance_cm": 15, "intensity_watts": 13},
+				{"distance_cm": 20, "intensity_watts": 6}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW1",
+				"verbose": "Cool White #1"
+			},
+			"channel": {
+				"hardware": 2,
+				"software": 4
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 70,
+	            "500-599": 20,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW2",
+				"verbose": "Cool White #2"
+			},
+			"channel": {
+				"hardware": 3,
+				"software": 2
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 70,
+	            "500-599": 20,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW3",
+				"verbose": "Cool White #3"
+			},
+			"channel": {
+				"hardware": 4,
+				"software": 0
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 70,
+	            "500-599": 20,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW4",
+				"verbose": "Cool White #4"
+			},
+			"channel": {
+				"hardware": 4,
+				"software": 7
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 70,
+	            "500-599": 20,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "WW",
+				"verbose": "Warm White"
+			},
+			"channel": {
+				"hardware": 6,
+				"software": 5
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 10,
+	            "500-599": 80,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 75},
+				{"distance_cm": 10, "intensity_watts": 55},
+				{"distance_cm": 15, "intensity_watts": 25},
+				{"distance_cm": 20, "intensity_watts": 12.5}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		}
+	],
+	"events": [
+		{
+		    "name": "Reset",
+		    "description": "Reset sensor.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Shutdown",
+		    "description": "Shutdown sensor.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Set Sampling Interval",
+		    "description": "Sets sampling interval.",
+		    "value": {
+		        "default": 10,
+		        "unit": "Seconds"
+		    },
+		    "sequence": null
+		},
+		{
+		    "name": "Enable Manual Mode",
+		    "description": "Allows actuator to be controlled by manual events.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Turn On",
+		    "description": "Turns on all channels on light panel.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Turn Off",
+		    "description": "Turns off all channels on light panel.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Fade",
+		    "description": "Fades all channels concurrently.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		}
+	],
+	"info": {
+		"variables": {
+			"sensors": null,
+			"actuators":null
+		}
+	},
+	"channel_samples": [
+		{
+			"name": "Far Red",
+			"data": {
+				"output_percent_calibration": [
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 6.25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 6.25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 0},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 0}
+				],
+				"location_calibation": [
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5}
+				]
+			}
+		}
+	]
+}

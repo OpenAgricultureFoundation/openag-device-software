@@ -1,0 +1,9 @@
+[
+  "tests/test_peripheral_events.py::test_init",
+  "tests/test_peripheral_events.py::test_reset",
+  "tests/test_peripheral_events.py::test_shutdown",
+  "tests/test_peripheral_events.py::test_set_sampling_interval",
+  "tests/test_peripheral_events.py::test_enable_calibration_mode",
+  "tests/test_peripheral_events.py::test_enable_manual_mode",
+  "tests/test_peripheral_events.py::test_unknown_event"
+]

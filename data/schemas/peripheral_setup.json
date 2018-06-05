@@ -12,10 +12,10 @@
 				"variables": {
 					"type": "object",
 					"properties": {
-						"sensors": {"type": ["object", "null"]},
-						"actuators": {"type": ["object", "null"]}
+						"sensor": {"type": ["object", "null"]},
+						"actuator": {"type": ["object", "null"]}
 					},
-					"required": ["sensors", "actuators"]
+					"required": ["sensor", "actuator"]
 				},
 				"communication": {"type": ["object", "null"]}
 			},

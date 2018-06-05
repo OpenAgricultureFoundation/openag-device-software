@@ -1,0 +1,6 @@
+{
+  "tests/test_array.py::test_probe": true,
+  "tests/test_events.py": true,
+  "tests/test_manager.py": true,
+  "tests/test_panel.py": true
+}

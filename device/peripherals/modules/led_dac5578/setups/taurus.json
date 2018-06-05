@@ -1,0 +1,287 @@
+{
+	"name":  "Light Panel Taurus Actuator",
+	"version": "1",
+	"uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+	"module_name": "led_dac5578/manager",
+	"class_name": "LEDDAC5578",
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"intensity_watts": {
+					"name": {
+						"type": "string",
+						"default": "light_intensity_watts"
+					}
+				},
+				"spectrum_nm_percent": {
+					"name": {
+						"type": "string",
+						"default": "light_spectrum_nm_percent"
+					}
+				},
+				"illumination_distance_cm": {
+					"name": {
+						"type": "string",
+						"default": "light_illumination_distance_cm"
+					} 
+				}
+			},
+			"actuator": {
+				"channel_setpoint_percents": {
+					"name": {
+						"type": "string",
+						"default": "light_channel_setpoint_percents"
+					}
+				}
+			}
+		},	
+		"communication": {
+			"devices": [
+				{
+					"bus": {
+						"type": "integer",
+						"default": 2
+					},
+					"mux": {
+						"type": "string",
+						"default": "0x77"
+					},
+					"channel": {
+						"type": "integer",
+						"default": 1
+					},
+					"address": {
+						"type": "integer",
+						"default": "0x47"
+					}
+				}
+			]
+		}
+	},
+	"channel_configs": [
+		{
+			"name": {
+				"brief": "WW",
+				"verbose": "Warm White"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 4
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 10,
+	            "500-599": 80,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 50},
+				{"distance_cm": 10, "intensity_watts": 25},
+				{"distance_cm": 15, "intensity_watts": 13},
+				{"distance_cm": 20, "intensity_watts": 6}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW",
+				"verbose": "Cool White"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 6
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 70,
+	            "500-599": 20,
+	            "600-699": 10
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "B",
+				"verbose": "Blue"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 7
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 100,
+	            "500-599": 0,
+	            "600-699": 0
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "G",
+				"verbose": "Green"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 5
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 0,
+	            "500-599": 100,
+	            "600-699": 0
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "R",
+				"verbose": "Red"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 2
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 0,
+	            "500-599": 0,
+	            "600-699": 100
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "FR",
+				"verbose": "Far Red"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 0
+			},
+			"spectrum_nm_percent": {
+	            "400-499": 0,
+	            "500-599": 0,
+	            "600-699": 100
+	        },
+			"planar_distance_map": [
+				{"distance_cm": 5, "intensity_watts": 100},
+				{"distance_cm": 10, "intensity_watts": 75},
+				{"distance_cm": 15, "intensity_watts": 50},
+				{"distance_cm": 20, "intensity_watts": 25}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		}
+	],
+	"events": [
+		{
+		    "name": "Reset",
+		    "description": "Reset sensor.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Shutdown",
+		    "description": "Shutdown sensor.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Set Sampling Interval",
+		    "description": "Sets sampling interval.",
+		    "value": {
+		        "default": 10,
+		        "unit": "Seconds"
+		    },
+		    "sequence": null
+		},
+		{
+		    "name": "Enable Manual Mode",
+		    "description": "Allows actuator to be controlled by manual events.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Turn On",
+		    "description": "Turns on all channels on light panel.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Turn Off",
+		    "description": "Turns off all channels on light panel.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Fade",
+		    "description": "Fades all channels up/down concurrently.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		}
+	],
+	"info": {
+		"variables": {
+			"sensors": null,
+			"actuators":null
+		}
+	}
+}

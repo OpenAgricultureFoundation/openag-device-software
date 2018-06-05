@@ -1,0 +1,3 @@
+{
+  "tests/test_driver.py::test_read_electrical_conductivity": true
+}

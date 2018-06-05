@@ -11,7 +11,7 @@
             "parameters": {
                 "setup": {
                     "name": "SHT25 Temperature / Humidity Sensor",
-                    "file_name": "sht25"
+                    "file_name": "sht25/setups/default"
                 },
                 "variables": {
                     "sensor": {
@@ -20,9 +20,9 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": "2", 
+                    "bus": 2, 
                     "mux": "0x77", 
-                    "channel": "2", 
+                    "channel": 2, 
                     "address": "0x40"
                 }
             }

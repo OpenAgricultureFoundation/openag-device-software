@@ -16,18 +16,18 @@
                 "variables": {
                     "sensor": {
                         "intensity_watts": "light_intensity_watts",
-                        "spectrum_normalized_percentage_dict": "light_spectrum_taurus",
+                        "spectrum_channel_percents": "light_spectrum_channel_percents",
                         "illumination_distance_cm": "light_illumination_distance_cm"
                     },
                     "actuator": {
-                        "channel_output_percent_dict": "light_channel_output_percent_dict"
+                        "channel_output_percents": "light_channel_output_percents"
                     }
                 },
                 "communication": {
                     "bus": "2", 
+                    "address": "0x47",
                     "mux": "0x77", 
-                    "channel": "1", 
-                    "address": "0x3c"
+                    "channel": "3"
                 }
             }
         }

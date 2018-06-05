@@ -1,1 +1,0 @@
-formats = ["openag-phased-environment-v1"]

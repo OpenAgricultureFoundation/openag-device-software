@@ -10,8 +10,8 @@
             "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
             "parameters": {
                 "setup": {
-                    "name": "Atlas Dissolved Oxygen Sensor EZO",
-                    "file_name": "atlas_do_ezo"
+                    "name": "Atlas Dissolved Oxygen Sensor Default",
+                    "file_name": "atlas_do/setups/default"
                 },
                 "variables": {
                     "sensor": {
@@ -25,9 +25,9 @@
                     }
                 },
                 "communication": {
-                    "bus": "2", 
+                    "bus": 2, 
                     "mux": "0x77", 
-                    "channel": "4", 
+                    "channel": 4, 
                     "address": "0x61"
                 }
             }

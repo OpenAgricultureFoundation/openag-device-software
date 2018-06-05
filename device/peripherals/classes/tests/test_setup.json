@@ -1,0 +1,35 @@
+{
+	"name":  "Test Peripheral Manager",
+	"version": "1",
+	"uuid": "aaa-bbb-ccc",
+	"module_name": "classes/manager",
+	"class_name": "PeripheralManager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		},	
+		"communication": {
+			"devices": [
+				{
+					"bus": {
+						"type": "integer",
+						"default": 2
+					},
+					"mux": {
+						"type": "string",
+						"default": "0x77"
+					},
+					"channel": {
+						"type": "integer",
+						"default": 1
+					},
+					"address": {
+						"type": "integer",
+						"default": "0x47"
+					}
+				}
+			]
+		}
+	}
+}

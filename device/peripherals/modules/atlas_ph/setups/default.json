@@ -1,0 +1,196 @@
+{
+	"name":  "Atlas pH Sensor",
+	"version": "1",
+	"uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
+	"module_name": "atlas_ph.manager",
+	"class_name": "AtlasPH",
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"potential_hydrogen": {
+					"name": {
+						"type": "string", 
+						"default": "water_potential_hydrogen"
+					}
+				}
+			},
+			"actuator": null
+		},	
+		"communication": {
+            "bus": {
+                "type": "integer",
+                "default": 2
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 1
+            },
+            "address": {
+                "type": "string",
+                "default": "0x63"
+            }
+        }
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+            "description": "Restarts sensor initialization process.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+            "description": "Stops reporting readings and turn off sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+            "description": "Sets a new sampling interval. Value persists across reboots. Resets to default value only when new device config is loaded.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    },
+	    {
+	        "name": "One Point Calibration",
+	        "description": "Set into calibration mode, take mid point calibration reading, then reset.",
+	        "value": null,
+	        "sequence": [
+	            {
+	                "name": "Enable Calibration Mode",
+	                "description": "Stops reporting data into environment database. Required to send calibration commands.",
+	                "value": null
+	            },
+	            {
+	                "name": "Mid Point Calibration",
+	                "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+	                "value": {
+	                    "default": 7.0,
+	                    "unit": "pH"
+	                }
+	            },
+	            {
+	                "name": "Reset",
+	                "description": "Restarts sensor initialization process.",
+	                "value": null
+	            }
+	        ]
+	    },
+	    {
+	        "name": "Two Point Calibration",
+	        "description": "Set into calibration mode, take low and high point calibration reading, then reset.",
+	        "value": null,
+	        "sequence": [
+	            {
+	                "name": "Enable Calibration Mode",
+	                "description": "Stops reporting data into environment database. Required to send calibration commands.",
+	                "value": null
+	            },
+	            {
+	                "name": "Low Point Calibration",
+	                "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+	                "value": {
+	                    "default": 4.0,
+	                    "unit": "pH"
+	                }
+	            },
+	            {
+	                "name": "High Point Calibration",
+	                "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+	                "value": {
+	                    "default": 10.0,
+	                    "unit": "pH"
+	                }
+	            },
+	            {
+	                "name": "Reset",
+	                "description": "Restarts sensor initialization process.",
+	                "value": null
+	            }
+	        ]
+	    },
+	    {
+	        "name": "Three Point Calibration",
+	        "description": "Set into calibration mode, take low, mid, and high point calibration reading, then reset.",
+	        "value": null,
+	        "sequence": [
+	            {
+	                "name": "Enable Calibration Mode",
+	                "description": "Stops reporting data into environment database. Required to send calibration commands.",
+	                "value": null
+	            },
+	            {
+	                "name": "Low Point Calibration",
+	                "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+	                "value": {
+	                    "default": 4.0,
+	                    "unit": "pH"
+	                }
+	            },
+	            {
+	                "name": "Mid Point Calibration",
+	                "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+	                "value": {
+	                    "default": 7.0,
+	                    "unit": "pH"
+	                }
+	            },
+	            {
+	                "name": "High Point Calibration",
+	                "description": "Place probe in known calibration solution, swirl around, wait for sensor value to stabilize, then take calibration reading.",
+	                "value": {
+	                    "default": 10.0,
+	                    "unit": "pH"
+	                }
+	            },
+	            {
+	                "name": "Reset",
+	                "description": "Restarts sensor initialization process.",
+	                "value": null
+	            }
+	        ]
+	    },
+	    {
+	        "name": "Clear Calibration",
+	        "description": "Set into calibration mode, clear calibration data, then reset.",
+	        "value": null,
+	        "sequence": [
+	            {
+	                "name": "Enable Calibration Mode",
+	                "description": "Stops reporting data into environment database. Required to send calibration commands.",
+	                "value": null
+	            },
+	            {
+	                "name": "Clear Calibration",
+            		"description": "Clears calibration data stored on sensor hardware.",
+	                "value": null
+	            },
+	            {
+	                "name": "Reset",
+	                "description": "Restarts sensor initialization process.",
+	                "value": null
+	            }
+	        ]
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor":{
+				"potential_hydrogen": {
+					"units": null,
+					"range": [0.001, 14.000],
+			        "accuracy": {
+			            "typical": 0.002
+			        }
+				}
+			},
+			"actuator": null
+		}
+	}
+}

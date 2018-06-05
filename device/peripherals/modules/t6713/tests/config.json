@@ -1,0 +1,27 @@
+{
+    "peripherals": [
+        {
+            "name": "T6713-1",
+            "type": "T6713",
+            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "parameters": {
+                "setup": {
+                    "name": "T6713 CO2 Sensor Default",
+                    "file_name": "t6713/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "carbon_dioxide_ppm": "air_carbon_dioxide_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x15"
+                }
+            }
+        }
+    ]
+}

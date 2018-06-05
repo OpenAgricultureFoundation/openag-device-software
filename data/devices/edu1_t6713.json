@@ -15,14 +15,14 @@
                 },
                 "variables": {
                     "sensor": {
-                        "co2_ppm": "air_carbon_dioxide_ppm"
+                        "carbon_dioxide_ppm": "air_carbon_dioxide_ppm"
                     },
                     "actuator": null
                 },
                 "communication": {
-                    "bus": "2", 
+                    "bus": 2, 
                     "mux": "0x77", 
-                    "channel": "2", 
+                    "channel": 2, 
                     "address": "0x15"
                 }
             }
