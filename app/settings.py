@@ -87,6 +87,12 @@ DATABASES = {
         'PASSWORD': 'openag',
         'HOST': 'localhost',
         'PORT': '',
+        'TEST': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'test_openag_brain',
+            'USER': 'openag',
+            'PASSWORD': 'openag',
+        }
     }
 }
 

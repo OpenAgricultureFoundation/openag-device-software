@@ -15,15 +15,6 @@ def pytest_configure():
     # )
     django.setup()
 
-# Configure access to our database. We need to do this to run the tests.
-@pytest.fixture(scope='session')
-def django_db_setup():
-    settings.DATABASES['default'] = {
-        'USER': 'openag',
-        'PASSWORD': 'openag',
-        'NAME': 'openag_brain',
-        'ENGINE': 'django.db.backends.postgresql',
-    }
 
 # Give django database access to all tests.
 # The alternative is to mark just the test functions that need DB access with:
@@ -31,5 +22,24 @@ def django_db_setup():
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
     pass
+
+
+"""
+We want django / pytest to recreate a TEST DB each test run, so DON'T 
+override the default fixture by using the function below.
+
+Instead look in app/settings.py at the DATABASES / 'default' / 'TEST' section.
+
+# Configure access to our REAL database. Not good for tests, because the DB
+# state changes when we run the app!
+@pytest.fixture(scope='session')
+def django_db_setup():
+    settings.DATABASES['default'] = {
+        'USER': 'openag',
+        'PASSWORD': 'openag',
+        'NAME': 'test_openag_brain',
+        'ENGINE': 'django.db.backends.postgresql',
+    }
+"""
 
 
