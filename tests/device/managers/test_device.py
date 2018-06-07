@@ -14,7 +14,7 @@ def test_device_manager_initial_state():
     assert dm.config_uuid == None
     assert dm.commanded_config_uuid == None
     assert dm.config_dict == None
-    assert dm.latest_environment_timestamp != 0
+    assert dm.latest_environment_timestamp == 0
     assert dm.all_threads_initialized() == False
     assert dm.all_peripherals_initialized() == True # no perips to init is OK
     assert dm.all_controllers_initialized() == True # no contr to init is OK

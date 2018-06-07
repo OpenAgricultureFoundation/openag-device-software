@@ -52,7 +52,10 @@ class IoTPubSub:
 
 
     # Class member vars
-    lastConfigVersion = 0   # The last config message version we have seen.
+    _lastConfigVersion = 0  # The last config message version we have seen.
+    _connected = False      # Property
+    _messageCount = 0       # Property
+    _publishCount = 0       # Property
     deviceId = None         # Our device ID.
     mqtt_topic = None       # PubSub topic we publish to.
     jwt_iat = 0
@@ -75,11 +78,11 @@ class IoTPubSub:
         # read our IoT config settings from the DB (if they exist).
         try:
             c = IoTConfigModel.objects.latest()
-            self.lastConfigVersion = c.last_config_version 
+            self._lastConfigVersion = c.last_config_version 
         except:
             # or create a DB entry since none exists.
             IoTConfigModel.objects.create( 
-                    last_config_version = self.lastConfigVersion )
+                    last_config_version = self._lastConfigVersion )
 
         # validate our deviceId
         if None == self.deviceId or 0 == len( self.deviceId ):
@@ -227,17 +230,53 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
-    def save_last_config_version( self, lastConfigVersion ):
-        """ Save the last version of a config message (commands) we received.
+    @property
+    def lastConfigVersion( self ):
+        """ Get the last version of a config message (command) we received.
         """
+        return self._lastConfigVersion
+
+    @lastConfigVersion.setter
+    def lastConfigVersion( self, value ):
+        """ Save the last version of a config message (command) we received.
+        """
+        self._lastConfigVersion = value
         try:
-            self.lastConfigVersion = lastConfigVersion
             c = IoTConfigModel.objects.latest()
-            c.last_config_version = lastConfigVersion 
+            c.last_config_version = value 
             c.save()
         except:
-            IoTConfigModel.objects.create( 
-                last_config_version = lastConfigVersion )
+            IoTConfigModel.objects.create( last_config_version = value )
+
+
+    #--------------------------------------------------------------------------
+    @property
+    def connected( self ):
+        return self._connected
+
+    @connected.setter
+    def connected( self, value ):
+        self._connected = value
+
+
+    #--------------------------------------------------------------------------
+    @property
+    def messageCount( self ):
+        return self._messageCount
+
+    @messageCount.setter
+    def messageCount( self, value ):
+        self._messageCount = value
+
+
+    #--------------------------------------------------------------------------
+    @property
+    def publishCount( self ):
+        return self._publishCount
+
+    @publishCount.setter
+    def publishCount( self, value ):
+        self._publishCount = value
 
 
     ####################################################################
@@ -438,7 +477,8 @@ def error_str( rc ):
 #--------------------------------------------------------------------------
 # private
 def on_connect( unused_client, ref_self, unused_flags, rc ):
-    """ Callback for when a device connects.  """
+    """ Paho callback for when a device connects.  """
+    ref_self.connected = True
     ref_self.logger.debug('on_connect: {}'.format( mqtt.connack_string( rc )))
 
 
@@ -446,6 +486,7 @@ def on_connect( unused_client, ref_self, unused_flags, rc ):
 # private
 def on_disconnect( unused_client, ref_self, rc ):
     """ Paho callback for when a device disconnects.  """
+    ref_self.connected = False
     ref_self.logger.debug('on_disconnect: {}'.format( error_str( rc )))
 
 
@@ -453,6 +494,7 @@ def on_disconnect( unused_client, ref_self, rc ):
 # private
 def on_publish( unused_client, ref_self, unused_mid):
     """Paho callback when a message is sent to the broker."""
+    ref_self.publishCount = ref_self.publishCount + 1
     ref_self.logger.debug( 'on_publish' )
 
 
@@ -462,6 +504,8 @@ def on_message( unused_client, ref_self, message ):
     """
     Callback when the device receives a message on a subscription.
     """
+    ref_self.messageCount = ref_self.messageCount + 1
+
     payload = message.payload.decode( 'utf-8' )
     # message is a paho.mqtt.client.MQTTMessage, these are all properties:
     ref_self.logger.debug('Received message:\n  {}\n  topic={}\n  Qos={}\n  '
@@ -489,7 +533,7 @@ def on_message( unused_client, ref_self, message ):
     # So compare this message (if a config message) to the last config
     # version we have seen.
     if messageVersion > ref_self.lastConfigVersion:
-        ref_self.save_last_config_version( messageVersion )
+        ref_self.lastConfigVersion = messageVersion
 
         # parse the config message to get the commands in it
         # (and write them to the command pipe)
@@ -543,7 +587,7 @@ def getMQTTclient( ref_self,
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.on_message = on_message
-    #client.on_publish = on_publish         # only for debugging
+    client.on_publish = on_publish         
     #client.on_subscribe = on_subscribe     # only for debugging
     #client.on_log = on_log                 # only for debugging
 

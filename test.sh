@@ -19,15 +19,15 @@ fi
 # Activate the python env for this bash process
 source $DIR/venv/bin/activate
 
-# Environment variables used in the IoT code
-export IOT_PRIVATE_KEY=$DIR/registration/data/rsa_private.pem
-export CA_CERTS=$DIR/registration/data/roots.pem
+# Environment variables used in the IoT code, using CHECKED IN test device auth.
+export IOT_PRIVATE_KEY=$DIR/tests/data/rsa_private.pem
+export CA_CERTS=$DIR/tests/data/roots.pem
 export GCLOUD_PROJECT=openag-v1
 export GCLOUD_REGION=us-central1
 export GCLOUD_DEV_REG=device-registry
-source $DIR/registration/data/device_id.bash
+source $DIR/tests/data/device_id.bash
 
-# Note remove the pytest -s arg to not show print()s from the test code.
+# Note remove the pytest '-s' arg to not show print()s from the test code.
 
 if [ $# -eq 0 ]; then
   # No command line args to this script, so run all tests:
@@ -37,3 +37,5 @@ else
   python -m pytest -s $@
 fi
 
+
+# psql --username=openag -c 'DROP DATABASE "test_openag_brain"'
