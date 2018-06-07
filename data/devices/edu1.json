@@ -155,6 +155,23 @@
                     "address": "0x15"
                 }
             }
+        },
+        {
+            "name": "Camera-1",
+            "type": "ELPUSB500W02ML21",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera Default",
+                    "file_name": "elp_usb500w02ml21/setups/default"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "directory": "images/",
+                "communication": null
+            }
         }
     ],
     "controllers": null
