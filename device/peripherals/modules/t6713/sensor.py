@@ -90,16 +90,22 @@ class T6713Sensor:
             return error
 
         # Wait at least 2 minutes for sensor to stabilize
-        # start_time = time.time()
-        # while time.time() - start_time < 120:
-        #     time.sleep(1)
+        if not self.simulate:
+            start_time = time.time()
+            while time.time() - start_time < 120:
+
+                # Keep logs active
+                self.logger.info("Warming up, waiting for 2 minutes")
+
+                # Update every few seconds
+                time.sleep(3)
 
         # Wait for sensor to report exiting warm up mode
         start_time = time.time()
         while True:
 
             # Keep logs active
-            self.logger.info("Warming up")
+            self.logger.info("Warming up, waiting for status")
 
             # Send read status command
             status, error = self.read_status()
@@ -124,6 +130,7 @@ class T6713Sensor:
 
         # Setup successful!
         self.logger.info("Setup successful")
+        self.health.reset()
         return Error(None)
 
 
@@ -155,6 +162,9 @@ class T6713Sensor:
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
@@ -166,7 +176,7 @@ class T6713Sensor:
             return error
 
         # Successfuly probed!
-        self.logger.info("Probe successful")
+        self.health.reset()
         return Error(None)
 
 
@@ -176,7 +186,10 @@ class T6713Sensor:
 
         # Check if simulating
         if self.simulate:
-            return 430, Error(None)
+            self.logger.info("Simulating reading Co2")
+            co2 = 430
+            self.logger.info("Co2: {} ppm".format(co2))
+            return co2, Error(None)
 
         # Send commands until success or becomes too healthy
         while self.healthy:
@@ -191,12 +204,16 @@ class T6713Sensor:
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error = Error("Sensor unable to read carbon dioxide, became too unhealthy")
             return None, error
 
         # Successfuly read carbon dioxide!
+        self.health.reset()
         return carbon_dioxide, Error(None)
 
 

@@ -26,6 +26,10 @@ class Status (NamedTuple):
 class T6713Driver:
     """ Driver for atlas t6713 carbon dioxide sensor. """
 
+    # Initialize co2 properties
+    _min_carbon_dioxide = 10 # ppm
+    _max_carbon_dioxide = 5000 # ppm
+
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
             channel: Optional[int] = None, simulate: bool = False) -> None:
@@ -53,31 +57,36 @@ class T6713Driver:
 
     def read_carbon_dioxide(self) -> Tuple[Optional[float], Error]:
         """ Reads carbon dioxide value from sensor hardware. """
-        self.logger.debug("Reading carbon dioxide value from hardware")
+        self.logger.info("Reading carbon dioxide")
 
-        # TODO: Convert this to a block read in i2c comm
-        with threading.Lock():
+        # Send read carbon dioxide command
+        error = self.i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01]) 
 
-            # Send read carbon dioxide command
-            error = self.i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01]) 
+        # Check for errors
+        if error.exists():
+            error.report("Driver unable to read carbon dioxide")
+            return None, error
 
-            # Check for errors
-            if error.exists():
-                error.report("Driver unable to read carbon dioxide")
-                return None, error
+        # Give sensor time to process
+        time.sleep(0.1) # Wait 100ms
 
-            # Read sensor data
-            bytes_, error = self.i2c.read(4, disable_mux=True) # don't re-set mux channel
+        # Read sensor data
+        bytes_, error = self.i2c.read(4, disable_mux=True) # don't re-set mux channel
         
         # Check for errors
         if error.exists():
             error.report("Driver unable to read carbon dioxide")
             return None, error
 
-        # Convert temperature data and set significant figures
+        # Convert co2 data and set significant figures
         _, _, msb, lsb = bytes_
         carbon_dioxide = float(msb*256 + lsb)
         carbon_dioxide = round(carbon_dioxide, 0)
+
+        # Verify co2 value within valid range
+        if carbon_dioxide > self._min_carbon_dioxide and carbon_dioxide < self._min_carbon_dioxide:
+            self.logger.warning("Co2 outside of valid range")
+            ccarbon_dioxide = None
 
         # Successfully read carbon dioxide!
         self.logger.debug("Co2: {} ppm".format(carbon_dioxide))
@@ -86,9 +95,7 @@ class T6713Driver:
 
     def read_status(self) -> Tuple[Optional[Status], Error]:
         """ Reads status from sensor hardware. """
-        self.logger.debug("Reading status from sensor hardware")
-
-        time.sleep(0.3)
+        self.logger.info("Reading status")
 
         # Send command
         error = self.i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01]) 
@@ -99,10 +106,10 @@ class T6713Driver:
             return None, error
 
         # Give sensor time to process
-        time.sleep(0.2)
+        time.sleep(1)
 
         # Read status data
-        bytes_, error = self.i2c.read(4, disable_mux=True)
+        bytes_, error = self.i2c.read(4)
 
         # Check for errors
         if error.exists():
@@ -129,7 +136,7 @@ class T6713Driver:
 
     def enable_abc_logic(self):
         """ Enables ABC logic on sensor hardware. """
-        self.logger.debug("Enabling abc logic on sensor hardware")
+        self.logger.info("Enabling abc logic")
 
         # Send command
         error = self.i2c.write([0x05, 0x03, 0xEE, 0xFF, 0x00]) 
@@ -145,7 +152,7 @@ class T6713Driver:
 
     def disable_abc_logic(self):
         """ Disables ABC logic on sensor hardware. """
-        self.logger.debug("Disabling abc logic on sensor hardware")
+        self.logger.info("Disabling abc logic")
 
         # Send command
         error = self.i2c.write([0x05, 0x03, 0xEE, 0x00, 0x00]) 

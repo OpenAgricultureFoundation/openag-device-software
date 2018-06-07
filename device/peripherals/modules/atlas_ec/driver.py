@@ -19,6 +19,8 @@ class AtlasECDriver(AtlasDriver):
 
     # Initialize sensor properties
     _electrical_conductivity_accuracy_percent = 2
+    _min_electrical_conductivity = 0.005
+    _max_electrical_conductivity = 200
 
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
@@ -31,9 +33,9 @@ class AtlasECDriver(AtlasDriver):
             address = address, 
             mux = mux,
             channel = channel,
-            logger_name = "Driver({})".format(name), 
+            logger_name = "Driver({})".format(name),
             i2c_name = name, 
-            dunder_name = __name__, 
+            dunder_name = __name__,
             simulate = simulate,
         )
 
@@ -41,7 +43,7 @@ class AtlasECDriver(AtlasDriver):
     def read_electrical_conductivity(self) -> Tuple[float, Error]:
         """ Reads electrical conductivity from sensor, sets significant 
             figures based off error magnitude, returns value in mS/cm. """
-        self.logger.debug("Reading electrical conductivity")
+        self.logger.info("Reading electrical conductivity")
 
         # Get electrical conductivity reading from hardware
         # Assumes electrical conductivity is only enabled output
@@ -62,10 +64,15 @@ class AtlasECDriver(AtlasDriver):
         error_value = electrical_conductivity * self._electrical_conductivity_accuracy_percent / 100
         error_magnitude = math.magnitude(error_value)
         significant_figures = error_magnitude * -1
-        electrical_conductivity = round(electrical_conductivity, significant_figures) # TODO: Does this work well on a BBB?
+        electrical_conductivity = round(electrical_conductivity, significant_figures)
+
+        # Verify electrical conductivity value within valid range
+        if electrical_conductivity > self._min_electrical_conductivity and electrical_conductivity < self._min_electrical_conductivity:
+            self.logger.warning("Electrical conductivity outside of valid range")
+            electrical_conductivity = None
 
         # Successfully read electical conductivity!
-        self.logger.debug("Electrical Conductivity: {}".format(electrical_conductivity))
+        self.logger.info("EC: {} mS/cm".format(electrical_conductivity))
         return electrical_conductivity, Error(None)
 
 
