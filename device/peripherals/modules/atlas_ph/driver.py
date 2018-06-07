@@ -19,6 +19,8 @@ class AtlasPHDriver(AtlasDriver):
 
     # Initialize sensor properties
     _potential_hydrogen_accuracy = 0.002
+    _min_potential_hydrogen = 0.001
+    _max_potential_hydrogen = 14.000
 
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
@@ -31,8 +33,8 @@ class AtlasPHDriver(AtlasDriver):
             address = address, 
             mux = mux,
             channel = channel,
-            logger_name = "AtlasPHDriver-{}".format(name), 
-            i2c_name = "AtlasPH-{}".format(name), 
+            logger_name = "Driver({})".format(name), 
+            i2c_name = name, 
             dunder_name = __name__, 
             simulate = simulate,
         )
@@ -41,7 +43,7 @@ class AtlasPHDriver(AtlasDriver):
     def read_potential_hydrogen(self) -> Tuple[Optional[float], Error]:
         """ Reads potential hydrogen from sensor, sets significant 
             figures based off error magnitude. """
-        self.logger.debug("Reading potential hydrogen value from hardware")
+        self.logger.debug("Reading potential hydrogen")
 
         # Get potential hydrogen reading from hardware
         # Assumed potential hydrogen is only enabled output
@@ -60,7 +62,13 @@ class AtlasPHDriver(AtlasDriver):
         significant_figures = error_magnitude * -1
         potential_hydrogen = round(potential_hydrogen_raw, significant_figures)
 
+        # Verify potential hydrogen value within valid range
+        if potential_hydrogen > self._min_potential_hydrogen and potential_hydrogen < self._min_potential_hydrogen:
+            self.logger.warning("Potential hydrogen outside of valid range")
+            potential_hydrogen = None
+
         # Succesfully read pH!
+        self.logger.info("pH: {}".format(potential_hydrogen))
         return potential_hydrogen, Error(None) 
 
 
@@ -146,31 +154,3 @@ class AtlasPHDriver(AtlasDriver):
 
         # Successfully cleared calibration readings
         return Error(None)
-
-
-    # def probe(self) -> Error:
-    #     """ Probes sensor to quickly check functionality. Reads info 
-    #         from sensor and verifies no communication errors and circuit 
-    #         stamp matches. """
-
-    #     # Read info from device
-    #     self.sensor_type, self.firmware_version, error = self.read_info()
-
-    #     # Check if simulating
-    #     if self.simulate:
-    #         self.sensor_type = "PH"
-    #         self.firmware_version = 2.0
-    #         error = Error(None)
-
-    #     # Check for errors:
-    #     if error.exists():
-    #         error.report("Driver probe failed")
-    #         return error
-
-    #     # Check for correct sensor type
-    #     if self.sensor_type != "PH":
-    #         error = Error("Driver probe failed, incorrect sensor type. `{}` != `PH`".format(sensor_type))
-    #         return error
-
-    #     # Probe successful!
-    #     return Error(None)

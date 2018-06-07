@@ -141,6 +141,9 @@ class AtlasDOSensor(AtlasSensorMixin):
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
@@ -152,6 +155,7 @@ class AtlasDOSensor(AtlasSensorMixin):
             return error
 
         # Successfuly probed!
+        self.health.reset()
         return Error(None)
 
 
@@ -175,12 +179,16 @@ class AtlasDOSensor(AtlasSensorMixin):
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read dissolved oxygen, became too unhealthy")
             return None, error
 
         # Successfuly read dissolved oxygen!
+        self.health.reset()
         return do, Error(None)
 
 

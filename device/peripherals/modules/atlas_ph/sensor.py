@@ -23,7 +23,7 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Initialize logger
         self.logger = Logger(
-            name = "AtlasPHSensor({})".format(name),
+            name = "Sensor({})".format(name),
             dunder_name = __name__,
         )
         
@@ -125,6 +125,9 @@ class AtlasPHSensor(AtlasSensorMixin):
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
@@ -136,6 +139,7 @@ class AtlasPHSensor(AtlasSensorMixin):
             return error
 
         # Successfuly probed!
+        self.health.reset()
         return Error(None)
 
 
@@ -159,12 +163,16 @@ class AtlasPHSensor(AtlasSensorMixin):
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read electrical conductivity, became too unhealthy")
             return None, error
 
         # Successfuly read electrical conductivity!
+        self.health.reset()
         return ec, Error(None)
 
 

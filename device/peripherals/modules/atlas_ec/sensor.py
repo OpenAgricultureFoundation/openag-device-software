@@ -134,6 +134,7 @@ class AtlasECSensor(AtlasSensorMixin):
             return error
 
         # Setup successful!
+        self.health.reset()
         return Error(None)
 
 
@@ -165,6 +166,9 @@ class AtlasECSensor(AtlasSensorMixin):
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
@@ -176,6 +180,7 @@ class AtlasECSensor(AtlasSensorMixin):
             return error
 
         # Successfuly probed!
+        self.health.reset()
         return Error(None)
 
 
@@ -202,13 +207,16 @@ class AtlasECSensor(AtlasSensorMixin):
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read electrical conductivity, became too unhealthy")
             return None, error
 
         # Successfuly read electrical conductivity!
-        self.logger.info("EC: {} mS/cm".format(ec))
+        self.health.reset()
         return ec, Error(None)
 
 

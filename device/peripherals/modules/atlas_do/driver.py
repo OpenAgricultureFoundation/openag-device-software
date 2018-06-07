@@ -19,6 +19,8 @@ class AtlasDODriver(AtlasDriver):
 
     # Initialize sensor properties
     _dissolved_oxygen_accuracy = 0.05 # mg/L
+    _min_dissolved_oxygen = 0.01
+    _max_dissolved_oxygen = 100
 
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
@@ -31,8 +33,8 @@ class AtlasDODriver(AtlasDriver):
             address = address, 
             mux = mux,
             channel = channel,
-            logger_name = "AtlasDODriver-{}".format(name), 
-            i2c_name = "AtlasDO-{}".format(name), 
+            logger_name = "Driver({})".format(name), 
+            i2c_name = name, 
             dunder_name = __name__, 
             simulate = simulate,
         )
@@ -59,6 +61,11 @@ class AtlasDODriver(AtlasDriver):
         error_magnitude = math.magnitude(self._dissolved_oxygen_accuracy)
         significant_figures = error_magnitude * -1
         dissolved_oxygen = round(dissolved_oxygen_raw, significant_figures)
+
+        # Verify dissolved oxygen value within valid range
+        if dissolved_oxygen > self._min_dissolved_oxygen and dissolved_oxygen < self._min_dissolved_oxygen:
+            self.logger.warning("Dissolved oxygen outside of valid range")
+            dissolved_oxygen = None
 
         # Successfully read dissolved oxygen!
         self.logger.debug("dissolved_oxygen = {}".format(dissolved_oxygen))

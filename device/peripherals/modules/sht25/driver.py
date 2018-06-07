@@ -22,6 +22,12 @@ class UserRegister(NamedTuple):
 class SHT25Driver:
     """ Driver for atlas sht25 temperature and humidity sensor. """
 
+    # Initialize variable properties
+    _min_temperature = -40 # C
+    _max_temperature = 125 # C
+    _min_humidity =  0 # %RH
+    _max_humidity = 100 # %RH
+
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
             channel: Optional[int] = None, simulate: bool = False) -> None:
@@ -49,7 +55,7 @@ class SHT25Driver:
 
     def read_temperature(self) -> Tuple[Optional[float], Error]:
         """ Reads temperature value from sensor hardware. """
-        self.logger.debug("Reading temperature value from hardware")
+        self.logger.debug("Reading temperature")
         
         # Send read temperature command (no-hold master)
         error = self.i2c.write([0xF3])
@@ -76,6 +82,11 @@ class SHT25Driver:
         raw = msb * 256 + lsb
         temperature = -46.85 + ((raw * 175.72) / 65536.0)
         temperature = float("{:.0f}".format(temperature))
+
+        # Verify temperature value within valid range
+        if temperature > self._min_temperature and temperature < self._min_temperature:
+            self.logger.warning("Temperature outside of valid range")
+            temperature = None
 
         # Successfully read temperature!
         self.logger.debug("Temperature: {} C".format(temperature))
@@ -111,6 +122,11 @@ class SHT25Driver:
         raw = msb * 256 + lsb
         humidity = -6 + ((raw * 125.0) / 65536.0)
         humidity = float("{:.0f}".format(humidity))
+
+        # Verify humidity value within valid range
+        if humidity > self._min_humidity and humidity < self._min_humidity:
+            self.logger.warning("Humidity outside of valid range")
+            humidity = None
         
         # Successfully read humidity!
         self.logger.debug("Humidity: {} %".format(humidity))

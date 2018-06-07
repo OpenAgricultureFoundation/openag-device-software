@@ -50,6 +50,7 @@ class SHT25Sensor:
 
     def initialize(self) -> Error:
         """ Initializes sensor. """
+        self.logger.info("Initializing")
 
         # Check if simulating
         if self.simulate:
@@ -64,12 +65,15 @@ class SHT25Sensor:
             return error
 
         # Successfully initialized!
+        self.logger.info("Successfully initialized!")
         return Error(None)
 
 
     def setup(self) -> Error:
         """ Sets up sensor. No setup required. """
+        self.logger.info("Setting up")
         return Error(None)
+        self.logger.info("Successfully setup!")
 
 
     def reset(self):
@@ -98,12 +102,16 @@ class SHT25Sensor:
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
             return error
 
         # Successfuly probed!
+        self.health.reset()
         return Error(None)
 
 
@@ -113,7 +121,10 @@ class SHT25Sensor:
 
         # Check if simulating
         if self.simulate:
-            return 20.2, Error(None)
+            self.logger.info("Simulating reading temperature")
+            temperature = 20.2
+            self.logger.info("Temperature: {} C".format(temperature))
+            return temperature, Error(None)
 
         # Send commands until success or becomes too healthy
         while self.healthy:
@@ -128,12 +139,16 @@ class SHT25Sensor:
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read temperature, became too unhealthy")
             return None, error
 
         # Successfuly read temperature!
+        self.health.reset()
         return temperature, Error(None)
 
 
@@ -143,7 +158,10 @@ class SHT25Sensor:
 
         # Check if simulating
         if self.simulate:
-            return 40.4, Error(None)
+            self.logger.info("Simulating reading humidity")
+            humidity = 40.4
+            self.logger.info("Humidity: {} %".format(humidity))
+            return humidity, Error(None)
 
         # Send commands until success or becomes too healthy
         while self.healthy:
@@ -158,10 +176,14 @@ class SHT25Sensor:
                 self.health.report_success()
                 break
 
+            # Retry every few seconds
+            time.sleep(3)
+
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read humidity, became too unhealthy")
             return None, error
 
         # Successfuly read humidity!
+        self.health.reset()
         return humidity, Error(None)
