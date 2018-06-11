@@ -1,5 +1,5 @@
 # Import standard python modules
-import time, os, datetime
+import time, os, datetime, glob
 from typing import Optional, Tuple
 
 # Import device comms
@@ -37,32 +37,23 @@ class USBCameraDriver:
             os.makedirs(directory)
 
 
-    def get_camera(self) -> Tuple[Optional[pygame.camera.Camera], Error]:
-        """ Gets a pygame camera object from stored vendor and product ids. 
-            Requires only one active camera at a time. """
+    def list_cameras(self, vendor_id: int = None, product_id: int = None):
+        """ Returns list of cameras that match the provided vendor id and 
+            product id. """
 
-        # Check if simulated
-        if self.simulate:
-            self.logger.info("Simulating getting camera")
-            return None, Error(None)
+        # List all cameras
+        cameras = glob.glob("/dev/video*")
 
-        # Get camera paths that match vendor and product ids
-        self.logger.info("Getting camera")
-        camera_paths = pygame.camera.list_cameras()
-        matched_camera_paths = []
-        for camera_path in camera_paths:
-            if usb_device_matches(camera_path, self.vendor_id, self.product_id):
-                matched_camera_paths.append(camera_path)
+        # Check if filtering by product and vendor id
+        if vendor_id == None and product_id == None:
+            return cameras
 
-        # Check only one active camera
-        if len(matched_camera_paths) < 1:
-            return None, Error("Unable to get camera, no active cameras")
-        elif len(matched_camera_paths) > 1:
-            return None, Error("Unable to get camera, too many active cameras")
-
-        # Successfully got camera!
-        camera = pygame.camera.Camera(matched_camera_paths[0], self.resolution)
-        return camera, Error(None)
+        # Check for product and vendor id matches
+        matches = []
+        for camera in cameras:
+            if usb_device_matches(camera, vendor_id, product_id):
+                matches.append(camera)
+        return matches
 
 
     def capture(self) -> Error:
@@ -71,30 +62,34 @@ class USBCameraDriver:
         # Check if simulated
         if self.simulate:
             self.logger.info("Simulating capturing image")
-            return Error(None)        
-
-        # Get camera
-        camera, error = self.get_camera()
-
-        # Check for errors
-        if error.exists():
-            error.report("Unable to capture image")
-            return error
+            return Error(None)  
 
         # Capture image
-        self.logger.info("Capturing image")
-        camera.start()
-        image = camera.get_image()
-        camera.stop()
+        self.logger.info("Capturing image")   
+
+        # Get camera paths
+        cameras = self.list_cameras(self.vendor_id, self.product_id)
+
+        # Check only one active camera
+        if len(cameras) < 1:
+            return Error("Unable to capture, no active cameras")
+        elif len(cameras) > 1:
+            return Error("Unable to capture, too many active cameras")
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
-        filename = timestr  + "_"  + self.name + ".jpg"
+        filename = timestr  + "_"  + self.name + ".png"
 
-        # Save image
+        # Build filepath string
         filepath = self.directory + filename
-        self.logger.info("Saving image: {}".format(filepath))
-        pygame.image.save(image, filepath)
+
+        # Capture image
+        self.logger.info("Capturing image from: {} to: {}".format(cameras[0], filepath))
+        try:
+            command = 'fswebcam -d {} -r 2592x1944 --background --png 9 --no-banner --save {}'.format(cameras[0], filepath)
+            os.system(command)
+        except Exception as e:
+            return Error("Unable to capture image, unexpected exception: {}".format(e))
 
         # Successfully captured image
         return Error(None)

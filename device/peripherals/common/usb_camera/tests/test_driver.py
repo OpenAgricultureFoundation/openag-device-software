@@ -25,11 +25,6 @@ def test_init():
         simulate = True,
     )
 
-def test_get_camera():
-    driver = USBCameraDriver("Test", (2592, 1944), 0x05A3, 0x9520, directory, simulate=True)
-    camera, error = driver.get_camera()
-    assert error.exists() == False
-
 def test_capture():
     driver = USBCameraDriver("Test", (2592, 1944), 0x05A3, 0x9520, directory, simulate=True)
     error = driver.capture()
