@@ -25,7 +25,6 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
 
 # Setup parser functions
-parser.add_argument("--camera", action="store_true", help="get camera")
 parser.add_argument("--capture", action="store_true", help="capture image")
 
 
@@ -73,17 +72,8 @@ if __name__ == "__main__":
     # Loop forever
     while True:
 
-        # Check if reading temperature
-        if args.camera:
-            print("Getting camera")
-            _, error = driver.get_camera()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Successfully got camera!")
-
-        # Check if reading humidity
-        elif args.capture:
+        # Check if capturing image
+        if args.capture:
             print("Capturing image")
             error = driver.capture()
             if error.exists():
