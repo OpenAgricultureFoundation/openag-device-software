@@ -46,6 +46,7 @@ class ELPUSB500W02ML21Camera:
 
         # Check if simulating
         if self.simulate:
+            self.logger.info("Probe simulated!")
             return Error(None)
         
         # Probe driver
@@ -58,6 +59,7 @@ class ELPUSB500W02ML21Camera:
             return error
 
         # Successfully probed!
+        self.logger.info("Probe successful!")
         return Error(None)
 
 

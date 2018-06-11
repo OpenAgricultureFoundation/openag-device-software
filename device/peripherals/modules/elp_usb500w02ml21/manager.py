@@ -32,7 +32,8 @@ class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
         )
 
         # Default to taking an image every hour
-        self._default_sampling_interval_seconds = 30 # 3600
+        self._min_sampling_interval_seconds = 120
+        self._default_sampling_interval_seconds = 1800 # 3600
 
 
     def initialize(self) -> None:

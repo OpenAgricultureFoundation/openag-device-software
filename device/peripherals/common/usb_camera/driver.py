@@ -56,6 +56,22 @@ class USBCameraDriver:
         return matches
 
 
+    def get_camera(self) -> Tuple[Optional[str], Error]:
+        """ Gets camera paths. """
+
+        # Get camera paths that match vendor and product ID
+        cameras = self.list_cameras(self.vendor_id, self.product_id)
+
+        # Check only one active camera
+        if len(cameras) < 1:
+            return None, Error("Unable to capture, no active cameras")
+        elif len(cameras) > 1:
+            return None, Error("Unable to capture, too many active cameras")
+
+        # Successfuly got camera!
+        return cameras[0], Error(None)
+
+
     def capture(self) -> Error:
         """ Captures an image. """
 
@@ -64,17 +80,13 @@ class USBCameraDriver:
             self.logger.info("Simulating capturing image")
             return Error(None)  
 
-        # Capture image
-        self.logger.info("Capturing image")   
+        # Get camera
+        camera, error = self.get_camera()
 
-        # Get camera paths
-        cameras = self.list_cameras(self.vendor_id, self.product_id)
-
-        # Check only one active camera
-        if len(cameras) < 1:
-            return Error("Unable to capture, no active cameras")
-        elif len(cameras) > 1:
-            return Error("Unable to capture, too many active cameras")
+        # Check for errors
+        if error.exists():
+            error.report("Unable to capture")
+            return None, error
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
@@ -84,12 +96,19 @@ class USBCameraDriver:
         filepath = self.directory + filename
 
         # Capture image
-        self.logger.info("Capturing image from: {} to: {}".format(cameras[0], filepath))
+        self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
-            command = 'fswebcam -d {} -r 2592x1944 --background --png 9 --no-banner --save {}'.format(cameras[0], filepath)
+
+            # TODO: Can we increase resolution? Spec says 2592x1944 but fswebcam returns garbled image...
+           
+            command = 'fswebcam -d {} -r 640x480 --background --png 9 --no-banner --save {}'.format(camera, filepath)
             os.system(command)
         except Exception as e:
             return Error("Unable to capture image, unexpected exception: {}".format(e))
+
+        # TODO: Wait for file in destination and do some prelim checks:
+        #  - filesize not too small?
+        #  - all black? all white?
 
         # Successfully captured image
         return Error(None)
