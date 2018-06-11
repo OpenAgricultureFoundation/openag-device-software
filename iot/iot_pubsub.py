@@ -114,9 +114,6 @@ class IoTPubSub:
         try:
             message_obj = {}
             message_obj['messageType'] = messageType
-#TODO: remove experiment and treatment from the SYSTEM - later.  Involves changing the UI queries too...
-            message_obj['exp'] = self.args.experiment
-            message_obj['treat'] = self.args.treatment
             message_obj['var'] = varName
 
             # format our json values
@@ -184,7 +181,6 @@ class IoTPubSub:
             valuesDict = {}
             value = {}
             value['name'] = 'recipe'
-            value['type'] = 'string'
             value['value'] = valuesJsonString
             valuesDict['values'] = [value] # new list of one value
     
@@ -196,6 +192,26 @@ class IoTPubSub:
 
         except Exception as e:
             self.logger.critical( "publishCommandReply: Exception: %s" % e)
+            return False
+
+
+    #--------------------------------------------------------------------------
+#debugrob: This is the only way I've found to send an image (as binary) - sending it as a base64 string doesn't work, paho gives "out of memory".
+
+# The problem with this solution is that there is no way to send metadata, such as the variable name.   The MQTT server will get the device id.
+
+    def publishBinaryImage( self, imageBytes ):
+        """ Publish a single binary image variable. """
+        try:
+            self.mqtt_client.publish( self.mqtt_topic, imageBytes, qos=1 )
+            self.logger.info('publishBinaryImage: sent image to {}'.format(
+                    self.mqtt_topic))
+            return True
+
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.logger.critical( "publishBinaryImage: Exception: {}".format( e ))
+            traceback.print_tb( exc_traceback, file=sys.stdout )
             return False
 
 
@@ -296,8 +312,6 @@ class IoTPubSub:
         mqtt_bridge_hostname = 'mqtt.googleapis.com'
         mqtt_bridge_port = 8883 # clould also be 443
         jwt_expires_minutes = 20
-        experiment = 'Exp'
-        treatment = 'Treat'
 
 
     #--------------------------------------------------------------------------

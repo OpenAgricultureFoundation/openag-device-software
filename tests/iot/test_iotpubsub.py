@@ -21,6 +21,7 @@ def test_pubsub_initial_state():
     assert ps.connected == False
     assert ps.messageCount == 0
     assert ps.publishCount == 0
+    # we don't process network events here, so we won't get any messages.
 
 
 def test_pubsub_live_recv_cmd():
