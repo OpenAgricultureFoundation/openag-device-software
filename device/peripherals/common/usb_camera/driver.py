@@ -2,10 +2,6 @@
 import time, os, datetime
 from typing import Optional, Tuple
 
-# Import pygame
-import pygame
-import pygame.camera
-
 # Import device comms
 from device.comms.i2c import I2C
 
@@ -39,9 +35,6 @@ class USBCameraDriver:
         # Check directory exists else create it
         if not os.path.exists(directory):
             os.makedirs(directory)
-
-        # Initialize pygame
-        pygame.camera.init()
 
 
     def get_camera(self) -> Tuple[Optional[pygame.camera.Camera], Error]:
