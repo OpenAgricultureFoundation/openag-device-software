@@ -1,0 +1,49 @@
+{
+	"name":  "ELP USB500W02M-L21 Camera",
+	"version": "1",
+	"uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+	"module_name": "usb_camera.manager",
+	"class_name": "USBCameraManager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		},	
+		"directory": "images/",
+		"communication": null
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 3600,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	},
+	"properties": {
+		"vendor_id": "0x05A3",
+		"product_id": "0x9520",
+		"resolution": "640x480"
+	}
+}
