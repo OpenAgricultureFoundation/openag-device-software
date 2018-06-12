@@ -31,15 +31,14 @@ class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
             simulate = self.simulate,
         )
 
-        # Default to taking an image every hour
-        self._min_sampling_interval_seconds = 120
-        self._default_sampling_interval_seconds = 1800 # 3600
+        # Initialize sampling parameters
+        self._min_sampling_interval_seconds = 120 # this is a function of resolution + compression level
+        self._default_sampling_interval_seconds = 3600 # every hour
 
 
     def initialize(self) -> None:
         """ Initializes manager."""
         self.logger.info("Initializing")
-
 
         # Initialize health
         self.health = 100

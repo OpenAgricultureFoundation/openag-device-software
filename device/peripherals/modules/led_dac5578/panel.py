@@ -81,6 +81,7 @@ class Panel:
             self.health.report_success()
 
         # Initialization successful!
+        self.health.reset()
         self.logger.debug("Successfully initialized")
         return Error(None)
 
@@ -132,6 +133,7 @@ class Panel:
             self.health.report_success()
         
         # Successfully set output!
+        self.health.reset()
         self.logger.debug("Successfully set output")
         return Error(None)
 
@@ -176,6 +178,7 @@ class Panel:
             self.health.report_success()
         
         # Successfully set outputs!
+        self.health.reset()
         self.logger.debug("Successfully set outputs")
         return Error(None)
 
