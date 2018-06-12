@@ -19,7 +19,7 @@ def test_send_image():
 
     ps = IoTPubSub( dummy_command_received ) 
 
-    ps.publishBinaryImage( contents_bytes ) 
+    ps.publishBinaryImage( 'webcam-top', contents_bytes ) 
     count = 0
     while 0 == ps.publishCount and count < 20:
         count = count + 1

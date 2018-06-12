@@ -43,3 +43,11 @@ else
   echo "Unsupported OS: $OSTYPE, please manually install postgres and python3"
 fi
 
+# Install the python static type checker - used when testing.
+python3 -m pip install -U mypy
+
+# if you are a VIM geek:  https://github.com/Integralist/vim-mypy
+
+
+
+

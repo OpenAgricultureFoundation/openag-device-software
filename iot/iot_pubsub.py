@@ -21,7 +21,7 @@ rbaynes 2018-04-10
 """
 
 
-import datetime, os, ssl, time, logging, json, sys, traceback
+import datetime, os, ssl, time, logging, json, sys, traceback, struct
 import jwt
 import paho.mqtt.client as mqtt
 
@@ -196,21 +196,35 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
-#debugrob: This is the only way I've found to send an image (as binary) - sending it as a base64 string doesn't work, paho gives "out of memory".
-
-# The problem with this solution is that there is no way to send metadata, such as the variable name.   The MQTT server will get the device id.
-
-    def publishBinaryImage( self, imageBytes ):
+    def publishBinaryImage( self, variableName, imageBytes ):
         """ Publish a single binary image variable. """
+        if None == variableName or None == imageBytes or \
+           0 == len(variableName) or 0 == len(imageBytes) or \
+           not isinstance( variableName, str ) or \
+           not isinstance( imageBytes, bytes ):
+            self.logger.critical( "publishBinaryImage: invalid args." )
+            return False
+
         try:
-            self.mqtt_client.publish( self.mqtt_topic, imageBytes, qos=1 )
+            # Combine the name string and image binary into one bytes blob
+            endNameIndex = 101 # 1 byte for pascal string size, 100 chars.
+            namePackedFormatStr = '101p'
+            namePacked = struct.pack( namePackedFormatStr, 
+                    bytes( variableName, 'utf-8' )) 
+            ba = bytearray( namePacked ) # need to use a mutable bytearray
+            # append the image at index (name length + pascal length byte)
+            ba[ endNameIndex:endNameIndex ] = imageBytes 
+            bytes_to_publish = bytes( ba )
+
+            self.mqtt_client.publish( self.mqtt_topic, bytes_to_publish, qos=1)
             self.logger.info('publishBinaryImage: sent image to {}'.format(
                     self.mqtt_topic))
             return True
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical( "publishBinaryImage: Exception: {}".format( e ))
+            self.logger.critical( \
+                    "publishBinaryImage: Exception: {}".format( e ))
             traceback.print_tb( exc_traceback, file=sys.stdout )
             return False
 
