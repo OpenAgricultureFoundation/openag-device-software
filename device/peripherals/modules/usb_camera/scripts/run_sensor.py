@@ -5,11 +5,11 @@ import sys, os, json, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.elp_usb500w02ml21.camera import ELPUSB500W02ML21Camera
+    from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
 except:
     # ... if running tests from same dir as camera.py
     os.chdir("../../../../")
-    from device.peripherals.modules.elp_usb500w02ml21.camera import ELPUSB500W02ML21Camera
+    from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -48,18 +48,19 @@ if __name__ == "__main__":
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
         filepath = "data/devices/edu1.json"
+        setup_dict = json.load(open("device/peripherals/modules/usb_camera/setups/elp_usb500w02ml21.json"))
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
-    # # Initialize camera
-    # device_config = json.load(open(filepath))
-    # peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-1")
-
-    directory = "device/peripherals/modules/elp_usb500w02ml21/scripts/images/"
-    camera = ELPUSB500W02ML21Camera(
+    # Initialize sensor
+    directory = "device/peripherals/modules/usb_camera/scripts/images/"
+    camera = USBCameraSensor(
         name = "Camera-1", 
         directory = directory,
+        vendor_id = setup_dict["properties"]["vendor_id"],
+        product_id = setup_dict["properties"]["product_id"],
+        resolution = setup_dict["properties"]["resolution"],
     )
 
     # Check for loop

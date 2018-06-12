@@ -10,8 +10,8 @@ from device.utilities.error import Error
 from device.peripherals.classes.peripheral_events import PeripheralEvents
 
 
-class ELPUSB500W02ML21Events(PeripheralEvents):
-    """ Event mixin for sht25 temperature and humidity sensor. """
+class USBCameraEvents(PeripheralEvents):
+    """ Event mixin for usb camera sensor. """
 
 
     def process_peripheral_specific_event(self, request: Dict) -> Dict:

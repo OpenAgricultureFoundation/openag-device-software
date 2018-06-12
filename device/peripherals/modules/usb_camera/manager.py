@@ -10,12 +10,12 @@ from device.utilities.error import Error
 from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import led array and events
-from device.peripherals.modules.elp_usb500w02ml21.camera import ELPUSB500W02ML21Camera
-from device.peripherals.modules.elp_usb500w02ml21.events import ELPUSB500W02ML21Events
+from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
+from device.peripherals.modules.usb_camera.events import USBCameraEvents
 
 
-class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
-    """ Manages an ELP USB500W02M-L21 camera. """
+class USBCameraManager(PeripheralManager, USBCameraEvents):
+    """ Manages a usb camera. """
 
     def __init__(self, *args, **kwargs):
         """ Instantiates manager Instantiates parent class, and initializes 
@@ -25,14 +25,17 @@ class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
         super().__init__(*args, **kwargs)
 
         # Initialize camera
-        self.camera = ELPUSB500W02ML21Camera(
+        self.sensor = USBCameraSensor(
             name = self.name, 
             directory = self.parameters["directory"],
+            vendor_id = int(self.setup_dict["properties"]["vendor_id"], 16),
+            product_id = int(self.setup_dict["properties"]["product_id"], 16),
+            resolution = self.setup_dict["properties"]["resolution"],
             simulate = self.simulate,
         )
 
         # Initialize sampling parameters
-        self._min_sampling_interval_seconds = 120 # this is a function of resolution + compression level
+        self._min_sampling_interval_seconds = 120 # should never take more than 2 minutes to capture an image
         self._default_sampling_interval_seconds = 3600 # every hour
 
 
@@ -44,7 +47,7 @@ class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
         self.health = 100
 
         # Initialize camera
-        error = self.camera.probe()
+        error = self.sensor.probe()
 
         # Check for errors
         if error.exists():
@@ -67,18 +70,18 @@ class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
         """ Updates camera when in normal mode. """
 
         # Capture image
-        error = self.camera.capture()
+        error = self.sensor.capture()
 
         # Check for errors:
         if error.exists():
             error.report("Manager unable to update")
             self.logger.warning(error.trace)
             self.mode = Modes.ERROR
-            self.health = self.camera.health
+            self.health = self.sensor.health
             return
 
         # Update reported values
-        self.health = self.camera.health
+        self.health = self.sensor.health
         
         
     def reset(self) -> None:
@@ -89,7 +92,7 @@ class ELPUSB500W02ML21(PeripheralManager, ELPUSB500W02ML21Events):
         self.clear_reported_values()
 
         # Reset camera
-        self.camera.reset()
+        self.sensor.reset()
 
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")

@@ -5,14 +5,14 @@ import sys, os
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.common.usb_camera.driver import USBCameraDriver
+    from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 except:
     # ... if running tests from same dir as driver.py
     os.chdir("../../../../")
-    from device.peripherals.common.usb_camera.driver import USBCameraDriver
+    from device.peripherals.modules.usb_camera.driver import USBCameraDriver
     
 
-directory = "device/peripherals/common/usb_camera/tests/images/" 
+directory = "device/peripherals/modules/usb_camera/tests/images/" 
 
 
 def test_init():

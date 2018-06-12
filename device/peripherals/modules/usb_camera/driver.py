@@ -15,7 +15,7 @@ class USBCameraDriver:
     """ Driver for a usb camera. """
 
 
-    def __init__(self, name, vendor_id, product_id, resolution, directory, simulate=False):
+    def __init__(self, name: str, vendor_id: int, product_id: int, resolution: str, directory: str, simulate=False):
         """ Initializes USB camera camera. """
 
         # Initialize parametersrecent
@@ -64,9 +64,9 @@ class USBCameraDriver:
 
         # Check only one active camera
         if len(cameras) < 1:
-            return None, Error("Unable to capture, no active cameras")
+            return None, Error("Driver unable to get camera, no active cameras")
         elif len(cameras) > 1:
-            return None, Error("Unable to capture, too many active cameras")
+            return None, Error("Driver unable to get camera, too many active cameras")
 
         # Successfuly got camera!
         return cameras[0], Error(None)
@@ -85,8 +85,8 @@ class USBCameraDriver:
 
         # Check for errors
         if error.exists():
-            error.report("Unable to capture")
-            return None, error
+            error.report("Driver unable to capture image")
+            return error
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
@@ -101,10 +101,10 @@ class USBCameraDriver:
 
             # TODO: Can we increase resolution? Spec says 2592x1944 but fswebcam returns garbled image...
            
-            command = 'fswebcam -d {} -r 640x480 --background --png 9 --no-banner --save {}'.format(camera, filepath)
+            command = 'fswebcam -d {} -r {} --background --png 9 --no-banner --save {}'.format(camera, self.resolution, filepath)
             os.system(command)
         except Exception as e:
-            return Error("Unable to capture image, unexpected exception: {}".format(e))
+            return Error("Driver unable to capture image, unexpected exception: {}".format(e))
 
         # TODO: Wait for file in destination and do some prelim checks:
         #  - filesize not too small?

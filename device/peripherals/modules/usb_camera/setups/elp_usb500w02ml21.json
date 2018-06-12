@@ -1,9 +1,9 @@
 {
-	"name":  "ELP USB500W02M-L21 Camera Default",
+	"name":  "ELP USB500W02M-L21 Camera",
 	"version": "1",
 	"uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
-	"module_name": "elp_usb500w02ml21.manager",
-	"class_name": "ELPUSB500W02ML21",
+	"module_name": "usb_camera.manager",
+	"class_name": "USBCameraManager",
 	"parameters": {
 		"variables": {
 			"sensor": null,
@@ -40,5 +40,10 @@
 			"sensor": null,
 			"actuator": null
 		}
+	},
+	"properties": {
+		"vendor_id": "0x05A3",
+		"product_id": "0x9520",
+		"resolution": "640x480"
 	}
 }
