@@ -5,7 +5,7 @@
     "uuid": "4cffeb04-22db-44f6-9cf4-07b595b420f0",
     "peripherals": [
         {
-            "name": "LEDPanel-1",
+            "name": "LEDPanel-Top",
             "type": "LEDDAC5578",
             "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
             "parameters": {
@@ -25,13 +25,13 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
+                        {"name": "Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
                     ]
                 }
             }
         },
         {
-            "name": "AtlasEC-1",
+            "name": "AtlasEC-Reservoir",
             "type": "AtlasEC",
             "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
             "parameters": {
@@ -57,7 +57,7 @@
             }
         },
         {
-            "name": "AtlasPH-1",
+            "name": "AtlasPH-Reservoir",
             "type": "AtlasPH",
             "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
             "parameters": {
@@ -83,7 +83,7 @@
             }
         },
         {
-            "name": "SHT25-1",
+            "name": "SHT25-Top",
             "type": "SHT25",
             "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
             "parameters": {
@@ -106,7 +106,7 @@
             }
         },
         {
-            "name": "T6713-1",
+            "name": "T6713-Top",
             "type": "T6713",
             "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
             "parameters": {
@@ -126,6 +126,23 @@
                     "channel": 2, 
                     "address": "0x15"
                 }
+            }
+        },
+        {
+            "name": "Camera-Top",
+            "type": "ELPUSB500W02ML21",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera Default",
+                    "file_name": "elp_usb500w02ml21/setups/default"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "directory": "images/",
+                "communication": null
             }
         }
     ],
