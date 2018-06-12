@@ -1,28 +1,22 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import manager module...
+# Import driver module...
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.elp_usb500w02ml21.manager import ELPUSB500W02ML21
+    from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 except:
-    # ... if running tests from same dir as manager.py
+    # ... if running tests from same dir as driver.py
     os.chdir("../../../../")
-    from device.peripherals.modules.elp_usb500w02ml21.manager import ELPUSB500W02ML21
+    from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
-# Import device state
-from device.state import State
-
-# Initialize state
-state = State()
-
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug usb elp camera manager")
+parser = argparse.ArgumentParser(description="Test and debug usb camera driver")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
@@ -31,9 +25,7 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
 
 # Setup parser functions
-parser.add_argument("--update", action="store_true", help="updates sensor")
-parser.add_argument("--reset", action="store_true", help="resets sensor")
-parser.add_argument("--shutdown", action="store_true", help="shuts down sensor")
+parser.add_argument("--capture", action="store_true", help="capture image")
 
 
 # Run main
@@ -50,23 +42,27 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize config
+    # Initialize device config
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
         filepath = "data/devices/edu1.json"
+        setup_dict = json.load(open("device/peripherals/modules/usb_camera/setups/elp_usb500w02ml21.json"))
+
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
-    # Initialize manager
-    device_config = json.load(open("data/devices/edu1.json"))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-1")
-    peripheral_config["parameters"]["directory"] = "device/peripherals/modules/elp_usb500w02ml21/scripts/images/"
-    manager = ELPUSB500W02ML21("Camera-1", state, peripheral_config)
-    print("Initializing...")
-    manager.initialize()
-    print("Setting up...")
-    manager.setup()
+    # Initialize driver
+    device_config = json.load(open(filepath))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-1") 
+    directory = "device/peripherals/modules/usb_camera/scripts/images/"       
+    driver = USBCameraDriver(
+        name = "Test",
+        vendor_id = setup_dict["properties"]["vendor_id"],
+        product_id = setup_dict["properties"]["product_id"],
+        resolution = setup_dict["properties"]["resolution"],
+        directory = directory,
+    )
 
     # Check for loop
     if args.loop:
@@ -77,20 +73,14 @@ if __name__ == "__main__":
     # Loop forever
     while True:
 
-        # Check if updating
-        if args.update:
-            print("Updating...")
-            manager.update()
-
-        # Check if resetting
-        if args.reset:
-            print("Resetting...")
-            manager.reset()
-
-        # Check if updating
-        if args.shutdown:
-            print("Shutting down...")
-            manager.shutdown()
+        # Check if capturing image
+        if args.capture:
+            print("Capturing image")
+            error = driver.capture()
+            if error.exists():
+                print("Error: {}".format(error.trace))
+            else:
+                print("Successfully captured image!")
 
         # Check for new command if loop enabled
         if loop:

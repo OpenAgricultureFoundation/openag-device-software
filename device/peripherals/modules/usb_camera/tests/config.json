@@ -6,14 +6,14 @@
             "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
             "parameters": {
                 "setup": {
-                    "name": "ELP USB500W02M-L21 Camera Default",
-                    "file_name": "elp_usb500w02ml21/setups/default"
+                    "name": "ELP USB500W02M-L21 Camera ",
+                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
                 },
                 "variables": {
                     "sensor": null,
                     "actuator": null
                 },
-                "directory": "device/peripherals/modules/elp_usb500w02ml21/tests/images/",
+                "directory": "device/peripherals/modules/usb_camera/tests/images/",
                 "communication": null
             }
         }

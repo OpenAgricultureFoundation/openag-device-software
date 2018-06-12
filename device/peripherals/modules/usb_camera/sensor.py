@@ -7,13 +7,13 @@ from device.utilities.logger import Logger
 from device.utilities.error import Error
 
 # Import device drivers
-from device.peripherals.common.usb_camera.driver import USBCameraDriver
+from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 
-class ELPUSB500W02ML21Camera:
-    """ ELP USB500W02M-L21 usb camera. """
+class USBCameraSensor:
+    """ A usb camera sensor. """
 
-    def __init__(self, name: str, directory: str, simulate: bool = False) -> None:
+    def __init__(self, name: str, directory: str, vendor_id: int, product_id: int, resolution: str, simulate: bool = False) -> None:
         """ Instantiates camera. """
 
         # Initialize logger
@@ -30,9 +30,9 @@ class ELPUSB500W02ML21Camera:
         # Initialize driver
         self.driver = USBCameraDriver(
             name = name,
-            resolution = (2592, 1944),
-            vendor_id = 0x05A3,
-            product_id = 0x9520,
+            vendor_id = vendor_id,
+            product_id = product_id,
+            resolution = resolution,
             directory = directory,
         )
 
@@ -54,7 +54,7 @@ class ELPUSB500W02ML21Camera:
 
         # Check for errors:
         if error.exists():
-            error.report("Probe failed")
+            error.report("Sensor probe failed")
             self.health = 0.0
             return error
 
@@ -75,7 +75,7 @@ class ELPUSB500W02ML21Camera:
 
         # Check for errors
         if error.exists():
-            error.report("Camera unable to capture image")
+            error.report("Sensor unable to capture image")
             self.health = 0.0
             return error
 
