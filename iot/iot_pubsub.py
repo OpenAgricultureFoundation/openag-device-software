@@ -21,7 +21,7 @@ rbaynes 2018-04-10
 """
 
 
-import datetime, os, ssl, time, logging, json, sys, traceback, struct
+import datetime, os, ssl, time, logging, json, sys, traceback, struct, math
 import jwt
 import paho.mqtt.client as mqtt
 
@@ -196,6 +196,7 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
+    # Maximum message size is 256KB, so we may have to send multiple messages.
     def publishBinaryImage( self, variableName, imageBytes ):
         """ Publish a single binary image variable. """
         if None == variableName or None == imageBytes or \
@@ -206,19 +207,47 @@ class IoTPubSub:
             return False
 
         try:
-            # Combine the name string and image binary into one bytes blob
-            endNameIndex = 101 # 1 byte for pascal string size, 100 chars.
-            namePackedFormatStr = '101p'
-            namePacked = struct.pack( namePackedFormatStr, 
-                    bytes( variableName, 'utf-8' )) 
-            ba = bytearray( namePacked ) # need to use a mutable bytearray
-            # append the image at index (name length + pascal length byte)
-            ba[ endNameIndex:endNameIndex ] = imageBytes 
-            bytes_to_publish = bytes( ba )
+            maxMessageSize = 250 * 1024
+            imageSize = len( imageBytes )
+            totalChunks = math.ceil( imageSize / maxMessageSize )
+            imageStartIndex = 0
+            imageEndIndex = imageSize
+            if imageSize > maxMessageSize:
+                imageEndIndex = maxMessageSize
 
-            self.mqtt_client.publish( self.mqtt_topic, bytes_to_publish, qos=1)
-            self.logger.info('publishBinaryImage: sent image to {}'.format(
-                    self.mqtt_topic))
+            for chunk in range( 0, totalChunks ):
+                chunkSize = 4 # 4 byte uint
+                totalChunksSize = 4 # 4 byte uint
+                nameSize = 101 # 1 byte for pascal string size, 100 chars.
+                endNameIndex = chunkSize + totalChunksSize + nameSize
+                packedFormatStr = 'II101p' # uint, uint, 101b pascal string.
+
+                dataPacked = struct.pack( packedFormatStr, 
+                    bytes( chunk, totalChunks, variableName, 'utf-8' )) 
+
+                # make a mutable byte array of the image data
+                imageBA = bytearray( imageBytes ) 
+                imageChunk = bytes( imageBA[ imageStartIndex:imageEndIndex ] )
+
+                ba = bytearray( dataPacked ) 
+                # append the image after two ints and string
+                ba[ endNameIndex:endNameIndex ] = imageBytes 
+                bytes_to_publish = bytes( ba )
+
+                # publish this chunk
+                self.mqtt_client.publish( self.mqtt_topic, bytes_to_publish, 
+                        qos=1)
+                self.logger.info('publishBinaryImage: sent image chunk ' 
+                        '{} of {} for {}'.format( 
+                            chunk, totalChunks, variableName ))
+
+                # for next chunk, start at the ending index
+                imageStartIndex = imageEndIndex 
+                imageEndIndex = imageSize # is this the last chunk?
+                # if we have more than one chunk to go, send the max
+                if imageSize - imageStartIndex > maxMessageSize:
+                    imageEndIndex = maxMessageSize # no, so send max.
+
             return True
 
         except Exception as e:
