@@ -8,12 +8,12 @@ try:
     from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 except:
     # ... if running tests from same dir as driver.py
-    os.chdir("../../../../")
+    sys.path.append("../../../../")
     from device.peripherals.modules.usb_camera.driver import USBCameraDriver
-    
+   
 
+os.chdir("../../../../")
 directory = "device/peripherals/modules/usb_camera/tests/images/" 
-
 
 def test_init():
     driver = USBCameraDriver(
@@ -29,3 +29,4 @@ def test_capture():
     driver = USBCameraDriver("Test", (2592, 1944), 0x05A3, 0x9520, directory, simulate=True)
     error = driver.capture()
     assert error.exists() == False
+    assert False

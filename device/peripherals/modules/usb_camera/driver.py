@@ -74,19 +74,7 @@ class USBCameraDriver:
 
     def capture(self) -> Error:
         """ Captures an image. """
-
-        # Check if simulated
-        if self.simulate:
-            self.logger.info("Simulating capturing image")
-            return Error(None)  
-
-        # Get camera
-        camera, error = self.get_camera()
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to capture image")
-            return error
+        self.logger.info("Capturing image")
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
@@ -94,6 +82,25 @@ class USBCameraDriver:
 
         # Build filepath string
         filepath = self.directory + filename
+
+
+
+        self.logger.error("self.simulate = {}".format(self.simulate))
+
+        # Check if simulated
+        if self.simulate:
+            self.logger.info("Simulating saving image to: {}".format(filepath))
+            command = "cp device/peripherals/modules/usb_camera/simulation_image.png {}".format(filepath)
+            os.system(command)
+            return Error(None)  
+
+        # Camera not simulated!
+        camera, error = self.get_camera()
+
+        # Check for errors
+        if error.exists():
+            error.report("Driver unable to capture image")
+            return error
 
         # Capture image
         self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))

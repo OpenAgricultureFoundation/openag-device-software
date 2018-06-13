@@ -18,7 +18,7 @@ class USBCameraSensor:
 
         # Initialize logger
         self.logger = Logger(
-            name = "Camera({})".format(name),
+            name = "Sensor({})".format(name),
             dunder_name = __name__,
         )
         
@@ -34,6 +34,7 @@ class USBCameraSensor:
             product_id = product_id,
             resolution = resolution,
             directory = directory,
+            simulate = simulate,
         )
 
         # Initialize health metrics
@@ -65,10 +66,7 @@ class USBCameraSensor:
 
     def capture(self) -> Error:
         """ Captures an image. """
-
-        # Check for simulate
-        if self.simulate:
-            return Error(None)
+        self.logger.info("Capturing image")
 
         # Capture image
         error = self.driver.capture()
