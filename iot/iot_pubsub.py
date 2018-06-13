@@ -223,7 +223,7 @@ class IoTPubSub:
                 packedFormatStr = 'II101p' # uint, uint, 101b pascal string.
 
                 dataPacked = struct.pack( packedFormatStr, 
-                    bytes( chunk, totalChunks, variableName, 'utf-8' )) 
+                    chunk, totalChunks, bytes( variableName, 'utf-8' )) 
 
                 # make a mutable byte array of the image data
                 imageBA = bytearray( imageBytes ) 
@@ -231,7 +231,7 @@ class IoTPubSub:
 
                 ba = bytearray( dataPacked ) 
                 # append the image after two ints and string
-                ba[ endNameIndex:endNameIndex ] = imageBytes 
+                ba[ endNameIndex:endNameIndex ] = imageChunk 
                 bytes_to_publish = bytes( ba )
 
                 # publish this chunk

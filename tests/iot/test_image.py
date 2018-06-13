@@ -18,7 +18,6 @@ def test_send_image():
     f.close()
 
     ps = IoTPubSub( dummy_command_received ) 
-    ps.process_network_events() 
 
     ps.publishBinaryImage( 'webcam-top', contents_bytes ) 
     count = 0
