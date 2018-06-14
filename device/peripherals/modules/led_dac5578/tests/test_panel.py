@@ -5,17 +5,17 @@ import sys, os, json
 try:
 	# ... if running tests from project root
 	sys.path.append(".")
-	from device.peripherals.modules.led_dac5578.panel import Panel
+	from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 except:
 	# ... if running tests from same dir as panel.py
 	sys.path.append("../../../../")
-	from device.peripherals.modules.led_dac5578.panel import Panel
+	from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 
 # Change directory for importing files
 os.chdir("../../../../")
 
 # Import test peripheral setup
-peripheral_setup = json.load(open("device/peripherals/modules/led_dac5578/tests/wsetup.json"))
+peripheral_setup = json.load(open("device/peripherals/modules/led_dac5578/tests/setup.json"))
 channel_configs = peripheral_setup["channel_configs"]
 
 
@@ -32,7 +32,7 @@ desired_spectrum_nm_percent = {
 
 
 def test_init():
-	panel = Panel(
+	panel = LEDDAC5578Panel(
 		name = "Test",
 		channel_configs = channel_configs,
 		bus = 2,
@@ -44,12 +44,12 @@ def test_init():
 
 
 def test_initialize():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDDAC5578Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 	panel.initialize()
 
 
 def test_set_output():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDDAC5578Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 
 	# Standard case
 	error = panel.set_output("FR", 90.0)
@@ -61,7 +61,7 @@ def test_set_output():
 
 
 def test_set_outputs():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDDAC5578Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 
 	# Standard case
 	outputs = {"FR": 10, "WW": 50}
@@ -70,7 +70,7 @@ def test_set_outputs():
 
 
 def test_set_spd():
-	panel = Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
+	panel = LEDDAC5578Panel("Test", channel_configs, 2, 0x47, mux = 0x77, channel = 0, simulate = True)
 	channel_outputs, output_spectrum_nm_percent, output_intensity_watts, error = panel.set_spd(
 		desired_distance_cm = desired_distance_cm, 
 		desired_intensity_watts = desired_intensity_watts, 

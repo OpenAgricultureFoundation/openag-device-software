@@ -14,7 +14,7 @@ from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
 from device.peripherals.modules.atlas_ec.events import AtlasECEvents
 
 
-class AtlasEC(PeripheralManager, AtlasECEvents):
+class AtlasECManager(PeripheralManager, AtlasECEvents):
     """ Manages an Atlas Scientific electrical conductivity sensor. """
 
     # Initialize compensation temperature parameters

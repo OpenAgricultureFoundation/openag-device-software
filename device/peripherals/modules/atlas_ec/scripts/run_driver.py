@@ -16,13 +16,13 @@ from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
+parser = argparse.ArgumentParser(description="Test and debug driver")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
@@ -43,20 +43,18 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-
-    # Initialize config
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        filepath = "data/devices/edu1.json"
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-Reservoir")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
-    # Initialize driver
-    device_config = json.load(open(filepath))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-1")        
+    # Initialize driver       
     driver = AtlasECDriver(
-        name = "AtlasEC-1", 
+        name = "AtlasEC-Reservoir", 
         bus = peripheral_config["parameters"]["communication"]["bus"], 
         address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
         mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 

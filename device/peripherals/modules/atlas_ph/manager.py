@@ -14,7 +14,7 @@ from device.peripherals.modules.atlas_ph.sensor import AtlasPHSensor
 from device.peripherals.modules.atlas_ph.events import AtlasPHEvents
 
 
-class AtlasPH(PeripheralManager, AtlasPHEvents):
+class AtlasPHManager(PeripheralManager, AtlasPHEvents):
     """ Manages an Atlas Scientific pH sensor. """
 
     # Initialize compensation temperature parameters

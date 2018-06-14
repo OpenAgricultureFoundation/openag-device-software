@@ -45,7 +45,6 @@ class EnvironmentModel(models.Model):
 class DeviceConfigModel(models.Model):
     uuid = models.UUIDField(primary_key=True, unique=True)
     name = models.TextField()
-    version = models.TextField()
     json = JSONField()
 
     class Meta:
@@ -57,7 +56,6 @@ class DeviceConfigModel(models.Model):
         dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
         self.name = dict_["name"]
-        self.version = dict_["version"]
         super(DeviceConfigModel, self).save(*args, **kwargs)
 
 

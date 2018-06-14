@@ -1,15 +1,22 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import manager module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.sht25.manager import SHT25
-except:
-    # ... if running tests from same dir as manager.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.sht25.manager import SHT25
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("sht25"):
+    print("Running locally")
+    sys.path.append("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+# Import manager
+from device.peripherals.modules.sht25.manager import SHT25Manager
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -18,17 +25,21 @@ from device.utilities.accessors import get_peripheral_config
 # Import device state
 from device.state import State
 
+# Set directory for loading files
+if cwd.endswith("sht25"):
+    os.chdir("../../../../")
+
 # Initialize state
 state = State()
 
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug SHT25 manager")
+parser = argparse.ArgumentParser(description="Test and debug manager")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("--update", action="store_true", help="updates sensor")
@@ -50,18 +61,23 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize config
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        filepath = "data/devices/edu1.json"
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
-    # Initialize manager
-    device_config = json.load(open("data/devices/edu1.json"))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-1")
-    manager = SHT25("SHT25-1", state, peripheral_config)
+    # Instantiate manager
+    manager = SHT25Manager(
+        name = "SHT25-Top", 
+        state = state, 
+        config = peripheral_config,
+    )
+
+    # Initialize and setup manager
     print("Initializing...")
     manager.initialize()
     print("Setting up...")

@@ -11,10 +11,10 @@ from device.utilities.health import Health
 from device.peripherals.utilities import light
 
 # Import led panel
-from device.peripherals.modules.led_dac5578.panel import Panel
+from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 
 
-class Array(object):
+class LEDDAC5578Array(object):
     """ An array of LED panels. """
     
     _is_shutdown: bool = False
@@ -40,7 +40,7 @@ class Array(object):
         # Instantiate all panels in array
         self.panels: List[Panel] = []
         for panel_config in panel_configs:
-            self.panels.append(Panel(
+            self.panels.append(LEDDAC5578Panel(
                 name = panel_config["name"], 
                 channel_configs = channel_configs,
                 bus = int(panel_config["bus"]), 

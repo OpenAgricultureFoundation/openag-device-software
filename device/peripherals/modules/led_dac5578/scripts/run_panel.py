@@ -5,19 +5,18 @@ import sys, os, json, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.led_dac5578.panel import Panel
+    from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 except:
     # ... if running tests from same dir as dac5578.py
     os.chdir("../../../../")
-    from device.peripherals.modules.led_dac5578.panel import Panel
+    from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug LED Panel hardware")
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
+parser = argparse.ArgumentParser(description="Test and debug panel")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
@@ -51,7 +50,7 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize core
+    # Check for device config
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
@@ -65,14 +64,13 @@ if __name__ == "__main__":
     setup_dict = json.load(open("device/peripherals/modules/" + setup_name + ".json"))
 
     # Initialize panel
-    panel = Panel(
+    panel = LEDDAC5578Panel(
         name = peripheral_config["parameters"]["communication"]["panels"][0]["name"],
         channel_configs = setup_dict["channel_configs"], 
         bus = peripheral_config["parameters"]["communication"]["panels"][0]["bus"], 
         address = int(peripheral_config["parameters"]["communication"]["panels"][0]["address"], 16), 
         mux = int(peripheral_config["parameters"]["communication"]["panels"][0]["mux"], 16), 
         channel = peripheral_config["parameters"]["communication"]["panels"][0]["channel"],
-        simulate = True
     )
 
     # Check for loop

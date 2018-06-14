@@ -14,11 +14,11 @@ from device.peripherals.utilities import light
 from device.peripherals.classes.peripheral_manager import PeripheralManager
 
 # Import led array and events
-from device.peripherals.modules.led_dac5578.array import Array
-from device.peripherals.modules.led_dac5578.events import Events
+from device.peripherals.modules.led_dac5578.array import LEDDAC5578Array
+from device.peripherals.modules.led_dac5578.events import LEDDAC5578Events
 
 
-class LEDDAC5578(PeripheralManager, Events):
+class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
     """ Manages an LED array controlled by a dac5578. """
 
     _prev_desired_intensity = None
@@ -44,7 +44,12 @@ class LEDDAC5578(PeripheralManager, Events):
         self.channel_outputs_name = self.parameters["variables"]["actuator"]["channel_output_percents"]
 
         # Instantiate LED array
-        self.array = Array(self.name, self.panel_configs, self.channel_configs, simulate=self.simulate)
+        self.array = LEDDAC5578Array(
+            name = self.name, 
+            panel_configs = self.panel_configs, 
+            channel_configs = self.channel_configs, 
+            simulate = self.simulate,
+        )
 
 
     @property

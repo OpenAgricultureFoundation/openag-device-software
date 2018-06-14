@@ -1,15 +1,22 @@
 # Import standard python libraries
-import sys
+import sys, os
 
-# Import sensor module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_ph.sensor import AtlasPHSensor
-except:
-    # ... if running tests from same dir as sensor.py
-    sys.path.append("../../../../")
-    from device.peripherals.modules.atlas_ph.sensor import AtlasPHSensor
+# Get current working directory
+cwd = os.getcwd()
+print("Running test from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("atlas_ph"):
+    print("Running test locally")
+    os.chdir("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running test globally")
+else:
+    print("Running test from invalid location")
+    sys.exit(0)
+
+# Import sensor
+from device.peripherals.modules.atlas_ph.sensor import AtlasPHSensor
     
 
 def test_init():

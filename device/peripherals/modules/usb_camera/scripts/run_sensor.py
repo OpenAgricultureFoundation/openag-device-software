@@ -1,19 +1,30 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import camera module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
-except:
-    # ... if running tests from same dir as camera.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("usb_camera"):
+    print("Running locally")
+    sys.path.append("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+# Import sensor
+from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
+
+# Set directory for loading files
+if cwd.endswith("usb_camera"):
+    os.chdir("../../../../")
 
 # Setup parser basics
 parser = argparse.ArgumentParser(description="Test and debug camear")
@@ -22,7 +33,7 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser cnfigs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("--probe", action="store_true", help="probes camera")

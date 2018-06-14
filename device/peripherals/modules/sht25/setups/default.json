@@ -3,7 +3,7 @@
 	"version": "1",
 	"uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
 	"module_name": "sht25.manager",
-	"class_name": "SHT25",
+	"class_name": "SHT25Manager",
 	"parameters": {
 		"variables": {
 			"sensor": {

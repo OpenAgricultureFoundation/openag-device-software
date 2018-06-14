@@ -32,7 +32,7 @@ admin.site.register(EnvironmentModel, EnvironmentAdmin)
 
 
 class DeviceConfigAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "name", "version", "json")
+	list_display = ("uuid", "name", "json")
 admin.site.register(DeviceConfigModel, DeviceConfigAdmin)
 
 

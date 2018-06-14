@@ -14,7 +14,7 @@ from device.peripherals.modules.t6713.sensor import T6713Sensor
 from device.peripherals.modules.t6713.events import T6713Events
 
 
-class T6713(PeripheralManager, T6713Events):
+class T6713Manager(PeripheralManager, T6713Events):
     """ Manages a t6713 carbon dioxide sensor. """
 
 
