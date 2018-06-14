@@ -1,15 +1,22 @@
 # Import standard python libraries
-import sys
+import sys, os
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
-except:
-    # ... if running tests from same dir as driver.py
-    sys.path.append("../../../../")
-    from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
+# Get current working directory
+cwd = os.getcwd()
+print("Running test from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("atlas_ph"):
+    print("Running test locally")
+    os.chdir("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running test globally")
+else:
+    print("Running tests from invalid location")
+    sys.exit(0)
+
+# Import driver
+from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
     
 
 def test_init():

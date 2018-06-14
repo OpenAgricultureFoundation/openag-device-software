@@ -1,8 +1,7 @@
 [
-  "tests/test_manager.py::test_init",
-  "tests/test_manager.py::test_initialize",
-  "tests/test_manager.py::test_setup",
-  "tests/test_manager.py::test_update",
-  "tests/test_manager.py::test_reset",
-  "tests/test_manager.py::test_shutdown"
+  "tests/test_driver.py::test_init",
+  "tests/test_driver.py::test_read_carbon_dioxide",
+  "tests/test_driver.py::test_read_status",
+  "tests/test_driver.py::test_enable_abc_logic",
+  "tests/test_driver.py::test_disable_abc_logic"
 ]

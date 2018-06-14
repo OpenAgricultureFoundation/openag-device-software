@@ -1,15 +1,22 @@
 # Import standard python libraries
-import sys
+import sys, os
 
-# Import sensor module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.sht25.sensor import SHT25Sensor
-except:
-    # ... if running tests from same dir as sensor.py
-    sys.path.append("../../../../")
-    from device.peripherals.modules.sht25.sensor import SHT25Sensor
+# Get current working directory
+cwd = os.getcwd()
+print("Running test from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("sht25"):
+    print("Running test locally")
+    os.chdir("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running test globally")
+else:
+    print("Running test from invalid location")
+    sys.exit(0)
+
+# Import manager
+from device.peripherals.modules.sht25.sensor import SHT25Sensor
     
 
 def test_init():

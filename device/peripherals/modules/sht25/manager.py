@@ -14,7 +14,7 @@ from device.peripherals.modules.sht25.sensor import SHT25Sensor
 from device.peripherals.modules.sht25.events import SHT25Events
 
 
-class SHT25(PeripheralManager, SHT25Events):
+class SHT25Manager(PeripheralManager, SHT25Events):
     """ Manages an sht25 temperature and humidity sensor. """
 
     def __init__(self, *args, **kwargs):

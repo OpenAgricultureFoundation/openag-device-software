@@ -3,7 +3,7 @@
 	"version": "1",
 	"uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
 	"module_name": "led_dac5578/manager",
-	"class_name": "LEDDAC5578",
+	"class_name": "LEDDAC5578Manager",
 	"parameters": {
 		"variables": {
 			"sensor": {

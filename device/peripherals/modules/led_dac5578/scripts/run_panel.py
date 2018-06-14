@@ -5,23 +5,26 @@ import sys, os, json, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.led_dac5578.panel import LEDPanel
+    from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 except:
     # ... if running tests from same dir as dac5578.py
-    sys.path.append("../../../")
-    from device.peripherals.led_dac5578.panel import LEDPanel
+    os.chdir("../../../../")
+    from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 
 # Import device utilities
 from device.utilities.logger import Logger
+from device.utilities.accessors import get_peripheral_config
 
-# Change directory for importing files
-os.chdir("../../../")
+# Setup parser basics
+parser = argparse.ArgumentParser(description="Test and debug panel")
+parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
+parser.add_argument("--info", action="store_true", help="set logger in info mode")
+parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Setup parser
-parser = argparse.ArgumentParser(description="Test and debug LED Panel hardware")
-parser.add_argument("--edu1", action="store_true", help="specifies edu config")
-parser.add_argument("--debug", action="store_true", help="sets logger in debug mode")
-parser.add_argument("--info", action="store_true", help="sets logger in info mode")
+# Setup parser configs
+parser.add_argument("--device", type=str, help="specifies device config")
+
+# Setup parser functions
 parser.add_argument("--reset", action="store_true", help="resets LED Panel")
 parser.add_argument("--shutdown", action="store_true", help="shutsdown LED Panel")
 parser.add_argument("-c", "--channel", type=str, help="specifies channel name")
@@ -47,24 +50,37 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize core
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        setup = json.load(open("device/peripherals/led_dac5578/setups/taurus.json"))
-        channel_configs = setup["channel_configs"]
-        panel = LEDPanel("EDU1-LP", channel_configs, 2, 0x47, mux=0x77, channel=3)
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-Top")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
+    # Initialize panel parameters
+    setup_name = peripheral_config["parameters"]["setup"]["file_name"]
+    setup_dict = json.load(open("device/peripherals/modules/" + setup_name + ".json"))
 
-    first = True
+    # Initialize panel
+    panel = LEDDAC5578Panel(
+        name = peripheral_config["parameters"]["communication"]["panels"][0]["name"],
+        channel_configs = setup_dict["channel_configs"], 
+        bus = peripheral_config["parameters"]["communication"]["panels"][0]["bus"], 
+        address = int(peripheral_config["parameters"]["communication"]["panels"][0]["address"], 16), 
+        mux = int(peripheral_config["parameters"]["communication"]["panels"][0]["mux"], 16), 
+        channel = peripheral_config["parameters"]["communication"]["panels"][0]["channel"],
+    )
+
+    # Check for loop
+    if args.loop:
+        loop = True
+    else:
+        loop = False
+
+    # Loop forever
     while True:
-
-        # Check if new command
-        if not first:
-            args = parser.parse_args(shlex.split(new_command))
-        first = False
 
         # Check if resetting
         if args.reset:
@@ -149,6 +165,9 @@ if __name__ == "__main__":
             print("Output intensity: {} Watts".format(output_intensity))
 
 
-        # Check for new command
-        # new_command = input("New command: ")
-        break;
+        # Check for new command if loop enabled
+        if loop:
+            new_command = input("New command: ")
+            args = parser.parse_args(shlex.split(new_command))
+        else:
+            break

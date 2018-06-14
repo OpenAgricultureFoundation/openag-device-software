@@ -10,7 +10,7 @@ from device.utilities.error import Error
 from device.peripherals.classes.peripheral_events import PeripheralEvents
 
 
-class Events(PeripheralEvents):
+class LEDDAC5578Events(PeripheralEvents):
     """ Event mixin for led array. """
 
 

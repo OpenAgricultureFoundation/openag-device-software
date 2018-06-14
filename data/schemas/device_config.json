@@ -5,7 +5,6 @@
 			"type": "string",
 			"enum": ["openag-standard-v1"]},
 		"name": {"type": "string"},
-		"version": {"type": "string"},
 		"uuid": {"type": "string"},
 		"peripherals": {"type": ["array", "null"]},
 		"controllers": {"type": ["array", "null"]}
@@ -13,7 +12,6 @@
 	"required": [
 		"format", 
 		"name", 
-		"version",
 		"uuid", 
 		"peripherals", 
 		"controllers"

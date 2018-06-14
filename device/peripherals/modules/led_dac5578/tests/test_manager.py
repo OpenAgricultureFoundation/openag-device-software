@@ -5,11 +5,11 @@ import sys, os, json
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578
+    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
 except:
     # ... if running tests from same dir as panel.py
     sys.path.append("../../../../")
-    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578
+    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
     
 # Import shared memory
 from device.state import State
@@ -37,7 +37,7 @@ state = State()
 
 
 def test_init():
-    array = LEDDAC5578(
+    array = LEDDAC5578Manager(
         name = "Test",
         state = state,
         config = peripheral_config,
@@ -45,25 +45,25 @@ def test_init():
     )
 
 def test_initialize():
-    array = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
     array.initialize()
 
 
 def test_setup():
-    array = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
     array.initialize()
     array.setup()
 
 
 def test_update():
-    array = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
     array.initialize()
     array.setup()
     array.update()
 
 
 def test_shutdown():
-    array = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
     array.initialize()
     array.setup()
     array.update()

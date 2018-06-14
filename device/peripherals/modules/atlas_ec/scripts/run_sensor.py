@@ -22,7 +22,7 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser cnfigs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("-i", "--initialize", action="store_true", help="initialize sensor")
@@ -45,19 +45,18 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize config
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        filepath = "data/devices/edu1.json"
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-Reservoir")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize sensor
-    device_config = json.load(open(filepath))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-1")
     sensor = AtlasECSensor(
-        name = "AtlasPH-1", 
+        name = "AtlasEC-Reservoir", 
         bus = peripheral_config["parameters"]["communication"]["bus"], 
         address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
         mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 

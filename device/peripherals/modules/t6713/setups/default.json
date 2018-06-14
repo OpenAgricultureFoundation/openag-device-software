@@ -3,7 +3,7 @@
 	"version": "1",
 	"uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
 	"module_name": "t6713.manager",
-	"class_name": "T6713",
+	"class_name": "T6713Manager",
 	"parameters": {
 		"variables": {
 			"sensor": {

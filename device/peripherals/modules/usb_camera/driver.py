@@ -83,10 +83,6 @@ class USBCameraDriver:
         # Build filepath string
         filepath = self.directory + filename
 
-
-
-        self.logger.error("self.simulate = {}".format(self.simulate))
-
         # Check if simulated
         if self.simulate:
             self.logger.info("Simulating saving image to: {}".format(filepath))

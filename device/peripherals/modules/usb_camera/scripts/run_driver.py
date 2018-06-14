@@ -1,19 +1,30 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.usb_camera.driver import USBCameraDriver
-except:
-    # ... if running tests from same dir as driver.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.usb_camera.driver import USBCameraDriver
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("usb_camera"):
+    print("Running locally")
+    sys.path.append("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+# Import driver
+from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
+
+# Set directory for loading files
+if cwd.endswith("usb_camera"):
+    os.chdir("../../../../")
 
 # Setup parser basics
 parser = argparse.ArgumentParser(description="Test and debug usb camera driver")
@@ -22,7 +33,7 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("--capture", action="store_true", help="capture image")
@@ -42,25 +53,26 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize device config
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        filepath = "data/devices/edu1.json"
-        setup_dict = json.load(open("device/peripherals/modules/usb_camera/setups/elp_usb500w02ml21.json"))
-
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-Top")
+        setup_name = peripheral_config["parameters"]["setup"]["file_name"]
+        peripheral_setup = json.load(open("device/peripherals/modules/" + setup_name + ".json"))
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
+    # Initialize directory
+    directory = "device/peripherals/modules/usb_camera/scripts/images/" 
+
     # Initialize driver
-    device_config = json.load(open(filepath))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-1") 
-    directory = "device/peripherals/modules/usb_camera/scripts/images/"       
     driver = USBCameraDriver(
         name = "Test",
-        vendor_id = setup_dict["properties"]["vendor_id"],
-        product_id = setup_dict["properties"]["product_id"],
-        resolution = setup_dict["properties"]["resolution"],
+        vendor_id = peripheral_setup["properties"]["vendor_id"],
+        product_id = peripheral_setup["properties"]["product_id"],
+        resolution = peripheral_setup["properties"]["resolution"],
         directory = directory,
     )
 

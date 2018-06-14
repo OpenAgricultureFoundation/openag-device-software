@@ -5,11 +5,11 @@ import sys, os, json, argparse, logging, time, shlex
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.manager import AtlasEC
+    from device.peripherals.modules.atlas_ec.manager import AtlasECManager
 except:
     # ... if running tests from same dir as manager.py
     os.chdir("../../../../")
-    from device.peripherals.modules.atlas_ec.manager import AtlasEC
+    from device.peripherals.modules.atlas_ec.manager import AtlasECManager
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -28,13 +28,12 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("--update", action="store_true", help="updates sensor")
 parser.add_argument("--reset", action="store_true", help="resets sensor")
 parser.add_argument("--shutdown", action="store_true", help="shuts down sensor")
-
 
 # Run main
 if __name__ == "__main__":
@@ -50,18 +49,23 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize config
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        filepath = "data/devices/edu1.json"
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-Reservoir")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize manager
-    device_config = json.load(open("data/devices/edu1.json"))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasEC-1")
-    manager = AtlasEC("AtlasEC-1", state, peripheral_config)
+    manager = AtlasECManager(
+        name = "AtlasEC-1", 
+        state = state, 
+        config = peripheral_config,
+    )
+    
+    # Initialize and setup manager
     print("Initializing...")
     manager.initialize()
     print("Setting up...")

@@ -3,7 +3,7 @@
 	"version": "1",
 	"uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
 	"module_name": "atlas_ph.manager",
-	"class_name": "AtlasPH",
+	"class_name": "AtlasPHManager",
 	"parameters": {
 		"variables": {
 			"sensor": {

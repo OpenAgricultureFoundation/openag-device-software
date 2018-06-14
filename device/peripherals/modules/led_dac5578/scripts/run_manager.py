@@ -1,19 +1,27 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.led_dac5578.manager import LEDDAC5578
-except:
-    # ... if running tests from same dir as manager.py
-    sys.path.append("../../../")
-    from device.peripherals.led_dac5578.manager import LEDDAC5578
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("led_dac5578"):
+    print("Running locally")
+    os.chdir("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+# Import manager
+from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.modes import Modes
+from device.utilities.accessors import get_peripheral_config
 
 # Import device state
 from device.state import State
@@ -21,18 +29,18 @@ from device.state import State
 # Initialize state
 state = State()
 
-# Change directory for importing files
-os.chdir("../../../")
+# Setup parser basics
+parser = argparse.ArgumentParser(description="Test and debug manager")
+parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
+parser.add_argument("--info", action="store_true", help="set logger in info mode")
+parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Setup parser
-parser = argparse.ArgumentParser(description="Test and debug LED led_dac5578 hardware")
-parser.add_argument("--edu1", action="store_true", help="specifies edu config")
-parser.add_argument("--smhz1", action="store_true", help="specifies edu config")
-parser.add_argument("--debug", action="store_true", help="sets logger in debug mode")
-parser.add_argument("--info", action="store_true", help="sets logger in info mode")
-parser.add_argument("--loop", action="store_true", help="loops command line prompt")
-parser.add_argument("--reset", action="store_true", help="resets LED led_dac5578")
-parser.add_argument("--shutdown", action="store_true", help="shutsdown LED led_dac5578")
+# Setup parser configs
+parser.add_argument("--device", type=str, help="specifies device config")
+
+# Setup parser functions
+parser.add_argument("--reset", action="store_true", help="resets manager")
+parser.add_argument("--shutdown", action="store_true", help="shutsdown manager")
 parser.add_argument("-c", "--channel", type=str, help="specifies channel name")
 parser.add_argument("-v", "--value", type=float, help="specifies output value (0-100)")
 parser.add_argument("--on", action="store_true", help="turns on LEDs, can specify channel")
@@ -56,20 +64,21 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize core
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        device_config = json.load(open("data/devices/edu1.json"))
-        peripheral_config = device_config["peripherals"][0]
-        led_dac5578 = LEDDAC5578("SMHZ1", state, peripheral_config)
-    elif args.smhz1:
-        print("Configuring for small-hazelnut v1.0")
-        device_config = json.load(open("data/devices/smhz1.json"))
-        peripheral_config = device_config["peripherals"][0]
-        led_dac5578 = LEDDAC5578("SMHZ1", state, peripheral_config)
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-Top")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
+
+    # Initialize manager
+    manager = LEDDAC5578Manager(
+        name = "SMHZ1", 
+        state = state, 
+        config = peripheral_config,
+    )
 
     # Check if looping
     if args.loop:
@@ -77,31 +86,25 @@ if __name__ == "__main__":
     else:
         loop = False
 
-    # Optionally loop command inputs
-    first = True
+    # Loop forever
     while True:
-
-        # Check if new command
-        if not first:
-            args = parser.parse_args(shlex.split(new_command))
-        first = False
 
         # Check if resetting
         if args.reset:
             print("Resetting")
-            led_dac5578.reset()
+            manager.reset()
             print("Reset successful")
 
         # Check if shutting down
         elif args.shutdown:
             print("Shutting down")
-            led_dac5578.shutdown()
+            manager.shutdown()
             print("Shutdown successful")
 
         # Check if setting a channel to a value
         elif args.channel != None and args.value != None:
             print("Setting channel {} to {}%".format(args.channel, args.value))
-            error = led_dac5578.set_output(args.channel, args.value)
+            error = manager.set_output(args.channel, args.value)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
@@ -109,32 +112,32 @@ if __name__ == "__main__":
         elif args.on:
             print("Turning on {channel}".format(channel = "all channels" if \
                 args.channel == None else "channel: " + str(args.channel)))
-            led_dac5578.mode = Modes.MANUAL
-            led_dac5578.process_event({"type": "Turn On"})
-            if led_dac5578.response["status"] != 200:
-                print("Error: {}".format(led_dac5578.response["message"]))
+            manager.mode = Modes.MANUAL
+            manager.process_event({"type": "Turn On"})
+            if manager.response["status"] != 200:
+                print("Error: {}".format(manager.response["message"]))
 
         # Check if turning device off
         elif args.off:
             print("Turning off {channel}".format(channel = "all channels" if \
                 args.channel == None else "channel: " + str(args.channel)))
-            led_dac5578.mode = Modes.MANUAL
-            led_dac5578.process_event({"type": "Turn Off"})
-            if led_dac5578.response["status"] != 200:
-                print("Error: {}".format(led_dac5578.response["message"]))
+            manager.mode = Modes.MANUAL
+            manager.process_event({"type": "Turn Off"})
+            if manager.response["status"] != 200:
+                print("Error: {}".format(manager.response["message"]))
 
         # Check if fading
         elif args.fade:
             print("Fading {channel}".format(channel = "all channels" if \
                 args.channel == None else "channel: " + str(args.channel)))
-            led_dac5578.mode = Modes.MANUAL
-            led_dac5578.process_event({"type": "Fade"})
+            manager.mode = Modes.MANUAL
+            manager.process_event({"type": "Fade"})
 
             print("did this return?")
-            if led_dac5578.response["status"] != 200:
-                print("Error: {}".format(led_dac5578.response["message"]))
+            if manager.response["status"] != 200:
+                print("Error: {}".format(manager.response["message"]))
             else:
-                print(led_dac5578.response["message"])
+                print(manager.response["message"])
         
         # Check if setting spd
         elif args.spectrum != None:
@@ -167,7 +170,7 @@ if __name__ == "__main__":
 
             # Set spd
             print("Setting SPD")
-            channel_outputs, output_spectrum, output_intensity, error = led_dac5578.set_spd(
+            channel_outputs, output_spectrum, output_intensity, error = manager.set_spd(
                 desired_distance_cm = distance, 
                 desired_intensity_watts = intensity, 
                 desired_spectrum_nm_percent = spectrum,
@@ -177,8 +180,9 @@ if __name__ == "__main__":
             print("Output intensity: {} Watts".format(output_intensity))
 
 
-        # Check for new command if looping
+        # Check for new command if loop enabled
         if loop:
             new_command = input("New command: ")
+            args = parser.parse_args(shlex.split(new_command))
         else:
             break

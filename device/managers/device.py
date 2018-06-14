@@ -283,9 +283,9 @@ class DeviceManager:
         self.logger.info("Entered CONFIG")
 
         # Load an initial config during development
-        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU1
-        self.config_uuid = "4cffeb04-22db-44f6-9cf4-07b595b420f0" # EDU1 Beta
-        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ1
+        self.config_uuid = "4cffeb04-22db-44f6-9cf4-07b595b420f0" # EDU001
+        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU002
+        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ001
 
         # If device config is not set, wait for config command
         if self.config_uuid == None:
