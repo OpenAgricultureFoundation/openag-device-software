@@ -112,6 +112,8 @@ class IoTPubSub:
     def publishEnvVar( self, varName, valuesDict, messageType = 'EnvVar' ):
         """ Publish a single environment variable. """
         try:
+            if None == self.mqtt_client:
+                return
             message_obj = {}
             message_obj['messageType'] = messageType
             message_obj['var'] = varName
@@ -198,6 +200,8 @@ class IoTPubSub:
     #--------------------------------------------------------------------------
     def publishBinaryImage( self, variableName, imageBytes ):
         """ Publish a single binary image variable. """
+        if None == self.mqtt_client:
+            return
         if None == variableName or None == imageBytes or \
            0 == len(variableName) or 0 == len(imageBytes) or \
            not isinstance( variableName, str ) or \
@@ -237,6 +241,8 @@ class IoTPubSub:
         try:
             # let the mqtt client process any data it has received or 
             # needs to publish
+            if None == self.mqtt_client:
+                return
             self.mqtt_client.loop()
 
             seconds_since_issue = \
