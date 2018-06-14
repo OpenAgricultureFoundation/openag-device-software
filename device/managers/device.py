@@ -286,11 +286,10 @@ class DeviceManager:
         try:
             about = json.load(open("about.json"))
         except:
-            self.error = "Unable to load about file, device unble to be configured"
+            self.error = "Unable to load about file, device unable to be configured"
             self.logger.critical(self.error)
-            self.mode = ERROR
-
-        # TODO: Make this interactive via device UI
+            self.mode = Modes.ERROR
+            return
 
         # Load device config
         config_name = about["device_config"]
@@ -298,24 +297,6 @@ class DeviceManager:
 
         # Load config uuid
         self.config_uuid = device_config["uuid"]
-
-        # Load an initial config during development
-        # self.config_uuid = "4cffeb04-22db-44f6-9cf4-07b595b420f0" # EDU001
-        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU002
-        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ001
-
-        # If device config is not set, wait for config command
-        # if self.config_uuid == None:
-        #     self.logger.info("Waiting for config command")
-
-        #     while True:
-        #         if self.commanded_config_uuid != None:
-        #             self.config_uuid = self.commanded_config_uuid
-        #             self.commanded_config_uuid = None
-        #             break
-        #         # Update every 100ms
-        #         time.sleep(0.1)
-
 
         # Transition to SETUP
         self.mode = Modes.SETUP
@@ -899,14 +880,22 @@ class DeviceManager:
 
     def shutdown_peripheral_threads(self):
         """ Shuts down peripheral threads. """
-        for peripheral_name in self.peripherals:
-            self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
+        ...
+
+        # TODO: Fix this
+
+        # for peripheral_name in self.peripherals:
+        #     self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
 
 
     def shutdown_controller_threads(self):
         """ Shuts down controller threads. """
-        for controller_name in self.controllers:
-            self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
+        ...
+
+        # TODO: Fix this
+
+        # for controller_name in self.controllers:
+        #     self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
 
 
 ################################# Events ######################################
