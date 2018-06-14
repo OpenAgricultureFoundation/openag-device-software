@@ -282,22 +282,40 @@ class DeviceManager:
             config command then transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
+        # Check about file exists in repo
+        try:
+            about = json.load(open("about.json"))
+        except:
+            self.error = "Unable to load about file, device unble to be configured"
+            self.logger.critical(self.error)
+            self.mode = ERROR
+
+        # TODO: Make this interactive via device UI
+
+        # Load device config
+        config_name = about["device_config"]
+        device_config = json.load(open("data/devices/{}.json".format(config_name)))
+
+        # Load config uuid
+        self.config_uuid = device_config["uuid"]
+
         # Load an initial config during development
-        self.config_uuid = "4cffeb04-22db-44f6-9cf4-07b595b420f0" # EDU001
+        # self.config_uuid = "4cffeb04-22db-44f6-9cf4-07b595b420f0" # EDU001
         # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU002
         # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ001
 
         # If device config is not set, wait for config command
-        if self.config_uuid == None:
-            self.logger.info("Waiting for config command")
+        # if self.config_uuid == None:
+        #     self.logger.info("Waiting for config command")
 
-            while True:
-                if self.commanded_config_uuid != None:
-                    self.config_uuid = self.commanded_config_uuid
-                    self.commanded_config_uuid = None
-                    break
-                # Update every 100ms
-                time.sleep(0.1)
+        #     while True:
+        #         if self.commanded_config_uuid != None:
+        #             self.config_uuid = self.commanded_config_uuid
+        #             self.commanded_config_uuid = None
+        #             break
+        #         # Update every 100ms
+        #         time.sleep(0.1)
+
 
         # Transition to SETUP
         self.mode = Modes.SETUP
@@ -690,7 +708,9 @@ class DeviceManager:
 
         # Load device state
         stored_device_state = json.loads(stored_state.device)
-        self.config_uuid = stored_device_state["config_uuid"]
+
+        # Commented this out b/c config uuid loaded from about.json now
+        # self.config_uuid = stored_device_state["config_uuid"]
 
         # Load recipe state
         stored_recipe_state = json.loads(stored_state.recipe)
