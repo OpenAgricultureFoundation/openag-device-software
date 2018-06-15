@@ -21,7 +21,7 @@ rbaynes 2018-04-10
 """
 
 
-import datetime, os, ssl, time, logging, json, sys, traceback, struct
+import datetime, os, ssl, time, logging, json, sys, traceback, base64, math
 import jwt
 import paho.mqtt.client as mqtt
 
@@ -198,31 +198,64 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
-    def publishBinaryImage( self, variableName, imageBytes ):
-        """ Publish a single binary image variable. """
-        if None == self.mqtt_client:
-            return
-        if None == variableName or None == imageBytes or \
-           0 == len(variableName) or 0 == len(imageBytes) or \
+    # Maximum message size is 256KB, so we may have to send multiple messages.
+    def publishBinaryImage( self, variableName, imageType, imageBytes ):
+        """ Publish a blob as (multiple < 256K) base64 messages. """
+        if None == variableName or 0 == len(variableName) or \
+           None == imageType or 0 == len(imageType) or \
+           None == imageBytes or 0 == len(imageBytes) or \
            not isinstance( variableName, str ) or \
+           not isinstance( imageType, str ) or \
            not isinstance( imageBytes, bytes ):
             self.logger.critical( "publishBinaryImage: invalid args." )
             return False
 
         try:
-            # Combine the name string and image binary into one bytes blob
-            endNameIndex = 101 # 1 byte for pascal string size, 100 chars.
-            namePackedFormatStr = '101p'
-            namePacked = struct.pack( namePackedFormatStr, 
-                    bytes( variableName, 'utf-8' )) 
-            ba = bytearray( namePacked ) # need to use a mutable bytearray
-            # append the image at index (name length + pascal length byte)
-            ba[ endNameIndex:endNameIndex ] = imageBytes 
-            bytes_to_publish = bytes( ba )
+            # we send the image as a base64 encoded string (which makes
+            # storing message chunks in datastore on the backend easier)
+            b64Bytes = base64.b64encode( imageBytes )
+            maxMessageSize = 250 * 1024
+            imageSize = len( b64Bytes )
+            totalChunks = math.ceil( imageSize / maxMessageSize )
+            imageStartIndex = 0
+            imageEndIndex = imageSize
+            if imageSize > maxMessageSize:
+                imageEndIndex = maxMessageSize
 
-            self.mqtt_client.publish( self.mqtt_topic, bytes_to_publish, qos=1)
-            self.logger.info('publishBinaryImage: sent image to {}'.format(
-                    self.mqtt_topic))
+            # send all messages with the same ID (for tracking and assembly)
+            messageID = time.time()
+
+            # break image into messages < 256K
+            for chunk in range( 0, totalChunks ):
+
+                # make a mutable byte array of the image data
+                imageBA = bytearray( b64Bytes ) 
+                imageChunk = bytes( imageBA[ imageStartIndex:imageEndIndex ] )
+
+                msg_obj = {}
+                msg_obj['messageType'] = 'Image'
+                msg_obj['messageID'] = messageID
+                msg_obj['varName'] = variableName
+                msg_obj['imageType'] = imageType
+                msg_obj['chunk'] = chunk 
+                msg_obj['totalChunks'] = totalChunks
+                msg_obj['imageChunk'] = imageChunk.decode( 'utf-8' )
+
+                # publish this chunk
+                msg_json = json.dumps( msg_obj ) 
+                self.mqtt_client.publish( self.mqtt_topic, msg_json, qos=1 )
+                self.logger.info('publishBinaryImage: sent image chunk ' 
+                        '{} of {} for {}'.format( 
+                            chunk, totalChunks, variableName ))
+
+                # for next chunk, start at the ending index
+                imageStartIndex = imageEndIndex 
+                imageEndIndex = imageSize # is this the last chunk?
+
+                # if we have more than one chunk to go, send the max
+                if imageSize - imageStartIndex > maxMessageSize:
+                    imageEndIndex = maxMessageSize # no, so send max.
+
             return True
 
         except Exception as e:

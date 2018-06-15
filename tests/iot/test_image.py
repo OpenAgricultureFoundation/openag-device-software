@@ -12,14 +12,15 @@ def dummy_command_received( command, arg0, arg1 ):
 
 def test_send_image():
 
-    path = 'tests/iot/webcam-1-test.jpg'
+    path = 'tests/iot/webcam-1-test.png' # 344K (message limit is 256K)
     f = open( path, 'rb' )
     contents_bytes = f.read()
     f.close()
 
     ps = IoTPubSub( dummy_command_received ) 
+    ps.process_network_events() 
 
-    ps.publishBinaryImage( 'webcam-top', contents_bytes ) 
+    ps.publishBinaryImage( 'webcam-top', 'png', contents_bytes ) 
     count = 0
     while 0 == ps.publishCount and count < 20:
         count = count + 1
