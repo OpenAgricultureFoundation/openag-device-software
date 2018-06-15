@@ -114,6 +114,7 @@ class LEDDAC5578Panel:
         # Check for errors
         if error.exists():
             error.report("Panel unable to set output")
+            self.logger.error(error.latest())
             return error
 
         # Check if panel is healthy
@@ -127,6 +128,7 @@ class LEDDAC5578Panel:
         # Check for errors and update health
         if error.exists():
             error.report("Panel unable to set output")
+            self.logger.error(error.latest())
             self.health.report_failure()
             return error
         else:
@@ -172,6 +174,7 @@ class LEDDAC5578Panel:
         # Check for errors and update health
         if error.exists():
             error.report("Panel unable to set outputs")
+            self.logger.error(error.latest())
             self.health.report_failure()
             return error
         else:
@@ -239,6 +242,7 @@ class LEDDAC5578Panel:
         # Check for errors, no need to update health, handled in set outputs
         if error.exists():
             error.report("Panel unable to turn on")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)
@@ -263,6 +267,7 @@ class LEDDAC5578Panel:
         # Check for errors, no need to update health, handled in set outputs
         if error.exists():
             error.report("Panel unable to turn off")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)

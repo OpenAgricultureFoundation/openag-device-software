@@ -62,6 +62,7 @@ class SHT25Sensor:
         # Check for errors:
         if error.exists():
             error.report("Sensor unable to initialize")
+            self.logger.error(error.latest())
             return error
 
         # Successfully initialized!
@@ -83,6 +84,7 @@ class SHT25Sensor:
 
     def probe(self):
         """ Probes driver until successful or becomes too unhealthy. """
+        self.logger.info("Probing sensor")
 
         # Probe until successful or unhealthy
         while self.healthy:
@@ -104,10 +106,11 @@ class SHT25Sensor:
 
             # Retry every few seconds
             time.sleep(3)
-
+            
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly probed!
@@ -141,10 +144,12 @@ class SHT25Sensor:
 
             # Retry every few seconds
             time.sleep(3)
+            
 
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read temperature, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly read temperature!
@@ -177,11 +182,12 @@ class SHT25Sensor:
                 break
 
             # Retry every few seconds
-            time.sleep(3)
+            time.sleep(3)            
 
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read humidity, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly read humidity!

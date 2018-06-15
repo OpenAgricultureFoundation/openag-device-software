@@ -96,6 +96,7 @@ class USBCameraDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to capture image")
+            self.logger.error(error.summary())
             return error
 
         # Capture image

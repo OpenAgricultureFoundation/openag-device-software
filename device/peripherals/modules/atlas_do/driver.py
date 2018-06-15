@@ -52,6 +52,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Unable to read electrical conductivity")
+            self.logger.error(error.summary())
             return None, error
 
         # Parse response
@@ -83,6 +84,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for error
         if error.exists():
             error.report("Driver unable to set compensation temperature")
+            self.logger.error(error.summary())
             return error
 
         # Successfully set compensation temperature!
@@ -100,6 +102,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for error
         if error.exists():
             error.report("Driver unable to set compensation pressure")
+            self.logger.error(error.summary())
             return error
 
         # Successfully set compensation pressure!
@@ -120,6 +123,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for error
         if error.exists():
             error.report("Driver unable to set compensation electrical conductivity")
+            self.logger.error(error.summary())
             return error
 
         # Successfully set compensation electrical conductivity!
@@ -137,6 +141,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable dissolved oxygen mg/L output")
+            self.logger.error(error.summary())
             return error
 
         # Successfully enabled dissolved oxygen mg/L output!
@@ -154,6 +159,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to disable dissolved oxygen mg/L output")
+            self.logger.error(error.summary())
             return error
 
         # Successfully disabled dissolved oxygen mg/L output!
@@ -167,10 +173,11 @@ class AtlasDODriver(AtlasDriver):
 
         # Send command
         _, error = self.process_command("O,%,1", processing_seconds=0.3)
-
+self.logger.error(error.summary())
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable percent saturation output")
+            self.logger.error(error.summary())
             return error
 
         # Successfully enabled percent saturation output!
@@ -188,6 +195,7 @@ class AtlasDODriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to disable percent saturation output")
+            self.logger.error(error.summary())
             return error
 
         # Successfully disabled percent saturation output!

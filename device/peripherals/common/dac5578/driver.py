@@ -59,7 +59,7 @@ class DAC5578:
         # Check for errors
         if error.exists():
             error.report("DAC unable to write output")
-            self.logger.debug(error.trace)
+            self.logger.error(error.summary())
             return error
 
         # Successfully set output
@@ -89,7 +89,7 @@ class DAC5578:
                 # Check for errors
                 if error.exists():
                     error.report("DAC unable to write outputs")
-                    self.logger.debug(error)
+                    self.logger.error(error.summary())
                     return error
 
         # Successfully set outputs
@@ -116,7 +116,7 @@ class DAC5578:
         # Check for errors
         if error.exists():
             error.report("DAC unable to read power register")
-            self.logger.debug(error)
+            self.logger.error(error.summary())
             return None, error
 
         # Successfully read register!
@@ -142,6 +142,7 @@ class DAC5578:
         powered, error = self.read_power_register()
         if error.exists():
             error.report("DAC probe failed")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)
@@ -162,6 +163,7 @@ class DAC5578:
         # Check for errors
         if error.exists():
             error.report("DAC unable to turn on")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)
@@ -182,6 +184,7 @@ class DAC5578:
         # Check for errors
         if error.exists():
             error.report("DAC unable to turn off")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)

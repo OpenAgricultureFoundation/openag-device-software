@@ -157,7 +157,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         # Check for errors
         if error.exists():
             error.report("Unable to initialize manager")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -175,7 +175,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         # Check for errors
         if error.exists():
             error.report("Unable to setup")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -233,7 +233,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         error = result[3]
         if error.exists():
             error.report("Unable to set spd")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 

@@ -83,7 +83,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         # Check for errors
         if error.exists():
             error.report("Manager unable to initialize")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -102,7 +102,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         # Check for errors:
         if error.exists():
             error.report("Manager setup failed")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -119,7 +119,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         # Check for errors:
         if error.exists():
             error.report("Manager unable to update")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             self.health = self.sensor.health.percent
             return
@@ -130,7 +130,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         # Check for errors:unix pipe an output stream gtrep
         if error.exists():
             error.report("Manager unable to update")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             self.health = self.sensor.health.percent
             return

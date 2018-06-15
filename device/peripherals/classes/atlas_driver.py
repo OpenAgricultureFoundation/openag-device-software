@@ -134,7 +134,8 @@ class AtlasDriver:
 
         # Check for errors
         if error.exists():
-            error.report("Unable to read info")
+            error.report("Driver unable to read info")
+            self.logger.error(error.summary())
             return None, None, error
 
         # Parse response
@@ -157,6 +158,7 @@ class AtlasDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read status")
+            self.logger.error(error.summary())
             return None, None, error
 
         # Check for empty response message
@@ -199,6 +201,7 @@ class AtlasDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable protocol lock")
+            self.logger.error(error.summary())
             return error
 
         # Successfully enabled protocol lock!
@@ -215,6 +218,7 @@ class AtlasDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to disable protocol lock")
+            self.logger.error(error.summary())
             return error
 
         # Successfully disabled protocol lock!
@@ -231,6 +235,7 @@ class AtlasDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable led")
+            self.logger.error(error.summary())
             return error
 
         # Successfully enabled led!
@@ -247,6 +252,7 @@ class AtlasDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to disable led")
+            self.logger.error(error.summary())
             return error
         
         # Successfully disabled led! 
@@ -264,6 +270,7 @@ class AtlasDriver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable sleep mode")
+            self.logger.error(error.summary())
             return error
         
         # Successfully enabled sleep mode!

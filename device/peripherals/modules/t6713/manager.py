@@ -64,12 +64,12 @@ class T6713Manager(PeripheralManager, T6713Events):
         self.health = self.sensor.health.percent
 
         # Initialize sensor
-        error = self.sensor.initialize()
+        error = self.sensor.probe()
 
         # Check for errors
         if error.exists():
             error.report("Manager unable to initialize")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -88,7 +88,7 @@ class T6713Manager(PeripheralManager, T6713Events):
         # Check for errors:
         if error.exists():
             error.report("Manager setup failed")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -105,7 +105,7 @@ class T6713Manager(PeripheralManager, T6713Events):
         # Check for errors:
         if error.exists():
             error.report("Manager unable to update")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             self.health = self.sensor.health.percent
             return

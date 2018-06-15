@@ -63,11 +63,30 @@ class Error:
 			return None
 
 
+	def summary(self) -> Optional[str]:
+		""" Returns error summary. """
+
+		# Check for empty trace
+		if len(self._trace) < 1:
+			return None
+
+		# Check for single entry
+		if len(self._trace) == 1:
+			return self._trace[0]
+
+		# Multiple entries exist!
+		response = self._trace[-1] + ": ("
+		for error in self._trace[:-2]:
+			response += "{} -> ".format(error)
+		response += "{}".format(self._trace[-2]) + ")"
+		return response
+
+
 	@property
 	def trace(self) -> Optional[str]:
 		""" Returns error _trace. """
 
-		# Check for empty trace:
+		# Check for empty trace
 		if len(self._trace) < 1:
 			return None
 

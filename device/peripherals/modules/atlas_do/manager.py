@@ -98,7 +98,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
         # Check for errors
         if error.exists():
             error.report("Manager unable to initialize")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -117,7 +117,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
         # Check for errors:
         if error.exists():
             error.report("Manager setup failed")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -137,7 +137,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
             # Check for errors
             if error.exists():
                 error.report("Manager unable to update")
-                self.logger.warning(error.trace)
+                self.logger.error(error.summary())
                 self.mode = Modes.ERROR
                 self.health = self.sensor.health.percent
                 return
@@ -151,7 +151,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
             # Check for errors
             if error.exists():
                 error.report("Manager unable to update")
-                self.logger.warning(error.trace)
+                self.logger.error(error.summary())
                 self.mode = Modes.ERROR
                 self.health = self.sensor.health.percent
                 return
@@ -165,7 +165,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
             # Check for errors
             if error.exists():
                 error.report("Manager unable to update")
-                self.logger.warning(error.trace)
+                self.logger.error(error.summary())
                 self.mode = Modes.ERROR
                 self.health = self.sensor.health.percent
                 return
@@ -176,7 +176,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
         # Check for errors:
         if error.exists():
             error.report("Manager unable to update")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             self.health = self.sensor.health.percent
             return

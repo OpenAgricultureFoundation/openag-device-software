@@ -63,6 +63,7 @@ class SHT25Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read temperature")
+            self.logger.error(error.summary())
             return None, error
             
         # Wait for sensor to process, see datasheet Table 7
@@ -75,6 +76,7 @@ class SHT25Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read temperature")
+            self.logger.error(error.summary())
             return None, error
 
         # Convert temperature data and set significant figures
@@ -103,6 +105,7 @@ class SHT25Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read humidity")
+            self.logger.error(error.summary())
             return None, error
 
         # Wait for sensor to process, see datasheet Table 7
@@ -115,6 +118,7 @@ class SHT25Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read humidity")
+            self.logger.error(error.summary())
             return None, error
 
         # Convert humidity data and set significant figures
@@ -143,6 +147,7 @@ class SHT25Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read user register")
+            self.logger.error(error.summary())
             return None, error
 
         # Parse register content
@@ -171,9 +176,9 @@ class SHT25Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to reset")
+            self.logger.error(error.summary())
             return error
-
+        
         # Successfully reset!
         return Error(None)
-
 

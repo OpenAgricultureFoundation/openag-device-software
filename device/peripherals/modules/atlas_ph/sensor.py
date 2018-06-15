@@ -58,6 +58,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor unable to initialize")
+            self.logger.error(error.summary())
             return error
 
         # Successfully initialized!
@@ -77,6 +78,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Check if using new firmware
@@ -91,6 +93,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Setup successful!
@@ -131,6 +134,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Check for correct sensor type
@@ -169,6 +173,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read electrical conductivity, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly read electrical conductivity!
@@ -195,6 +200,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to set compensation temperature, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly set compensation temperature!
@@ -221,6 +227,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take low point calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took low point calibration reading!
@@ -247,6 +254,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take mid point calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took mid point calibration reading!
@@ -273,6 +281,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take high point calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took high point calibration reading!
@@ -299,6 +308,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to clear calibration readings, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly cleared calibration readings!

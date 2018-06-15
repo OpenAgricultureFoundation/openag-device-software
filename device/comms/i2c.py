@@ -106,8 +106,7 @@ class I2C(object):
                 self.device.write(byte_array)
                 return Error(None)
         except IOError:
-            error = Error("I2C write failed due to IO error")
-            return error
+            return Error("I2C write failed due to IO error")
 
 
     def write_raw(self, bytes_, disable_mux=False):

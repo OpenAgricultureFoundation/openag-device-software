@@ -98,7 +98,7 @@ class LEDDAC5578Array(object):
 
         # Check if array became unhealthy
         if not self.healthy:
-            error.report("Unable to initialize array")
+            error.report("Array unable to initialize")
             return error
 
         # Successfully initialized!
@@ -126,7 +126,7 @@ class LEDDAC5578Array(object):
 
         # Verify array is not shutdown
         if self.is_shutdown:
-            return Error("Unable to set output, array is shutdown")
+            return Error("Array unable to set output, array is shutdown")
 
         # Update stored channel outputs
         self.channel_outputs[channel_name] = percent
@@ -145,6 +145,7 @@ class LEDDAC5578Array(object):
         # Check if array became unhealthy
         if not self.healthy:
             error.report("Array unable to set output, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfully set output!
@@ -158,7 +159,7 @@ class LEDDAC5578Array(object):
 
         # Verify array is not shutdown
         if self.is_shutdown:
-            return Error("Unable to set outputs, array is shutdown")
+            return Error("Array unable to set outputs, array is shutdown")
 
         # Update stored channel outputs
         self.channel_outputs = outputs
@@ -187,6 +188,7 @@ class LEDDAC5578Array(object):
         # Check if array became unhealthy
         if not self.healthy:
             error.report("Array unable to set outputs, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfully set outputs!
@@ -203,7 +205,7 @@ class LEDDAC5578Array(object):
 
         # Verify array is not shutdown
         if self.is_shutdown:
-            return Error("Unable to set outputs, array is shutdown")
+            return Error("Array unable to set outputs, array is shutdown")
 
         # Approximate spectral power distribution
         try:
@@ -245,7 +247,8 @@ class LEDDAC5578Array(object):
 
         # Check for errors
         if error.exists():
-            error.report("Panel unable to turn on")
+            error.report("Array unable to turn on")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)
@@ -265,7 +268,8 @@ class LEDDAC5578Array(object):
 
         # Check for errors
         if error.exists():
-            error.report("Panel unable to turn off")
+            error.report("Array unable to turn off")
+            self.logger.error(error.latest())
             return error
         else:
             return Error(None)
