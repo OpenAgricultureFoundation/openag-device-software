@@ -1,34 +1,9 @@
 # Import python modules
 import logging, time, threading, os, sys, datetime, json, sys, traceback, copy
+import glob
 
 # Import the IoT communications class
 from iot.iot_pubsub import IoTPubSub
-
-"""
-Jake:
-So i see 2 cases. The first is state which we want updated as fast as possible
-as frequently as possible, however to start i might just send all state every
-second to a cloud table that removes the old entry of state each time it
-receives a new one so there is only ever one instance of state in the table.
-That is what Manu will poll to get the most up to date device information.
-
-Then, the second one is environment history which is stored forever but
-infrequently updated (e.g. every few minutes). For this I think it makes the
-most sense to read directly from the environment table that already exists and
-send payloads the cloud. Upon payload receive confirmation, turn the
-'is_synced' flag in the database ON.
-
-There is also the new events case (e.g. start a recipe, etc) that we need to
-figure out.  
-
-debugrob
-What if I send the entire state on first connection (and save it), then each
-minute look for diffs and just send the diffs?
-
-Should I write that to a local table then have this thread pick it up and send
-it?
-
-"""
 
 
 class IoTManager:
@@ -45,7 +20,6 @@ class IoTManager:
     # Keep track of the previous values that we have published.  
     # We only publish a value if it changes.
     prev_vars = None
-
 
     def __init__( self, state, ref_device_manager ):
         """ Class constructor """
@@ -159,11 +133,37 @@ class IoTManager:
 
     def thread_proc( self ):
         while True:
+
             if self.stopped():
                 break
+
             # send and receive messages over IoT
             self.iot.process_network_events() 
-            time.sleep( 0.1 )
 
+            # check for images to publish
+            try:
+                imageFileList = glob.glob( 'images/*.png' )
+                for imageFile in imageFileList:
+
+                    # 2018-06-15-T18:34:45Z_Camera-Top.png
+                    fn1 = imageFile.split( '_' ) 
+                    fn2 = fn1[ 1 ] # Camera-Top.png
+                    fn3 = fn2.split( '.' )
+                    cameraName = fn3[ 0 ] # Camera-Top
+                
+                    f = open( imageFile, 'rb' )
+                    fileBytes = f.read()
+                    f.close()
+                    self.iot.publishBinaryImage( cameraName, 'png', fileBytes )
+
+                    os.remove( imageFile ) # clean up!
+            
+            except( Exception ) as e:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                self.logger.critical( "Exception: {}".format( e ))
+                traceback.print_tb( exc_traceback, file=sys.stdout )
+
+            # idle for a bit
+            time.sleep( 1 )
 
 
