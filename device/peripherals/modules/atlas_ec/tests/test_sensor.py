@@ -77,12 +77,6 @@ def test_probe():
     assert error.exists() == False
 
 
-def test_initialize():
-    sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
-    error = sensor.initialize()
-    assert error.exists() == False
-
-
 def test_setup():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.setup()

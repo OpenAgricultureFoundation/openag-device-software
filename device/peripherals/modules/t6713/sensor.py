@@ -52,27 +52,6 @@ class T6713Sensor:
         return self.health.healthy
 
 
-    def initialize(self) -> Error:
-        """ Initializes sensor. """
-        self.logger.info("Initializing")
-
-        # Check if simulating
-        if self.simulate:
-            return Error(None)
-        
-        # Probe driver
-        error = self.probe()
-
-        # Check for errors:
-        if error.exists():
-            error.report("Sensor unable to initialize")
-            return error
-
-        # Successfully initialized!
-        self.logger.info("Initialization successful")
-        return Error(None)
-
-
     def setup(self) -> Error:
         """ Sets up sensor. """
         self.logger.info("Setting up")
@@ -87,6 +66,7 @@ class T6713Sensor:
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Wait at least 2 minutes for sensor to stabilize
@@ -113,6 +93,7 @@ class T6713Sensor:
             # Check for errors
             if error.exists():
                 error.report("Sensor setup failed")
+                self.logger.error(error.latest())
                 return error
 
             # Check if sensor completed warm up mode
@@ -123,6 +104,7 @@ class T6713Sensor:
             # Check if timed out
             if time.time() - start_time > self._warmup_timeout:
                 error = Error("Warmup timed out")
+                self.logger.error(error.latest())
                 return error
 
             # Update every 3 seconds
@@ -168,11 +150,13 @@ class T6713Sensor:
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Check if sensor has error status
         if status.error_condition:
             error.report("Sensor probe failed, error condition in status")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly probed!
@@ -210,6 +194,7 @@ class T6713Sensor:
         # Check if sensor became unhealthy
         if not self.healthy:
             error = Error("Sensor unable to read carbon dioxide, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly read carbon dioxide!
@@ -237,6 +222,7 @@ class T6713Sensor:
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read status, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly read status!
@@ -263,6 +249,7 @@ class T6713Sensor:
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to enable abc logic, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly enabled abc logic!
@@ -289,6 +276,7 @@ class T6713Sensor:
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to disable abc logic, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly disabled abc logic!

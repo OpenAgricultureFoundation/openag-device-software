@@ -65,6 +65,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read carbon dioxide")
+            self.logger.error(error.summary())
             return None, error
 
         # Give sensor time to process
@@ -76,6 +77,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read carbon dioxide")
+            self.logger.error(error.summary())
             return None, error
 
         # Convert co2 data and set significant figures
@@ -103,6 +105,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read status")
+            self.logger.error(error.summary())
             return None, error
 
         # Give sensor time to process
@@ -114,6 +117,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to read status")
+            self.logger.error(error.summary())
             return None, error    
 
         # Parse status bytes
@@ -144,6 +148,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable abc logic")
+            self.logger.error(error.summary())
             return error
 
         # Successfully enabled abc logic!
@@ -160,6 +165,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to disable abc logic")
+            self.logger.error(error.summary())
             return error
 
         # Successfully disabled abc logic!
@@ -176,6 +182,7 @@ class T6713Driver:
         # Check for errors
         if error.exists():
             error.report("Driver unable to reset")
+            self.logger.error(error.summary())
             return error
 
         # Successfully reset!

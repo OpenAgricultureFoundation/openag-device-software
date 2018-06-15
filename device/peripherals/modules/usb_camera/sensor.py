@@ -56,6 +56,7 @@ class USBCameraSensor:
         # Check for errors:
         if error.exists():
             error.report("Sensor probe failed")
+            self.logger.error(error.latest())
             self.health = 0.0
             return error
 
@@ -74,6 +75,7 @@ class USBCameraSensor:
         # Check for errors
         if error.exists():
             error.report("Sensor unable to capture image")
+            self.logger.error(error.latest())
             self.health = 0.0
             return error
 

@@ -100,23 +100,23 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'standard_console': {
-            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(name)s: %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'standard_console': {
+                'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(name)s: %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'standard_file': {
+                'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(name)s: %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'device_console': {
+                'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(console_name)s: %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
+            'device_file': {
+                'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(file_name)s: %(message)s",
+                'datefmt' : "%d/%b/%Y %H:%M:%S"
+            },
         },
-        'standard_file': {
-            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(name)s: %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
-        },
-        'device_console': {
-            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(console_name)s: %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
-        },
-        'device_file': {
-            'format' : "[%(asctime)s.%(msecs)03d] %(levelname)s %(file_name)s: %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
-        },
-    },
     'handlers': {
         'app_console': {
             'level': 'DEBUG',
@@ -126,7 +126,7 @@ LOGGING = {
         'app_file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.dirname(BASE_DIR) + "/log/app.log",
+            'filename': os.path.dirname(BASE_DIR) + "/logs/app.log",
             'formatter': 'standard_file',
         },
         'device_console': { 
@@ -136,8 +136,15 @@ LOGGING = {
         },
         'device_file': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.dirname(BASE_DIR) + "/log/device.log",
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.dirname(BASE_DIR) + "/logs/device.log",
+            'formatter': 'device_file',
+            'maxBytes': 5*1024*1024,
+            'backupCount': 1
+        },
+        'peripheral_files': {
+            'level': 'DEBUG',
+            'class': 'device.utilities.logger.PeripheralFileHandler',
             'formatter': 'device_file',
         },
         'iot_console': { 
@@ -147,9 +154,11 @@ LOGGING = {
         },
         'iot_file': {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.dirname(BASE_DIR) + "/log/iot.log",
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.dirname(BASE_DIR) + "/logs/iot.log",
             'formatter': 'device_file',
+            'maxBytes': 5*1024*1024,
+            'backupCount': 1
         }
     },
     'loggers': {
@@ -158,7 +167,7 @@ LOGGING = {
             'level': 'DEBUG',
         },
         'device': {
-            'handlers': ['device_console', 'device_file'],
+            'handlers': ['device_console', 'device_file', 'peripheral_files'],
             'level': 'DEBUG',
         },
         'iot': {

@@ -52,6 +52,7 @@ class AtlasPHDriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to read potential hydrogen")
+            self.logger.error(error.summary())
             return None, error
 
         # Process response
@@ -83,6 +84,7 @@ class AtlasPHDriver(AtlasDriver):
         # Check for error
         if error.exists():
             error.report("Driver unable to set compensation temperature")
+            self.logger.error(error.summary())
             return error
 
         # Successfully set compensation temperature!
@@ -100,6 +102,7 @@ class AtlasPHDriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to take low point calibration reading")
+            self.logger.error(error.summary())
             return error
 
         # Succesfully took low point calibration reading
@@ -117,6 +120,7 @@ class AtlasPHDriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to take mid point calibration reading")
+            self.logger.error(error.summary())
             return error
 
         # Successfully took mid point calibration reading!
@@ -134,6 +138,7 @@ class AtlasPHDriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to take high point calibration reading")
+            self.logger.error(error.summary())
             return error
 
         # Successfully took high point calibration reading!
@@ -150,6 +155,7 @@ class AtlasPHDriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to clear calibration readings")
+            self.logger.error(error.summary())
             return error
 
         # Successfully cleared calibration readings

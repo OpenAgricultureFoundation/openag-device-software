@@ -45,23 +45,24 @@ class AtlasECSensor(AtlasSensorMixin):
         self.health = Health(updates = 5, minimum = 60)
 
 
-    def initialize(self) -> Error:
-        """ Initializes sensor. """
+    # def initialize(self) -> Error:
+    #     """ Initializes sensor. """
 
-        # Check if simulating
-        if self.simulate:
-            return Error(None)
+    #     # Check if simulating
+    #     if self.simulate:
+    #         return Error(None)
         
-        # Probe driver
-        error = self.probe()
+    #     # Probe driver
+    #     error = self.probe()
 
-        # Check for errors:
-        if error.exists():
-            error.report("Sensor unable to initialize")
-            return error
+    #     # Check for errors:
+    #     if error.exists():
+    #         error.report("Sensor unable to initialize")
+    #         self.logger.error(error.latest())
+    #         return error
 
-        # Successfully initialized!
-        return Error(None)
+    #     # Successfully initialized!
+    #     return Error(None)
 
 
     def setup(self) -> Error:
@@ -77,6 +78,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Set probe type
@@ -85,6 +87,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Check if using new firmware
@@ -99,6 +102,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Enable electrical conductivity output
@@ -107,6 +111,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Disable total dissolved solids output
@@ -115,6 +120,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Disable salinity output
@@ -123,6 +129,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Disable specific gravity output
@@ -131,6 +138,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check for errors:
         if error.exists():
             error.report("Sensor setup failed")
+            self.logger.error(error.latest())
             return error
 
         # Setup successful!
@@ -145,6 +153,7 @@ class AtlasECSensor(AtlasSensorMixin):
 
     def probe(self):
         """ Probes driver until successful or becomes too unhealthy. """
+        self.logger.info("Probing sensor")
 
         # Probe until successful or unhealthy
         while self.healthy:
@@ -152,7 +161,7 @@ class AtlasECSensor(AtlasSensorMixin):
             # Read driver info
             self.sensor_type, self.firmware_version, error = self.driver.read_info()
 
-           # Check if simulating
+           # Check if simulatingread_info
             if self.simulate:
                self.sensor_type = "EC"
                self.firmware_version = 2.0
@@ -172,11 +181,13 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor probe failed, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Check for correct sensor type
         if self.sensor_type != "EC":
             error = Error("Sensor probe failed, incorrect sensor type. `{}` != `EC`".format(self.sensor_type))
+            self.logger.error(error.latest())
             return error
 
         # Successfuly probed!
@@ -213,6 +224,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to read electrical conductivity, became too unhealthy")
+            self.logger.error(error.latest())
             return None, error
 
         # Successfuly read electrical conductivity!
@@ -239,6 +251,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to set compensation temperature, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly set compensation temperature!
@@ -265,6 +278,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to set probe type, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly set probe type!
@@ -291,6 +305,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to enable electrical conductivity output, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly enabled electrical conductivity output!
@@ -317,6 +332,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to disable total dissolved solids output, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly disabled total dissolved solids output!
@@ -343,6 +359,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to disable salinity output, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly disabled salinity output!
@@ -369,6 +386,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to disable specific gravity output, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly disabled specific gravity output!
@@ -396,6 +414,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take dry calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took dry calibration reading!
@@ -422,6 +441,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take single point calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took single point calibration reading!
@@ -448,6 +468,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take low point calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took low point calibration reading!
@@ -474,6 +495,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to take high point calibration reading, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly took high point calibration reading!
@@ -500,6 +522,7 @@ class AtlasECSensor(AtlasSensorMixin):
         # Check if sensor became unhealthy
         if not self.healthy:
             error.report("Sensor unable to clear calibration readings, became too unhealthy")
+            self.logger.error(error.latest())
             return error
 
         # Successfuly cleared calibration readings!

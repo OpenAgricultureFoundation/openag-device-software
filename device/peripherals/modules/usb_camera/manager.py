@@ -52,7 +52,7 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Check for errors
         if error.exists():
             error.report("Manager unable to initialize")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             return
 
@@ -75,7 +75,7 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Check for errors:
         if error.exists():
             error.report("Manager unable to update")
-            self.logger.warning(error.trace)
+            self.logger.error(error.summary())
             self.mode = Modes.ERROR
             self.health = self.sensor.health
             return
