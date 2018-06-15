@@ -1,7 +1,7 @@
 {
     "peripherals": [
         {
-            "name": "T6713-1",
+            "name": "T6713-Top",
             "type": "T6713",
             "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
             "parameters": {

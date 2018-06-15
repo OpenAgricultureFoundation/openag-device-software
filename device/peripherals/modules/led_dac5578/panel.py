@@ -14,7 +14,7 @@ from device.peripherals.utilities import light
 from device.peripherals.common.dac5578.driver import DAC5578
 
 
-class Panel:
+class LEDDAC5578Panel:
     """ An led panel controlled by a DAC5578. """
 
     # Initialize shutdown state
@@ -26,7 +26,7 @@ class Panel:
 
         # Initialize logger
         self.logger = Logger(
-            name = "LEDPanel({})".format(name),
+            name = "Panel({})".format(name),
             dunder_name = __name__,
         )
         

@@ -282,22 +282,21 @@ class DeviceManager:
             config command then transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
-        # Load an initial config during development
-        # self.config_uuid = "64d72849-2e30-4a4c-8d8c-71b6b3384126" # EDU1
-        self.config_uuid = "4cffeb04-22db-44f6-9cf4-07b595b420f0" # EDU1 Beta
-        # self.config_uuid = "65dba26a-f9b4-48d7-a8d5-d180645cf4c6" # SMHZ1
+        # Check about file exists in repo
+        try:
+            about = json.load(open("about.json"))
+        except:
+            self.error = "Unable to load about file, device unable to be configured"
+            self.logger.critical(self.error)
+            self.mode = Modes.ERROR
+            return
 
-        # If device config is not set, wait for config command
-        if self.config_uuid == None:
-            self.logger.info("Waiting for config command")
+        # Load device config
+        config_name = about["device_config"]
+        device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
-            while True:
-                if self.commanded_config_uuid != None:
-                    self.config_uuid = self.commanded_config_uuid
-                    self.commanded_config_uuid = None
-                    break
-                # Update every 100ms
-                time.sleep(0.1)
+        # Load config uuid
+        self.config_uuid = device_config["uuid"]
 
         # Transition to SETUP
         self.mode = Modes.SETUP
@@ -690,7 +689,9 @@ class DeviceManager:
 
         # Load device state
         stored_device_state = json.loads(stored_state.device)
-        self.config_uuid = stored_device_state["config_uuid"]
+
+        # Commented this out b/c config uuid loaded from about.json now
+        # self.config_uuid = stored_device_state["config_uuid"]
 
         # Load recipe state
         stored_recipe_state = json.loads(stored_state.recipe)
@@ -879,14 +880,22 @@ class DeviceManager:
 
     def shutdown_peripheral_threads(self):
         """ Shuts down peripheral threads. """
-        for peripheral_name in self.peripherals:
-            self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
+        ...
+
+        # TODO: Fix this
+
+        # for peripheral_name in self.peripherals:
+        #     self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
 
 
     def shutdown_controller_threads(self):
         """ Shuts down controller threads. """
-        for controller_name in self.controllers:
-            self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
+        ...
+
+        # TODO: Fix this
+
+        # for controller_name in self.controllers:
+        #     self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
 
 
 ################################# Events ######################################

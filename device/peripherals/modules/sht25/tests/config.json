@@ -1,7 +1,7 @@
 {
     "peripherals": [
         {
-            "name": "SHT25-1",
+            "name": "SHT25-Top",
             "type": "SHT25",
             "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
             "parameters": {

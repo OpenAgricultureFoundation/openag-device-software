@@ -5,11 +5,11 @@ import sys, os, json
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578
+    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
 except:
     # ... if running tests from same dir as events.py
     sys.path.append("../../../../")
-    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578
+    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
 
 # Import device utilities
 from device.utilities.modes import Modes
@@ -29,11 +29,11 @@ state = State()
 
 
 def test_init():
-    led_manager = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    led_manager = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
 
 
 def test_turn_on():
-    led_manager = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    led_manager = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
     
     # Try to turn on outside manual mode
     led_manager.mode = Modes.NORMAL
@@ -51,7 +51,7 @@ def test_turn_on():
 
 
 def test_turn_off():
-    led_manager = LEDDAC5578("Test", state, peripheral_config, simulate = True)
+    led_manager = LEDDAC5578Manager("Test", state, peripheral_config, simulate = True)
     
     # Try to turn off outside manual mode
     led_manager.mode = Modes.NORMAL

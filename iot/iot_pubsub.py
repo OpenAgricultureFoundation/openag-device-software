@@ -112,6 +112,8 @@ class IoTPubSub:
     def publishEnvVar( self, varName, valuesDict, messageType = 'EnvVar' ):
         """ Publish a single environment variable. """
         try:
+            if None == self.mqtt_client:
+                return
             message_obj = {}
             message_obj['messageType'] = messageType
             message_obj['var'] = varName
@@ -272,6 +274,8 @@ class IoTPubSub:
         try:
             # let the mqtt client process any data it has received or 
             # needs to publish
+            if None == self.mqtt_client:
+                return
             self.mqtt_client.loop()
 
             seconds_since_issue = \

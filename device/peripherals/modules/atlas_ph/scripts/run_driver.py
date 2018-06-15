@@ -1,19 +1,30 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
-except:
-    # ... if running tests from same dir as driver.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("atlas_ph"):
+    print("Running locally")
+    sys.path.append("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+# Import driver
+from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
+
+# Set directory for loading files
+if cwd.endswith("atlas_ph"):
+    os.chdir("../../../../")
 
 # Setup parser basics
 parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
@@ -22,7 +33,7 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--edu1", action="store_true", help="specify edu v1.0 config")
+parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
@@ -44,19 +55,18 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize config
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        filepath = "data/devices/edu1.json"
+    # Check for device config
+    if args.device != None:
+        print("Using device config: {}".format(args.device))
+        device_config = json.load(open("data/devices/{}.json".format(args.device)))
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-Reservoir")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize driver
-    device_config = json.load(open(filepath))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-1")        
     driver = AtlasPHDriver(
-        name = "AtlasPH-1", 
+        name = "AtlasPH-Reservoir", 
         bus = peripheral_config["parameters"]["communication"]["bus"], 
         address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
         mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 

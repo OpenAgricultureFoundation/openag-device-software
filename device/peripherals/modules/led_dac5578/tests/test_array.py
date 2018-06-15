@@ -5,11 +5,11 @@ import sys, os, json
 try:
     # ... if running tests from project root
     sys.path.append(".")
-    from device.peripherals.modules.led_dac5578.array import Array
+    from device.peripherals.modules.led_dac5578.array import LEDDAC5578Array
 except:
     # ... if running tests from same dir as panel.py
     sys.path.append("../../../../")
-    from device.peripherals.modules.led_dac5578.array import Array
+    from device.peripherals.modules.led_dac5578.array import LEDDAC5578Array
 
 # Change directory for importing files
 os.chdir("../../../../")
@@ -36,7 +36,7 @@ desired_spectrum_nm_percent = {
 
 
 def test_init():
-    array = Array(
+    array = LEDDAC5578Array(
         name = "Test",
         panel_configs = panel_configs,
         channel_configs = channel_configs,
@@ -45,12 +45,12 @@ def test_init():
 
 
 def test_initialize():
-    array = Array("Test", panel_configs, channel_configs, simulate = True)
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate = True)
     array.initialize()
 
 
 def test_set_output():
-    array = Array("Test", panel_configs, channel_configs, simulate = True)
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate = True)
 
     # Standard case
     error = array.set_output("FR", 92.1)
@@ -58,21 +58,21 @@ def test_set_output():
 
 
 def test_set_outputs_standard_case():
-    array = Array("Test", panel_configs, channel_configs, simulate = True)
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate = True)
     outputs = {"FR": 92.1, "WW": 72.2}
     error = array.set_outputs(outputs)
     assert error.exists() == False
 
 
 def test_set_outputs_unknown_channel_name():
-    array = Array("Test", panel_configs, channel_configs, simulate = True)
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate = True)
     outputs = {"XX": 92.1, "WW": 72.2}
     error = array.set_outputs(outputs)
     assert error.exists() == True
 
 
 def test_set_spd():
-    array = Array("Test", panel_configs, channel_configs, simulate = True)
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate = True)
     channel_outputs, output_spectrum_nm_percent, output_intensity_watts, error = array.set_spd(
         desired_distance_cm = desired_distance_cm, 
         desired_intensity_watts = desired_intensity_watts, 

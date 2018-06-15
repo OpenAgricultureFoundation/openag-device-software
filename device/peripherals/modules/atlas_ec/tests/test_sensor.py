@@ -1,15 +1,22 @@
 # Import standard python libraries
-import sys
+import sys, os
 
-# Import sensor module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
-except:
-    # ... if running tests from same dir as sensor.py
-    sys.path.append("../../../../")
-    from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
+# Get current working directory
+cwd = os.getcwd()
+print("Running test from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("atlas_ec"):
+    print("Running test locally")
+    os.chdir("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running test globally")
+else:
+    print("Running tests from invalid location")
+    sys.exit(0)
+
+# Import sensor
+from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
     
 
 def test_init():
@@ -67,7 +74,7 @@ def test_disable_specific_gravity_output():
 def test_probe():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)
     error = sensor.probe()
-    assert error.exists() == True
+    assert error.exists() == False
 
 
 def test_initialize():

@@ -1,15 +1,22 @@
 # Import standard python libraries
-import sys
+import sys, os
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.t6713.driver import T6713Driver
-except:
-    # ... if running tests from same dir as driver.py
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("t6713"):
+    print("Running locally")
     sys.path.append("../../../../")
-    from device.peripherals.modules.t6713.driver import T6713Driver
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+# Import sensor
+from device.peripherals.modules.t6713.driver import T6713Driver
     
 
 def test_init():
