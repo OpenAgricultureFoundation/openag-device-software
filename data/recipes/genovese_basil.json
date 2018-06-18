@@ -1,0 +1,97 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-06-18T11:45:41Z",
+	"name": "Genovese basil",
+	"uuid": "92c3b8f9-3d12-4d03-8414-e9f5af8002ab",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Grows sweet Genovese basil.",
+		"verbose": "Grows sweet Genovese basil in 30 days in a shallow water culture hydroponic system. The lights are on a balanced spectrum and follow a standard 24 hour light cycle with 16 hour days. Moderate temperatures are maintained throughout the grow until the final harvest phase when they are radically dropped over one night to simulate a frost which makes the leaves more tender."
+	},
+	"authors": [
+		{
+			"name": "Manvitha Ponnapati",
+			"email": "manvitha@media.mit.edu",
+			"uuid": "a3263729-e31b-4d6a-82fc-ca4e09fc3239"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Genovese basil",
+			"uuid": "9dc80135-0c24-4a65-ae0b-95f1c5e53676"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"standard_day": {
+			"name": "Standard Day",
+			"light_spectrum_nm_percent": {"400-449": 16.67, "449-499": 16.67, "500-549": 16.67, "550-559": 16.67, "600-649": 16.17, "650-699": 16.67},
+			"light_intensity_watts": 100,
+			"light_illumination_distance_cm": 10,
+			"air_temperature_celcius": 24
+		},
+		"standard_night": {
+			"name": "Standard Night",
+			"light_spectrum_nm_percent": {"400-449": 16.67, "449-499": 16.67, "500-549": 16.67, "550-559": 16.67, "600-649": 16.17, "650-699": 16.67},
+			"light_intensity_watts": 0,
+			"light_illumination_distance_cm": 10,
+			"air_temperature_celcius": 18
+		},
+		"cold_day": {
+			"name": "Cold Day",
+			"light_spectrum_nm_percent": {"400-449": 16.67, "449-499": 16.67, "500-549": 16.67, "550-559": 16.67, "600-649": 16.17, "650-699": 16.67},			
+			"light_intensity_watts": 100,
+			"light_illumination_distance_cm": 10,
+			"air_temperature_celcius": 10
+		},
+		"frost_night": {
+			"name": "Frost Night",
+			"light_spectrum_nm_percent": {"400-449": 16.67, "449-499": 16.67, "500-549": 16.67, "550-559": 16.67, "600-649": 16.17, "650-699": 16.67},			
+			"light_intensity_watts": 0,
+			"light_illumination_distance_cm": 10,
+			"air_temperature_celcius": 2
+		}
+	},
+	"phases": [
+		{
+			"name": "Standard Growth",
+			"repeat": 29,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "standard_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		},
+		{
+			"name": "Final frost stress for tenderness",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "cold_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "frost_night",
+					"duration_hours": 8
+				}
+			]
+
+		}
+	]
+}
