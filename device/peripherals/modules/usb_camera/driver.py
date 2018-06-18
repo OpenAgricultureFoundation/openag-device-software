@@ -74,7 +74,7 @@ class USBCameraDriver:
 
     def capture(self) -> Error:
         """ Captures an image. """
-        self.logger.info("Capturing image")
+        #self.logger.debug("Capturing image")
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
@@ -107,6 +107,7 @@ class USBCameraDriver:
            
             command = 'fswebcam -d {} -r {} --background --png 9 --no-banner --save {}'.format(camera, self.resolution, filepath)
             os.system(command)
+
         except Exception as e:
             return Error("Driver unable to capture image, unexpected exception: {}".format(e))
 

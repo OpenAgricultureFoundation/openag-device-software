@@ -145,6 +145,11 @@ class IoTManager:
                 imageFileList = glob.glob( 'images/*.png' )
                 for imageFile in imageFileList:
 
+                    # Is this file open by a process? (fswebcam)
+                    if 0 == os.system( \
+                        'lsof -f -- {} > /dev/null 2>&1'.format( imageFile )):
+                        continue # Yes, so skip it and try the next one.
+
                     # 2018-06-15-T18:34:45Z_Camera-Top.png
                     fn1 = imageFile.split( '_' ) 
                     fn2 = fn1[ 1 ] # Camera-Top.png
@@ -154,8 +159,8 @@ class IoTManager:
                     f = open( imageFile, 'rb' )
                     fileBytes = f.read()
                     f.close()
-                    self.iot.publishBinaryImage( cameraName, 'png', fileBytes )
 
+                    self.iot.publishBinaryImage( cameraName, 'png', fileBytes )
                     os.remove( imageFile ) # clean up!
             
             except( Exception ) as e:
