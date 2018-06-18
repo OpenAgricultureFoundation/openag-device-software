@@ -50,7 +50,7 @@
 			"air_temperature_celcius": 18
 		},
 		"cold_day": {
-			"name": "Standard Day",
+			"name": "Cold Day",
 			"light_spectrum_nm_percent": {"400-449": 16.67, "449-499": 16.67, "500-549": 16.67, "550-559": 16.67, "600-649": 16.17, "650-699": 16.67},			
 			"light_intensity_watts": 100,
 			"light_illumination_distance_cm": 10,

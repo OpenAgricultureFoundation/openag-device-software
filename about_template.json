@@ -2,5 +2,6 @@
 	"serial_number": "TYPE-RELEASE-NUMBER",
 	"hardware_version": "MAJOR.MINOR.PATCH",
 	"software_version": "MAJOR.MINOR.PATCH",
-	"device_config": "filename"
+	"device_config": "filename",
+	"notes": "user and or device name / location"
 }

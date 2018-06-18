@@ -20,7 +20,9 @@ class IoTManager:
     # Keep track of the previous values that we have published.  
     # We only publish a value if it changes.
     prev_vars = None
+    sentAboutJson = False
 
+    #--------------------------------------------------------------------------
     def __init__( self, state, ref_device_manager ):
         """ Class constructor """
         self.state = state
@@ -31,12 +33,14 @@ class IoTManager:
             # pass in the callback that receives commands
             self.iot = IoTPubSub( self.command_received ) 
         except( Exception ) as e:
+            self.error = e
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.critical( "Exception creating class: {}".format( e ))
             traceback.print_tb( exc_traceback, file=sys.stdout )
             exit( 1 )
 
 
+    #--------------------------------------------------------------------------
     # This is a callback that is called by the IoTPubSub class when this 
     # device receives commands from the UI.
     def command_received( self, command, arg0, arg1 ):
@@ -85,12 +89,14 @@ class IoTManager:
             return False
 
 
+    #--------------------------------------------------------------------------
     @property
     def error( self ):
         """ Gets error value. """
         return self._error
 
 
+    #--------------------------------------------------------------------------
     @error.setter
     def error( self, value ):
         """ Safely updates recipe error in shared state. """
@@ -100,6 +106,7 @@ class IoTManager:
 #            self.state.iot["error"] = value
 
 
+    #--------------------------------------------------------------------------
     def spawn( self ):
         self.logger.info("Spawning IoT thread")
         self.thread = threading.Thread( target=self.thread_proc )
@@ -107,15 +114,18 @@ class IoTManager:
         self.thread.start()
 
 
+    #--------------------------------------------------------------------------
     def stop( self ):
         self.logger.info("Stopping IoT thread")
         self._stop_event.set()
 
 
+    #--------------------------------------------------------------------------
     def stopped( self ):
         return self._stop_event.is_set()
 
 
+    #--------------------------------------------------------------------------
     def publish( self ):
         vars_dict = self.state.environment["reported_sensor_stats"] \
             ["individual"]["instantaneous"]
@@ -131,8 +141,21 @@ class IoTManager:
                 self.iot.publishEnvVar( var, vars_dict[var] )
 
 
+    #--------------------------------------------------------------------------
     def thread_proc( self ):
         while True:
+
+            # Publish about.json for a record of versions on this machine.
+            if not self.sentAboutJson:
+                self.sentAboutJson = True
+                try:
+                    about_json = open( "about.json" ).read()
+                    self.iot.publishCommandReply( "boot", about_json )
+                    self.logger.info( "Published boot message with versions." )
+                except:
+                    self.error = "Unable to load about.json file."
+                    self.logger.critical( self.error )
+
 
             if self.stopped():
                 break

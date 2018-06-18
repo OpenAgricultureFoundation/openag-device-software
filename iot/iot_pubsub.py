@@ -118,34 +118,38 @@ class IoTPubSub:
             message_obj['messageType'] = messageType
             message_obj['var'] = varName
 
-            # format our json values
-            count = 0
-            valuesJson = "{'values':["
-            for vname in valuesDict:
-                val = valuesDict[vname]
+            # command replies only have one value, so make it simple.
+            if messageType == 'CommandReply':
+                message_obj['values'] = valuesDict
+            else:
+                # otherwise this is an env var that could have a list of vals:
+                count = 0
+                valuesJson = "{'values':["
+                for vname in valuesDict:
+                    val = valuesDict[vname]
 
-                if count > 0:
-                    valuesJson += ","
-                count += 1
+                    if count > 0:
+                        valuesJson += ","
+                    count += 1
 
-                if isinstance( val, float ):
-                    val = '{0:.2f}'.format( val )
-                    valuesJson += \
-                        "{'name':'%s', 'type':'float', 'value':%s}" % \
-                            ( vname, val )
+                    if isinstance( val, float ):
+                        val = '{0:.2f}'.format( val )
+                        valuesJson += \
+                            "{'name':'%s', 'type':'float', 'value':%s}" % \
+                                ( vname, val )
+    
+                    elif isinstance( val, int ):
+                        valuesJson += \
+                            "{'name':'%s', 'type':'int', 'value':%s}" % \
+                                ( vname, val )
 
-                elif isinstance( val, int ):
-                    valuesJson += \
-                        "{'name':'%s', 'type':'int', 'value':%s}" % \
-                            ( vname, val )
+                    else: # assume str
+                        valuesJson += \
+                            "{'name':'%s', 'type':'str', 'value':'%s'}" % \
+                                ( vname, val )
 
-                else: # assume str
-                    valuesJson += \
-                        "{'name':'%s', 'type':'str', 'value':'%s'}" % \
-                            ( vname, val )
-
-            valuesJson += "]}"
-            message_obj['values'] = valuesJson
+                valuesJson += "]}"
+                message_obj['values'] = valuesJson
 
             message_json = json.dumps( message_obj ) # dict obj to JSON string
 
@@ -180,15 +184,9 @@ class IoTPubSub:
                         "publishCommandReply: missing valuesJsonString" )
                 return False
 
-            valuesDict = {}
-            value = {}
-            value['name'] = 'recipe'
-            value['value'] = valuesJsonString
-            valuesDict['values'] = [value] # new list of one value
-    
             # publish the command reply as an env. var.
             self.publishEnvVar( varName = commandName,      
-                                valuesDict = valuesDict,
+                                valuesDict = valuesJsonString,
                                 messageType = 'CommandReply' )
             return True
 
