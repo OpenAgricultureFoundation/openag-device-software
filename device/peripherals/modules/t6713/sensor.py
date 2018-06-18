@@ -226,6 +226,7 @@ class T6713Sensor:
             return None, error
 
         # Successfuly read status!
+        self.health.reset()
         return status, Error(None)
 
 

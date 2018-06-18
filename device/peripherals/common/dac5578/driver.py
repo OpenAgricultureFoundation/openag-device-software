@@ -10,6 +10,7 @@ from device.utilities.logger import Logger
 from device.utilities.error import Error
 from device.utilities import bitwise
 
+
 class DAC5578:
     """ Driver for DAC5578 digital to analog converter. """
 

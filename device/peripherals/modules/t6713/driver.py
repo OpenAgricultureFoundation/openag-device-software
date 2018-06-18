@@ -72,7 +72,7 @@ class T6713Driver:
         time.sleep(0.1) # Wait 100ms
 
         # Read sensor data
-        bytes_, error = self.i2c.read(4, disable_mux=True) # don't re-set mux channel
+        bytes_, error = self.i2c.read(4)
         
         # Check for errors
         if error.exists():

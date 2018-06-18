@@ -117,23 +117,26 @@ class LEDDAC5578Panel:
             self.logger.error(error.latest())
             return error
 
-        # Check if panel is healthy
+        # Write to DAC until successful or too unhealthy
+        while self.healthy:
+
+            # Set output on DAC
+            error = self.dac5578.write_output(channel_number, percent)
+
+            # Check for errors and update health
+            if error.exists():
+                self.health.report_failure()
+                return error
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
         if not self.healthy:
-            error = Error("Unable to set outputs, panel is not healthy")
-            self.logger.debug(error.latest())
-
-        # Set output on DAC
-        error = self.dac5578.write_output(channel_number, percent)
-
-        # Check for errors and update health
-        if error.exists():
-            error.report("Panel unable to set output")
+            error.report("Panel unable to set output, became too unhealthy")
             self.logger.error(error.latest())
-            self.health.report_failure()
             return error
-        else:
-            self.health.report_success()
-        
+            
         # Successfully set output!
         self.health.reset()
         self.logger.debug("Successfully set output")
@@ -163,22 +166,25 @@ class LEDDAC5578Panel:
             # Append to converted outputs
             converted_outputs[number] = percent
 
-        # Check if panel is healthy
+        # Write to DAC until successful or too unhealthy
+        while self.healthy:
+
+            # Set outputs on DAC
+            error = self.dac5578.write_outputs(converted_outputs)
+
+            # Check for errors and update health
+            if error.exists():
+                self.health.report_failure()
+                return error
+            else:
+                self.health.report_success()
+                break
+
+        # Check if sensor became unhealthy
         if not self.healthy:
-            error = Error("Unable to set outputs, panel is not healthy")
-            self.logger.debug(error.latest())
-
-        # Set outputs on dacs
-        error = self.dac5578.write_outputs(converted_outputs)
-
-        # Check for errors and update health
-        if error.exists():
-            error.report("Panel unable to set outputs")
+            error.report("Panel unable to set output, became too unhealthy")
             self.logger.error(error.latest())
-            self.health.report_failure()
             return error
-        else:
-            self.health.report_success()
         
         # Successfully set outputs!
         self.health.reset()
