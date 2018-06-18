@@ -11,3 +11,4 @@ __pycache__/
 registration/data/
 images/
 about.json
+.idea

@@ -36,6 +36,9 @@
             <li {% if 'peripherals' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'peripherals' %}">Peripherals</a>
             </li>
+            <li {% if 'logs' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'logs' %}">Logs</a>
+            </li>
             <li {% if 'events' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'events' %}">Events</a>
             </li>

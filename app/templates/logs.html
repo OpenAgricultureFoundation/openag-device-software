@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+
+{% block javascript %}
+<script>
+
+  window.onload = function() {
+
+    // Load logs
+    var logs_json = document.getElementById("logs_json").value;
+    var logs = JSON.parse(logs_json)
+
+    // Load in first peripheral
+    var entries = logs[0].entries
+
+
+    // Build log entries html
+    var logEntries = ``
+    for (index in entries) {
+      entry = entries[index];
+      logEntries += `${entry}</br>`
+    }
+
+    // Create log
+    addElement("log-card", "log-entries", "log-entries", logEntries);
+
+  }
+
+
+var logSel = document.getElementById("logSelection");
+logSel.addEventListener("change", displayLog);
+
+function displayLog(){
+  var logs_json = document.getElementById("logs_json").value;
+  var logs = JSON.parse(logs_json)
+
+  // Get log entries
+  for (index in logs) {
+    log = logs[index]
+    if (log.name == logSel.value) {
+          var entries = log.entries;
+          break;
+    }
+  }
+
+  // Build log entries html
+  var logEntries = ``
+  for (index in entries) {
+    entry = entries[index];
+    logEntries += `${entry}</br>`
+  };
+
+  // Update HTML
+  removeElement("log-entries");
+  addElement("log-card", "log-entries", "log-entries", logEntries);
+}
+
+function addElement(parentId, elementTag, elementId, html) {
+    // Adds an element to the document
+    var p = document.getElementById(parentId);
+    var newElement = document.createElement(elementTag);
+    newElement.setAttribute('id', elementId);
+    newElement.innerHTML = html;
+    p.appendChild(newElement);
+}
+
+function removeElement(elementId) {
+    // Removes an element from the document
+    var element = document.getElementById(elementId);
+    element.parentNode.removeChild(element);
+}
+
+</script>
+{% endblock %}
+
+
+{% block content %}
+<html>
+  <input type="hidden" id="logs_json" name="variable" value="{{ logs_json }}">
+
+  <body>
+    <div class="logs">
+      <div class="card" id="log-card">
+
+        <select id="logSelection" class="selectpicker" style="width:200px">
+          {% for log in logs %}
+            <option value={{log.name}}>{{log.name}}</option>
+          {% endfor %}
+        </select>
+
+        </br>
+
+      </div>
+  </body>
+</html>
+
+{% endblock %}
