@@ -67,7 +67,7 @@ class USBCameraSensor:
 
     def capture(self) -> Error:
         """ Captures an image. """
-        self.logger.info("Capturing image")
+        #self.logger.debug("Capturing image")
 
         # Capture image
         error = self.driver.capture()
