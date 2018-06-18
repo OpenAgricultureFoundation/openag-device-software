@@ -59,6 +59,7 @@ urlpatterns = [
     url(r'^$', redirect_to_dashboard, name="home"),
     url(r'^dashboard/$', views.Dashboard.as_view(), name="dashboard"),
     url(r'^peripherals/$', views.Peripherals.as_view(), name="peripherals"),
+    url(r'^logs/$', views.Logs.as_view(), name="logs"),
     url(r'^events/$', views.Events.as_view(), name="events"),
     url(r'^recipes/$', views.Recipes.as_view(), name="recipes"),
     url(r'^recipe/build/$', views.RecipeBuilder.as_view(), name="recipe-builder"),
@@ -67,4 +68,3 @@ urlpatterns = [
     url(r'^entry/$', views.Entry.as_view(), name="entry"),
     url(r'^scratchpad/$', views.Scratchpad.as_view(), name="entry"),
 ]  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
