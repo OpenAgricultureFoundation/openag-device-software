@@ -258,6 +258,56 @@ class Events(APIView):
         return Response({'events': events})
 
 
+class Logs(APIView):
+    """ UI page for logs. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'logs.html'
+    
+    def get(self, request):
+        logs = [
+            {
+                "name": "SHT25-Top",
+                "entries": [
+                    "log line 1", 
+                    "log line 2"
+                ]
+            },
+            {
+                "name": "T6713-Top",
+                "entries": [
+                    "t6713 line 1",
+                    "t6713 line 2"
+                ]
+            }
+        ]
+
+        # Load in config info
+        about = json.load(open("about.json"))
+        config_name = about["device_config"]
+        device_config = json.load(open("data/devices/{}.json".format(config_name)))
+
+        # Build logs
+        logs = []
+        for peripheral in device_config["peripherals"]:
+            name = peripheral["name"]
+
+            # Load in peripheral log file
+            log_file =  open("logs/peripherals/{}.log".format(name))
+            lines = log_file.readlines() # As long as file doesn't get too big, readlines is OK
+
+            # Return up to 500 lines
+            if len(lines) < 500:
+                entries = lines
+            else:
+                entries = lines[-500:]
+
+            # Append to log
+            logs.append({"name": name, "entries": entries})
+
+        # Return response
+        return Response({"logs": logs, "logs_json": json.dumps(logs)})
+
+
 class Peripherals(APIView):
     """ UI page for peripherals. """
     renderer_classes = [TemplateHTMLRenderer]
