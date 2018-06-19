@@ -26,15 +26,15 @@ class IoTManager:
     def __init__( self, state, ref_device_manager ):
         """ Class constructor """
         self.state = state
+        self.error = None
+        self.ref_device_manager = ref_device_manager
         # Initialize our state.  These are filled in by the IoTPubSub class
         self.state.iot = {
-            "error": None,
+            "error": self.error,
             "connected": 'No',
             "received_message_count": 0,
             "published_message_count": 0
         }
-        self.ref_device_manager = ref_device_manager
-        self.error = None
         
         self._stop_event = threading.Event() # so we can stop this thread
         try:
@@ -103,14 +103,24 @@ class IoTManager:
         """ Gets error value. """
         return self._error
 
-
-    #--------------------------------------------------------------------------
     @error.setter
     def error( self, value ):
         """ Safely updates recipe error in shared state. """
         self._error = value
         with threading.Lock():
             self.state.iot["error"] = value
+
+
+    #--------------------------------------------------------------------------
+    @property
+    def connected( self ):
+        return self.iot.connected
+
+
+    #--------------------------------------------------------------------------
+    def publishMessage( name, msg_json ):
+        """ Send a command reply. """
+        self.iot.publishCommandReply( name, msg_json )
 
 
     #--------------------------------------------------------------------------
@@ -160,8 +170,8 @@ class IoTManager:
                     self.iot.publishCommandReply( "boot", about_json )
                     self.logger.info( "Published boot message with versions." )
                 except:
-                    self.error = "Unable to load about.json file."
-                    self.logger.critical( self.error )
+                    self._error = "Unable to load about.json file."
+                    self.logger.critical( self._error )
 
 
             if self.stopped():

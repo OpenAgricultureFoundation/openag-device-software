@@ -22,6 +22,9 @@ from device.managers.event import EventManager
 # Import IoT communications (to the backend) manager 
 from iot.iot_manager import IoTManager
 
+# Import resource manager
+from resource.resource_manager import ResourceManager
+
 # Import database models
 from app.models import StateModel
 from app.models import EventModel
@@ -99,6 +102,9 @@ class DeviceManager:
         # start/stop recipe methods.
         self.iot = IoTManager( self.state, self )
         self.latest_publish_timestamp = 0
+
+        # Initialize the resourcd manager object.  
+        self.resource = ResourceManager( self.state, self, self.iot )
 
 
     @property
@@ -431,7 +437,8 @@ class DeviceManager:
                 environment = json.dumps(self.state.environment),
                 peripherals = json.dumps(self.state.peripherals),
                 controllers = json.dumps(self.state.controllers),
-                iot = json.dumps(self.state.iot)
+                iot = json.dumps(self.state.iot),
+                resource = json.dumps(self.state.resource)
             )
         else:
             StateModel.objects.filter(pk=1).update(
@@ -440,7 +447,8 @@ class DeviceManager:
                 environment = json.dumps(self.state.environment),
                 peripherals = json.dumps(self.state.peripherals),
                 controllers = json.dumps(self.state.controllers),
-                iot = json.dumps(self.state.iot)
+                iot = json.dumps(self.state.iot),
+                resource = json.dumps(self.state.resource)
             )
 
 

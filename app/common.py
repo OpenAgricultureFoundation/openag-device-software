@@ -97,6 +97,15 @@ class Common(object):
             return json.loads( state.iot )
 
 
+    def get_resource_dict():
+        """ Gets resource dict from state table in database. """
+        if not StateModel.objects.filter( pk=1 ).exists():
+            return None
+        else:
+            state = StateModel.objects.get( pk=1 )
+            return json.loads( state.resource )
+
+
     def manage_event(event_request, timeout_seconds=3, update_interval_seconds=0.1):
         """ Manages an event request. Creates new event in database, waits for 
             event response, returns event response or timeout error. """

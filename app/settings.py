@@ -43,7 +43,8 @@ INSTALLED_APPS = [
 
     'app',
     'device',
-    'iot'
+    'iot',
+    'resource'
 ]
 
 MIDDLEWARE = [
@@ -159,6 +160,19 @@ LOGGING = {
             'formatter': 'device_file',
             'maxBytes': 5*1024*1024,
             'backupCount': 1
+        },
+        'resource_console': { 
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'device_console',
+        },
+        'resource_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.dirname(BASE_DIR) + "/logs/resource.log",
+            'formatter': 'device_file',
+            'maxBytes': 5*1024*1024,
+            'backupCount': 1
         }
     },
     'loggers': {
@@ -172,6 +186,10 @@ LOGGING = {
         },
         'iot': {
             'handlers': ['iot_console', 'iot_file'],
+            'level': 'DEBUG',
+        },
+        'resource': {
+            'handlers': ['resource_console', 'resource_file'],
             'level': 'DEBUG',
         }
     }
