@@ -262,3 +262,12 @@ class DeviceViewer:
 
         # Return thread modes
         return modes, healths
+
+
+class IoTViewer:
+    iot_dict = {}
+    def __init__(self):
+        self.iot_dict = Common.get_iot_dict()
+
+
+

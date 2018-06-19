@@ -17,7 +17,8 @@ def test_send_image():
     contents_bytes = f.read()
     f.close()
 
-    ps = IoTPubSub( dummy_command_received ) 
+    state_dict = {}
+    ps = IoTPubSub( dummy_command_received, state_dict ) 
     ps.process_network_events() 
 
     ps.publishBinaryImage( 'webcam-top', 'png', contents_bytes ) 

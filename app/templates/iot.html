@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<html>
+   <body>
+      <div class="iot">
+         <div class="card">
+            <b>IoT Connection Status</b>
+            <ul>
+              <li><b>Connected:</b> {{ status }}
+              <li><b>Messages received:</b> {{ received_message_count }}
+              <li><b>Messages sent:</b> {{ published_message_count }}
+                  
+              {% if error != None %}
+              <li><b>Error:</b> {{ error }}
+              {% endif %}
+            </ul>
+         </div>
+      </div>
+   </body>
+</html>
+{% endblock %}

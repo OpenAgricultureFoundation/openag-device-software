@@ -64,6 +64,7 @@ urlpatterns = [
     url(r'^recipes/$', views.Recipes.as_view(), name="recipes"),
     url(r'^recipe/build/$', views.RecipeBuilder.as_view(), name="recipe-builder"),
     url(r'^environments/$', views.Environments.as_view(), name="environments"),
+    url(r'^iot/$', views.IoT.as_view(), name="iot"),
     url(r'^manual/$', views.Manual.as_view(), name="manual"),
     url(r'^entry/$', views.Entry.as_view(), name="entry"),
     url(r'^scratchpad/$', views.Scratchpad.as_view(), name="entry"),

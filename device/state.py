@@ -14,6 +14,7 @@ class State(object):
     recipe = {}
     peripherals = {}
     controllers = {}  
+    iot = {}  
 
 
     def set_environment_reported_sensor_value(self, sensor, variable, value, simple=False):

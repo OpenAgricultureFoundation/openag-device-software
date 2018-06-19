@@ -56,6 +56,7 @@ from app.viewers import SimpleRecipeViewer
 from app.viewers import EnvironmentViewer
 from app.viewers import CultivarsViewer
 from app.viewers import CultivationMethodsViewer
+from app.viewers import IoTViewer
 
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
@@ -382,6 +383,25 @@ class Environments(APIView):
     def get(self, request):
         environments = EnvironmentModel.objects.all().order_by("-timestamp")
         return Response({'environments': environments})
+
+
+class IoT(APIView):
+    """ UI page for IoT. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'iot.html'
+
+    def get(self, request):
+
+        iotv = IoTViewer()
+
+        # Build and return response
+        response = {
+            "status": iotv.iot_dict["connected"],
+            "error": iotv.iot_dict["error"],
+            "received_message_count": iotv.iot_dict["received_message_count"],
+            "published_message_count": iotv.iot_dict["published_message_count"]
+        }
+        return Response( response )
 
 
 class Manual(APIView):

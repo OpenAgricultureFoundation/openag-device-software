@@ -14,7 +14,8 @@ def live_command_received( command, arg0, arg1 ):
 
 
 def test_pubsub_initial_state():
-    ps = IoTPubSub( live_command_received ) 
+    state_dict = {}
+    ps = IoTPubSub( live_command_received, state_dict ) 
     assert ps.lastConfigVersion == 0
     ps.lastConfigVersion = 123
     assert ps.lastConfigVersion == 123
@@ -25,7 +26,8 @@ def test_pubsub_initial_state():
 
 
 def test_pubsub_live_recv_cmd():
-    ps = IoTPubSub( live_command_received ) 
+    state_dict = {}
+    ps = IoTPubSub( live_command_received, state_dict ) 
     count = 0
     while not ps.connected and count < 20:
         count = count + 1
@@ -43,7 +45,8 @@ def test_pubsub_live_recv_cmd():
 
 
 def test_pubsub_publish_env_var():
-    ps = IoTPubSub( live_command_received ) 
+    state_dict = {}
+    ps = IoTPubSub( live_command_received, state_dict ) 
     valuesDict = {}
     value = {}
     value['name'] = 'pytest'
@@ -62,7 +65,8 @@ def test_pubsub_publish_env_var():
     
 
 def test_pubsub_publish_command_reply():
-    ps = IoTPubSub( live_command_received ) 
+    state_dict = {}
+    ps = IoTPubSub( live_command_received, state_dict ) 
     # this may actually make it past the MQTT server and end up in BQ:
     ps.publishCommandReply( 'pytest', '{"name":"pytest"}' )
     count = 0

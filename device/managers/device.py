@@ -431,6 +431,7 @@ class DeviceManager:
                 environment = json.dumps(self.state.environment),
                 peripherals = json.dumps(self.state.peripherals),
                 controllers = json.dumps(self.state.controllers),
+                iot = json.dumps(self.state.iot)
             )
         else:
             StateModel.objects.filter(pk=1).update(
@@ -439,6 +440,7 @@ class DeviceManager:
                 environment = json.dumps(self.state.environment),
                 peripherals = json.dumps(self.state.peripherals),
                 controllers = json.dumps(self.state.controllers),
+                iot = json.dumps(self.state.iot)
             )
 
 
