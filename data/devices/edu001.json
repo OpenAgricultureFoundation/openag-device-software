@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
+                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
                     ]
                 }
             }

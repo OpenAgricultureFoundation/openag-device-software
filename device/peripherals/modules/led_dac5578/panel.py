@@ -126,7 +126,6 @@ class LEDDAC5578Panel:
             # Check for errors and update health
             if error.exists():
                 self.health.report_failure()
-                return error
             else:
                 self.health.report_success()
                 break
@@ -175,14 +174,13 @@ class LEDDAC5578Panel:
             # Check for errors and update health
             if error.exists():
                 self.health.report_failure()
-                return error
             else:
                 self.health.report_success()
                 break
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Panel unable to set output, became too unhealthy")
+            error.report("Panel unable to set outputs, became too unhealthy")
             self.logger.error(error.latest())
             return error
         
