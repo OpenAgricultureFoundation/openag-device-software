@@ -67,11 +67,12 @@ class IoTPubSub:
 
 
     #--------------------------------------------------------------------------
-    def __init__( self, command_received_callback ):
+    def __init__( self, command_received_callback, state_dict ):
         """ 
         Class constructor 
         """
         self.command_received_callback = command_received_callback
+        self.state_dict = state_dict # items that are shown in the UI
         self.args = self.get_env_vars() # get our settings from env. vars.
         self.deviceId = self.args.device_id 
 
@@ -324,6 +325,11 @@ class IoTPubSub:
     @connected.setter
     def connected( self, value ):
         self._connected = value
+        if value:
+            self.state_dict["connected"] = \
+                    datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
+        else:
+            self.state_dict["connected"] = 'No'
 
 
     #--------------------------------------------------------------------------
@@ -334,6 +340,7 @@ class IoTPubSub:
     @messageCount.setter
     def messageCount( self, value ):
         self._messageCount = value
+        self.state_dict["received_message_count"] = value
 
 
     #--------------------------------------------------------------------------
@@ -344,6 +351,7 @@ class IoTPubSub:
     @publishCount.setter
     def publishCount( self, value ):
         self._publishCount = value
+        self.state_dict["published_message_count"] = value
 
 
     ####################################################################
@@ -545,6 +553,7 @@ def on_connect( unused_client, ref_self, unused_flags, rc ):
     """ Paho callback for when a device connects.  """
     ref_self.connected = True
     ref_self.logger.debug('on_connect: {}'.format( mqtt.connack_string( rc )))
+    ref_self.state_dict["error"] = None
 
 
 #------------------------------------------------------------------------------
@@ -553,6 +562,7 @@ def on_disconnect( unused_client, ref_self, rc ):
     """ Paho callback for when a device disconnects.  """
     ref_self.connected = False
     ref_self.logger.debug('on_disconnect: {}'.format( error_str( rc )))
+    ref_self.state_dict["error"] = error_str( rc )
 
 
 #------------------------------------------------------------------------------

@@ -26,12 +26,20 @@ class IoTManager:
     def __init__( self, state, ref_device_manager ):
         """ Class constructor """
         self.state = state
+        # Initialize our state.  These are filled in by the IoTPubSub class
+        self.state.iot = {
+            "error": None,
+            "connected": 'No',
+            "received_message_count": 0,
+            "published_message_count": 0
+        }
         self.ref_device_manager = ref_device_manager
         self.error = None
+        
         self._stop_event = threading.Event() # so we can stop this thread
         try:
             # pass in the callback that receives commands
-            self.iot = IoTPubSub( self.command_received ) 
+            self.iot = IoTPubSub( self.command_received, self.state.iot ) 
         except( Exception ) as e:
             self.error = e
             exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -101,9 +109,8 @@ class IoTManager:
     def error( self, value ):
         """ Safely updates recipe error in shared state. """
         self._error = value
-#TODO: need iot dict in state if we do this
-#        with threading.Lock():
-#            self.state.iot["error"] = value
+        with threading.Lock():
+            self.state.iot["error"] = value
 
 
     #--------------------------------------------------------------------------
