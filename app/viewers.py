@@ -270,4 +270,9 @@ class IoTViewer:
         self.iot_dict = Common.get_iot_dict()
 
 
+class ResourceViewer:
+    resource_dict = {}
+    def __init__(self):
+        self.resource_dict = Common.get_resource_dict()
+
 

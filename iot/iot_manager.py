@@ -25,28 +25,33 @@ class IoTManager:
     #--------------------------------------------------------------------------
     def __init__( self, state, ref_device_manager ):
         """ Class constructor """
+        self.iot = None
         self.state = state
+        self.error = None
+        self.ref_device_manager = ref_device_manager
         # Initialize our state.  These are filled in by the IoTPubSub class
         self.state.iot = {
-            "error": None,
+            "error": self.error,
             "connected": 'No',
             "received_message_count": 0,
             "published_message_count": 0
         }
-        self.ref_device_manager = ref_device_manager
-        self.error = None
         
         self._stop_event = threading.Event() # so we can stop this thread
+        self.reset()
+
+
+    #--------------------------------------------------------------------------
+    def reset( self ):
         try:
             # pass in the callback that receives commands
             self.iot = IoTPubSub( self.command_received, self.state.iot ) 
         except( Exception ) as e:
+            self.iot = None
             self.error = e
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical( "Exception creating class: {}".format( e ))
-            traceback.print_tb( exc_traceback, file=sys.stdout )
-            exit( 1 )
-
+            #exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.logger.error( "Couldn't create IoT connection: {}".format( e ))
+            #traceback.print_tb( exc_traceback, file=sys.stdout )
 
     #--------------------------------------------------------------------------
     # This is a callback that is called by the IoTPubSub class when this 
@@ -55,6 +60,9 @@ class IoTManager:
         """
         Process commands received from the backend (UI).
         """
+        if None == self.iot:
+            return
+
         try:
             if command == IoTPubSub.CMD_START:
                 recipe_json = arg0
@@ -103,14 +111,34 @@ class IoTManager:
         """ Gets error value. """
         return self._error
 
-
-    #--------------------------------------------------------------------------
     @error.setter
     def error( self, value ):
         """ Safely updates recipe error in shared state. """
         self._error = value
         with threading.Lock():
             self.state.iot["error"] = value
+
+
+    #--------------------------------------------------------------------------
+    @property
+    def connected( self ):
+        if None == self.iot:
+            return False
+        return self.iot.connected
+
+    @connected.setter
+    def connected( self, value ):
+        if None == self.iot:
+            return 
+        self.iot.connected = value
+
+
+    #--------------------------------------------------------------------------
+    def publishMessage( name, msg_json ):
+        """ Send a command reply. """
+        if None == self.iot:
+            return 
+        self.iot.publishCommandReply( name, msg_json )
 
 
     #--------------------------------------------------------------------------
@@ -134,6 +162,8 @@ class IoTManager:
 
     #--------------------------------------------------------------------------
     def publish( self ):
+        if None == self.iot:
+            return 
         vars_dict = self.state.environment["reported_sensor_stats"] \
             ["individual"]["instantaneous"]
 
@@ -152,6 +182,11 @@ class IoTManager:
     def thread_proc( self ):
         while True:
 
+            if None == self.iot:
+                time.sleep( 5 )
+                continue
+
+
             # Publish about.json for a record of versions on this machine.
             if not self.sentAboutJson:
                 self.sentAboutJson = True
@@ -160,8 +195,8 @@ class IoTManager:
                     self.iot.publishCommandReply( "boot", about_json )
                     self.logger.info( "Published boot message with versions." )
                 except:
-                    self.error = "Unable to load about.json file."
-                    self.logger.critical( self.error )
+                    self._error = "Unable to load about.json file."
+                    self.logger.critical( self._error )
 
 
             if self.stopped():
