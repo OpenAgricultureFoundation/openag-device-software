@@ -8,10 +8,10 @@ from device.utilities.error import Error
 from device.utilities.health import Health
 
 # Import device drivers
-from device.peripherals.modules.sht25.driver import SHT25Driver
+from device.peripherals.modules.ccs811.driver import CCS811Driver
 
 
-class SHT25Sensor:
+class CCS811Sensor:
     """ SHT25 temperature and humidity sensor. """
 
     def __init__(self, name: str, bus: int, address: str, mux: str = None, 
@@ -29,7 +29,7 @@ class SHT25Sensor:
         self.simulate = simulate
 
         # Initialize driver
-        self.driver = SHT25Driver(
+        self.driver = CCS811Driver(
             name = name,
             bus = bus,
             address = address,
