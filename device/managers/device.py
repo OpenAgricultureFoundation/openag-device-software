@@ -314,14 +314,11 @@ class DeviceManager:
             transitions to NORMAL. """
         self.logger.info("Entered SETUP")
 
-        # Spawn recipe thread
+        # Spawn the threads this object controls
         self.recipe.spawn()
-
-        # Spawn event thread
         self.event.spawn()
-
-        # Spawn iot thread
         self.iot.spawn()
+        self.resource.spawn()
 
         # Create peripheral managers and spawn threads
         self.create_peripheral_managers()

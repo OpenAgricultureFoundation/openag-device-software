@@ -400,7 +400,7 @@ class IoT(APIView):
             "status": iotv.iot_dict["connected"],
             "error": iotv.iot_dict["error"],
             "received_message_count": iotv.iot_dict["received_message_count"],
-            "published_message_count": iotv.iot_dict["published_message_count"]
+            "published_message_count": iotv.iot_dict["published_message_count"],
         }
         return Response( response )
 
@@ -419,7 +419,9 @@ class Resource(APIView):
             "status": rv.resource_dict["status"],
             "error": rv.resource_dict["error"],
             "available_disk_space": rv.resource_dict["available_disk_space"],
-            "free_memory": rv.resource_dict["free_memory"]
+            "free_memory": rv.resource_dict["free_memory"],
+            "database_size": rv.resource_dict["database_size"],
+            "internet_connection": rv.resource_dict["internet_connection"],
         }
         return Response( response )
 

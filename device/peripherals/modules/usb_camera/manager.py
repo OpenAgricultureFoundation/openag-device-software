@@ -9,7 +9,7 @@ from device.utilities.error import Error
 # Import peripheral parent class
 from device.peripherals.classes.peripheral_manager import PeripheralManager
 
-# Import led array and events
+# Import functional classes
 from device.peripherals.modules.usb_camera.sensor import USBCameraSensor
 from device.peripherals.modules.usb_camera.events import USBCameraEvents
 
