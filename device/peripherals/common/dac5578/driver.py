@@ -63,12 +63,12 @@ class DAC5578:
             self.logger.error(error.summary())
             return error
 
-        # Successfully set output
+        # Successfully wrote output
         self.logger.debug("Successfully wrote output")
         return Error(None)
 
 
-    def write_outputs(self, outputs: dict) -> Error:
+    def write_outputs(self, outputs: dict, retries=1) -> Error:
         """ Sets output channels to output percents. Only sets mux once. 
             Keeps thread locked since relies on mux not changing. """
         self.logger.debug("Writing outputs: {}".format(outputs))
@@ -77,23 +77,31 @@ class DAC5578:
         first = True
         for channel, percent in outputs.items():
 
-            # Lock thread since we rely on mux not changing
-            with threading.Lock():
+            # Loop for retry option
+            while True:
 
-                # Only set mux once
-                if first:
-                    error = self.write_output(channel, percent)
-                    first = False
-                else:
-                    error = self.write_output(channel, percent, disable_mux=True)
+                # Write output
+                error = self.write_output(channel, percent)
 
-                # Check for errors
-                if error.exists():
-                    error.report("DAC unable to write outputs")
-                    self.logger.error(error.summary())
+                # Check for success
+                if not error.exists():
+                    return Error(None)
+
+                # Handle errors
+                error.report("DAC unable to write outputs")
+                self.logger.error(error.summary())
+
+                # Check for end of retry
+                if retries < 1:
                     return error
 
-        # Successfully set outputs
+                # Retry
+                self.logger.debug("Retrying to write output")
+
+                retries = retries-1
+                time.sleep(0.2) # wait 200ms between retries
+
+        # Successfully wrote outputs
         self.logger.debug("Successfully wrote outputs")
         return Error(None)
 
