@@ -1,16 +1,31 @@
 # Import standard python libraries
-import fcntl, io, time, logging, threading
+import fcntl, io, time, logging, threading, struct
+from typing import Optional, List
 from ctypes import *
-import struct
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.comms.utilities.i2c import *
+from device.utilities.functools import retry
+
+
+
+
+
+
 
 
 class I2C(object):
-    """ I2C communication device. Can communicate with device directly or 
-        via an I2C mux. """
+    """I2C communication device. Can communicate with device directly or 
+    via an I2C mux.
+
+    Attributes:
+        name -- name of device
+        bus --  device bus
+        address -- device address
+        mux -- device mux address
+        channel -- device mux channel
+        simulate -- sets simulation mode
+    """
 
     # Initialize I2C communication options
     I2C_SLAVE = 0x0703 # Use this slave address
@@ -19,8 +34,7 @@ class I2C(object):
 
 
     def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
-        channel: Optional[int] = None, simulate: bool = False):
-        """ Initialize I2C device. """
+        channel: Optional[int] = None, simulate: bool = False) -> None:
 
         # Initialize passed in parameters
         self.name = name
@@ -49,11 +63,13 @@ class I2C(object):
         except PermissionError as e:
             raise InitializationError("Unable to open device: {}".format(device_name)) from e
 
-        # Verify device exists by trying to detect device
+        # Verify device exists by trying to read from device
         try:
             byte = self.read(1)
         except ReadError as e:
             raise InitializationError("Unable to detect device") from e
+        except MuxError as e:
+            raise InitializationError("Unable to set mux") from e
 
         # Initialization successful!
         self.logger.debug("Successfully initialized")
@@ -75,12 +91,13 @@ class I2C(object):
         return False  # Don't suppress exceptions.
 
 
-    def write(self, byte_list: List[int], retry=False):
-        """ Writes byte list to device. Converts byte list to byte array then 
-            sends bytes. Returns error message. """
+    @retry(WriteError, tries=5, delay=0.1, backoff=2)
+    def write(self, byte_list: List[int], retry: bool = False):
+        """Writes byte list to device. Converts byte list to byte array then 
+        sends bytes. Returns error message. """
 
         # Handle mux interactions
-        self.set_mux()
+        self.set_mux(retry=retry)
 
         # Build byte array and string
         byte_array = bytearray(byte_list)
@@ -92,60 +109,56 @@ class I2C(object):
             return
 
         # I2C is not simulated!
-        try:
-            with threading.Lock():
-                self.logger.debug("Writing: {}".format(byte_string))
+        self.logger.debug("Writing: {}".format(byte_string))
+
+        # Write to i2c device
+        try:    
+            with threading.Lock():   
                 fcntl.ioctl(self.device, self.I2C_SLAVE, self.address)
                 self.device.write(byte_array)
         except IOError as e:
-            raise WriteError(byte_list) from e
+            raise WriteError("Unable to write to i2c device", byte_list) from e
 
 
-    def write_raw(self, bytes_, disable_mux=False):
+    @retry(WriteError, tries=5, delay=0.1, backoff=2)
+    def write_raw(self, bytes_: bytearray, retry: bool = False) -> None:
         """ Writes raw bytes to device. """
 
-        # Handle mux interactions
-        error = self.manage_mux(disable_mux=disable_mux)
-
-        # Check for mux error
-        if error.exists():
-            error.report("I2C unable to write raw")
-            return error
+        # Set mux if enabled
+        self.set_mux(retry=retry)
 
         # Check if i2c is simulated
         if self.simulate:
             self.logger.debug("Simulating writing: {}".format(bytes_))
-            return Error(None)
+            return
 
         # I2c is not simulated!
+        self.logger.debug("Writing: {}".format(bytes_))
+
+        # Write raw to i2c device
         try:
             with threading.Lock():
-                self.logger.debug("Writing: {}".format(bytes_))
                 fcntl.ioctl(self.device, self.I2C_SLAVE, self.address)
                 self.device.write(bytes_)
-                return Error(None)
-        except IOError:
-            return Error("I2C unable to write raw due to IO error")
+        except IOError as e:
+            message = "Unable to write raw bytes: {}".format(bytes_)
+            raise WriteError(message) from e
 
 
-    def read(self, num_bytes, disable_mux=False):
+    @retry(ReadError, tries=5, delay=0.1, backoff=2)
+    def read(self, num_bytes: int, retry: bool = False) -> bytearray:
         """ Reads num bytes from device. Returns byte array. """
         self.logger.debug("Reading {} bytes".format(num_bytes))
 
         # Handle mux interactions
-        error = self.manage_mux(disable_mux=disable_mux)
-
-        # Check for mux error
-        if error.exists():
-            error.report("I2C unable to read")
-            return None, error
+        self.set_mux(retry=retry)
 
         # Check if i2c is simulated
         if self.simulate:
             byte_array = bytearray(num_bytes)
             byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
             self.logger.debug("Simulated read: {}".format(byte_string))
-            return byte_array, Error(None)
+            return byte_array
 
         # I2c is not simulated!
         try:
@@ -154,63 +167,54 @@ class I2C(object):
                 raw_bytes = self.device.read(num_bytes)
                 byte_array = bytearray(raw_bytes)
                 byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
-                self.logger.debug("Read: {}".format(byte_string))
-                return byte_array, Error(None)
-        except IOError:
-            return None, Error("I2C unable to read due to IO error")
+            self.logger.debug("Read: {}".format(byte_string))
+            return byte_array
+        except IOError as e:
+            message = "Unable to read {} bytes".format(num_bytes)
+            raise ReadError(message) from e
 
 
-    def read_raw(self, num_bytes, disable_mux=False):
-        """ Reads num bytes from device. Returns raw bytes. """
+    @retry(ReadError, tries=5, delay=0.1, backoff=2)
+    def read_raw(self, num_bytes: int, retry: bool = False) -> bytes:
+        """Reads num bytes from device. Returns raw bytes."""
 
-        # Handle mux interactions
-        error = self.manage_mux(disable_mux=disable_mux)
-
-        # Check for mux error
-        if error.exists():
-            error.report("I2C unable to read raw")
-            return None, error
+        # Set mux if enabled
+        self.set_mux(retry=retry)
 
         # Check if i2c is simulated
         if self.simulate:
             bytes_ = bytes(num_bytes)
             self.logger.debug("Simulated read raw: {}".format(bytes_))
-            return bytes_, Error(None)
+            return bytes_
 
         # I2c is not simulated!
         try:
             with threading.Lock():
-
-                # TODO: Why are we opening this?
-                self.device = io.open("/dev/i2c-" + str(bus), "rb", buffering=0)
                 bytes_ = self.device.read(num_bytes)
-                self.logger.debug("Read raw: {}".format(bytes_))
-                return bytes_, Error(None)
-        except IOError:
-            return None, Error("I2C unable to read raw due to IO error")
+            self.logger.debug("Read raw: {}".format(bytes_))
+            return bytes_
+        except IOError as e:
+            message = "Unable to read {} raw bytes".format(num_bytes)
+            raise ReadError(message)
 
 
-    def read_register(self, register_address, retry=False):
+    @retry(ReadError, tries=5, delay=0.1, backoff=2)
+    def read_register(self, address: int, retry: bool = False) -> int:
         """ Reads byte stored in register at address. """
         
-        # Handle mux interactions
-        error = self.manage_mux(disable_mux=disable_mux)
-
-        # Check for mux error
-        if error.exists():
-            error.report("I2C unable to read register")
-            return None, error
+        # Set mux if enabled
+        self.set_mux(retry=retry)
 
         # Check if i2c is simulated
         if self.simulate:
             byte_ = bytes(1)[0]
             self.logger.debug("Simulated read register: {}".format(byte_))
-            return byte_, Error(None)
+            return byte_
 
         # I2c is not simulated!
         try:
             with threading.Lock():
-                reg = c_uint8(register_address)
+                reg = c_uint8(address)
                 result = c_uint8()
                 request = make_i2c_rdwr_data([
                     (self.address, 0, 1, pointer(reg)), # write cmd register
@@ -218,15 +222,24 @@ class I2C(object):
                 ])
                 fcntl.ioctl(self.device.fileno(), self.I2C_RDWR, request)
                 byte_ = result.value
-                self.logger.debug("Read register: {}".format(byte_))
-                return byte_, Error(None)
-        except IOError:
-            return None, Error("I2C unable to read register due to IO error")
+            self.logger.debug("Read register: {}".format(byte_))
+            return byte_
+        except IOError as e:
+            message = "Unable to read register 0x{:02}".format(address)
+            raise ReadError(message) from e
 
 
-    @retry(MuxError, tries=5, delay=0.1, backoff=2, logger=self.logger)
-    def set_mux(self):
+    @retry(MuxError, tries=5, delay=0.1, backoff=2)
+    def set_mux(self, retry: bool = False):
         """ Sets mux to channel if enabled. """
+
+        # Check if mux is used
+        if self.mux == None:
+            return
+
+        # Mux is used!
+        if self.channel == None:
+            raise MuxError("Channel cannot be None if using mux", self.mux, self.channel)
 
         # Build byte array and string
         channel_byte = 0x01 << self.channel
@@ -240,7 +253,7 @@ class I2C(object):
             self.mux, self.channel, channel_byte))
             return
 
-        # Mux is not simulated!
+        # Mux is not simulated, set mux to channel
         try:
             with threading.Lock():
                 self.logger.debug("Setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
@@ -248,7 +261,7 @@ class I2C(object):
                 fcntl.ioctl(self.device, self.I2C_SLAVE, self.mux)
                 self.device.write(byte_array)
         except IOError as e:
-            raise MuxError(self.mux, self.channel) from e
+            raise MuxError("Unable to write to mux", self.mux, self.channel) from e
 
 
     def close(self):
@@ -263,71 +276,3 @@ def scan(address_range=None, mux_range=None, channel_range=None):
     ...
 
 
-class I2CError(Exception):
-    """Base class for errors raised by I2C."""
-
-
-class InitializationError(I2CError):
-    """Exception raised for initialization errors.
-
-    Attributes:
-        message -- explanation of the error
-        i2c -- instance of I2C object trying to be initialized
-    """
-
-    def __init__(self, message):
-        self.message = message
-
-
-class ReadError(I2CError):
-    """Exception raised for read errors."""
-
-
-class WriteError(I2CError):
-    """Exception raised for write errors."""
-
-     def __init__(self, message, byte_list, ):
-        self.message = message
-
-
-class MuxError(I2CError):
-    """Exception raised for write errors."""
-
-
-
-def retry(exceptions, tries=5, delay=0.1, backoff=2, logger=None):
-    """Retry calling the decorated function using an exponential backoff.
-
-    Args:
-        exceptions: The exception to check. may be a tuple of
-            exceptions to check.
-        tries: Number of times to try (not retry) before giving up.
-        delay: Initial delay between retries in seconds.
-        backoff: Backoff multiplier (e.g. value of 2 will double the delay
-            each retry).
-        logger: Logger to use. If None, print.
-    """
-    
-    def deco_retry(f):
-
-        @wraps(f)
-        def f_retry(*args, **kwargs):
-            mtries, mdelay = tries, delay
-            while mtries > 1:
-                try:
-                    return = f(*args, **kwargs)
-                except exceptions as e:
-
-                    msg = '{}, Retrying in {} seconds...'.format(e, mdelay)
-                    if logger:
-                        logger.warning(msg)
-                    else:
-                        print(msg)
-                    time.sleep(mdelay)
-                    mtries -= 1
-                    mdelay *= backoff
-            return f(*args, **kwargs)
-
-        return f_retry  # true decorator
-
-    return deco_retry

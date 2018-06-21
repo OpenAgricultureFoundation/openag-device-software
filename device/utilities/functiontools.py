@@ -1,8 +1,14 @@
 import time, inspect
 from functools import wraps
+from typing import List, Union, Any
 
+# Import device utilities
+from device.utilities.logger import Logger
 
-def retry(exceptions, tries=5, delay=0.1, backoff=2, logger=None):
+# TODO: Make type checking mode explicit (e.g. remove `Any` types)
+
+def retry(exceptions: Any, tries: int = 5, 
+    delay: float = 0.1, backoff: float = 2, logger: Logger = None) -> Any:
     """Retry calling the decorated function using an exponential backoff.
     Checks for retry kwarg and adheres to default or passed in value.
 
@@ -16,10 +22,10 @@ def retry(exceptions, tries=5, delay=0.1, backoff=2, logger=None):
         logger: Logger to use. If None, print.
     """
 
-    def deco_retry(f):
+    def deco_retry(f: Any) -> Any:
 
         @wraps(f)
-        def f_retry(*args, **kwargs):
+        def f_retry(*args: Any, **kwargs: Any) -> Any:
 
             # Get retry value from kwargs if it exists
             retry = kwargs.get("retry", None)
@@ -28,7 +34,7 @@ def retry(exceptions, tries=5, delay=0.1, backoff=2, logger=None):
             if retry == None:
 
                 # Get kwargs defaults if it exists
-                argspec = inspect.getargspec(f)
+                argspec = inspect.getfullargspec(f)
                 positional_count = len(argspec.args) - len(argspec.defaults)
                 defaults = dict(zip(argspec.args[positional_count:], argspec.defaults))
 
