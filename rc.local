@@ -1,0 +1,3 @@
+#!/bin/sh
+chdir /home/debian/openag-device-software
+/home/debian/openag-device-software/run.sh &

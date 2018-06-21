@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# If the brain is running from /etc/rc.local, stop it.
+sudo service rc.local stop
+
 # Get the latest code
 git pull
 

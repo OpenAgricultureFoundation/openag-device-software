@@ -1,5 +1,11 @@
 # Running Instructions
 
+## Controlling the brain when it is run from /etc/rc.local
+```
+sudo service rc.local start
+systemctl status rc-local.service
+```
+
 ### Install ngrok
 ```
 wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
