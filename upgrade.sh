@@ -3,6 +3,10 @@
 # If the brain is running from /etc/rc.local, stop it.
 sudo service rc.local stop
 
+# Fix up some directories and files that may be owned by root
+sudo chmod 777 logs/ logs/peripherals/ images/ logs/*.log logs/peripherals/*.log
+sudo chown debian:debian -R logs images
+
 # Get the latest code
 git pull
 
