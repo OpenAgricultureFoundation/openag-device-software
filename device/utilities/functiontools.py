@@ -1,14 +1,12 @@
 import time, inspect
 from functools import wraps
-from typing import List, Union, Any
+from typing import Any, Callable, TypeVar, Tuple, cast, Type
 
-# Import device utilities
-from device.utilities.logger import Logger
+FuncType = Callable[..., Any]
+F = TypeVar('F', bound=FuncType)
 
-# TODO: Make type checking mode explicit (e.g. remove `Any` types)
 
-def retry(exceptions: Any, tries: int = 5, 
-    delay: float = 0.1, backoff: float = 2, logger: Logger = None) -> Any:
+def retry(exceptions: Any, tries: int = 5, delay: float = 0.1, backoff: float = 2, logger: Any = None) -> Any:
     """Retry calling the decorated function using an exponential backoff.
     Checks for retry kwarg and adheres to default or passed in value.
 
@@ -22,7 +20,8 @@ def retry(exceptions: Any, tries: int = 5,
         logger: Logger to use. If None, print.
     """
 
-    def deco_retry(f: Any) -> Any:
+    def deco_retry(f: F) -> F:
+        print("here")
 
         @wraps(f)
         def f_retry(*args: Any, **kwargs: Any) -> Any:
@@ -65,8 +64,9 @@ def retry(exceptions: Any, tries: int = 5,
                     time.sleep(mdelay)
                     mtries -= 1
                     mdelay *= backoff
+
             return f(*args, **kwargs)
 
-        return f_retry  # true decorator
+        return cast(F, f_retry)  # true decorator
 
     return deco_retry

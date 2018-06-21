@@ -9,8 +9,11 @@ class InitializationError(I2CError):
         message -- explanation of the error
     """
 
-    def __init__(self, message):
+    def __init__(self, message, logger=None):
         self.message = message
+
+        if logger != None:
+            logger.error(message)
 
 
 class ReadError(I2CError):
