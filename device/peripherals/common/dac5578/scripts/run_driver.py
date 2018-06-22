@@ -1,15 +1,21 @@
 # Import standard python libraries
-import sys, argparse, logging, time, shlex
+import sys, os, json, argparse, logging, time, shlex
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.drivers.dac5578 import DAC5578
-except:
-    # ... if running tests from same dir as dac5578.py
-    sys.path.append("../../")
-    from device.drivers.dac5578 import DAC5578
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("dac5578"):
+    print("Running locally")
+    sys.path.append("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+from device.peripherals.common.dac5578.driver import DAC5578
 
 
 # Import device utilities

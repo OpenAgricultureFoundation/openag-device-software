@@ -76,6 +76,7 @@ class DAC5578:
         # Run through each output
         first = True
         for channel, percent in outputs.items():
+            self.logger.debug("Trying to write output for channel: {}, percent: {}".format(channel, percent))
 
             # Loop for retry option
             while True:
@@ -85,10 +86,11 @@ class DAC5578:
 
                 # Check for success
                 if not error.exists():
-                    return Error(None)
+                    self.logger.debug("No errors exist")
+                    break
 
                 # Handle errors
-                error.report("DAC unable to write outputs")
+                error.report("Unable to write output")
                 self.logger.error(error.summary())
 
                 # Check for end of retry
@@ -163,11 +165,11 @@ class DAC5578:
         # Set channel or channels
         if channel != None:
             self.logger.debug("Turning on channel {}".format(channel))
-            error = self.write_output(channel, 100)
+            error = self.write_output(channel, 100, retries=5)
         else:
             self.logger.debug("Turning on all channels")
             outputs = {0: 100, 1: 100, 2: 100, 3: 100, 4: 100, 5: 100, 6: 100, 7: 100}
-            error = self.write_outputs(outputs)
+            error = self.write_outputs(outputs, retries=5)
 
         # Check for errors
         if error.exists():
@@ -184,11 +186,11 @@ class DAC5578:
         # Set channel or channels
         if channel != None:
             self.logger.debug("Turning off channel {}".format(channel))
-            error = self.write_output(channel, 0)
+            error = self.write_output(channel, 0, retries=5)
         else:
             self.logger.debug("Turning off all channels")
             outputs = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
-            error = self.write_outputs(outputs)
+            error = self.write_outputs(outputs, retries=5)
 
         # Check for errors
         if error.exists():

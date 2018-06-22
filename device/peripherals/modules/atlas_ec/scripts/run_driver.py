@@ -1,15 +1,21 @@
 # Import standard python libraries
 import sys, os, json, argparse, logging, time, shlex
 
-# Import driver module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
-except:
-    # ... if running tests from same dir as driver.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
+# Get current working directory
+cwd = os.getcwd()
+print("Running from: {}".format(cwd))
+
+# Set correct import path
+if cwd.endswith("dac5578"):
+    print("Running locally")
+    sys.path.append("../../../../")
+elif cwd.endswith("openag-device-software"):
+    print("Running globally")
+else:
+    print("Running from invalid location")
+    sys.exit(0)
+
+from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 
 # Import device utilities
 from device.utilities.logger import Logger
