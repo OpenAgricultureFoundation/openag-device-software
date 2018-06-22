@@ -1,11 +1,16 @@
 #!/bin/bash
 
+if [[ "$OSTYPE" == "linux"* ]]; then
+
 # If the brain is running from /etc/rc.local, stop it.
+echo 'Prompting for the root password, use "openag12"'
 sudo service rc.local stop
 
 # Fix up some directories and files that may be owned by root
 sudo chmod 777 logs/ logs/peripherals/ images/ logs/*.log logs/peripherals/*.log
 sudo chown debian:debian -R logs images
+
+fi
 
 # Get the latest code
 git pull
