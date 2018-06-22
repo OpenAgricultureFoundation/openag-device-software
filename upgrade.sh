@@ -31,11 +31,11 @@ else # we are on OSX
   psql postgres -c "ALTER USER openag SUPERUSER;"
 fi
 
-# Also need to make our user super again for the django admin
-echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python manage.py shell
-
 # Load our models
 echo 'Creating the django/postgres database...'
 python manage.py migrate
+
+# Also need to make our user super again for the django admin
+echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python manage.py shell
 
 
