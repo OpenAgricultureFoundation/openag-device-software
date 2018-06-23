@@ -9,6 +9,7 @@ from device.utilities.logger import Logger
 # Import i2c package elements
 from device.comms.i2c2.exceptions import InitializationError
 from device.comms.i2c2.exceptions import InitializationError, WriteError, ReadError, MuxError
+from device.comms.i2c2.utilities import I2CConfig
 
 # Initialize I2C communication options
 I2C_SLAVE = 0x0703 # Use this slave address
@@ -24,18 +25,18 @@ class DeviceIO:
         bus -- device i2c bus
     """
 
-    def __init__(self, name: str, bus: int):
+    def __init__(self, config: I2CConfig) -> None:
 
         # Initialize logger
-        logger_name = "DeviceIO({})".format(name)
+        logger_name = "DeviceIO({})".format(config.name)
         self.logger = Logger(
-            name = name,
+            name = config.name,
             dunder_name = __name__,
         )
 
         # Open IO stream
         try:
-            device_name = "/dev/i2c-{}".format(bus)
+            device_name = "/dev/i2c-{}".format(config.bus)
             self.io = io.open(device_name, "r+b", buffering=0)
         except PermissionError as e:
             self.io = None

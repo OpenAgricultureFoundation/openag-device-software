@@ -1,0 +1,36 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "PFC EDU 001",
+    "uuid": "f89b1cf6-8326-4cac-9a51-9f3318fbd155",
+    "peripherals": [
+        {
+            "name": "CCS811-Top",
+            "type": "CCS811",
+            "uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
+            "parameters": {
+                "setup": {
+                    "name": "CCS811 CO2 Sensor",
+                    "file_name": "ccs811/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "co2_ppm": "air_carbon_dioxide_ppm",
+                        "tvoc_ppb": "air_total_volatile_organic_compounds_ppb"
+                    },
+                    "compensation": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x5a"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}

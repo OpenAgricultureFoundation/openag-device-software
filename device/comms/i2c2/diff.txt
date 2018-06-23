@@ -1,0 +1,157 @@
+--- main.py  (original)
++++ main.py  (formatted)
+@@ -2,29 +2,36 @@
+ import fcntl, io, time, logging, threading, struct
+ from typing import Optional, List, Any, Callable, TypeVar, Tuple, cast, NamedTuple
+ 
+ # Import package elements
+ from device.comms.i2c2.device_io import DeviceIO
+-from device.comms.i2c2.exceptions import InitializationError, WriteError, ReadError, MuxError
++from device.comms.i2c2.exceptions import (
++    InitializationError,
++    WriteError,
++    ReadError,
++    MuxError,
++)
+ from device.comms.i2c2.utilities import make_i2c_rdwr_data, I2CConfig
+ from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
+ 
+ # Import device utilities
+ from device.utilities.logger import Logger
+ from device.utilities.functiontools import retry
+ 
+ # Initialize function type variable for decorator type checking
+ FuncType = Callable[..., Any]
+-F = TypeVar('F', bound=FuncType)
++F = TypeVar("F", bound=FuncType)
+ 
+ 
+ def manage_mux(f):
++
+     def wrapper(*args, **kwargs):
+         self = args[0]
+         if self.mux != None:
+             self.set_mux(self.mux, self.channel)
+         return f(*args, **kwargs)
++
+     return wrapper
+ 
+ 
+ class I2C(object):
+     """I2C communication device. Can communicate with device directly or 
+@@ -37,11 +44,15 @@
+         mux -- device mux address
+         channel -- device mux channel
+         peripheral_simulator -- peripheral simulator instance
+     """
+ 
+-    def __init__(self, config: I2CConfig, PeripheralSimulator: Optional[PeripheralSimulator] = None) -> None:
++    def __init__(
++        self,
++        config: I2CConfig,
++        PeripheralSimulator: Optional[PeripheralSimulator] = None,
++    ) -> None:
+ 
+         # Initialize passed in parameters
+         self.config = config
+         self.name = config.name
+         self.bus = config.bus
+@@ -49,14 +60,11 @@
+         self.mux = config.mux
+         self.channel = config.channel
+ 
+         # Initialize logger instance
+         logger_name = "I2C({})".format(self.name)
+-        self.logger = Logger(
+-            name = self.name,
+-            dunder_name = __name__,
+-        )
++        self.logger = Logger(name=self.name, dunder_name=__name__)
+ 
+         # Verify mux config
+         if self.mux != None and self.channel == None:
+             raise InitializationError("Mux requires channel to be set")
+ 
+@@ -78,15 +86,15 @@
+             raise InitializationError("Unable to set mux") from e
+ 
+         # Initialization successful!
+         self.logger.debug("Successfully initialized")
+ 
+-
+-    def get_simulator(self, PeripheralSimulator: PeripheralSimulator) -> PeripheralSimulator:
++    def get_simulator(
++        self, PeripheralSimulator: PeripheralSimulator
++    ) -> PeripheralSimulator:
+         """Gets callable simulator in type-checkable way. TODO: Clean up this method. """
+         return PeripheralSimulator
+-
+ 
+     # @retry(WriteError, tries=5, delay=0.1, backoff=2) # type: ignore
+     @manage_mux
+     def write(self, bytes_: bytes, retry: bool = False) -> None:
+         """Writes byte list to device. Converts byte list to byte array then 
+@@ -99,54 +107,52 @@
+         # Write to i2c device
+         self.logger.debug("Writing: {}".format(bytes_))
+         with self.I2CIO(self.config) as io:
+             io.write(self.address, bytes_)
+ 
+-
+     @retry(ReadError, tries=5, delay=0.1, backoff=2)
+     def read(self, num_bytes: int, retry: bool = False) -> bytearray:
+         """ Reads num bytes from device. Returns byte array. """
+-        
++
+         # # Set mux if enabled
+         # if self.mux != None:
+         #     self.set_mux(self.mux, self.channel, retry=retry)
+ 
+         # Read bytes
+         self.logger.debug("Reading {} bytes".format(num_bytes))
+         with self.I2CIO(self.config) as io:
+             return io.read(self.address, num_bytes)
+ 
+-
+-    @retry(ReadError, tries=5, delay=0.1, backoff=2) # type: ignore
++    @retry(ReadError, tries=5, delay=0.1, backoff=2)  # type: ignore
+     def read_register(self, register: int, retry: bool = False) -> int:
+         """ Reads byte stored in register at address. """
+-        
++
+         # # Set mux if enabled
+         # if self.mux != None:
+         #     self.set_mux(self.mux, self.channel, retry=retry)
+ 
+         # Read register
+         self.logger.debug("Reading register: 0x{:02X}".format(register))
+         with self.I2CIO(self.config) as io:
+             return io.read_register(self.address, register)
+ 
+-
+-    @retry(ReadError, tries=5, delay=0.1, backoff=2) # type: ignore
++    @retry(ReadError, tries=5, delay=0.1, backoff=2)  # type: ignore
+     def write_register(self, register: int, value: int, retry: bool = False) -> int:
+         """ Writes byte to register."""
+-        
++
+         # # Set mux if enabled
+         # if self.mux != None:
+         #     self.set_mux(self.mux, self.channel, retry=retry)
+ 
+         # Write register
+-        self.logger.debug("Writing register: 0x{:02X} value: 0x{:02X}".format(register, value))
++        self.logger.debug(
++            "Writing register: 0x{:02X} value: 0x{:02X}".format(register, value)
++        )
+         with self.I2CIO(self.config) as io:
+             return io.write_register(self.address, register, value)
+ 
+-
+-    @retry(MuxError, tries=5, delay=0.1, backoff=2) # type: ignore
++    @retry(MuxError, tries=5, delay=0.1, backoff=2)  # type: ignore
+     def set_mux(self, mux: int, channel: int, retry: bool = False) -> None:
+         """ Sets mux to channel if enabled. """
+ 
+         self.logger.debug("Setting mux 0x{:02X} to channel {}".format(mux, channel))
+ 

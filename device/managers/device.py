@@ -22,6 +22,9 @@ from device.managers.event import EventManager
 # Import IoT communications (to the backend) manager 
 from iot.iot_manager import IoTManager
 
+# Import device simulators
+from device.comms.i2c2.mux_simulator import MuxSimulator
+
 # Import database models
 from app.models import StateModel
 from app.models import EventModel
@@ -732,6 +735,14 @@ class DeviceManager:
             self.logger.info("No peripherals configured")
             return
 
+        # Inintilize simulation parameters
+        if os.environ.get('SIMULATE') == "true":
+            simulate = True
+            mux_simulator = MuxSimulator()
+        else:
+            simulate = False
+            mux_simulator = None
+
         # Create peripheral managers
         self.peripheral_managers = {}
         for peripheral_config_dict in self.config_dict["peripherals"]:
@@ -757,11 +768,13 @@ class DeviceManager:
 
             # Create peripheral manager
             peripheral_name = peripheral_config_dict["name"]
-            if os.environ.get('SIMULATE') == "true":
-                simulate = True
-            else:
-                simulate = False
-            peripheral_manager = class_instance(peripheral_name, self.state, peripheral_config_dict, simulate)
+            peripheral_manager = class_instance(
+                name = peripheral_name, 
+                state = self.state, 
+                config = peripheral_config_dict, 
+                simulate = simulate,
+                mux_simulator = mux_simulator,
+            )
             self.peripheral_managers[peripheral_name] = peripheral_manager
 
 

@@ -1,15 +1,29 @@
 {
-	"name":  "SHT25 Temperature / Humidity Sensor",
+	"name":  "CCS811 Carbon Dioxide Sensor",
 	"version": "1",
-	"uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+	"uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
 	"module_name": "sht25.manager",
 	"class_name": "SHT25Manager",
 	"parameters": {
 		"variables": {
 			"sensor": {
-				"temperature_celcius": {
+				"co2_ppm": {
 					"name": {
 						"type": "string", 
+						"default": "air_carbon_dioxide_ppm"
+					}
+				},
+				"tvoc_ppb": {
+					"name": {
+						"type": "string",
+						"default": "air_total_volatile_organic_compounds_ppb"
+					}
+				}
+			},
+			"compensation": {
+				"temperature_celcius": {
+					"name": {
+						"type": "string",
 						"default": "air_temperature_celcius"
 					}
 				},

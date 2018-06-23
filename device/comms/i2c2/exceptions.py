@@ -35,9 +35,8 @@ class WriteError(I2CError):
         byte_list -- TODO
     """
 
-    def __init__(self, message, byte_list):
+    def __init__(self, message):
         self.message = message
-        self.byte_list = byte_list
 
 
 class MuxError(I2CError):
@@ -47,5 +46,8 @@ class MuxError(I2CError):
         message -- explanation of the error
     """
 
-    def __init__(self, message, byte_list):
+    def __init__(self, message, logger=None):
         self.message = message
+
+        if logger != None:
+            logger.error(message)

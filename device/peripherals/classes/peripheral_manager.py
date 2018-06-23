@@ -27,7 +27,7 @@ class PeripheralManager:
     last_update_interval_seconds = None
 
 
-    def __init__(self, name, state, config, simulate=False):
+    def __init__(self, name, state, config, simulate=False, mux_simulator=None):
         """ Initializes peripheral. """
 
         # Initialize passed in parameters
@@ -35,6 +35,7 @@ class PeripheralManager:
         self.state = state
         self.config = config
         self.simulate = simulate
+        self.mux_simulator = mux_simulator
 
         # Initialize logger
         self.logger = Logger(

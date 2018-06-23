@@ -1,5 +1,16 @@
 from ctypes import *
 import struct
+from typing import NamedTuple, Optional
+from device.comms.i2c2.mux_simulator import MuxSimulator
+
+
+class I2CConfig(NamedTuple):
+    name: str
+    bus: int
+    address: int
+    mux: Optional[int]
+    channel: Optional[int]
+    mux_simulator: Optional[MuxSimulator]
 
 
 class i2c_msg(Structure):
