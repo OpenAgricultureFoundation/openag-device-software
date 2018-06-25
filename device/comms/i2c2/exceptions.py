@@ -2,7 +2,7 @@ class I2CError(Exception):
     """Base class for errors raised by I2C."""
 
 
-class InitializationError(I2CError):
+class InitError(I2CError):
     """Exception raised for initialization errors.
 
     Attributes:
@@ -11,7 +11,6 @@ class InitializationError(I2CError):
 
     def __init__(self, message, logger=None):
         self.message = message
-
         if logger != None:
             logger.error(message)
 
@@ -23,8 +22,10 @@ class ReadError(I2CError):
         message -- explanation of the error
     """
 
-    def __init__(self, message):
+    def __init__(self, message, logger=None):
         self.message = message
+        if logger != None:
+            logger.error(message)
 
 
 class WriteError(I2CError):
@@ -35,8 +36,10 @@ class WriteError(I2CError):
         byte_list -- TODO
     """
 
-    def __init__(self, message):
+    def __init__(self, message, logger=None):
         self.message = message
+        if logger != None:
+            logger.error(message)
 
 
 class MuxError(I2CError):
@@ -48,6 +51,5 @@ class MuxError(I2CError):
 
     def __init__(self, message, logger=None):
         self.message = message
-
         if logger != None:
             logger.error(message)

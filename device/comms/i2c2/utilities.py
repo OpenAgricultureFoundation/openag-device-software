@@ -1,7 +1,25 @@
 from ctypes import *
 import struct
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, Any, Callable, TypeVar, cast
 from device.comms.i2c2.mux_simulator import MuxSimulator
+
+
+# Initialize function type variable for decorator type checking
+FuncType = Callable[..., Any]
+F = TypeVar("F", bound=FuncType)
+
+
+def manage_mux(func: F) -> F:
+    """Manages mux connection. Checks if mux is enabled, then sets mux."""
+
+    def wrapper(*args, **kwds):
+        self = args[0]
+        if self.mux != None:
+            # TODO: Introspect retry value. IMPORTANT!!!
+            self.set_mux(self.mux, self.channel)
+        return func(*args, **kwds)
+
+    return cast(F, wrapper)
 
 
 class I2CConfig(NamedTuple):
@@ -15,18 +33,15 @@ class I2CConfig(NamedTuple):
 
 class i2c_msg(Structure):
     _fields_ = [
-        ('addr',  c_uint16),
-        ('flags', c_uint16),
-        ('len',   c_uint16),
-        ('buf',   POINTER(c_uint8))
+        ("addr", c_uint16),
+        ("flags", c_uint16),
+        ("len", c_uint16),
+        ("buf", POINTER(c_uint8)),
     ]
 
 
 class i2c_rdwr_ioctl_data(Structure):
-    _fields_ = [
-        ('msgs',  POINTER(i2c_msg)),
-        ('nmsgs', c_uint32)
-    ]
+    _fields_ = [("msgs", POINTER(i2c_msg)), ("nmsgs", c_uint32)]
 
 
 def make_i2c_rdwr_data(messages):
@@ -37,15 +52,15 @@ def make_i2c_rdwr_data(messages):
     flags value, buffer length, ctypes c_uint8 pointer to buffer.
     """
     # Create message array and populate with provided data.
-    msg_data_type = i2c_msg*len(messages)
+    msg_data_type = i2c_msg * len(messages)
     msg_data = msg_data_type()
     for i, m in enumerate(messages):
-        msg_data[i].addr  = m[0] & 0x7F
+        msg_data[i].addr = m[0] & 0x7F
         msg_data[i].flags = m[1]
-        msg_data[i].len   = m[2]
-        msg_data[i].buf   = m[3]
+        msg_data[i].len = m[2]
+        msg_data[i].buf = m[3]
     # Now build the data structure.
     data = i2c_rdwr_ioctl_data()
-    data.msgs  = msg_data
+    data.msgs = msg_data
     data.nmsgs = len(messages)
     return data
