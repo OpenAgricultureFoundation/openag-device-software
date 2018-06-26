@@ -60,14 +60,15 @@ def retry(
                 try:
                     return f(*args, **kwargs)
                 except exceptions as e:
-
-                    msg = "{}, retrying `{}` in {} seconds...".format(
-                        e, f.__name__, mdelay
-                    )
-                    if logger:
-                        logger.warning(msg)
-                    else:
-                        print(msg)
+                    # Try to log exceptions
+                    try:
+                        msg = "Failed due to {}, retrying in {} seconds...".format(
+                            e, mdelay
+                        )
+                        self = args[0]
+                        self.logger.warning(msg)
+                    except:
+                        print("No logger configured")
                     time.sleep(mdelay)
                     mtries -= 1
                     mdelay *= backoff
