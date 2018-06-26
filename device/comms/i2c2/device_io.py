@@ -3,12 +3,15 @@ import fcntl, io, threading
 from typing import Optional, Type, Callable, cast, Any, TypeVar
 from types import TracebackType
 
+# from ctypes import *
+
 # Import device utilities
 from device.utilities.logger import Logger
 
 # Import i2c package elements
-from device.comms.i2c2.exceptions import InitError
 from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
+from device.comms.i2c2.utilities import make_i2c_rdwr_data, c_uint8, pointer
+
 
 # Initialize I2C communication options
 I2C_SLAVE = 0x0703  # Use this slave address
@@ -123,7 +126,7 @@ class DeviceIO(object):
                         ),  # read 1 byte as result
                     ]
                 )
-                fcntl.ioctl(self.device.fileno(), self.I2C_RDWR, request)
+                fcntl.ioctl(self.io.fileno(), I2C_RDWR, request)
                 byte_ = result.value
             self.logger.debug("Register 0x{:02X}: 0x{:02X}".format(register, byte_))
             return byte_

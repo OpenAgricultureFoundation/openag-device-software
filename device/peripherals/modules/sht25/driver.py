@@ -15,6 +15,7 @@ from device.utilities import bitwise
 # Import driver elements
 from device.peripherals.modules.sht25.simulator import SHT25Simulator
 from device.peripherals.modules.sht25.exceptions import (
+    InitError,
     ReadTemperatureError,
     ReadHumidityError,
     ReadUserRegisterError,
@@ -71,7 +72,10 @@ class SHT25Driver:
                 channel=channel,
                 mux_simulator=mux_simulator,
                 PeripheralSimulator=Simulator,
+                verify_device=False,  # need to write before device responds to read
             )
+            self.read_user_register(retry=True)
+
         except I2CError as e:
             message = "Driver unable to initialize"
             raise InitError(message, logger=self.logger)

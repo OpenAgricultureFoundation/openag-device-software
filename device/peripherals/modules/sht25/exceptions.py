@@ -2,6 +2,19 @@ class DriverError(Exception):
     """Base class for errors raised by driver."""
 
 
+class InitError(DriverError):
+    """Initialization errors for sensor driver.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message, logger=None):
+        self.message = message
+        if logger != None:
+            logger.error(message)
+
+
 class ReadTemperatureError(DriverError):
     """Exception raised for temperature read errors.
 

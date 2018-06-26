@@ -28,6 +28,7 @@ class I2C(object):
         channel: Optional[int],
         mux_simulator: Optional[MuxSimulator],
         PeripheralSimulator: Optional[PeripheralSimulator],
+        verify_device: bool = True,
     ) -> None:
 
         # Initialize passed in parameters
@@ -61,7 +62,8 @@ class I2C(object):
             self.verify_mux()
 
         # Verify device exists
-        self.verify_device()
+        if verify_device:
+            self.verify_device()
 
         # Successfully initialized!
         self.logger.info("Initialization successful")
