@@ -108,8 +108,8 @@ class LEDDAC5578Array(object):
 
     def shutdown(self):
         """ Shutsdown all panels in array. """
-        for panel in self.panels:
-            panel.shutdown()
+        # for panel in self.panels:
+        #     panel.shutdown()
         self.is_shutdown = True
 
 

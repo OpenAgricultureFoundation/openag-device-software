@@ -57,6 +57,7 @@ from app.viewers import EnvironmentViewer
 from app.viewers import CultivarsViewer
 from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
+from app.viewers import ResourceViewer
 
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
@@ -399,7 +400,28 @@ class IoT(APIView):
             "status": iotv.iot_dict["connected"],
             "error": iotv.iot_dict["error"],
             "received_message_count": iotv.iot_dict["received_message_count"],
-            "published_message_count": iotv.iot_dict["published_message_count"]
+            "published_message_count": iotv.iot_dict["published_message_count"],
+        }
+        return Response( response )
+
+
+class Resource(APIView):
+    """ UI page for ResourceManager. """
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'resource.html'
+
+    def get(self, request):
+
+        rv = ResourceViewer()
+
+        # Build and return response
+        response = {
+            "status": rv.resource_dict["status"],
+            "error": rv.resource_dict["error"],
+            "available_disk_space": rv.resource_dict["available_disk_space"],
+            "free_memory": rv.resource_dict["free_memory"],
+            "database_size": rv.resource_dict["database_size"],
+            "internet_connection": rv.resource_dict["internet_connection"],
         }
         return Response( response )
 

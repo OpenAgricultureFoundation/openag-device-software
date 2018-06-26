@@ -17,7 +17,7 @@ from app.models import IoTConfigModel
 
 
 class StateAdmin(admin.ModelAdmin):
-	list_display = ("device", "recipe", "environment", "peripherals", "controllers")
+	list_display = ("device", "recipe", "environment", "peripherals", "controllers", "iot", "resource")
 admin.site.register(StateModel, StateAdmin)
 
 

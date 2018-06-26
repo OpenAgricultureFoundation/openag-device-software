@@ -96,17 +96,15 @@ class IoTPubSub:
         self.logger.debug( 'mqtt_topic={}'.format( self.mqtt_topic ))
 
         # create a (renewable) client with tokens that will timeout
-        try:
-            self.jwt_iat = datetime.datetime.utcnow()
-            self.jwt_exp_mins = self.args.jwt_expires_minutes
-            self.mqtt_client = getMQTTclient( self,
-                self.args.project_id, self.args.cloud_region, 
-                self.args.registry_id, self.deviceId,
-                self.args.private_key_file, self.encryptionAlgorithm,
-                self.args.ca_certs, self.args.mqtt_bridge_hostname,
-                self.args.mqtt_bridge_port ) 
-        except( Exception ) as e:
-            self.logger.critical( "Exception creating class:", e )
+        # let any exceptions pass for this (no internet conn)
+        self.jwt_iat = datetime.datetime.utcnow()
+        self.jwt_exp_mins = self.args.jwt_expires_minutes
+        self.mqtt_client = getMQTTclient( self,
+            self.args.project_id, self.args.cloud_region, 
+            self.args.registry_id, self.deviceId,
+            self.args.private_key_file, self.encryptionAlgorithm,
+            self.args.ca_certs, self.args.mqtt_bridge_hostname,
+            self.args.mqtt_bridge_port ) 
 
 
     #--------------------------------------------------------------------------
@@ -208,6 +206,9 @@ class IoTPubSub:
            not isinstance( imageBytes, bytes ):
             self.logger.critical( "publishBinaryImage: invalid args." )
             return False
+
+        if None == self.mqtt_client:
+            return
 
         try:
             # we send the image as a base64 encoded string (which makes
@@ -675,9 +676,6 @@ def getMQTTclient( ref_self,
 
     # Subscribe to the config topic.
     client.subscribe( mqtt_config_topic, qos=1 )
-
-    # Turn on paho debugging manually if you need it for development.
-    # client.enable_self.logger() 
 
     return client
 

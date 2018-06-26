@@ -13,11 +13,24 @@ class State(object):
     environment = {}
     recipe = {}
     peripherals = {}
-    controllers = {}  
-    iot = {}  
+    controllers = {}
+    iot = {}
+    resource = {}
 
+    def __str__(self):
+        return "State(device={}, environment={}, recipe={}, peripherals={}, controllers={}, iot={}, resource={})".format(
+            self.device,
+            self.environment,
+            self.recipe,
+            self.peripherals,
+            self.controllers,
+            self.iot,
+            self.resource,
+        )
 
-    def set_environment_reported_sensor_value(self, sensor, variable, value, simple=False):
+    def set_environment_reported_sensor_value(
+        self, sensor, variable, value, simple=False
+    ):
         """ Sets reported sensor value to shared environment state. """
 
         # TODO: Clean this up
@@ -29,8 +42,12 @@ class State(object):
         # Individual
         if "individual" not in self.environment["reported_sensor_stats"]:
             self.environment["reported_sensor_stats"]["individual"] = {}
-        if "instantaneous" not in self.environment["reported_sensor_stats"]["individual"]:
-            self.environment["reported_sensor_stats"]["individual"]["instantaneous"] = {}
+        if "instantaneous" not in self.environment["reported_sensor_stats"][
+            "individual"
+        ]:
+            self.environment["reported_sensor_stats"]["individual"][
+                "instantaneous"
+            ] = {}
         if "average" not in self.environment["reported_sensor_stats"]["individual"]:
             self.environment["reported_sensor_stats"]["individual"]["average"] = {}
 
@@ -54,10 +71,16 @@ class State(object):
 
         with threading.Lock():
             # Update individual instantaneous
-            by_type = self.environment["reported_sensor_stats"]["individual"]["instantaneous"]
+            by_type = self.environment["reported_sensor_stats"]["individual"][
+                "instantaneous"
+            ]
             if variable not in by_type:
                 by_type[variable] = {}
-            by_var = self.environment["reported_sensor_stats"]["individual"]["instantaneous"][variable]
+            by_var = self.environment["reported_sensor_stats"]["individual"][
+                "instantaneous"
+            ][
+                variable
+            ]
             by_var[sensor] = value
 
             if simple:
@@ -66,7 +89,9 @@ class State(object):
 
             else:
                 # Update individual average
-                by_type = self.environment["reported_sensor_stats"]["individual"]["average"]
+                by_type = self.environment["reported_sensor_stats"]["individual"][
+                    "average"
+                ]
                 if variable not in by_type:
                     by_type[variable] = {}
                 if sensor not in by_type:
@@ -80,7 +105,11 @@ class State(object):
                     by_type[sensor]["samples"] = new_samples
 
                 # Update group instantaneous
-                by_var_i = self.environment["reported_sensor_stats"]["individual"]["instantaneous"][variable]
+                by_var_i = self.environment["reported_sensor_stats"]["individual"][
+                    "instantaneous"
+                ][
+                    variable
+                ]
                 num_sensors = 0
                 total = 0
                 for sensor in by_var_i:
@@ -88,7 +117,11 @@ class State(object):
                         total += by_var_i[sensor]
                         num_sensors += 1
                 new_value = total / num_sensors
-                self.environment["reported_sensor_stats"]["group"]["instantaneous"][variable] = {"value": new_value, "samples": num_sensors}
+                self.environment["reported_sensor_stats"]["group"]["instantaneous"][
+                    variable
+                ] = {
+                    "value": new_value, "samples": num_sensors
+                }
 
                 # Update group average
                 by_type = self.environment["reported_sensor_stats"]["group"]["average"]
@@ -103,90 +136,108 @@ class State(object):
                     by_type[variable]["samples"] = new_samples
 
                 # Update simple sensor value with instantaneous group value
-                self.environment["sensor"]["reported"][variable] = self.environment["reported_sensor_stats"]["group"]["instantaneous"][variable]["value"]
-
+                self.environment["sensor"]["reported"][variable] = self.environment[
+                    "reported_sensor_stats"
+                ][
+                    "group"
+                ][
+                    "instantaneous"
+                ][
+                    variable
+                ][
+                    "value"
+                ]
 
     def set_environment_desired_sensor_value(self, variable, value):
         """ Sets desired sensor value to shared environment state. """
-        set_nested_dict_safely(self.environment, ["sensor", "desired", variable], value)          
-
+        set_nested_dict_safely(self.environment, ["sensor", "desired", variable], value)
 
     def set_environment_reported_actuator_value(self, variable, value):
         """ Sets reported actuator value to shared environment state. """
-        set_nested_dict_safely(self.environment, ["actuator", "reported", variable], value)          
-
+        set_nested_dict_safely(
+            self.environment, ["actuator", "reported", variable], value
+        )
 
     def set_environment_desired_actuator_value(self, variable, value):
         """ Sets desired actuator value to shared environment state. """
-        set_nested_dict_safely(self.environment, ["actuator", "desired", variable], value)          
-
+        set_nested_dict_safely(
+            self.environment, ["actuator", "desired", variable], value
+        )
 
     def get_environment_reported_sensor_value(self, variable):
         """ Gets reported sensor value from shared environment state. """
-        return get_nested_dict_safely(self.environment, ["sensor", "reported", variable]) 
-
+        return get_nested_dict_safely(
+            self.environment, ["sensor", "reported", variable]
+        )
 
     def get_environment_desired_sensor_value(self, variable):
         """ Gets desired sensor value from shared environment state. """
-        return get_nested_dict_safely(self.environment, ["sensor", "desired", variable]) 
-
+        return get_nested_dict_safely(self.environment, ["sensor", "desired", variable])
 
     def get_environment_reported_actuator_value(self, variable):
         """ Gets reported actuator value from shared environment state. """
-        return get_nested_dict_safely(self.environment, ["actuator", "reported", variable]) 
-
+        return get_nested_dict_safely(
+            self.environment, ["actuator", "reported", variable]
+        )
 
     def get_environment_desired_actuator_value(self, variable):
         """ Gets desired actuator value from shared environment state. """
-        return get_nested_dict_safely(self.environment, ["actuator", "desired", variable]) 
-
+        return get_nested_dict_safely(
+            self.environment, ["actuator", "desired", variable]
+        )
 
     def set_peripheral_value(self, peripheral, variable, value):
         """ Sets peripheral to shared peripheral state. """
-        set_nested_dict_safely(self.peripherals, [peripheral, variable], value)         
-
+        set_nested_dict_safely(self.peripherals, [peripheral, variable], value)
 
     def get_peripheral_value(self, peripheral, variable):
         """ Gets peripheral value from shared peripheral state. """
         return get_nested_dict_safely(self.peripherals, [peripheral, variable])
 
-
     def set_peripheral_reported_sensor_value(self, peripheral, variable, value):
         """ Sets reported sensor value to shared peripheral state. """
-        set_nested_dict_safely(self.peripherals, [peripheral, "sensor", "reported", variable], value)          
-
+        set_nested_dict_safely(
+            self.peripherals, [peripheral, "sensor", "reported", variable], value
+        )
 
     def set_peripheral_desired_sensor_value(self, peripheral, variable, value):
         """ Sets desired sensor value to shared peripheral state. """
-        set_nested_dict_safely(self.peripherals, [peripheral, "sensor", "desired", variable], value)          
-
+        set_nested_dict_safely(
+            self.peripherals, [peripheral, "sensor", "desired", variable], value
+        )
 
     def set_peripheral_reported_actuator_value(self, peripheral, variable, value):
         """ Sets reported actuator value to shared peripheral state. """
-        set_nested_dict_safely(self.peripherals, [peripheral, "actuator", "reported", variable], value)          
-
+        set_nested_dict_safely(
+            self.peripherals, [peripheral, "actuator", "reported", variable], value
+        )
 
     def set_peripheral_desired_actuator_value(self, peripheral, variable, value):
         """ Sets desired actuator value to shared peripheral state. """
-        set_nested_dict_safely(self.peripherals, [peripheral, "actuator", "desired", variable], value)          
-
+        set_nested_dict_safely(
+            self.peripherals, [peripheral, "actuator", "desired", variable], value
+        )
 
     def get_peripheral_reported_sensor_value(self, peripheral, variable):
         """ Gets reported sensor value from shared peripheral state. """
-        return get_nested_dict_safely(self.peripherals, [peripheral, "sensor", "reported", variable])
-
+        return get_nested_dict_safely(
+            self.peripherals, [peripheral, "sensor", "reported", variable]
+        )
 
     def get_peripheral_desired_sensor_value(self, peripheral, variable):
         """ Gets desired sensor value from shared peripheral state. """
-        return get_nested_dict_safely(self.peripherals, [peripheral, "sensor", "desired", variable]) 
-
+        return get_nested_dict_safely(
+            self.peripherals, [peripheral, "sensor", "desired", variable]
+        )
 
     def get_peripheral_reported_actuator_value(self, peripheral, variable):
         """ Gets reported actuator value from shared peripheral state. """
-        return get_nested_dict_safely(self.peripherals, [peripheral, "actuator", "reported", variable]) 
-
+        return get_nested_dict_safely(
+            self.peripherals, [peripheral, "actuator", "reported", variable]
+        )
 
     def get_peripheral_desired_actuator_value(self, peripheral, variable):
         """ Gets desired actuator value from shared peripheral state. """
-        return get_nested_dict_safely(self.peripherals, [peripheral, "actuator", "desired", variable]) 
-
+        return get_nested_dict_safely(
+            self.peripherals, [peripheral, "actuator", "desired", variable]
+        )

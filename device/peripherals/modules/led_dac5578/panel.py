@@ -128,6 +128,7 @@ class LEDDAC5578Panel:
                 self.health.report_failure()
             else:
                 self.health.report_success()
+                self.health.reset()
                 break
 
         # Check if sensor became unhealthy
@@ -137,7 +138,6 @@ class LEDDAC5578Panel:
             return error
             
         # Successfully set output!
-        self.health.reset()
         self.logger.debug("Successfully set output")
         return Error(None)
 
@@ -169,13 +169,14 @@ class LEDDAC5578Panel:
         while self.healthy:
 
             # Set outputs on DAC
-            error = self.dac5578.write_outputs(converted_outputs)
+            error = self.dac5578.write_outputs(converted_outputs, retries=5)
 
             # Check for errors and update health
             if error.exists():
                 self.health.report_failure()
             else:
                 self.health.report_success()
+                self.health.reset()
                 break
 
         # Check if sensor became unhealthy
@@ -185,7 +186,6 @@ class LEDDAC5578Panel:
             return error
         
         # Successfully set outputs!
-        self.health.reset()
         self.logger.debug("Successfully set outputs")
         return Error(None)
 

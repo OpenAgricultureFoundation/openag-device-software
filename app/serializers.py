@@ -19,7 +19,7 @@ class StateSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = StateModel
         fields = ("device", "recipe", "environment", "peripherals",
-        			"controllers", "iot")
+                  "controllers", "iot", "resource")
 
 
 class EventSerializer(serializers.HyperlinkedModelSerializer):

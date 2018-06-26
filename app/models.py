@@ -15,6 +15,7 @@ class StateModel(models.Model):
     peripherals = JSONField()
     controllers = JSONField()
     iot = JSONField()
+    resource = JSONField()
 
     class Meta:
         verbose_name = "State"
