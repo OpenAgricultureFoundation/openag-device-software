@@ -1,5 +1,5 @@
 from ctypes import *
-import struct
+import struct, inspect
 from typing import NamedTuple, Optional, Any, Callable, TypeVar, cast
 from device.comms.i2c2.mux_simulator import MuxSimulator
 
@@ -14,9 +14,28 @@ def manage_mux(func: F) -> F:
 
     def wrapper(*args, **kwds):
         self = args[0]
-        if self.mux != None:
-            # TODO: Introspect retry value. IMPORTANT!!!
-            self.set_mux(self.mux, self.channel)
+
+        # Check if mux enabled
+        if self.mux == None:
+            return func(*args, **kwds)
+
+        # Get retry value from kwargs if it exists
+        retry = kwds.get("retry", None)
+
+        # Check if retry passed into kwargs
+        if retry == None:
+
+            # Get retry default value if exists
+            argspec = inspect.getfullargspec(func)
+            if argspec.defaults != None:
+                positional_count = len(argspec.args) - len(argspec.defaults)
+                defaults = dict(zip(argspec.args[positional_count:], argspec.defaults))
+                retry = defaults.get("retry", None)
+
+        # Set mux
+        self.set_mux(self.mux, self.channel, retry)
+
+        # Call function
         return func(*args, **kwds)
 
     return cast(F, wrapper)

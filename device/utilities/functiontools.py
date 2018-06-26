@@ -3,10 +3,16 @@ from functools import wraps
 from typing import Any, Callable, TypeVar, Tuple, cast, Type
 
 FuncType = Callable[..., Any]
-F = TypeVar('F', bound=FuncType)
+F = TypeVar("F", bound=FuncType)
 
 
-def retry(exceptions: Any, tries: int = 5, delay: float = 0.1, backoff: float = 2, logger: Any = None) -> Any:
+def retry(
+    exceptions: Any,
+    tries: int = 5,
+    delay: float = 0.1,
+    backoff: float = 2,
+    logger: Any = None,
+) -> Any:
     """Retry calling the decorated function using an exponential backoff.
     Checks for retry kwarg and adheres to default or passed in value.
 
@@ -21,7 +27,6 @@ def retry(exceptions: Any, tries: int = 5, delay: float = 0.1, backoff: float = 
     """
 
     def deco_retry(f: F) -> F:
-        print("here")
 
         @wraps(f)
         def f_retry(*args: Any, **kwargs: Any) -> Any:
@@ -44,11 +49,11 @@ def retry(exceptions: Any, tries: int = 5, delay: float = 0.1, backoff: float = 
             if retry == False:
                 return f(*args, **kwargs)
 
-            # Note: If retry kwarg is None, we are assuming that if the decorator 
+            # Note: If retry kwarg is None, we are assuming that if the decorator
             # is present, we should retry by default.
 
             # Note: We are not checking for retry in *args
-            
+
             # Run function with retries
             mtries, mdelay = tries, delay
             while mtries > 1:
@@ -56,7 +61,9 @@ def retry(exceptions: Any, tries: int = 5, delay: float = 0.1, backoff: float = 
                     return f(*args, **kwargs)
                 except exceptions as e:
 
-                    msg = '{}, retrying `{}` in {} seconds...'.format(e, f.__name__, mdelay)
+                    msg = "{}, retrying `{}` in {} seconds...".format(
+                        e, f.__name__, mdelay
+                    )
                     if logger:
                         logger.warning(msg)
                     else:

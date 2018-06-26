@@ -1,5 +1,5 @@
 # Import standard python modules
-import fcntl, io
+import fcntl, io, threading
 from typing import Optional, Type, Callable, cast, Any, TypeVar
 from types import TracebackType
 
@@ -9,19 +9,21 @@ from device.utilities.logger import Logger
 # Import i2c package elements
 from device.comms.i2c2.exceptions import InitError
 from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
-from device.comms.i2c2.utilities import I2CConfig
 
 # Initialize I2C communication options
 I2C_SLAVE = 0x0703  # Use this slave address
 I2C_RDWR = 0x0707  # Combined R/W transfer (one STOP only)
 I2C_M_RD = 0x0001  # read data, from slave to master
 
-# Initialize function type variable for decorator type checking
-FuncType = Callable[..., Any]
-F = TypeVar("F", bound=FuncType)
+# Initialize type checking variables
+F = TypeVar("F", bound=Callable[..., Any])
+ET = TypeVar("ET", bound=Optional[Type[BaseException]])
+EV = TypeVar("EV", bound=Optional[BaseException])
+EB = TypeVar("ET", bound=Optional[TracebackType])
 
 
 def manage_io(func: F) -> F:
+    """Manages opening/closing io stream."""
 
     def wrapper(*args, **kwds):
         self = args[0]
@@ -33,7 +35,7 @@ def manage_io(func: F) -> F:
     return cast(F, wrapper)
 
 
-class DeviceIO:
+class DeviceIO(object):
     """Manages byte-level device IO.
 
     Attributes:
@@ -41,14 +43,18 @@ class DeviceIO:
         bus -- device i2c bus
     """
 
-    def __init__(self, config: I2CConfig) -> None:
+    def __init__(self, name: str, bus: int) -> None:
+
+        # Initialize parameters
+        self.name = name
+        self.bus = bus
 
         # Initialize logger
-        logger_name = "DeviceIO({})".format(config.name)
+        logger_name = "DeviceIO({})".format(name)
         self.logger = Logger(name=logger_name, dunder_name=__name__)
 
         # Verify io exists
-        self.logger.info("Verifying device io exists")
+        self.logger.info("Verifying io stream exists")
         self.open()
         self.close()
 
@@ -60,12 +66,7 @@ class DeviceIO:
         """Context manager enter function."""
         return self
 
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> bool:
+    def __exit__(self, exc_type: ET, exc_val: EV, exc_tb: EB) -> bool:
         """Context manager exit function, ensures resources are cleaned up."""
         self.close()
         return False  # Don't suppress exceptions
@@ -73,8 +74,7 @@ class DeviceIO:
     def open(self):
         """Opens io stream."""
         try:
-            self.logger.debug("Opening IO stream")
-            device_name = "/dev/i2c-{}".format(config.bus)
+            device_name = "/dev/i2c-{}".format(self.bus)
             self.io = io.open(device_name, "r+b", buffering=0)
         except PermissionError as e:
             self.io = None
@@ -83,7 +83,6 @@ class DeviceIO:
 
     def close(self):
         """Closes io stream."""
-        self.logger.debug("Closing IO stream")
         if self.io != None:
             self.io.close()
 

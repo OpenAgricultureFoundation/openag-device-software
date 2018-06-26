@@ -8,7 +8,7 @@ from device.comms.i2c import I2C
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.error import Error
-from device.utilities import math
+from device.utilities import maths
 
 # Import parent class
 from device.peripherals.classes.atlas_driver import AtlasDriver
@@ -22,23 +22,28 @@ class AtlasPHDriver(AtlasDriver):
     _min_potential_hydrogen = 0.001
     _max_potential_hydrogen = 14.000
 
-
-    def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
-                channel: Optional[int] = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: int,
+        mux: Optional[int] = None,
+        channel: Optional[int] = None,
+        simulate: bool = False,
+    ) -> None:
         """ Initializes driver. """
 
         super().__init__(
-            name = name, 
-            bus = bus, 
-            address = address, 
-            mux = mux,
-            channel = channel,
-            logger_name = "Driver({})".format(name), 
-            i2c_name = name, 
-            dunder_name = __name__, 
-            simulate = simulate,
+            name=name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            logger_name="Driver({})".format(name),
+            i2c_name=name,
+            dunder_name=__name__,
+            simulate=simulate,
         )
-
 
     def read_potential_hydrogen(self) -> Tuple[Optional[float], Error]:
         """ Reads potential hydrogen from sensor, sets significant 
@@ -47,7 +52,7 @@ class AtlasPHDriver(AtlasDriver):
 
         # Get potential hydrogen reading from hardware
         # Assumed potential hydrogen is only enabled output
-        response, error = self.process_command("R", processing_seconds=1.2) # was 0.6
+        response, error = self.process_command("R", processing_seconds=1.2)  # was 0.6
 
         # Check for errors
         if error.exists():
@@ -59,19 +64,21 @@ class AtlasPHDriver(AtlasDriver):
         potential_hydrogen_raw = float(response)
 
         # Set significant figures based off error magnitude
-        error_magnitude = math.magnitude(self._potential_hydrogen_accuracy)
+        error_magnitude = maths.magnitude(self._potential_hydrogen_accuracy)
         significant_figures = error_magnitude * -1
         potential_hydrogen = round(potential_hydrogen_raw, significant_figures)
 
         # Verify potential hydrogen value within valid range
-        if potential_hydrogen > self._min_potential_hydrogen and potential_hydrogen < self._min_potential_hydrogen:
+        if (
+            potential_hydrogen > self._min_potential_hydrogen
+            and potential_hydrogen < self._min_potential_hydrogen
+        ):
             self.logger.warning("Potential hydrogen outside of valid range")
             potential_hydrogen = None
 
         # Succesfully read pH!
         self.logger.info("pH: {}".format(potential_hydrogen))
-        return potential_hydrogen, Error(None) 
-
+        return potential_hydrogen, Error(None)
 
     def set_compensation_temperature(self, temperature: float) -> Error:
         """ Commands sensor to set compensation temperature. """
@@ -90,7 +97,6 @@ class AtlasPHDriver(AtlasDriver):
         # Successfully set compensation temperature!
         return Error(None)
 
-
     def take_low_point_calibration_reading(self, value: float) -> Error:
         """ Commands sensor to take a low point calibration reading. """
         self.logger.info("Taking low point calibration reading")
@@ -107,7 +113,6 @@ class AtlasPHDriver(AtlasDriver):
 
         # Succesfully took low point calibration reading
         return Error(None)
-
 
     def take_mid_point_calibration_reading(self, value: float) -> Error:
         """ Commands sensor to take a mid point calibration reading. """
@@ -126,7 +131,6 @@ class AtlasPHDriver(AtlasDriver):
         # Successfully took mid point calibration reading!
         return Error(None)
 
-
     def take_high_point_calibration_reading(self, value: float) -> Error:
         """ Commands sensor to take a high point calibration reading. """
         self.logger.info("Taking high point calibration reading")
@@ -143,7 +147,6 @@ class AtlasPHDriver(AtlasDriver):
 
         # Successfully took high point calibration reading!
         return Error(None)
-
 
     def clear_calibration_readings(self) -> Error:
         """ Commands sensor to clear calibration data. """

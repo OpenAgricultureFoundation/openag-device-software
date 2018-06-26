@@ -2,11 +2,12 @@
 import fcntl, io, time, logging, threading, struct
 from typing import Optional, List
 
-# Import package elements
+# # Import package elements
 from device.comms.i2c2.device_io import DeviceIO
 from device.comms.i2c2.utilities import make_i2c_rdwr_data, manage_mux
 from device.comms.i2c2.utilities import I2CConfig as Config
-from device.comms.i2c2.peripheral_simulator import PeripheralSimulator as Simulator
+from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
 
 # Import device utilities
@@ -15,22 +16,26 @@ from device.utilities.functiontools import retry
 
 
 class I2C(object):
-    """I2C communication device. Can communicate with device directly or 
-    via an I2C mux.
+    """I2C communication device. Can communicate with device directly or
+    via an I2C mux."""
 
-    Attributes:
-        config -- config data
-        Simulator -- io simulator class
-    """
-
-    def __init__(self, config: Config, Simulator: Optional[Simulator] = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: int,
+        mux: Optional[int],
+        channel: Optional[int],
+        mux_simulator: Optional[MuxSimulator],
+        PeripheralSimulator: Optional[PeripheralSimulator],
+    ) -> None:
 
         # Initialize passed in parameters
-        self.name = config.name
-        self.bus = config.bus
-        self.address = config.address
-        self.mux = config.mux
-        self.channel = config.channel
+        self.name = name
+        self.bus = bus
+        self.address = address
+        self.mux = mux
+        self.channel = channel
 
         # Initialize logger instance
         logger_name = "I2C({})".format(self.name)
@@ -42,14 +47,36 @@ class I2C(object):
             raise InitError("Mux requires channel value to be set") from ValueError
 
         # Initialize io
-        if Simulator != None:
-            self.logger.info("Using simulated IO")
-            self.io = Simulator(config)  # type: ignore
+        if PeripheralSimulator != None:
+            self.logger.info("Using simulated io stream")
+            self.io = PeripheralSimulator(
+                name, bus, address, mux, channel, mux_simulator
+            )  # type: ignore
         else:
-            self.logger.info("Using physical IO")
-            self.io = DeviceIO(config)
+            self.logger.info("Using device io stream")
+            self.io = DeviceIO(name, bus)
+
+        # Verify mux exists
+        if self.mux != None:
+            self.verify_mux()
 
         # Verify device exists
+        self.verify_device()
+
+        # Successfully initialized!
+        self.logger.info("Initialization successful")
+
+    def verify_mux(self) -> None:
+        """Verifies mux exists by trying to set it to a channel."""
+        try:
+            self.logger.info("Verifying mux exists")
+            byte = self.set_mux(self.mux, self.channel, retry=True)
+        except MuxError as e:
+            message = "Unable to verify mux exists"
+            raise InitError(message, logger=self.logger) from e
+
+    def verify_device(self) -> None:
+        """Verifies device exists by trying to read a byte from it."""
         try:
             self.logger.info("Verifying device exists")
             byte = self.read(1, retry=True)
@@ -63,7 +90,7 @@ class I2C(object):
     @manage_mux
     @retry(WriteError, tries=5, delay=0.1, backoff=2)
     def write(self, bytes_: bytes, retry: bool = False) -> None:
-        """Writes byte list to device. Converts byte list to byte array then 
+        """Writes byte list to device. Converts byte list to byte array then
         sends bytes. Returns error message."""
         self.logger.debug("Writing bytes: {}".format(bytes_))
         self.io.write(self.address, bytes_)
@@ -96,4 +123,7 @@ class I2C(object):
         """ Sets mux to channel if enabled. """
         self.logger.debug("Setting mux 0x{:02X} to channel {}".format(mux, channel))
         channel_byte = 0x01 << channel
-        self.io.write(mux, bytes([channel_byte]))
+        try:
+            self.io.write(mux, bytes([channel_byte]))
+        except WriteError as e:
+            raise MuxError("Unable to set mux", logger=self.logger) from e
