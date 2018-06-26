@@ -19,7 +19,7 @@ from device.state import State
 from device.managers.recipe import RecipeManager
 from device.managers.event import EventManager
 
-# Import IoT communications (to the backend) manager 
+# Import IoT communications (to the backend) manager
 from iot.iot_manager import IoTManager
 
 # Import resource manager
@@ -44,7 +44,7 @@ class DeviceManager:
         and manage external events. """
 
     # Initialize logger
-    extra = {"console_name":"Device", "file_name": "device"}
+    extra = {"console_name": "Device", "file_name": "device"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
@@ -53,7 +53,7 @@ class DeviceManager:
     _error = None
 
     # Initialize state object, `state` serves as shared memory between threads
-    # Note: Thread should be locked whenever writing to `state` object to 
+    # Note: Thread should be locked whenever writing to `state` object to
     # avoid memory corruption.
     state = State()
 
@@ -62,22 +62,14 @@ class DeviceManager:
         "sensor": {"desired": {}, "reported": {}},
         "actuator": {"desired": {}, "reported": {}},
         "reported_sensor_stats": {
-            "individual": {
-                "instantaneous": {},
-                "average": {}
-            },
-            "group": {
-                "instantaneous": {},
-                "average": {}
-            }
-        }
+            "individual": {"instantaneous": {}, "average": {}},
+            "group": {"instantaneous": {}, "average": {}},
+        },
     }
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None,
-        "start_timestamp_minutes": None,
-        "last_update_minute": None
+        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
     }
 
     # Initialize recipe object
@@ -91,27 +83,24 @@ class DeviceManager:
     peripheral_managers = None
     controller_managers = None
 
-
     def __init__(self):
         """ Initializes device. """
         self.mode = Modes.INIT
         self.error = Errors.NONE
 
-        # Initialize the IoT communications manager object.  
-        # Pass in a ref. to this instance (self) so we can call the 
+        # Initialize the IoT communications manager object.
+        # Pass in a ref. to this instance (self) so we can call the
         # start/stop recipe methods.
-        self.iot = IoTManager( self.state, self )
+        self.iot = IoTManager(self.state, self)
         self.latest_publish_timestamp = 0
 
-        # Initialize the resourcd manager object.  
-        self.resource = ResourceManager( self.state, self, self.iot )
-
+        # Initialize the resourcd manager object.
+        self.resource = ResourceManager(self.state, self, self.iot)
 
     @property
     def mode(self):
         """ Gets mode. """
         return self._mode
-
 
     @mode.setter
     def mode(self, value):
@@ -119,7 +108,6 @@ class DeviceManager:
         self._mode = value
         with threading.Lock():
             self.state.device["mode"] = value
-
 
     @property
     def commanded_mode(self):
@@ -129,13 +117,11 @@ class DeviceManager:
         else:
             return None
 
-
     @commanded_mode.setter
     def commanded_mode(self, value):
         """ Safely updates commanded mode in state object. """
         with threading.Lock():
             self.state.device["commanded_mode"] = value
-
 
     @property
     def request(self):
@@ -145,13 +131,11 @@ class DeviceManager:
         else:
             return None
 
-
     @request.setter
     def request(self, value):
         """ Safely updates request in state object. """
         with threading.Lock():
             self.state.device["request"] = value
-
 
     @property
     def response(self):
@@ -161,19 +145,16 @@ class DeviceManager:
         else:
             return None
 
-
     @response.setter
     def response(self, value):
         """ Safely updates response in state object. """
         with threading.Lock():
             self.state.device["response"] = value
 
-
     @property
     def error(self):
         """ Gets device error. """
         return self._error
-
 
     @error.setter
     def error(self, value):
@@ -182,7 +163,6 @@ class DeviceManager:
         with threading.Lock():
             self.state.device["error"] = value
 
-
     @property
     def config_uuid(self):
         """ Gets config uuid from shared state. """
@@ -190,7 +170,6 @@ class DeviceManager:
             return self.state.device["config_uuid"]
         else:
             return None
-
 
     @config_uuid.setter
     def config_uuid(self, value):
@@ -206,13 +185,11 @@ class DeviceManager:
         else:
             return None
 
-
     @commanded_config_uuid.setter
     def commanded_config_uuid(self, value):
         """ Safely updates commanded config uuid in state. """
         with threading.Lock():
             self.state.device["commanded_config_uuid"] = value
-
 
     @property
     def config_dict(self):
@@ -221,7 +198,6 @@ class DeviceManager:
             return None
         config = DeviceConfigModel.objects.get(uuid=self.config_uuid)
         return json.loads(config.json)
-
 
     @property
     def latest_environment_timestamp(self):
@@ -232,17 +208,15 @@ class DeviceManager:
             environment = EnvironmentModel.objects.latest()
             return environment.timestamp.timestamp()
 
-
     def spawn(self, delay=None):
         """ Spawns device thread. """
         self.thread = threading.Thread(target=self.run_state_machine, args=(delay,))
         self.thread.daemon = True
         self.thread.start()
 
-
     def run_state_machine(self, delay=None):
         """ Runs device state machine. """
-        
+
         # Wait for optional delay
         if delay != None:
             time.sleep(delay)
@@ -267,7 +241,6 @@ class DeviceManager:
             elif self.mode == Modes.RESET:
                 self.run_reset_mode()
 
-
     def run_init_mode(self):
         """ Runs initialization mode. Loads stored state from database then 
             transitions to CONFIG. """
@@ -281,7 +254,6 @@ class DeviceManager:
 
         # Transition to CONFIG
         self.mode = Modes.CONFIG
-
 
     def run_config_mode(self):
         """ Runs configuration mode. If device config is not set, waits for 
@@ -306,7 +278,6 @@ class DeviceManager:
 
         # Transition to SETUP
         self.mode = Modes.SETUP
-
 
     def run_setup_mode(self):
         """ Runs setup mode. Creates and spawns recipe, peripheral, and 
@@ -335,7 +306,6 @@ class DeviceManager:
         # Transition to NORMAL
         self.mode = Modes.NORMAL
 
-
     def run_normal_mode(self):
         """ Runs normal operation mode. Updates device state summary and 
             stores device state in database, waits for new config command then
@@ -346,8 +316,8 @@ class DeviceManager:
             # Overwrite system state in database every 100ms
             self.update_state()
 
-            # Store environment state in every 10 minutes 
-            if time.time() - self.latest_environment_timestamp > 60*10:
+            # Store environment state in every 10 minutes
+            if time.time() - self.latest_environment_timestamp > 60 * 10:
                 self.store_environment()
 
             # Once a minute, publish any changed values
@@ -360,14 +330,14 @@ class DeviceManager:
             if self.request != None:
                 self.request = None
                 self.process_event(request)
-            
+
             # Check for system error
             if self.mode == Modes.ERROR:
+                self.logger.error("System received ERROR")
                 break
 
             # Update every 100ms
             time.sleep(0.1)
-
 
     def run_load_mode(self):
         """ Runs load mode. Stops peripheral and controller threads, loads 
@@ -384,7 +354,6 @@ class DeviceManager:
         # Transition to CONFIG
         self.mode = Modes.CONFIG
 
- 
     def run_reset_mode(self):
         """ Runs reset mode. Kills peripheral and controller threads, clears 
             error state, then transitions to INIT. """
@@ -403,7 +372,6 @@ class DeviceManager:
         # Transition to INIT
         self.mode = Modes.INIT
 
-
     def run_error_mode(self):
         """ Runs error mode. Shuts down peripheral and controller threads, 
             waits for reset signal then transitions to RESET. """
@@ -419,35 +387,32 @@ class DeviceManager:
                 break
 
             # Update every 100ms
-            time.sleep(0.1) # 100ms
-
+            time.sleep(0.1)  # 100ms
 
     def update_state(self):
         """ Updates stored state in database. If state does not exist, 
             creates it. """
-
         if not StateModel.objects.filter(pk=1).exists():
             StateModel.objects.create(
                 id=1,
-                device = json.dumps(self.state.device),
-                recipe = json.dumps(self.state.recipe),
-                environment = json.dumps(self.state.environment),
-                peripherals = json.dumps(self.state.peripherals),
-                controllers = json.dumps(self.state.controllers),
-                iot = json.dumps(self.state.iot),
-                resource = json.dumps(self.state.resource)
+                device=json.dumps(self.state.device),
+                recipe=json.dumps(self.state.recipe),
+                environment=json.dumps(self.state.environment),
+                peripherals=json.dumps(self.state.peripherals),
+                controllers=json.dumps(self.state.controllers),
+                iot=json.dumps(self.state.iot),
+                resource=json.dumps(self.state.resource),
             )
         else:
             StateModel.objects.filter(pk=1).update(
-                device = json.dumps(self.state.device),
-                recipe = json.dumps(self.state.recipe),
-                environment = json.dumps(self.state.environment),
-                peripherals = json.dumps(self.state.peripherals),
-                controllers = json.dumps(self.state.controllers),
-                iot = json.dumps(self.state.iot),
-                resource = json.dumps(self.state.resource)
+                device=json.dumps(self.state.device),
+                recipe=json.dumps(self.state.recipe),
+                environment=json.dumps(self.state.environment),
+                peripherals=json.dumps(self.state.peripherals),
+                controllers=json.dumps(self.state.controllers),
+                iot=json.dumps(self.state.iot),
+                resource=json.dumps(self.state.resource),
             )
-
 
     def load_local_data_files(self):
         """ Loads local data files. """
@@ -459,7 +424,7 @@ class DeviceManager:
         self.load_cultivars_file()
         self.load_cultivation_methods_file()
 
-        # Load recipe files after sensor/actuator variables, cultivars, and 
+        # Load recipe files after sensor/actuator variables, cultivars, and
         # cultivation methods since verification depends on them
         self.load_recipe_files()
 
@@ -470,7 +435,6 @@ class DeviceManager:
         # Load device config after peripheral setups since verification
         # depends on  them
         self.load_device_config_files()
-
 
     def load_sensor_variables_file(self):
         """ Loads sensor variables file into database after removing all 
@@ -491,8 +455,7 @@ class DeviceManager:
 
         # Create sensor variables table
         for sensor_variable in sensor_variables:
-           SensorVariableModel.objects.create(json=json.dumps(sensor_variable))
-
+            SensorVariableModel.objects.create(json=json.dumps(sensor_variable))
 
     def load_actuator_variables_file(self):
         """ Loads actuator variables file into database after removing all 
@@ -503,7 +466,9 @@ class DeviceManager:
         actuator_variables = json.load(open("data/variables/actuator_variables.json"))
 
         # Get sensor variables schema
-        actuator_variables_schema = json.load(open("data/schemas/actuator_variables.json"))
+        actuator_variables_schema = json.load(
+            open("data/schemas/actuator_variables.json")
+        )
 
         # Validate sensor variables with schema
         validate(actuator_variables, actuator_variables_schema)
@@ -513,8 +478,7 @@ class DeviceManager:
 
         # Create sensor variables table
         for actuator_variable in actuator_variables:
-           ActuatorVariableModel.objects.create(json=json.dumps(actuator_variable))
-
+            ActuatorVariableModel.objects.create(json=json.dumps(actuator_variable))
 
     def load_cultivars_file(self):
         """ Loads cultivars file into database after removing all 
@@ -535,8 +499,7 @@ class DeviceManager:
 
         # Create cultivars table
         for cultivar in cultivars:
-           CultivarModel.objects.create(json=json.dumps(cultivar))
-
+            CultivarModel.objects.create(json=json.dumps(cultivar))
 
     def load_cultivation_methods_file(self):
         """ Loads cultivation methods file into database after removing all 
@@ -544,10 +507,14 @@ class DeviceManager:
         self.logger.debug("Loading cultivation methods file")
 
         # Get cultivation methods
-        cultivation_methods = json.load(open("data/cultivations/cultivation_methods.json"))
+        cultivation_methods = json.load(
+            open("data/cultivations/cultivation_methods.json")
+        )
 
         # Get cultivation methods schema
-        cultivation_methods_schema = json.load(open("data/schemas/cultivation_methods.json"))
+        cultivation_methods_schema = json.load(
+            open("data/schemas/cultivation_methods.json")
+        )
 
         # Validate cultivation methods with schema
         validate(cultivation_methods, cultivation_methods_schema)
@@ -557,34 +524,32 @@ class DeviceManager:
 
         # Create cultivation methods table
         for cultivation_method in cultivation_methods:
-           CultivationMethodModel.objects.create(json=json.dumps(cultivation_method))
-
+            CultivationMethodModel.objects.create(json=json.dumps(cultivation_method))
 
     # Called by the IoTManager, when the UI sends a json recipe to load.
-    def load_recipe_json( self, recipe_json ):
+    def load_recipe_json(self, recipe_json):
         """ Loads and verifies a recipe json string.  
             Usually sent by the UI. """
         self.logger.debug("Loading recipe json")
-        
+
         # Get get recipe schema
-        recipe_schema = json.load( open( "data/schemas/recipe.json"))
+        recipe_schema = json.load(open("data/schemas/recipe.json"))
 
         # Validate recipes with schema
-        recipe = json.loads( recipe_json )
-        validate( recipe, recipe_schema )
+        recipe = json.loads(recipe_json)
+        validate(recipe, recipe_schema)
 
         # Make sure we have a valid recipe uuid
-        if None == recipe["uuid"] or 0 == len( recipe["uuid"] ):
-            recipe["uuid"] = str( uuid.uuid4() )
+        if None == recipe["uuid"] or 0 == len(recipe["uuid"]):
+            recipe["uuid"] = str(uuid.uuid4())
 
         # Update existing recipe or create a new one
         try:
-            r = RecipeModel.objects.get( uuid = recipe["uuid"] )
-            r.json = json.dumps( recipe )
+            r = RecipeModel.objects.get(uuid=recipe["uuid"])
+            r.json = json.dumps(recipe)
             r.save()
         except:
-            RecipeModel.objects.create( json = json.dumps( recipe ))
-
+            RecipeModel.objects.create(json=json.dumps(recipe))
 
     def load_recipe_files(self):
         """ Loads recipe file into database by creating new entries if 
@@ -615,11 +580,10 @@ class DeviceManager:
         for recipe in recipes:
             try:
                 r = RecipeModel.objects.get(uuid=recipe["uuid"])
-                r.json=json.dumps(recipe)
+                r.json = json.dumps(recipe)
                 r.save()
             except:
                 RecipeModel.objects.create(json=json.dumps(recipe))
-
 
     def load_peripheral_setup_files(self):
         """ Loads peripheral setup files from codebase into database by 
@@ -651,7 +615,6 @@ class DeviceManager:
         for peripheral_setup in peripheral_setups:
             PeripheralSetupModel.objects.create(json=json.dumps(peripheral_setup))
 
-
     def load_device_config_files(self):
         """ Loads device config files from codebase into database by creating 
             new entries after deleting existing entries. Verification depends 
@@ -682,7 +645,6 @@ class DeviceManager:
         for device_config in device_configs:
             DeviceConfigModel.objects.create(json=json.dumps(device_config))
 
-
     def load_database_stored_state(self):
         """ Loads stored state from database if it exists. """
         self.logger.info("Loading database stored state")
@@ -705,7 +667,9 @@ class DeviceManager:
         self.recipe.recipe_uuid = stored_recipe_state["recipe_uuid"]
         self.recipe.recipe_name = stored_recipe_state["recipe_name"]
         self.recipe.duration_minutes = stored_recipe_state["duration_minutes"]
-        self.recipe.start_timestamp_minutes = stored_recipe_state["start_timestamp_minutes"]
+        self.recipe.start_timestamp_minutes = stored_recipe_state[
+            "start_timestamp_minutes"
+        ]
         self.recipe.last_update_minute = stored_recipe_state["last_update_minute"]
         self.recipe.stored_mode = stored_recipe_state["mode"]
 
@@ -714,19 +678,30 @@ class DeviceManager:
         for peripheral_name in stored_peripherals_state:
             self.state.peripherals[peripheral_name] = {}
             if "stored" in stored_peripherals_state[peripheral_name]:
-                self.state.peripherals[peripheral_name]["stored"] = stored_peripherals_state[peripheral_name]["stored"]
+                self.state.peripherals[peripheral_name][
+                    "stored"
+                ] = stored_peripherals_state[
+                    peripheral_name
+                ][
+                    "stored"
+                ]
 
         # Load controllers state
         stored_controllers_state = json.loads(stored_state.controllers)
         for controller_name in stored_controllers_state:
             self.state.controllers[controller_name] = {}
             if "stored" in stored_controllers_state[controller_name]:
-                self.state.controllers[controller_name]["stored"] = stored_controllers_state[controller_name]["stored"]
-   
+                self.state.controllers[controller_name][
+                    "stored"
+                ] = stored_controllers_state[
+                    controller_name
+                ][
+                    "stored"
+                ]
+
     def store_environment(self):
         """ Stores current environment state in environment table. """
         EnvironmentModel.objects.create(state=self.state.environment)
-
 
     def create_peripheral_managers(self):
         """ Creates peripheral managers. """
@@ -741,41 +716,45 @@ class DeviceManager:
         self.peripheral_managers = {}
         for peripheral_config_dict in self.config_dict["peripherals"]:
             self.logger.debug("Creating {}".format(peripheral_config_dict["name"]))
-            
+
             # Get peripheral setup dict
             peripheral_uuid = peripheral_config_dict["uuid"]
             peripheral_setup_dict = self.get_peripheral_setup_dict(peripheral_uuid)
 
             # Verify valid peripheral config dict
             if peripheral_setup_dict == None:
-                self.logger.critical("Invalid peripheral uuid in device "
-                    "config. Validator should have caught this.")
+                self.logger.critical(
+                    "Invalid peripheral uuid in device "
+                    "config. Validator should have caught this."
+                )
                 continue
 
             # Get peripheral module and class name
-            module_name = "device.peripherals.modules." + peripheral_setup_dict["module_name"]
+            module_name = "device.peripherals.modules." + peripheral_setup_dict[
+                "module_name"
+            ]
             class_name = peripheral_setup_dict["class_name"]
 
             # Import peripheral library
-            module_instance= __import__(module_name, fromlist=[class_name])
+            module_instance = __import__(module_name, fromlist=[class_name])
             class_instance = getattr(module_instance, class_name)
 
             # Create peripheral manager
             peripheral_name = peripheral_config_dict["name"]
-            if os.environ.get('SIMULATE') == "true":
+            if os.environ.get("SIMULATE") == "true":
                 simulate = True
             else:
                 simulate = False
-            peripheral_manager = class_instance(peripheral_name, self.state, peripheral_config_dict, simulate)
+            peripheral_manager = class_instance(
+                peripheral_name, self.state, peripheral_config_dict, simulate
+            )
             self.peripheral_managers[peripheral_name] = peripheral_manager
-
 
     def get_peripheral_setup_dict(self, uuid):
         """ Gets peripheral setup dict for uuid in peripheral setup table. """
         if not PeripheralSetupModel.objects.filter(uuid=uuid).exists():
             return None
         return json.loads(PeripheralSetupModel.objects.get(uuid=uuid).json)
-
 
     def spawn_peripheral_threads(self):
         """ Spawns peripheral threads. """
@@ -785,7 +764,6 @@ class DeviceManager:
             self.logger.info("Spawning peripheral threads")
             for peripheral_name in self.peripheral_managers:
                 self.peripheral_managers[peripheral_name].spawn()
-
 
     def create_controller_managers(self):
         """ Creates controller managers. """
@@ -800,30 +778,35 @@ class DeviceManager:
         self.controller_managers = {}
         for controller_config_dict in self.config_dict["controllers"]:
             self.logger.debug("Creating {}".format(controller_config_dict["name"]))
-            
+
             # Get controller setup dict
             controller_uuid = controller_config_dict["uuid"]
             controller_setup_dict = self.get_controller_setup_dict(controller_uuid)
 
             # Verify valid controller config dict
             if controller_setup_dict == None:
-                self.logger.critical("Invalid controller uuid in device "
-                    "config. Validator should have caught this.")
+                self.logger.critical(
+                    "Invalid controller uuid in device "
+                    "config. Validator should have caught this."
+                )
                 continue
 
             # Get controller module and class name
-            module_name = "device.controllers.drivers." + controller_setup_dict["module_name"]
+            module_name = "device.controllers.drivers." + controller_setup_dict[
+                "module_name"
+            ]
             class_name = controller_setup_dict["class_name"]
 
             # Import controller library
-            module_instance= __import__(module_name, fromlist=[class_name])
+            module_instance = __import__(module_name, fromlist=[class_name])
             class_instance = getattr(module_instance, class_name)
 
             # Create controller manager
             controller_name = controller_config_dict["name"]
-            controller_manager = class_instance(controller_name, self.state, controller_config_dict)
+            controller_manager = class_instance(
+                controller_name, self.state, controller_config_dict
+            )
             self.controller_managers[controller_name] = controller_manager
-
 
     def spawn_controller_threads(self):
         """ Spawns controller threads. """
@@ -833,7 +816,6 @@ class DeviceManager:
             self.logger.info("Spawning controller threads")
             for controller_name in self.controller_managers:
                 self.controller_managers[controller_name].spawn()
-
 
     def all_threads_initialized(self):
         """ Checks that all recipe, peripheral, and controller 
@@ -845,7 +827,6 @@ class DeviceManager:
         elif not self.all_controllers_initialized():
             return False
         return True
-
 
     def all_peripherals_initialized(self):
         """ Checks that all peripheral threads have transitioned from INIT. """
@@ -861,7 +842,6 @@ class DeviceManager:
                 return False
         return True
 
-
     def all_controllers_initialized(self):
         """ Checks that all controller threads have transitioned from INIT. """
         for controller_name in self.state.controllers:
@@ -870,20 +850,19 @@ class DeviceManager:
                 return False
         return True
 
-
     def kill_peripheral_threads(self):
         """ Kills all peripheral threads. """
-# TODO this needs work
-        #for peripheral_name in self.state.peripherals:
-        #    self.state.peripherals[peripheral_name].thread_is_active = False
 
+    # TODO this needs work
+    # for peripheral_name in self.state.peripherals:
+    #    self.state.peripherals[peripheral_name].thread_is_active = False
 
     def kill_controller_threads(self):
         """ Kills all controller threads. """
-# TODO this needs work
-        #for controller_name in self.state.controller:
-        #    self.state.controller[controller_name].thread_is_active = False
 
+    # TODO this needs work
+    # for controller_name in self.state.controller:
+    #    self.state.controller[controller_name].thread_is_active = False
 
     def shutdown_peripheral_threads(self):
         """ Shuts down peripheral threads. """
@@ -894,7 +873,6 @@ class DeviceManager:
         # for peripheral_name in self.peripherals:
         #     self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
 
-
     def shutdown_controller_threads(self):
         """ Shuts down controller threads. """
         ...
@@ -904,9 +882,7 @@ class DeviceManager:
         # for controller_name in self.controllers:
         #     self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
 
-
-################################# Events ######################################
-
+    ################################# Events ######################################
 
     def process_event(self, request):
         """ Processes an event. Gets request parameters, executes request, returns 
@@ -918,11 +894,13 @@ class DeviceManager:
             request_value = request["value"]
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
-            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            self.response = {
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
+            }
             return
 
         # Execute request
-        if request_type== "Load Recipe":
+        if request_type == "Load Recipe":
             self.process_load_recipe_event()
         elif request_type == "Start Recipe":
             self.process_start_recipe_event(request_value)
@@ -933,17 +911,17 @@ class DeviceManager:
         elif request_type == "Configure":
             self.process_configure_event()
         else:
-            self.logger.info("Received invalid event request type: {}".format(request_type))
-
+            self.logger.info(
+                "Received invalid event request type: {}".format(request_type)
+            )
 
     def process_load_recipe_event(self):
         """ Processes load recipe event. """
         self.logger.critical("Loading recipe")
         self.response = {"status": 200, "message": "Pretended to load recipe"}
 
-
-    # Also called from the IoTManager command receiver. 
-    # Need to save the json recipe to the DB first 
+    # Also called from the IoTManager command receiver.
+    # Need to save the json recipe to the DB first
     # (referenced here by UUID)
     def process_start_recipe_event(self, request_value):
         """ Processes load recipe event. """
@@ -961,17 +939,23 @@ class DeviceManager:
         while True:
             # Exit when recipe thread picks up new recipe
             if self.recipe.commanded_mode == None:
-                self.response = {"status": 200, "message": "Started recipe: {}".format(request_value)}
+                self.response = {
+                    "status": 200, "message": "Started recipe: {}".format(request_value)
+                }
                 break
 
             # Exit on timeout
             if time.time() - start_time_seconds > timeout_seconds:
-                self.logger.critical("Unable to start recipe within 10 seconds. Something is wrong with code.")
-                self.response = {"status": 500, "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code."}
+                self.logger.critical(
+                    "Unable to start recipe within 10 seconds. Something is wrong with code."
+                )
+                self.response = {
+                    "status": 500,
+                    "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
+                }
                 break
 
-
-    # Also called from the IoTManager command receiver. 
+    # Also called from the IoTManager command receiver.
     def process_stop_recipe_event(self):
         """ Processes load recipe event. """
         self.logger.debug("Processing stop recipe event")
@@ -992,16 +976,19 @@ class DeviceManager:
 
             # Exit on timeout
             if time.time() - start_time_seconds > timeout_seconds:
-                self.logger.critical("Unable to stop recipe within 10 seconds. Something is wrong with code.")
-                self.response = {"status": 500, "message": "Unable to stop recipe, thread did not change state withing 10 seconds. Something is wrong with code."}
+                self.logger.critical(
+                    "Unable to stop recipe within 10 seconds. Something is wrong with code."
+                )
+                self.response = {
+                    "status": 500,
+                    "message": "Unable to stop recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
+                }
                 break
-
 
     def process_reset_event(self):
         """ Processes reset event. """
         self.logger.debug("Processing reset event")
         self.response = {"status": 200, "message": "Pretended to reset device"}
-
 
     def process_configure_event(self):
         """ Processes configure event. """
