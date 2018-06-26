@@ -65,17 +65,15 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(device_config["peripherals"], "T6713-Top")
+        peripheral_config = get_peripheral_config(
+            device_config["peripherals"], "T6713-Top"
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Instantiate manager
-    manager = T6713Manager(
-        name = "T6713-Top", 
-        state = state, 
-        config = peripheral_config,
-    )
+    manager = T6713Manager(name="T6713-Top", state=state, config=peripheral_config)
 
     # Initialize and setup manager
     print("Initializing...")

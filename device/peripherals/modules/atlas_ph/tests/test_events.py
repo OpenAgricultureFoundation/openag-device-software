@@ -21,13 +21,15 @@ from device.peripherals.modules.atlas_ph.manager import AtlasPHManager
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
-    
+
 # Import shared memory
 from device.state import State
 
 # Import test config
 device_config = json.load(open("device/peripherals/modules/atlas_ph/tests/config.json"))
-peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-Reservoir")
+peripheral_config = get_peripheral_config(
+    device_config["peripherals"], "AtlasPH-Reservoir"
+)
 
 # Initialize state
 state = State()
@@ -35,10 +37,8 @@ state = State()
 
 def test_init():
     manager = AtlasPHManager(
-        name = "Test",
-        state = state,
-        config = peripheral_config,
-        simulate = True,
+        name="Test", state=state, config=peripheral_config, simulate=True
     )
+
 
 # TODO: Finish writing tests

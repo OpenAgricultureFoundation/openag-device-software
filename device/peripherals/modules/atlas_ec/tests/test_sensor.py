@@ -17,16 +17,11 @@ else:
 
 # Import sensor
 from device.peripherals.modules.atlas_ec.sensor import AtlasECSensor
-    
+
 
 def test_init():
-    sensor = AtlasECSensor(
-        name = "Test", 
-        bus = 2, 
-        address = 0x64, 
-        simulate=True,
-    )
-    
+    sensor = AtlasECSensor(name="Test", bus=2, address=0x64, simulate=True)
+
 
 def test_read_electrical_conductivity():
     sensor = AtlasECSensor("Test", 2, 0x64, simulate=True)

@@ -17,23 +17,18 @@ else:
 
 # Import manager
 from device.peripherals.modules.sht25.driver import SHT25Driver
-    
+
 
 def test_init():
-    driver = SHT25Driver(
-        name = "Test", 
-        bus = 2, 
-        address = 0x77, 
-        simulate=True,
-    )
-    
+    driver = SHT25Driver(name="Test", bus=2, address=0x77, simulate=True)
+
 
 def test_read_temperature():
     driver = SHT25Driver("Test", 2, 0x77, simulate=True)
     temperature, error = driver.read_temperature()
     assert error.exists() == False
     assert temperature == -47.0
-    
+
 
 def test_read_humidity():
     driver = SHT25Driver("Test", 2, 0x77, simulate=True)

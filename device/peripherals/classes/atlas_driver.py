@@ -14,34 +14,44 @@ from device.utilities.modes import Modes
 class AtlasDriver:
     """ Parent class for atlas drivers. """
 
-    def __init__(self, name: str, bus: int, address: int, logger_name: str, 
-        i2c_name: str, dunder_name: str, mux: Optional[int] = None, 
-        channel: Optional[int] = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: int,
+        logger_name: str,
+        i2c_name: str,
+        dunder_name: str,
+        mux: Optional[int] = None,
+        channel: Optional[int] = None,
+        simulate: bool = False,
+    ) -> None:
         """ Initializes AtlasEC. """
 
         # Initialize parameters
         self.simulate = simulate
 
         # Initialize logger
-        self.logger = Logger(
-            name = logger_name,
-            dunder_name = dunder_name,
-        )
+        self.logger = Logger(name=logger_name, dunder_name=dunder_name)
 
         # Initialize I2C
         self.i2c = I2C(
-            name = i2c_name,
-            bus = bus,
-            address = address,
-            mux = mux,
-            channel = channel,
-            simulate = simulate,
+            name=i2c_name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            simulate=simulate,
         )
 
-
-    def process_command(self, command_string: str, processing_seconds: float, 
-            num_response_bytes: int = 31, read_retry: bool = True, 
-            read_response: bool = True):
+    def process_command(
+        self,
+        command_string: str,
+        processing_seconds: float,
+        num_response_bytes: int = 31,
+        read_retry: bool = True,
+        read_response: bool = True,
+    ):
         """ Sends command string to device, waits for processing seconds, then
             tries to read num response bytes with optional retry if device
             returns a `still processing` response code. Read retry is enabled 
@@ -50,7 +60,7 @@ class AtlasDriver:
         self.logger.debug("Processing command: {}".format(command_string))
 
         # Send command to device
-        byte_array = bytearray(command_string + "\00", 'utf8')
+        byte_array = bytearray(command_string + "\00", "utf8")
         error = self.i2c.write_raw(byte_array)
 
         # Check for errors
@@ -59,14 +69,16 @@ class AtlasDriver:
             return None, error
 
         # If read enabled, read response with optional retry
-        if read_response:   
-            return self.read_response(processing_seconds, num_response_bytes, retry=read_retry)
+        if read_response:
+            return self.read_response(
+                processing_seconds, num_response_bytes, retry=read_retry
+            )
         else:
             return None, Error(None)
-        
 
-    def read_response(self, processing_seconds: float, num_response_bytes: int, 
-        retry: bool = True) -> Tuple[Optional[str], Error]:
+    def read_response(
+        self, processing_seconds: float, num_response_bytes: int, retry: bool = True
+    ) -> Tuple[Optional[str], Error]:
         """ Reads response from from device. Waits processing seconds then 
             tries to read num response bytes with optional retry. Returns 
             response string on success or raises exception on error. """
@@ -77,7 +89,7 @@ class AtlasDriver:
 
         # Read device data and parse response code
         self.logger.debug("Reading response")
-        data, error = self.i2c.read(num_response_bytes) 
+        data, error = self.i2c.read(num_response_bytes)
 
         # Check for errors
         if error.exists():
@@ -88,30 +100,42 @@ class AtlasDriver:
         response_code = int(data[0])
 
         # Check for invalid syntax
-        if response_code == 2: 
-            error = Error("Driver unable to read response, invalid command string syntax")
+        if response_code == 2:
+            error = Error(
+                "Driver unable to read response, invalid command string syntax"
+            )
             return None, error
 
-         # Check if still processing
+        # Check if still processing
         elif response_code == 254:
 
             # Try to read one more time if retry enabled
             if retry == True:
-                self.logger.warning("Sensor did not finish processing in allotted time, retrying read")
-                return self.read_response(processing_seconds, num_response_bytes, retry=False)
+                self.logger.warning(
+                    "Sensor did not finish processing in allotted time, retrying read"
+                )
+                return self.read_response(
+                    processing_seconds, num_response_bytes, retry=False
+                )
             else:
-                error = Error("Driver unable to read response, insufficient processing time")
+                error = Error(
+                    "Driver unable to read response, insufficient processing time"
+                )
                 return None, error
-        
+
         # Check if device has no data to send
-        elif response_code == 255: 
+        elif response_code == 255:
 
             # Try to read one more time if retry enabled
             if retry == True:
                 self.logger.warning("Sensor reported no data to read, retrying read")
-                return self.read_response(processing_seconds, num_response_bytes, retry=False)
+                return self.read_response(
+                    processing_seconds, num_response_bytes, retry=False
+                )
             else:
-                error = Error("Driver unable to read response, device has no data to send")
+                error = Error(
+                    "Driver unable to read response, device has no data to send"
+                )
                 return None, error
 
         # Invalid response code
@@ -120,10 +144,9 @@ class AtlasDriver:
             return None, error
 
         # Successfully read response!
-        response_message = data[1:].decode('utf-8').strip("\x00")
+        response_message = data[1:].decode("utf-8").strip("\x00")
         self.logger.debug("Response:`{}`".format(response_message))
         return response_message, Error(None)
-
 
     def read_info(self) -> Tuple[str, float, Error]:
         """ Gets info about sensor type and firmware version. Note: EC, 2.0. """
@@ -147,7 +170,6 @@ class AtlasDriver:
         # Successfully read info!
         return sensor_type, self.firmware_version, Error(None)
 
-
     def read_status(self) -> Tuple[Optional[str], Optional[float], Error]:
         """ Reads status from device. """
         self.logger.info("Reading status from hardware")
@@ -163,7 +185,9 @@ class AtlasDriver:
 
         # Check for empty response message
         if response == None:
-            error = Error("Driver unable to read status, received empty response message")
+            error = Error(
+                "Driver unable to read status, received empty response message"
+            )
             return None, None, error
 
         # Parse response message
@@ -190,13 +214,12 @@ class AtlasDriver:
         # Successfully read status!
         return prev_restart_reason, voltage, error
 
-
     def enable_protocol_lock(self) -> Error:
         """ Commands sensor to enable protocol lock. """
         self.logger.debug("Enabling protocol lock in hardware")
 
         # Send command
-        _, error = self.process_command("Plock,1", processing_seconds=0.6) # was 0.3
+        _, error = self.process_command("Plock,1", processing_seconds=0.6)  # was 0.3
 
         # Check for errors
         if error.exists():
@@ -207,13 +230,12 @@ class AtlasDriver:
         # Successfully enabled protocol lock!
         return Error(None)
 
-
     def disable_protocol_lock(self) -> Error:
         """ Commands sensor to disable protocol lock. """
         self.logger.debug("Disabling protocol lock in hardware")
 
         # Send command
-        _, error = self.process_command("Plock,0", processing_seconds=0.6) # was 0.3
+        _, error = self.process_command("Plock,0", processing_seconds=0.6)  # was 0.3
 
         # Check for errors
         if error.exists():
@@ -223,7 +245,6 @@ class AtlasDriver:
 
         # Successfully disabled protocol lock!
         return Error(None)
-
 
     def enable_led(self) -> Error:
         """ Commands sensor to enable led. """
@@ -241,7 +262,6 @@ class AtlasDriver:
         # Successfully enabled led!
         return Error(None)
 
-
     def disable_led(self) -> Error:
         """ Commands sensor to disable led. """
         self.logger.debug("Enabling led in hardware")
@@ -254,10 +274,9 @@ class AtlasDriver:
             error.report("Driver unable to disable led")
             self.logger.error(error.summary())
             return error
-        
-        # Successfully disabled led! 
-        return Error(None)
 
+        # Successfully disabled led!
+        return Error(None)
 
     def enable_sleep_mode(self) -> Error:
         """ Commands sensor to enter sleep mode. Note: Sensor will wake up by
@@ -265,14 +284,15 @@ class AtlasDriver:
         self.logger.debug("Enabling sleep mode in hardware")
 
         # Send command
-        _, error = self.process_command("Sleep", processing_seconds=0.3, read_response=False)
+        _, error = self.process_command(
+            "Sleep", processing_seconds=0.3, read_response=False
+        )
 
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable sleep mode")
             self.logger.error(error.summary())
             return error
-        
+
         # Successfully enabled sleep mode!
         return Error(None)
-

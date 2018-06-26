@@ -18,27 +18,32 @@ class AtlasDODriver(AtlasDriver):
     """ Driver for atlas dissolved oxygen sensor. """
 
     # Initialize sensor properties
-    _dissolved_oxygen_accuracy = 0.05 # mg/L
+    _dissolved_oxygen_accuracy = 0.05  # mg/L
     _min_dissolved_oxygen = 0.01
     _max_dissolved_oxygen = 100
 
-
-    def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
-                channel: Optional[int] = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: int,
+        mux: Optional[int] = None,
+        channel: Optional[int] = None,
+        simulate: bool = False,
+    ) -> None:
         """ Initializes driver. """
 
         super().__init__(
-            name = name, 
-            bus = bus, 
-            address = address, 
-            mux = mux,
-            channel = channel,
-            logger_name = "Driver({})".format(name), 
-            i2c_name = name, 
-            dunder_name = __name__, 
-            simulate = simulate,
+            name=name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            logger_name="Driver({})".format(name),
+            i2c_name=name,
+            dunder_name=__name__,
+            simulate=simulate,
         )
-
 
     def read_dissolved_oxygen(self) -> Tuple[float, Error]:
         """ Reads dissolved oxygen from sensor, sets significant 
@@ -64,14 +69,16 @@ class AtlasDODriver(AtlasDriver):
         dissolved_oxygen = round(dissolved_oxygen_raw, significant_figures)
 
         # Verify dissolved oxygen value within valid range
-        if dissolved_oxygen > self._min_dissolved_oxygen and dissolved_oxygen < self._min_dissolved_oxygen:
+        if (
+            dissolved_oxygen > self._min_dissolved_oxygen
+            and dissolved_oxygen < self._min_dissolved_oxygen
+        ):
             self.logger.warning("Dissolved oxygen outside of valid range")
             dissolved_oxygen = None
 
         # Successfully read dissolved oxygen!
         self.logger.debug("dissolved_oxygen = {}".format(dissolved_oxygen))
         return dissolved_oxygen, Error(None)
-
 
     def set_compensation_temperature(self, temperature: float) -> Error:
         """ Commands sensor to set compensation temperature. """
@@ -90,7 +97,6 @@ class AtlasDODriver(AtlasDriver):
         # Successfully set compensation temperature!
         return Error(None)
 
-
     def set_compensation_pressure(self, value: float) -> Error:
         """ Commands sensor to set compensation pressure. """
         self.logger.info("Setting compensation temperature")
@@ -107,7 +113,6 @@ class AtlasDODriver(AtlasDriver):
 
         # Successfully set compensation pressure!
         return Error(None)
-
 
     def set_compensation_electrical_conductivity(self, value_ms_cm: float) -> Error:
         """ Commands sensor to set compensation electrical conductivity. """
@@ -129,7 +134,6 @@ class AtlasDODriver(AtlasDriver):
         # Successfully set compensation electrical conductivity!
         return Error(None)
 
-
     def enable_mg_l_output(self) -> Error:
         """ Commands sensor to enable dissolved oxygen in mg/L output when 
             reporting readings. """
@@ -146,7 +150,6 @@ class AtlasDODriver(AtlasDriver):
 
         # Successfully enabled dissolved oxygen mg/L output!
         return Error(None)
-
 
     def disable_mg_l_output(self) -> Error:
         """ Commands sensor to disable dissolved oxygen in mg/L output when 
@@ -165,7 +168,6 @@ class AtlasDODriver(AtlasDriver):
         # Successfully disabled dissolved oxygen mg/L output!
         return Error(None)
 
-
     def enable_percent_saturation_output(self) -> Error:
         """ Commands sensor to enable percent saturation output when 
             reporting readings. """
@@ -173,7 +175,8 @@ class AtlasDODriver(AtlasDriver):
 
         # Send command
         _, error = self.process_command("O,%,1", processing_seconds=0.3)
-self.logger.error(error.summary())
+        self.logger.error(error.summary())
+
         # Check for errors
         if error.exists():
             error.report("Driver unable to enable percent saturation output")
@@ -182,7 +185,6 @@ self.logger.error(error.summary())
 
         # Successfully enabled percent saturation output!
         return Error(None)
-
 
     def disable_percent_saturation_output(self) -> Error:
         """ Commands sensor to disable percent saturation output when 

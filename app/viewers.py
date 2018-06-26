@@ -15,6 +15,7 @@ from app.models import CultivationMethodModel
 
 
 class EventViewer:
+
     def create(self, request):
 
         # Get request parameters
@@ -48,29 +49,36 @@ class EventViewer:
         # Return response
         event = EventModel.objects.get(id=event.id)
         return event.response["message"], event.response["status"]
-        
+
 
 class RecipeViewer:
     # Initialize logger
-    extra = {"console_name":"Recipe Viewer", "file_name": "recipe_viewer"}
+    extra = {"console_name": "Recipe Viewer", "file_name": "recipe_viewer"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
-    
+
     def __init__(self):
         """ Initialize recipe viewer. """
         self.mode = Common.get_recipe_state_value("mode")
         self.recipe_name = Common.get_recipe_state_value("recipe_name")
         self.recipe_uuid = Common.get_recipe_state_value("recipe_uuid")
         self.start_datestring = Common.get_recipe_state_value("start_datestring")
-        self.percent_complete_string = Common.get_recipe_state_value("percent_complete_string")
+        self.percent_complete_string = Common.get_recipe_state_value(
+            "percent_complete_string"
+        )
         self.time_elapsed_string = Common.get_recipe_state_value("time_elapsed_string")
         self.time_elapsed_minutes = Common.get_recipe_state_value("last_update_minute")
-        self.time_remaining_string = Common.get_recipe_state_value("time_remaining_string")
-        self.time_remaining_minutes = Common.get_recipe_state_value("time_remaining_minutes")
+        self.time_remaining_string = Common.get_recipe_state_value(
+            "time_remaining_string"
+        )
+        self.time_remaining_minutes = Common.get_recipe_state_value(
+            "time_remaining_minutes"
+        )
         self.current_phase = Common.get_recipe_state_value("current_phase")
         self.current_cycle = Common.get_recipe_state_value("current_cycle")
-        self.current_environment_name = Common.get_recipe_state_value("current_environment_name")
-
+        self.current_environment_name = Common.get_recipe_state_value(
+            "current_environment_name"
+        )
 
     def create(self, request_dict):
         """ Creates a recipe. Gets recipe json, makes event request,  then
@@ -79,18 +87,15 @@ class RecipeViewer:
 
         # Get recipe json
         if "json" not in request_dict:
-            status=400
+            status = 400
             response = {"message": "Request does not contain `json`"}
             return response, status
         else:
             json = request_dict["json"]
 
         # Make event request and return event response
-        event_request = {
-            "type": EventRequests.CREATE_RECIPE,
-            "json": json}
+        event_request = {"type": EventRequests.CREATE_RECIPE, "json": json}
         return Common.manage_event(event_request)
-
 
     def start(self, request_dict, pk):
         """ Start a recipe. Sends start recipe command to event thread, waits 
@@ -107,9 +112,9 @@ class RecipeViewer:
         event_request = {
             "type": EventRequests.START_RECIPE,
             "uuid": pk,
-            "start_timestamp_minutes": start_timestamp_minutes}
-        return Common.manage_event(event_request)      
-
+            "start_timestamp_minutes": start_timestamp_minutes,
+        }
+        return Common.manage_event(event_request)
 
     def stop(self):
         """ Stops a recipe. Sends stop command to event thread, waits for 
@@ -120,6 +125,7 @@ class RecipeViewer:
 
 
 class SimpleRecipeViewer:
+
     def __init__(self, recipe_object):
         self.recipe_dict = json_.loads(recipe_object.json)
         self.uuid = self.recipe_dict["uuid"]
@@ -127,6 +133,7 @@ class SimpleRecipeViewer:
 
 
 class DeviceConfigurationViewer:
+
     def __init__(self, device_configuration_object):
         self.dict = json_.loads(device_configuration_object.json)
         self.uuid = self.dict["uuid"]
@@ -134,6 +141,7 @@ class DeviceConfigurationViewer:
 
 
 class CultivarsViewer:
+
     def __init__(self):
         cultivars = CultivarModel.objects.all()
         cultivar_dict = []
@@ -143,6 +151,7 @@ class CultivarsViewer:
 
 
 class CultivationMethodsViewer:
+
     def __init__(self):
         cultivation_methods = CultivationMethodModel.objects.all()
         cultivation_methods_dict = []
@@ -153,14 +162,13 @@ class CultivationMethodsViewer:
 
 class EnvironmentViewer:
     # Initialize logger
-    extra = {"console_name":"Environment Viewer", "file_name": "environment_viewer"}
+    extra = {"console_name": "Environment Viewer", "file_name": "environment_viewer"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
     def __init__(self):
         self.sensor_summary = self.get_environment_summary("sensor")
         self.actuator_summary = self.get_environment_summary("actuator")
-
 
     def get_environment_summary(self, peripheral_type):
         """ Gets environment summary of current reported --> desired value 
@@ -169,7 +177,7 @@ class EnvironmentViewer:
 
         # Initialize class for common functions
         common = Common()
-        
+
         # Initialize summary dict
         summary = {}
 
@@ -183,10 +191,12 @@ class EnvironmentViewer:
             # Get peripheral info
             if peripheral_type == "sensor":
                 info = common.get_sensor_variable_info(variable)
-            elif peripheral_type =="actuator":
+            elif peripheral_type == "actuator":
                 info = common.get_actuator_variable_info(variable)
             else:
-                raise ValueError("`peripheral_type` must be either `sensor` or `actuator`")
+                raise ValueError(
+                    "`peripheral_type` must be either `sensor` or `actuator`"
+                )
 
             # Get peripheral name and unit
             name = info["name"]["verbose"]
@@ -212,10 +222,12 @@ class EnvironmentViewer:
             # Get peripheral info
             if peripheral_type == "sensor":
                 info = common.get_sensor_variable_info(variable)
-            elif peripheral_type =="actuator":
+            elif peripheral_type == "actuator":
                 info = common.get_actuator_variable_info(variable)
             else:
-                raise ValueError("`peripheral_type` must be either `sensor` or `actuator`")
+                raise ValueError(
+                    "`peripheral_type` must be either `sensor` or `actuator`"
+                )
 
             # Get peripheral name and unit
             name = info["name"]["verbose"]
@@ -232,13 +244,12 @@ class EnvironmentViewer:
 
 class DeviceViewer:
     # Initialize logger
-    extra = {"console_name":"Device Viewer", "file_name": "device_viewer"}
+    extra = {"console_name": "Device Viewer", "file_name": "device_viewer"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
     def __init__(self):
         self.modes, self.healths = self.get_thread_parameters()
-
 
     def get_thread_parameters(self):
 
@@ -266,13 +277,13 @@ class DeviceViewer:
 
 class IoTViewer:
     iot_dict = {}
+
     def __init__(self):
         self.iot_dict = Common.get_iot_dict()
 
 
 class ResourceViewer:
     resource_dict = {}
+
     def __init__(self):
         self.resource_dict = Common.get_resource_dict()
-
-

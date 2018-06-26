@@ -2,7 +2,8 @@
 import threading, subprocess, pyudev
 from typing import Dict, Optional, List, Any
 
-def set_nested_dict_safely(nested_dict: Dict, keys: List, value: str) -> None:  
+
+def set_nested_dict_safely(nested_dict: Dict, keys: List, value: str) -> None:
     """ Safely sets value in nested dict. """
     with threading.Lock():
         for key in keys[:-1]:
@@ -18,7 +19,7 @@ def get_nested_dict_safely(nested_dict: Dict, keys: List) -> Any:
         if key not in nested_dict:
             return None
         nested_dict = nested_dict[key]
-    return nested_dict # on last key, nested dict becomes value
+    return nested_dict  # on last key, nested dict becomes value
 
 
 def get_peripheral_config(peripheral_configs: List, name: str) -> Dict:
@@ -29,8 +30,9 @@ def get_peripheral_config(peripheral_configs: List, name: str) -> Dict:
     raise KeyError("`{}` not in peripheral configs".format(name))
 
 
-
-def usb_device_matches(device_path: str, vendor_id: int, product_id: int, friendly: bool = True) -> bool:
+def usb_device_matches(
+    device_path: str, vendor_id: int, product_id: int, friendly: bool = True
+) -> bool:
     """ Checks if a usb device at specified path matches provided vendor
         and product ids. """
 
@@ -42,7 +44,7 @@ def usb_device_matches(device_path: str, vendor_id: int, product_id: int, friend
         command = "udevadm info --name={} -q path".format(device_path)
         process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
-        device_path = str(output.strip(), encoding='utf-8')
+        device_path = str(output.strip(), encoding="utf-8")
 
     # Get device info
     context = pyudev.Context()

@@ -59,7 +59,9 @@ if __name__ == "__main__":
     if args.edu1:
         print("Configuring for pfc-edu v1.0")
         filepath = "data/devices/edu1.json"
-        setup_dict = json.load(open("device/peripherals/modules/usb_camera/setups/elp_usb500w02ml21.json"))
+        setup_dict = json.load(
+            open("device/peripherals/modules/usb_camera/setups/elp_usb500w02ml21.json")
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
@@ -67,11 +69,11 @@ if __name__ == "__main__":
     # Initialize sensor
     directory = "device/peripherals/modules/usb_camera/scripts/images/"
     camera = USBCameraSensor(
-        name = "Camera-1", 
-        directory = directory,
-        vendor_id = setup_dict["properties"]["vendor_id"],
-        product_id = setup_dict["properties"]["product_id"],
-        resolution = setup_dict["properties"]["resolution"],
+        name="Camera-1",
+        directory=directory,
+        vendor_id=setup_dict["properties"]["vendor_id"],
+        product_id=setup_dict["properties"]["product_id"],
+        resolution=setup_dict["properties"]["resolution"],
     )
 
     # Check for loop

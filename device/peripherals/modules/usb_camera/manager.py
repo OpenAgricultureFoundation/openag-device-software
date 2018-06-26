@@ -26,18 +26,17 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
 
         # Initialize camera
         self.sensor = USBCameraSensor(
-            name = self.name, 
-            directory = self.parameters["directory"],
-            vendor_id = int(self.setup_dict["properties"]["vendor_id"], 16),
-            product_id = int(self.setup_dict["properties"]["product_id"], 16),
-            resolution = self.setup_dict["properties"]["resolution"],
-            simulate = self.simulate,
+            name=self.name,
+            directory=self.parameters["directory"],
+            vendor_id=int(self.setup_dict["properties"]["vendor_id"], 16),
+            product_id=int(self.setup_dict["properties"]["product_id"], 16),
+            resolution=self.setup_dict["properties"]["resolution"],
+            simulate=self.simulate,
         )
 
         # Initialize sampling parameters
-        self._min_sampling_interval_seconds = 120 # should never take more than 2 minutes to capture an image
-        self._default_sampling_interval_seconds = 3600 # every hour
-
+        self._min_sampling_interval_seconds = 120  # should never take more than 2 minutes to capture an image
+        self._default_sampling_interval_seconds = 3600  # every hour
 
     def initialize(self) -> None:
         """ Initializes manager."""
@@ -59,12 +58,10 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Successful initialization!
         self.logger.info("Initialized successfully")
 
-
     def setup(self) -> None:
         """ Sets up manager. Programs device operation parameters into 
             camera driver circuit. """
         self.logger.info("No setup required")
-
 
     def update(self) -> None:
         """ Updates camera when in normal mode. """
@@ -82,8 +79,7 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
 
         # Update reported values
         self.health = self.sensor.health
-        
-        
+
     def reset(self) -> None:
         """ Resets camera. """
         self.logger.info("Resetting")
@@ -97,7 +93,6 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")
 
-
     def shutdown(self) -> None:
         """ Shuts down camera. """
         self.logger.info("Shutting down")
@@ -107,7 +102,6 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
 
         # Successfully shutdown
         self.logger.info("Successfully shutdown!")
-
 
     def clear_reported_values(self):
         """ Clears reported values. """

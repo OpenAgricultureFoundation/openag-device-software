@@ -17,16 +17,11 @@ else:
 
 # Import sensor
 from device.peripherals.modules.t6713.sensor import T6713Sensor
-    
+
 
 def test_init():
-    sensor = T6713Sensor(
-        name = "Test", 
-        bus = 2, 
-        address = 0x64, 
-        simulate=True,
-    )
-    
+    sensor = T6713Sensor(name="Test", bus=2, address=0x64, simulate=True)
+
 
 def test_read_carbon_dioxide():
     sensor = T6713Sensor("Test", 2, 0x64, simulate=True)

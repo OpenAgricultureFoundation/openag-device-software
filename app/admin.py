@@ -17,63 +17,92 @@ from app.models import IoTConfigModel
 
 
 class StateAdmin(admin.ModelAdmin):
-	list_display = ("device", "recipe", "environment", "peripherals", "controllers", "iot", "resource")
+    list_display = (
+        "device",
+        "recipe",
+        "environment",
+        "peripherals",
+        "controllers",
+        "iot",
+        "resource",
+    )
+
+
 admin.site.register(StateModel, StateAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
-	list_display = ("timestamp", "recipient", "request", "response")
+    list_display = ("timestamp", "recipient", "request", "response")
+
+
 admin.site.register(EventModel, EventAdmin)
 
 
 class EnvironmentAdmin(admin.ModelAdmin):
-	list_display = ("timestamp", "state")
+    list_display = ("timestamp", "state")
+
+
 admin.site.register(EnvironmentModel, EnvironmentAdmin)
 
 
 class DeviceConfigAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "name", "json")
+    list_display = ("uuid", "name", "json")
+
+
 admin.site.register(DeviceConfigModel, DeviceConfigAdmin)
 
 
 class PeripheralSetupAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "name", "json")
+    list_display = ("uuid", "name", "json")
+
+
 admin.site.register(PeripheralSetupModel, PeripheralSetupAdmin)
 
 
 class RecipeAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "name", "version", "json")
+    list_display = ("uuid", "name", "version", "json")
+
+
 admin.site.register(RecipeModel, RecipeAdmin)
 
 
 class RecipeTransitionAdmin(admin.ModelAdmin):
-	list_display = ("minute", "phase", "cycle", "environment_name", 
-		"environment_state")
+    list_display = ("minute", "phase", "cycle", "environment_name", "environment_state")
+
+
 admin.site.register(RecipeTransitionModel, RecipeTransitionAdmin)
 
 
 class SensorVariableAdmin(admin.ModelAdmin):
-	list_display = ("key", "json")
+    list_display = ("key", "json")
+
+
 admin.site.register(SensorVariableModel, SensorVariableAdmin)
 
 
 class ActuatorVariableAdmin(admin.ModelAdmin):
-	list_display = ("key", "json")
+    list_display = ("key", "json")
+
+
 admin.site.register(ActuatorVariableModel, ActuatorVariableAdmin)
 
 
 class CultivarAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "name", "json")
+    list_display = ("uuid", "name", "json")
+
+
 admin.site.register(CultivarModel, CultivarAdmin)
 
 
 class CultivationMethodAdmin(admin.ModelAdmin):
-	list_display = ("uuid", "name", "json")
+    list_display = ("uuid", "name", "json")
+
+
 admin.site.register(CultivationMethodModel, CultivationMethodAdmin)
 
 
 class IoTConfigAdmin(admin.ModelAdmin):
-	list_display = ["last_config_version"]
+    list_display = ["last_config_version"]
+
+
 admin.site.register(IoTConfigModel, IoTConfigAdmin)
-
-

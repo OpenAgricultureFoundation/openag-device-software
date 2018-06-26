@@ -21,7 +21,7 @@ def interpolate(x_list, y_list, x):
         raise ValueError("x_list and y_list must be same length")
 
     # Verify x_list is sorted
-    if not all(x_list[i] <= x_list[i+1] for i in range(len(x_list)-1)):
+    if not all(x_list[i] <= x_list[i + 1] for i in range(len(x_list) - 1)):
         raise ValueError("x_list must be sorted")
 
     # Verify x in range of x_list
@@ -53,7 +53,6 @@ def interpolate(x_list, y_list, x):
     return y
 
 
-
 def discretize(minimum: int, maximum: int, value: float) -> dict:
     """ Discretizes a value across a range. """
 
@@ -82,7 +81,6 @@ def nnls(A, b, tol=1e-8):
     A_dot_A = A.T.dot(A)
     A_dot_b = A.T.dot(b)
 
-
     A_dot_A = numpy.asarray_chkfinite(A_dot_A)
     A_dot_b = numpy.asarray_chkfinite(A_dot_b)
 
@@ -109,23 +107,27 @@ def nnls(A, b, tol=1e-8):
         s[:] = 0
         currPs = numpy.flatnonzero(P_bool)
         if len(currPs) > 1:
-            s[currPs] = numpy.linalg.solve(A_dot_A[currPs[:, None], currPs[None, :]], A_dot_b[currPs])
+            s[currPs] = numpy.linalg.solve(
+                A_dot_A[currPs[:, None], currPs[None, :]], A_dot_b[currPs]
+            )
         else:
             currP = currPs[0]
-            s[currP] = A_dot_b[currP]/A_dot_A[currP, currP]
+            s[currP] = A_dot_b[currP] / A_dot_A[currP, currP]
         s_P_l_0 = (s[currPs] < 0)
         while s_P_l_0.any():
             currPs_s_P_l_0 = currPs[s_P_l_0]
-            alpha = (x[currPs_s_P_l_0]/(x[currPs_s_P_l_0] - s[currPs_s_P_l_0])).min()
-            x += alpha*(s-x)
+            alpha = (x[currPs_s_P_l_0] / (x[currPs_s_P_l_0] - s[currPs_s_P_l_0])).min()
+            x += alpha * (s - x)
             P_bool[currPs] = (x[currPs] > tol)
             s[:] = 0
             currPs = numpy.flatnonzero(P_bool)
             if len(currPs) > 1:
-                s[currPs] = numpy.linalg.solve(A_dot_A[currPs[:, None], currPs[None, :]], A_dot_b[currPs])
+                s[currPs] = numpy.linalg.solve(
+                    A_dot_A[currPs[:, None], currPs[None, :]], A_dot_b[currPs]
+                )
             else:
                 currP = currPs[0]
-                s[currP] = A_dot_b[currP]/A_dot_A[currP, currP]
+                s[currP] = A_dot_b[currP] / A_dot_A[currP, currP]
             s_P_l_0 = (s[currPs] < 0)
         x[:] = s[:]
         if x[newly_allowed] == 0:

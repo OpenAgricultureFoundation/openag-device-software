@@ -117,7 +117,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     # @permission_classes((IsAuthenticated, IsAdminUser,))
     def create(self, request):
         """ API endpoint to create a recipe. """
-        permission_classes=[IsAuthenticated, IsAdminUser]
+        permission_classes = [IsAuthenticated, IsAdminUser]
         recipe_viewer = RecipeViewer()
         response, status = recipe_viewer.create(request.data.dict())
         return Response(response, status)
@@ -195,7 +195,7 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
 class Dashboard(APIView):
     """ UI page for dashboard. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'dashboard.html'
+    template_name = "dashboard.html"
 
     def get(self, request):
 
@@ -219,15 +219,15 @@ class Dashboard(APIView):
             "current_device": current_device,
             "current_environment": current_environment,
             "current_recipe": current_recipe,
-            "recipes": recipes}
+            "recipes": recipes,
+        }
         return Response(response)
 
 
 class RecipeBuilder(APIView):
     """ UI page for building recipes. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'recipe_builder.html'
-
+    template_name = "recipe_builder.html"
 
     def get(self, request):
         # Get recipes
@@ -241,46 +241,37 @@ class RecipeBuilder(APIView):
         cultivars = cultivars_viewer.json
 
         # Get cultivation methods
-        cultivation_methods_viewer= CultivationMethodsViewer()
+        cultivation_methods_viewer = CultivationMethodsViewer()
         cultivation_methods = cultivation_methods_viewer.json
 
-        return Response({
-            'recipes': recipes, 
-            'cultivars': cultivars,
-            'cultivation_methods': cultivation_methods})
+        return Response(
+            {
+                "recipes": recipes,
+                "cultivars": cultivars,
+                "cultivation_methods": cultivation_methods,
+            }
+        )
 
 
 class Events(APIView):
     """ UI page for events. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'events.html'
-    
+    template_name = "events.html"
+
     def get(self, request):
         events = EventModel.objects.all().order_by("-timestamp")
-        return Response({'events': events})
+        return Response({"events": events})
 
 
 class Logs(APIView):
     """ UI page for logs. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'logs.html'
-    
+    template_name = "logs.html"
+
     def get(self, request):
         logs = [
-            {
-                "name": "SHT25-Top",
-                "entries": [
-                    "log line 1", 
-                    "log line 2"
-                ]
-            },
-            {
-                "name": "T6713-Top",
-                "entries": [
-                    "t6713 line 1",
-                    "t6713 line 2"
-                ]
-            }
+            {"name": "SHT25-Top", "entries": ["log line 1", "log line 2"]},
+            {"name": "T6713-Top", "entries": ["t6713 line 1", "t6713 line 2"]},
         ]
 
         # Load in config info
@@ -294,8 +285,8 @@ class Logs(APIView):
             name = peripheral["name"]
 
             # Load in peripheral log file
-            log_file =  open("logs/peripherals/{}.log".format(name))
-            lines = log_file.readlines() # As long as file doesn't get too big, readlines is OK
+            log_file = open("logs/peripherals/{}.log".format(name))
+            lines = log_file.readlines()  # As long as file doesn't get too big, readlines is OK
 
             # Return up to 500 lines
             if len(lines) < 500:
@@ -313,7 +304,7 @@ class Logs(APIView):
 class Peripherals(APIView):
     """ UI page for peripherals. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'peripherals.html'
+    template_name = "peripherals.html"
 
     def get(self, request):
 
@@ -344,7 +335,8 @@ class Peripherals(APIView):
             "current_environment": current_environment,
             "current_recipe": current_recipe,
             "recipes": recipes,
-            "peripheral_setups": peripheral_setups}
+            "peripheral_setups": peripheral_setups,
+        }
         return Response(response)
 
 
@@ -352,7 +344,7 @@ class DeviceConfigList(APIView):
     """ UI page for device configurations. """
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "device_config_list.html"
-    
+
     def get(self, request):
         device_config_objects = DeviceConfignModel.objects.all()
         device_config_viewers = []
@@ -365,31 +357,31 @@ class DeviceConfigList(APIView):
 class Recipes(APIView):
     """ UI page for recipes. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'recipes.html'
-    
+    template_name = "recipes.html"
+
     def get(self, request):
         recipe_objects = RecipeModel.objects.all()
         recipes = []
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
 
-        return Response({'recipes': recipes})
+        return Response({"recipes": recipes})
 
 
 class Environments(APIView):
     """ UI page for environments. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'environments.html'
-    
+    template_name = "environments.html"
+
     def get(self, request):
         environments = EnvironmentModel.objects.all().order_by("-timestamp")
-        return Response({'environments': environments})
+        return Response({"environments": environments})
 
 
 class IoT(APIView):
     """ UI page for IoT. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'iot.html'
+    template_name = "iot.html"
 
     def get(self, request):
 
@@ -402,13 +394,13 @@ class IoT(APIView):
             "received_message_count": iotv.iot_dict["received_message_count"],
             "published_message_count": iotv.iot_dict["published_message_count"],
         }
-        return Response( response )
+        return Response(response)
 
 
 class Resource(APIView):
     """ UI page for ResourceManager. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'resource.html'
+    template_name = "resource.html"
 
     def get(self, request):
 
@@ -423,34 +415,31 @@ class Resource(APIView):
             "database_size": rv.resource_dict["database_size"],
             "internet_connection": rv.resource_dict["internet_connection"],
         }
-        return Response( response )
+        return Response(response)
 
 
 class Manual(APIView):
     """ UI page for manual controls. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'manual.html'
-    
+    template_name = "manual.html"
+
     def get(self, request):
-        return Response({'manual': 'data'})
+        return Response({"manual": "data"})
 
 
 class Entry(APIView):
     """ UI page for data entry. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'entry.html'
-    
+    template_name = "entry.html"
+
     def get(self, request):
-        return Response({'entry': 'data'})
+        return Response({"entry": "data"})
 
 
 class Scratchpad(APIView):
     """ UI page for scratchpad. """
     renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'scratchpad.html'
-    
+    template_name = "scratchpad.html"
+
     def get(self, request):
         return Response()
-
-
-

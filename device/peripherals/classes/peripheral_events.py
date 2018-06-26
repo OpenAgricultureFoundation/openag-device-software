@@ -6,7 +6,6 @@ from device.utilities.errors import Errors
 class PeripheralEvents:
     """ Event mixin for peripherals. """
 
-
     def process_event(self, request):
         """ Processes an event. Gets request parameters, executes request, returns 
             response. """
@@ -18,7 +17,9 @@ class PeripheralEvents:
             request_type = request["type"]
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
-            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            self.response = {
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
+            }
 
         # Process general event requests
         if request_type == "Reset":
@@ -35,14 +36,17 @@ class PeripheralEvents:
             # Process peripheral specific requests
             self.process_peripheral_specific_event(request)
 
-
     def process_reset_event(self):
         """ Processes reset event. """
         self.logger.debug("Processing reset event")
 
         # Check sensor is in normal, error, or calibration mode
-        if (self.mode != Modes.NORMAL) and (self.mode != Modes.ERROR) and \
-            (self.mode != Modes.CALIBRATE) and (self.mode != Modes.SHUTDOWN):
+        if (
+            (self.mode != Modes.NORMAL)
+            and (self.mode != Modes.ERROR)
+            and (self.mode != Modes.CALIBRATE)
+            and (self.mode != Modes.SHUTDOWN)
+        ):
             error_message = "Unable to reset peripheral from {} mode!".format(self.mode)
             self.logger.info(error_message)
             response = {"status": 400, "message": error_message}
@@ -54,7 +58,6 @@ class PeripheralEvents:
         response = {"status": 200, "message": "Resetting!"}
         return response
 
-
     def process_shutdown_event(self):
         """ Processes shutdown event. """
         self.logger.debug("Processing shutdown event")
@@ -64,14 +67,13 @@ class PeripheralEvents:
             error_message = "Device already in shutdown mode!"
             self.logger.info(error_message)
             response = {"status": 200, "message": error_message}
-        
+
         # Transition to shutdown mode on next state machine update
         self.mode = Modes.SHUTDOWN
 
         # Return event response
         response = {"status": 200, "message": "Shutting down!"}
         return response
-
 
     def process_set_sampling_interval_event(self, request):
         """ Processes shutdown event. """
@@ -82,11 +84,15 @@ class PeripheralEvents:
             value = request["value"]
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
-            self.response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            self.response = {
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
+            }
 
         # Check sensor is in normal or shutdown mode
         if (self.mode != Modes.NORMAL) and (self.mode != Modes.SHUTDOWN):
-            error_message = "Unable to set sampling interval from {} mode!".format(self.mode)
+            error_message = "Unable to set sampling interval from {} mode!".format(
+                self.mode
+            )
             self.logger.info(error_message)
             response = {"status": 400, "message": error_message}
 
@@ -99,7 +105,9 @@ class PeripheralEvents:
 
         # Check desired sampling interval larger than min interval
         if desired_sampling_interval_seconds < self._min_sampling_interval_seconds:
-            error_message = "Unable to set sampling interval below {} seconds.".format(self._min_sampling_interval_seconds)
+            error_message = "Unable to set sampling interval below {} seconds.".format(
+                self._min_sampling_interval_seconds
+            )
             self.logger.info(error_message)
             response = {"status": 400, "message": error_message}
 
@@ -109,7 +117,6 @@ class PeripheralEvents:
         # Return event response
         response = {"status": 200, "message": "Set sampling interval!"}
         return response
-
 
     def process_enable_calibration_mode_event(self):
         """ Processes enable calibration mode event. """
@@ -124,7 +131,6 @@ class PeripheralEvents:
             response = {"status": 200, "message": "Enabling calibration mode!"}
         return response
 
-
     def process_enable_manual_mode_event(self):
         """ Processes enable manual mode event. """
         self.logger.debug("Processing enable manual mode event")
@@ -138,13 +144,11 @@ class PeripheralEvents:
             response = {"status": 200, "message": "Enabling manual mode!"}
         return response
 
-
-
     def process_peripheral_specific_event(self, request):
         """ Processes peripheral specific event. """
 
         # Execute request
-        if False: # New event condition goes here
+        if False:  # New event condition goes here
             ...
         else:
             message = "Unknown event request type!"

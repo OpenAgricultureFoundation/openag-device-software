@@ -17,16 +17,11 @@ else:
 
 # Import driver
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
-    
+
 
 def test_init():
-    driver = AtlasPHDriver(
-        name = "Test", 
-        bus = 2, 
-        address = 0x77, 
-        simulate=True,
-    )
-    
+    driver = AtlasPHDriver(name="Test", bus=2, address=0x77, simulate=True)
+
 
 def test_read_potential_hydroden():
     driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)

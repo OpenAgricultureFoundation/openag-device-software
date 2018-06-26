@@ -17,7 +17,6 @@ from device.peripherals.modules.t6713.events import T6713Events
 class T6713Manager(PeripheralManager, T6713Events):
     """ Manages a t6713 carbon dioxide sensor. """
 
-
     def __init__(self, *args, **kwargs):
         """ Instantiates manager Instantiates parent class, and initializes 
             sensor variable name. """
@@ -26,32 +25,37 @@ class T6713Manager(PeripheralManager, T6713Events):
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.carbon_dioxide_name = self.parameters["variables"]["sensor"]["carbon_dioxide_ppm"]
+        self.carbon_dioxide_name = self.parameters["variables"]["sensor"][
+            "carbon_dioxide_ppm"
+        ]
 
         # Initialize sensor
         self.sensor = T6713Sensor(
-            name = self.name, 
-            bus = self.parameters["communication"]["bus"], 
-            mux = int(self.parameters["communication"]["mux"], 16),
-            channel = self.parameters["communication"]["channel"],
-            address = int(self.parameters["communication"]["address"], 16), 
-            simulate = self.simulate,
+            name=self.name,
+            bus=self.parameters["communication"]["bus"],
+            mux=int(self.parameters["communication"]["mux"], 16),
+            channel=self.parameters["communication"]["channel"],
+            address=int(self.parameters["communication"]["address"], 16),
+            simulate=self.simulate,
         )
-
 
     @property
     def carbon_dioxide(self) -> None:
         """ Gets carbon dioxide value. """
-        return self.state.get_peripheral_reported_sensor_value(self.name, self.carbon_dioxide_name)
-
+        return self.state.get_peripheral_reported_sensor_value(
+            self.name, self.carbon_dioxide_name
+        )
 
     @carbon_dioxide.setter
     def carbon_dioxide(self, value: float) -> None:
         """ Sets carbon dioxide value in shared state. Does not update enironment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(self.name, self.carbon_dioxide_name, value)
+        self.state.set_peripheral_reported_sensor_value(
+            self.name, self.carbon_dioxide_name, value
+        )
         if self.mode != Modes.CALIBRATE:
-            self.state.set_environment_reported_sensor_value(self.name, self.carbon_dioxide_name, value)
-
+            self.state.set_environment_reported_sensor_value(
+                self.name, self.carbon_dioxide_name, value
+            )
 
     def initialize(self) -> None:
         """ Initializes manager."""
@@ -76,7 +80,6 @@ class T6713Manager(PeripheralManager, T6713Events):
         # Successful initialization!
         self.logger.debug("Initialized successfully")
 
-
     def setup(self) -> None:
         """ Sets up manager. Programs device operation parameters into 
             sensor driver circuit. """
@@ -93,8 +96,7 @@ class T6713Manager(PeripheralManager, T6713Events):
             return
 
         # Successfully setup!
-        self.logger.debug("Successfully setup!")   
-
+        self.logger.debug("Successfully setup!")
 
     def update(self) -> None:
         """ Updates sensor when in normal mode. """
@@ -113,7 +115,6 @@ class T6713Manager(PeripheralManager, T6713Events):
         # Update reported values
         self.carbon_dioxide = co2
         self.health = self.sensor.health.percent
-        
 
     def reset(self) -> None:
         """ Resets sensor. """
@@ -128,14 +129,12 @@ class T6713Manager(PeripheralManager, T6713Events):
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")
 
-
     def shutdown(self) -> None:
         """ Shuts down sensor. """
         self.logger.info("Shutting down sensor")
 
         # Clear reported values
         self.clear_reported_values()
-
 
     def clear_reported_values(self):
         """ Clears reported values. """

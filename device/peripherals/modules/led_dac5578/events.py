@@ -13,7 +13,6 @@ from device.peripherals.classes.peripheral_events import PeripheralEvents
 class LEDDAC5578Events(PeripheralEvents):
     """ Event mixin for led array. """
 
-
     def process_peripheral_specific_event(self, request):
         """ Processes peripheral specific event event. Gets request parameters, 
             executes request, returns response. """
@@ -30,7 +29,6 @@ class LEDDAC5578Events(PeripheralEvents):
             message = "Unknown event request type!"
             self.logger.info(message)
             self.response = {"status": 400, "message": message}
-
 
     def process_turn_on_event(self):
         """ Processes turn on event. """
@@ -55,7 +53,6 @@ class LEDDAC5578Events(PeripheralEvents):
         response = {"status": 200, "message": "Turned on!"}
         return response
 
-
     def process_turn_off_event(self):
         """ Processes turn off event. """
         self.logger.debug("Processing turn off event")
@@ -78,7 +75,6 @@ class LEDDAC5578Events(PeripheralEvents):
         response = {"status": 200, "message": "Turned off!"}
         return response
 
-
     def initialize_fade_event(self) -> Dict:
         """ Fades through all channels if no channel is specified. """
         self.logger.debug("Initializing fade event")
@@ -91,7 +87,6 @@ class LEDDAC5578Events(PeripheralEvents):
         # Successfully initialized fade event!
         response = {"status": 200, "message": "Fading!"}
         return response
-
 
     def fade(self, channel_name: Optional[str] = None):
         """ Fades through channel names. """
@@ -148,7 +143,7 @@ class LEDDAC5578Events(PeripheralEvents):
 
                 # Fade down
                 for value in range(100, 0, -10):
-                    
+
                     # Set array output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
                     error = self.array.set_output(channel_name, value)

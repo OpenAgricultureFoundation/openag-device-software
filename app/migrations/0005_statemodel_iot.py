@@ -8,15 +8,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0004_remove_deviceconfigmodel_version'),
-    ]
+    dependencies = [("app", "0004_remove_deviceconfigmodel_version")]
 
     operations = [
         migrations.AddField(
-            model_name='statemodel',
-            name='iot',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=''),
+            model_name="statemodel",
+            name="iot",
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=""),
             preserve_default=False,
-        ),
+        )
     ]

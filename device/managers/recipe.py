@@ -17,7 +17,7 @@ class RecipeManager:
     """ Manages recipe state machine. """
 
     # Initialize logger
-    extra = {"console_name":"Recipe", "file_name": "device"}
+    extra = {"console_name": "Recipe", "file_name": "device"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
@@ -28,28 +28,24 @@ class RecipeManager:
     # Initialize thread object
     thread = None
 
-
     def __init__(self, state):
         """ Initializes recipe handler """
         self.state = state
         self.mode = Modes.INIT
         self.error = Errors.NONE
-        self._stop_event = threading.Event() # so we can stop this thread
-
+        self._stop_event = threading.Event()  # so we can stop this thread
 
     @property
     def error(self):
         """ Gets error value. Keep this local? """
         return self._error
 
-
     @error.setter
     def error(self, value):
         """ Safely updates recipe error in shared state. """
-        self._error= value
+        self._error = value
         with threading.Lock():
             self.state.recipe["error"] = value
-
 
     @property
     def mode(self):
@@ -57,14 +53,12 @@ class RecipeManager:
             state transitions only occur from within thread. """
         return self._mode
 
-
     @mode.setter
     def mode(self, value):
         """ Safely updates recipe mode in shared state. """
         self._mode = value
         with threading.Lock():
             self.state.recipe["mode"] = value
-
 
     @property
     def commanded_mode(self):
@@ -80,7 +74,6 @@ class RecipeManager:
         with threading.Lock():
             self.state.recipe["commanded_mode"] = value
 
-
     @property
     def stored_mode(self):
         """ Gets the stored mode from shared state. """
@@ -95,7 +88,6 @@ class RecipeManager:
         with threading.Lock():
             self.state.recipe["stored_mode"] = value
 
-
     @property
     def recipe_uuid(self):
         """ Gets recipe uuid from shared state. """
@@ -104,13 +96,11 @@ class RecipeManager:
         else:
             return None
 
-
     @recipe_uuid.setter
     def recipe_uuid(self, value):
         """ Safely updates recipe uuid in shared state. """
         with threading.Lock():
             self.state.recipe["recipe_uuid"] = value
-
 
     @property
     def commanded_recipe_uuid(self):
@@ -120,13 +110,11 @@ class RecipeManager:
         else:
             return None
 
-
     @commanded_recipe_uuid.setter
     def commanded_recipe_uuid(self, value):
         """ Safely updates commanded recipe uuid in shared state. """
         with threading.Lock():
             self.state.recipe["commanded_recipe_uuid"] = value
-
 
     @property
     def recipe_name(self):
@@ -136,19 +124,16 @@ class RecipeManager:
         else:
             return None
 
-
     @recipe_name.setter
     def recipe_name(self, value):
         """ Safely updates recipe name in shared state. """
         with threading.Lock():
             self.state.recipe["recipe_name"] = value
 
-
     @property
     def current_timestamp_minutes(self):
         """ Get current timestamp in minutes. """
         return int(time.time() / 60)
-
 
     @property
     def start_timestamp_minutes(self):
@@ -158,7 +143,6 @@ class RecipeManager:
         else:
             return None
 
-
     @start_timestamp_minutes.setter
     def start_timestamp_minutes(self, value):
         """ Generates start datestring then safely updates start timestamp 
@@ -166,8 +150,9 @@ class RecipeManager:
 
         # Generate start datestring
         if value != None:
-            start_datestring = datetime.datetime.fromtimestamp(value*60).\
-                strftime('%Y-%m-%d %H:%M:%S') + " UTC"
+            start_datestring = datetime.datetime.fromtimestamp(value * 60).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ) + " UTC"
         else:
             start_datestring = None
 
@@ -175,7 +160,6 @@ class RecipeManager:
         with threading.Lock():
             self.state.recipe["start_timestamp_minutes"] = value
             self.state.recipe["start_datestring"] = start_datestring
-
 
     @property
     def commanded_start_timestamp_minutes(self):
@@ -185,14 +169,12 @@ class RecipeManager:
         else:
             return None
 
-
     @commanded_start_timestamp_minutes.setter
     def commanded_start_timestamp_minutes(self, value):
         """ Safely updates commanded_start_timestamp_minutes 
             in shared state. """
         with threading.Lock():
             self.state.recipe["commanded_start_timestamp_minutes"] = value
-
 
     @property
     def start_datestring(self):
@@ -202,7 +184,6 @@ class RecipeManager:
         else:
             return None
 
-
     @property
     def duration_minutes(self):
         """ Gets recipe duration in minutes from shared state. """
@@ -210,7 +191,6 @@ class RecipeManager:
             return self.state.recipe["duration_minutes"]
         else:
             return None
-
 
     @duration_minutes.setter
     def duration_minutes(self, value):
@@ -228,7 +208,6 @@ class RecipeManager:
             self.state.recipe["duration_minutes"] = value
             self.state.recipe["duration_string"] = duration_string
 
-
     @property
     def last_update_minute(self):
         """ Gets the last update minute from shared state. """
@@ -237,14 +216,13 @@ class RecipeManager:
         else:
             return None
 
-
     @last_update_minute.setter
     def last_update_minute(self, value):
         """ Generates percent complete, percent complete string, time
             remaining minutes, time remaining string, and time elapsed
             string then safely updates last update minute and aforementioned
             values in shared state. """
-        
+
         # Generate values
         if value != None and self.duration_minutes != None:
             percent_complete = float(value) / self.duration_minutes * 100
@@ -267,7 +245,6 @@ class RecipeManager:
             self.state.recipe["time_remaining_minutes"] = time_remaining_minutes
             self.state.recipe["time_remaining_string"] = time_remaining_string
             self.state.recipe["time_elapsed_string"] = time_elapsed_string
-
 
     @property
     def percent_complete(self):
@@ -309,7 +286,6 @@ class RecipeManager:
         else:
             return None
 
-
     @property
     def current_phase(self):
         """ Gets the recipe current phase from shared state. """
@@ -318,13 +294,11 @@ class RecipeManager:
         else:
             return None
 
-
     @current_phase.setter
     def current_phase(self, value):
         """ Safely updates current phase in shared state. """
         with threading.Lock():
             self.state.recipe["current_phase"] = value
-
 
     @property
     def current_cycle(self):
@@ -334,13 +308,11 @@ class RecipeManager:
         else:
             return None
 
-
     @current_cycle.setter
     def current_cycle(self, value):
         """ Safely updates current cycle in shared state. """
         with threading.Lock():
             self.state.recipe["current_cycle"] = value
-
 
     @property
     def current_environment_name(self):
@@ -350,13 +322,11 @@ class RecipeManager:
         else:
             return None
 
-
     @current_environment_name.setter
     def current_environment_name(self, value):
         """ Safely updates current environment name in shared state. """
         with threading.Lock():
             self.state.recipe["current_environment_name"] = value
-
 
     @property
     def current_environment_state(self):
@@ -366,7 +336,6 @@ class RecipeManager:
         else:
             return None
 
-
     @current_environment_state.setter
     def current_environment_state(self, value):
         """ Safely updates current environment state in shared state. """
@@ -374,36 +343,32 @@ class RecipeManager:
             self.state.recipe["current_environment_state"] = value
             self.set_desired_sensor_values(value)
 
-
     def spawn(self):
         """ Spawns recipe thread. """
         self.thread = threading.Thread(target=self.run_state_machine)
         self.thread.daemon = True
         self.thread.start()
 
-
     def stop(self):
         self._stop_event.set()
 
-
     def stopped(self):
         return self._stop_event.is_set()
-
 
     def run_state_machine(self):
         """ Runs recipe state machine. """
         while True:
             if self.stopped():
                 break
-                        
+
             if self.mode == Modes.INIT:
                 self.run_init_mode()
             if self.mode == Modes.NORECIPE:
-                self.run_norecipe_mode()  
+                self.run_norecipe_mode()
             elif self.mode == Modes.START:
                 self.run_start_mode()
             elif self.mode == Modes.QUEUED:
-                self.run_queued_mode()        
+                self.run_queued_mode()
             elif self.mode == Modes.NORMAL:
                 self.run_normal_mode()
             elif self.mode == Modes.PAUSE:
@@ -421,7 +386,6 @@ class RecipeManager:
                 self.logger.critial("Invalid state machine mode")
                 time.sleep(0.1)
 
-
     def run_init_mode(self):
         """ Runs initialization mode. Transitions to stored recipe mode 
             or NORECIPE if no stored mode. """
@@ -429,12 +393,13 @@ class RecipeManager:
         self.error = Errors.NONE
 
         # Transition to recipe stored mode
-        if "stored_mode" in self.state.recipe and \
-            self.state.recipe["stored_mode"] != None:
+        if (
+            "stored_mode" in self.state.recipe
+            and self.state.recipe["stored_mode"] != None
+        ):
             self.mode = self.state.recipe["stored_mode"]
         else:
             self.mode = Modes.NORECIPE
-
 
     def run_norecipe_mode(self):
         """ Runs no recipe mode. Waits for start command then 
@@ -451,8 +416,7 @@ class RecipeManager:
                 self.mode = self.commanded_mode
                 self.commanded_mode = Modes.NONE
                 break
-            time.sleep(0.1) # 100ms
-
+            time.sleep(0.1)  # 100ms
 
     def run_start_mode(self):
         """ Runs start mode. Loads commanded recipe uuid into shared state, 
@@ -482,7 +446,7 @@ class RecipeManager:
 
             # Set recipe name
             self.recipe_name = recipe_dict["name"]
-            self.logger.info("Started: {}".format( self.recipe_name ))
+            self.logger.info("Started: {}".format(self.recipe_name))
 
             # Load recipe start time, if not set, start recipe immediately
             if self.commanded_start_timestamp_minutes != None:
@@ -498,9 +462,8 @@ class RecipeManager:
             self.mode = Modes.QUEUED
         except:
             self.logger.exception("Unable to start recipe")
-            self.mode = Modes.NORECIPE # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
+            self.mode = Modes.NORECIPE  # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
             self.error = "Unable to start recipe"
-
 
     def run_queued_mode(self):
         """ Runs queued mode. Waits for recipe start timestamp to be greater than
@@ -510,8 +473,7 @@ class RecipeManager:
             if self.start_timestamp_minutes >= self.current_timestamp_minutes:
                 self.mode = Modes.NORMAL
                 break
-            time.sleep(0.1) # 100ms
-
+            time.sleep(0.1)  # 100ms
 
     def run_normal_mode(self):
         """ Runs normal operation mode. Updates recipe and environment states 
@@ -540,14 +502,13 @@ class RecipeManager:
                 self.commanded_mode = Modes.NONE
                 break
 
-            if self.current_phase == 'End' and self.current_cycle == 'End':
+            if self.current_phase == "End" and self.current_cycle == "End":
                 self.logger.info("Recipe is over, so transition from NORMAL to STOP")
                 self.mode = Modes.STOP
                 break
 
             # Update thread every 100ms
-            time.sleep(0.1) 
-
+            time.sleep(0.1)
 
     def run_pause_mode(self):
         """ Runs pause mode. Clears recipe and desired sensor state, waits 
@@ -572,8 +533,7 @@ class RecipeManager:
                 break
 
             # Update every 100ms
-            time.sleep(0.1) # 100ms
-
+            time.sleep(0.1)  # 100ms
 
     def run_stop_mode(self):
         """ Runs stop mode. Clears recipe and desired sensor state, signals 
@@ -587,12 +547,11 @@ class RecipeManager:
         # Transition to NORECIPE
         self.mode = Modes.NORECIPE
 
-
     def run_error_mode(self):
         """ Runs error mode. Clears recipe state and desired sensor state,
             waits for reset mode command then transitions to RESET. """
         self.logger.info("Entered ERROR")
-        
+
         # Clear recipe and desired sensor states
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
@@ -603,8 +562,7 @@ class RecipeManager:
                 self.mode == self.commanded_mode
                 self.commanded_mode = Modes.NONE
                 break
-            time.sleep(0.1) # 100ms
-
+            time.sleep(0.1)  # 100ms
 
     def run_reset_mode(self):
         """ Runs reset mode. Clears error state then transitions to INIT. """
@@ -616,11 +574,11 @@ class RecipeManager:
         # Transition to INIT
         self.mode = Modes.INIT
 
-
     def get_recipe_environment(self, minute):
         """ Gets environment object from database for provided minute. """
-        return RecipeTransitionModel.objects.filter(minute__lte=minute).order_by('-minute').first()
-
+        return RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
+            "-minute"
+        ).first()
 
     def store_recipe_transitions(self, recipe_transitions):
         """ Stores recipe transitions in database. """
@@ -631,12 +589,12 @@ class RecipeManager:
         # Create recipe transition entries
         for transition in recipe_transitions:
             RecipeTransitionModel.objects.create(
-                minute = transition["minute"],
-                phase = transition["phase"],
-                cycle = transition["cycle"],
-                environment_name = transition["environment_name"],
-                environment_state = transition["environment_state"])
-
+                minute=transition["minute"],
+                phase=transition["phase"],
+                cycle=transition["cycle"],
+                environment_name=transition["environment_name"],
+                environment_state=transition["environment_state"],
+            )
 
     def update_recipe_environment(self):
         """ Updates recipe environment. """
@@ -648,13 +606,11 @@ class RecipeManager:
         self.current_environment_name = environment.environment_name
         self.current_environment_state = environment.environment_state
 
-
     def clear_desired_sensor_state(self):
         """ Sets desired sensor state to null values. """
         with threading.Lock():
             for variable in self.state.environment["sensor"]["desired"]:
                 self.state.environment["sensor"]["desired"][variable] = None
-
 
     def clear_recipe_state(self):
         """ Sets recipe state to null values """
@@ -668,7 +624,6 @@ class RecipeManager:
         self.current_environment_name = None
         self.current_environment_state = {}
 
-
     def new_minute(self):
         """ Check if system clock is on a new minute. """
         current_minute = self.current_timestamp_minutes - self.start_timestamp_minutes
@@ -678,18 +633,20 @@ class RecipeManager:
         else:
             return False
 
-
     def get_duration_string(self, duration_minutes):
         """ Converts duration in minutes to duration day-hour-minute string. """
-        days = int(float(duration_minutes) / (60*24))
-        hours = int((float(duration_minutes) - days*60*24) / 60)
-        minutes = duration_minutes - days*60*24 - hours*60
+        days = int(float(duration_minutes) / (60 * 24))
+        hours = int((float(duration_minutes) - days * 60 * 24) / 60)
+        minutes = duration_minutes - days * 60 * 24 - hours * 60
         string = "{} Days {} Hours {} Minutes".format(days, hours, minutes)
         return string
-
 
     def set_desired_sensor_values(self, environment_dict):
         """ Sets desired sensor values from provided environment dict. """
         with threading.Lock():
             for variable in environment_dict:
-                self.state.environment["sensor"]["desired"][variable] = environment_dict[variable]
+                self.state.environment["sensor"]["desired"][
+                    variable
+                ] = environment_dict[
+                    variable
+                ]

@@ -17,16 +17,11 @@ else:
 
 # Import manager
 from device.peripherals.modules.sht25.sensor import SHT25Sensor
-    
+
 
 def test_init():
-    sensor = SHT25Sensor(
-        name = "Test", 
-        bus = 2, 
-        address = 0x64, 
-        simulate=True,
-    )
-    
+    sensor = SHT25Sensor(name="Test", bus=2, address=0x64, simulate=True)
+
 
 def test_read_temperature():
     sensor = SHT25Sensor("Test", 2, 0x64, simulate=True)

@@ -1,5 +1,5 @@
 # Import standard python modules
-from typing import Tuple, Optional 
+from typing import Tuple, Optional
 import time
 
 # Import device utilities
@@ -13,15 +13,20 @@ from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 class USBCameraSensor:
     """ A usb camera sensor. """
 
-    def __init__(self, name: str, directory: str, vendor_id: int, product_id: int, resolution: str, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        directory: str,
+        vendor_id: int,
+        product_id: int,
+        resolution: str,
+        simulate: bool = False,
+    ) -> None:
         """ Instantiates camera. """
 
         # Initialize logger
-        self.logger = Logger(
-            name = "Sensor({})".format(name),
-            dunder_name = __name__,
-        )
-        
+        self.logger = Logger(name="Sensor({})".format(name), dunder_name=__name__)
+
         # Initialize name and simulation status
         self.name = name
         self.simulate = simulate
@@ -29,17 +34,16 @@ class USBCameraSensor:
 
         # Initialize driver
         self.driver = USBCameraDriver(
-            name = name,
-            vendor_id = vendor_id,
-            product_id = product_id,
-            resolution = resolution,
-            directory = directory,
-            simulate = simulate,
+            name=name,
+            vendor_id=vendor_id,
+            product_id=product_id,
+            resolution=resolution,
+            directory=directory,
+            simulate=simulate,
         )
 
         # Initialize health metrics
         self.health = 100.0
-
 
     def probe(self) -> Error:
         """ Probes camera. """
@@ -49,7 +53,7 @@ class USBCameraSensor:
         if self.simulate:
             self.logger.info("Probe simulated!")
             return Error(None)
-        
+
         # Probe driver
         _, error = self.driver.get_camera()
 
@@ -64,10 +68,9 @@ class USBCameraSensor:
         self.logger.info("Probe successful!")
         return Error(None)
 
-
     def capture(self) -> Error:
         """ Captures an image. """
-        #self.logger.debug("Capturing image")
+        # self.logger.debug("Capturing image")
 
         # Capture image
         error = self.driver.capture()
@@ -81,7 +84,6 @@ class USBCameraSensor:
 
         # Capture successful!
         return Error(None)
-
 
     def reset(self) -> None:
         """ Resets camera. """

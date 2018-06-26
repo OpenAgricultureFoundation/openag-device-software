@@ -57,23 +57,27 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-Top")
+        peripheral_config = get_peripheral_config(
+            device_config["peripherals"], "Camera-Top"
+        )
         setup_name = peripheral_config["parameters"]["setup"]["file_name"]
-        peripheral_setup = json.load(open("device/peripherals/modules/" + setup_name + ".json"))
+        peripheral_setup = json.load(
+            open("device/peripherals/modules/" + setup_name + ".json")
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize directory
-    directory = "device/peripherals/modules/usb_camera/scripts/images/" 
+    directory = "device/peripherals/modules/usb_camera/scripts/images/"
 
     # Initialize driver
     driver = USBCameraDriver(
-        name = "Test",
-        vendor_id = peripheral_setup["properties"]["vendor_id"],
-        product_id = peripheral_setup["properties"]["product_id"],
-        resolution = peripheral_setup["properties"]["resolution"],
-        directory = directory,
+        name="Test",
+        vendor_id=peripheral_setup["properties"]["vendor_id"],
+        product_id=peripheral_setup["properties"]["product_id"],
+        resolution=peripheral_setup["properties"]["resolution"],
+        directory=directory,
     )
 
     # Check for loop

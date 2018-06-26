@@ -1,5 +1,5 @@
 # Import standard python modules
-from typing import Tuple, Optional 
+from typing import Tuple, Optional
 import time
 
 # Import device utilities
@@ -17,33 +17,36 @@ from device.peripherals.classes.atlas_sensor import AtlasSensorMixin
 class AtlasPHSensor(AtlasSensorMixin):
     """ Atlas pH sensor instance. """
 
-    def __init__(self, name: str, bus: int, address: str, mux: str = None, 
-        channel: int = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: str,
+        mux: str = None,
+        channel: int = None,
+        simulate: bool = False,
+    ) -> None:
         """ Instantiates panel. """
 
         # Initialize logger
-        self.logger = Logger(
-            name = "Sensor({})".format(name),
-            dunder_name = __name__,
-        )
-        
+        self.logger = Logger(name="Sensor({})".format(name), dunder_name=__name__)
+
         # Initialize name and simulation status
         self.name = name
         self.simulate = simulate
 
         # Initialize driver
         self.driver = AtlasPHDriver(
-            name = name,
-            bus = bus,
-            address = address,
-            mux = mux,
-            channel = channel,
-            simulate = simulate,
+            name=name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            simulate=simulate,
         )
 
         # Initialize health metrics
-        self.health = Health(updates = 5, minimum = 60)
-
+        self.health = Health(updates=5, minimum=60)
 
     def initialize(self) -> Error:
         """ Initializes sensor. """
@@ -51,7 +54,7 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if simulating
         if self.simulate:
             return Error(None)
-        
+
         # Probe driver
         error = self.probe()
 
@@ -63,7 +66,6 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Successfully initialized!
         return Error(None)
-
 
     def setup(self) -> Error:
         """ Sets up sensor. """
@@ -84,7 +86,11 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Check if using new firmware
         if self.firmware_version < 1.95:
             # Successfuly setup older firmware!
-            self.logger.warning("Using old circuit stamp (version {}), consider upgrading".format(self.firmware_version))
+            self.logger.warning(
+                "Using old circuit stamp (version {}), consider upgrading".format(
+                    self.firmware_version
+                )
+            )
             return Error(None)
 
         # Enable protocol lock
@@ -99,11 +105,9 @@ class AtlasPHSensor(AtlasSensorMixin):
         # Setup successful!
         return Error(None)
 
-
     def reset(self):
         """ Resets sensor. """
         self.health.reset()
-
 
     def probe(self):
         """ Probes driver until successful or becomes too unhealthy. """
@@ -114,14 +118,14 @@ class AtlasPHSensor(AtlasSensorMixin):
             # Read driver info
             self.sensor_type, self.firmware_version, error = self.driver.read_info()
 
-           # Check if simulating
+            # Check if simulating
             if self.simulate:
-               self.sensor_type = "pH"
-               self.firmware_version = 2.0
-               error = Error(None)
-               break
+                self.sensor_type = "pH"
+                self.firmware_version = 2.0
+                error = Error(None)
+                break
 
-           # Check for errors:
+            # Check for errors:
             if error.exists():
                 self.health.report_failure()
             else:
@@ -139,13 +143,16 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check for correct sensor type
         if self.sensor_type != "pH":
-            error = Error("Sensor probe failed, incorrect sensor type. `{}` != `pH`".format(self.sensor_type))
+            error = Error(
+                "Sensor probe failed, incorrect sensor type. `{}` != `pH`".format(
+                    self.sensor_type
+                )
+            )
             return error
 
         # Successfuly probed!
         self.health.reset()
         return Error(None)
-
 
     def read_potential_hydrogen(self) -> Tuple[Optional[float], Error]:
         """ Tries to read potential hydrogen until successful or becomes too unhealthy. """
@@ -172,14 +179,15 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to read electrical conductivity, became too unhealthy")
+            error.report(
+                "Sensor unable to read electrical conductivity, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return None, error
 
         # Successfuly read electrical conductivity!
         self.health.reset()
         return ec, Error(None)
-
 
     def set_compensation_temperature(self, value: float) -> Error:
         """ Tries to set compensation temperature until successful or becomes too unhealthy. """
@@ -199,13 +207,14 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to set compensation temperature, became too unhealthy")
+            error.report(
+                "Sensor unable to set compensation temperature, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly set compensation temperature!
         return Error(None)
-
 
     def take_low_point_calibration_reading(self, value: float) -> Error:
         """ Tries to take low point calibration reading until successful or 
@@ -226,13 +235,14 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to take low point calibration reading, became too unhealthy")
+            error.report(
+                "Sensor unable to take low point calibration reading, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly took low point calibration reading!
         return Error(None)
-
 
     def take_mid_point_calibration_reading(self, value: float) -> Error:
         """ Tries to take mid point calibration reading until successful or 
@@ -253,13 +263,14 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to take mid point calibration reading, became too unhealthy")
+            error.report(
+                "Sensor unable to take mid point calibration reading, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly took mid point calibration reading!
         return Error(None)
-
 
     def take_high_point_calibration_reading(self, value: float) -> Error:
         """ Tries to take high point calibration reading until successful or 
@@ -280,13 +291,14 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to take high point calibration reading, became too unhealthy")
+            error.report(
+                "Sensor unable to take high point calibration reading, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly took high point calibration reading!
         return Error(None)
-
 
     def clear_calibration_readings(self) -> Error:
         """ Tries to clear calibration readings until successful or 
@@ -307,7 +319,9 @@ class AtlasPHSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to clear calibration readings, became too unhealthy")
+            error.report(
+                "Sensor unable to clear calibration readings, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 

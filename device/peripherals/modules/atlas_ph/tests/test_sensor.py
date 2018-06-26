@@ -17,16 +17,11 @@ else:
 
 # Import sensor
 from device.peripherals.modules.atlas_ph.sensor import AtlasPHSensor
-    
+
 
 def test_init():
-    sensor = AtlasPHSensor(
-        name = "Test", 
-        bus = 2, 
-        address = 0x64, 
-        simulate=True,
-    )
-    
+    sensor = AtlasPHSensor(name="Test", bus=2, address=0x64, simulate=True)
+
 
 def test_read_potential_hydrogen():
     sensor = AtlasPHSensor("Test", 2, 0x64, simulate=True)

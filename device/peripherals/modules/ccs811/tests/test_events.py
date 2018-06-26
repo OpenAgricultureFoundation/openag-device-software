@@ -21,7 +21,7 @@ from device.peripherals.modules.sht25.manager import SHT25Manager
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
-    
+
 # Import shared memory
 from device.state import State
 
@@ -35,8 +35,5 @@ state = State()
 
 def test_init():
     manager = SHT25Manager(
-        name = "Test",
-        state = state,
-        config = peripheral_config,
-        simulate = True,
+        name="Test", state=state, config=peripheral_config, simulate=True
     )

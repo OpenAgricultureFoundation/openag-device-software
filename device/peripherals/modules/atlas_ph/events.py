@@ -13,7 +13,6 @@ from device.peripherals.classes.peripheral_events import PeripheralEvents
 class AtlasPHEvents(PeripheralEvents):
     """ Event mixin for led array. """
 
-
     def process_peripheral_specific_event(self, request: Dict) -> None:
         """ Processes and event. Gets request parameters, executes request, returns 
             response. """
@@ -31,7 +30,6 @@ class AtlasPHEvents(PeripheralEvents):
             message = "Unknown event request type!"
             self.logger.info(message)
             self.response = {"status": 400, "message": message}
-
 
     def process_low_point_calibration_event(self, request: Dict) -> None:
         """ Processes low point calibration event. Gets request parameters,
@@ -63,10 +61,13 @@ class AtlasPHEvents(PeripheralEvents):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!.",}
+            response = {
+                "status": 400,
+                "message": "Must be in calibration mode to take single point calibration!.",
+            }
             return response
 
-         # Send command
+        # Send command
         error = self.sensor.take_low_point_calibration_reading(value)
 
         # Check for errors
@@ -78,9 +79,10 @@ class AtlasPHEvents(PeripheralEvents):
             return response
 
         # Successfully took low point calibration reading!
-        response = {"status": 200, "message": "Successfully took low point calibration reading!"}
+        response = {
+            "status": 200, "message": "Successfully took low point calibration reading!"
+        }
         return response
-
 
     def process_mid_point_calibration_event(self, request):
         """ Processes mid point calibration event. Gets request parameters,
@@ -93,7 +95,9 @@ class AtlasPHEvents(PeripheralEvents):
             value = int(request["value"])
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
-            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            response = {
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
+            }
             return response
         except ValueError as e:
             error_message = "Invalid request value: `{}`".format(request["value"])
@@ -110,10 +114,13 @@ class AtlasPHEvents(PeripheralEvents):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!."}
+            response = {
+                "status": 400,
+                "message": "Must be in calibration mode to take single point calibration!.",
+            }
             return response
 
-         # Send command
+        # Send command
         error = self.sensor.take_mid_point_calibration_reading(value)
 
         # Check for errors
@@ -125,9 +132,10 @@ class AtlasPHEvents(PeripheralEvents):
             return response
 
         # Successfully took low point calibration reading!
-        response = {"status": 200, "message": "Successfully took mid point calibration reading!"}
+        response = {
+            "status": 200, "message": "Successfully took mid point calibration reading!"
+        }
         return response
-
 
     def process_high_point_calibration_event(self, request):
         """ Processes high point calibration event. Gets request parameters,
@@ -140,7 +148,9 @@ class AtlasPHEvents(PeripheralEvents):
             value = int(request["value"])
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
-            response = {"status": 400, "message": "Invalid request parameters: {}".format(e)}
+            response = {
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
+            }
             return response
         except ValueError as e:
             error_message = "Invalid request value: `{}`".format(request["value"])
@@ -157,7 +167,10 @@ class AtlasPHEvents(PeripheralEvents):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to take single point calibration!."}
+            response = {
+                "status": 400,
+                "message": "Must be in calibration mode to take single point calibration!.",
+            }
             return response
 
         # Send command
@@ -172,10 +185,11 @@ class AtlasPHEvents(PeripheralEvents):
             return response
 
         # Successfully took low point calibration reading!
-        response = {"status": 200, "message": "Successfully took high point calibration reading!"}
+        response = {
+            "status": 200,
+            "message": "Successfully took high point calibration reading!",
+        }
         return response
-
-
 
     def process_clear_calibration_event(self):
         """ Processes clear calibration event. """
@@ -183,7 +197,10 @@ class AtlasPHEvents(PeripheralEvents):
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
-            response = {"status": 400, "message": "Must be in calibration mode to clear calibration!."}
+            response = {
+                "status": 400,
+                "message": "Must be in calibration mode to clear calibration!.",
+            }
             return response
 
         # Send command
@@ -198,5 +215,7 @@ class AtlasPHEvents(PeripheralEvents):
             return response
 
         # Successfully took high point calibration reading!
-        response = {"status": 200, "message": "Successfully cleared calibration readings!"}
+        response = {
+            "status": 200, "message": "Successfully cleared calibration readings!"
+        }
         return response

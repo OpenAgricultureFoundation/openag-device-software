@@ -14,8 +14,15 @@ from device.utilities.accessors import usb_device_matches
 class USBCameraDriver:
     """ Driver for a usb camera. """
 
-
-    def __init__(self, name: str, vendor_id: int, product_id: int, resolution: str, directory: str, simulate=False):
+    def __init__(
+        self,
+        name: str,
+        vendor_id: int,
+        product_id: int,
+        resolution: str,
+        directory: str,
+        simulate=False,
+    ):
         """ Initializes USB camera camera. """
 
         # Initialize parametersrecent
@@ -27,15 +34,11 @@ class USBCameraDriver:
         self.simulate = simulate
 
         # Initialize logger
-        self.logger = Logger(
-            name = "Driver({})".format(name),
-            dunder_name = __name__,
-        )
+        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
 
         # Check directory exists else create it
         if not os.path.exists(directory):
             os.makedirs(directory)
-
 
     def list_cameras(self, vendor_id: int = None, product_id: int = None):
         """ Returns list of cameras that match the provided vendor id and 
@@ -55,7 +58,6 @@ class USBCameraDriver:
                 matches.append(camera)
         return matches
 
-
     def get_camera(self) -> Tuple[Optional[str], Error]:
         """ Gets camera paths. """
 
@@ -71,14 +73,13 @@ class USBCameraDriver:
         # Successfuly got camera!
         return cameras[0], Error(None)
 
-
     def capture(self) -> Error:
         """ Captures an image. """
-        #self.logger.debug("Capturing image")
+        # self.logger.debug("Capturing image")
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
-        filename = timestr  + "_"  + self.name + ".png"
+        filename = timestr + "_" + self.name + ".png"
 
         # Build filepath string
         filepath = self.directory + filename
@@ -86,9 +87,11 @@ class USBCameraDriver:
         # Check if simulated
         if self.simulate:
             self.logger.info("Simulating saving image to: {}".format(filepath))
-            command = "cp device/peripherals/modules/usb_camera/simulation_image.png {}".format(filepath)
+            command = "cp device/peripherals/modules/usb_camera/simulation_image.png {}".format(
+                filepath
+            )
             os.system(command)
-            return Error(None)  
+            return Error(None)
 
         # Camera not simulated!
         camera, error = self.get_camera()
@@ -104,12 +107,16 @@ class USBCameraDriver:
         try:
 
             # TODO: Can we increase resolution? Spec says 2592x1944 but fswebcam returns garbled image...
-           
-            command = 'fswebcam -d {} -r {} --background --png 9 --no-banner --save {}'.format(camera, self.resolution, filepath)
+
+            command = "fswebcam -d {} -r {} --background --png 9 --no-banner --save {}".format(
+                camera, self.resolution, filepath
+            )
             os.system(command)
 
         except Exception as e:
-            return Error("Driver unable to capture image, unexpected exception: {}".format(e))
+            return Error(
+                "Driver unable to capture image, unexpected exception: {}".format(e)
+            )
 
         # TODO: Wait for file in destination and do some prelim checks:
         #  - filesize not too small?

@@ -29,10 +29,18 @@ parser.add_argument("--reset", action="store_true", help="resets LED Panel")
 parser.add_argument("--shutdown", action="store_true", help="shutsdown LED Panel")
 parser.add_argument("-c", "--channel", type=str, help="specifies channel name")
 parser.add_argument("-v", "--value", type=float, help="specifies output value (0-100)")
-parser.add_argument("--on", action="store_true", help="turns on LEDs, can specify channel")
-parser.add_argument("--off", action="store_true", help="turns off LEDs, can specify channel")
-parser.add_argument("--fade", action="store_true", help="fades LEDs, can specify channel")
-parser.add_argument("-s", "--spectrum", type=str, help="sets SPD spectrum from name in data/spectrums")
+parser.add_argument(
+    "--on", action="store_true", help="turns on LEDs, can specify channel"
+)
+parser.add_argument(
+    "--off", action="store_true", help="turns off LEDs, can specify channel"
+)
+parser.add_argument(
+    "--fade", action="store_true", help="fades LEDs, can specify channel"
+)
+parser.add_argument(
+    "-s", "--spectrum", type=str, help="sets SPD spectrum from name in data/spectrums"
+)
 parser.add_argument("-i", "--intensity", type=float, help="sets SPD intensity in Watts")
 parser.add_argument("-d", "--distance", type=float, help="sets SPD distance in cm")
 
@@ -54,7 +62,9 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-Top")
+        peripheral_config = get_peripheral_config(
+            device_config["peripherals"], "LEDPanel-Top"
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
@@ -65,12 +75,18 @@ if __name__ == "__main__":
 
     # Initialize panel
     panel = LEDDAC5578Panel(
-        name = peripheral_config["parameters"]["communication"]["panels"][0]["name"],
-        channel_configs = setup_dict["channel_configs"], 
-        bus = peripheral_config["parameters"]["communication"]["panels"][0]["bus"], 
-        address = int(peripheral_config["parameters"]["communication"]["panels"][0]["address"], 16), 
-        mux = int(peripheral_config["parameters"]["communication"]["panels"][0]["mux"], 16), 
-        channel = peripheral_config["parameters"]["communication"]["panels"][0]["channel"],
+        name=peripheral_config["parameters"]["communication"]["panels"][0]["name"],
+        channel_configs=setup_dict["channel_configs"],
+        bus=peripheral_config["parameters"]["communication"]["panels"][0]["bus"],
+        address=int(
+            peripheral_config["parameters"]["communication"]["panels"][0]["address"], 16
+        ),
+        mux=int(
+            peripheral_config["parameters"]["communication"]["panels"][0]["mux"], 16
+        ),
+        channel=peripheral_config["parameters"]["communication"]["panels"][0][
+            "channel"
+        ],
     )
 
     # Check for loop
@@ -103,23 +119,39 @@ if __name__ == "__main__":
 
         # Check if turning device on
         elif args.on:
-            print("Turning on {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Turning on {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             error = panel.turn_on(channel_name=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
         # Check if turning device off
         elif args.off:
-            print("Turning off {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Turning off {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             error = panel.turn_off(channel_name=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
         # Check if fading
         elif args.fade:
-            print("Fading {channel}".format(channel = "all channels" if args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Fading {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             error = panel.fade(cycles=10, channel_name=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
@@ -156,14 +188,13 @@ if __name__ == "__main__":
             # Set spd
             print("Setting SPD")
             channel_outputs, output_spectrum, output_intensity, error = panel.set_spd(
-                desired_distance_cm = distance, 
-                desired_intensity_watts = intensity, 
-                desired_spectrum_nm_percent = spectrum,
+                desired_distance_cm=distance,
+                desired_intensity_watts=intensity,
+                desired_spectrum_nm_percent=spectrum,
             )
             print("Channel outputs (%): {}".format(channel_outputs))
             print("Output spectrum (%): {}".format(output_spectrum))
             print("Output intensity: {} Watts".format(output_intensity))
-
 
         # Check for new command if loop enabled
         if loop:

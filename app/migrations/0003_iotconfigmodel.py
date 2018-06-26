@@ -7,21 +7,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0002_eventmodel_recipient'),
-    ]
+    dependencies = [("app", "0002_eventmodel_recipient")]
 
     operations = [
         migrations.CreateModel(
-            name='IoTConfigModel',
+            name="IoTConfigModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('last_config_version', models.IntegerField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("last_config_version", models.IntegerField()),
             ],
             options={
-                'verbose_name': 'IoTConfig',
-                'verbose_name_plural': 'IoTConfigs',
-                'get_latest_by': 'last_config_version',
+                "verbose_name": "IoTConfig",
+                "verbose_name_plural": "IoTConfigs",
+                "get_latest_by": "last_config_version",
             },
-        ),
+        )
     ]

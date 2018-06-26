@@ -29,9 +29,15 @@ parser.add_argument("--info", action="store_true", help="sets logger in info mod
 parser.add_argument("--probe", action="store_true", help="probes DAC")
 parser.add_argument("-c", "--channel", type=int, help="specifies channel (0-7)")
 parser.add_argument("-v", "--value", type=int, help="specifies output value (0-100)")
-parser.add_argument("--on", action="store_true", help="turns on LEDs, can specify channel")
-parser.add_argument("--off", action="store_true", help="turns off LEDs, can specify channel")
-parser.add_argument("--fade", action="store_true", help="fades LEDs, can specify channel")
+parser.add_argument(
+    "--on", action="store_true", help="turns on LEDs, can specify channel"
+)
+parser.add_argument(
+    "--off", action="store_true", help="turns off LEDs, can specify channel"
+)
+parser.add_argument(
+    "--fade", action="store_true", help="fades LEDs, can specify channel"
+)
 parser.add_argument("--reset", action="store_true", help="resets DAC5578")
 parser.add_argument("--shutdown", action="store_true", help="shutsdown DAC5578")
 parser.add_argument("--loop", action="store_true", help="loops command prompt")
@@ -63,7 +69,6 @@ if __name__ == "__main__":
         loop = True
     else:
         loop = False
-
 
     first = True
     while True:
@@ -115,31 +120,45 @@ if __name__ == "__main__":
 
         # Check if turning device on
         elif args.on:
-            print("Turning on {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Turning on {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             error = dac5578.turn_on(channel=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
         # Check if turning device off
         elif args.off:
-            print("Turning off {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Turning off {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             error = dac5578.turn_off(channel=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
         # Check if fading
         elif args.fade:
-            print("Fading {channel}".format(channel = "all channels" if args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Fading {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             error = dac5578.fade(cycles=10, channel=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
-
 
         # Check for new command if loop enabled
         if loop:
             new_command = input("New command: ")
         else:
             break
-

@@ -21,7 +21,7 @@ from device.peripherals.modules.usb_camera.manager import USBCameraManager
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
-    
+
 # Import shared memory
 from device.state import State
 
@@ -30,7 +30,9 @@ if cwd.endswith("usb_camera"):
     os.chdir("../../../../")
 
 # Import test config
-device_config = json.load(open("device/peripherals/modules/usb_camera/tests/config.json"))
+device_config = json.load(
+    open("device/peripherals/modules/usb_camera/tests/config.json")
+)
 peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-1")
 
 # Initialize state
@@ -39,8 +41,5 @@ state = State()
 
 def test_init():
     manager = USBCameraManager(
-        name = "Test",
-        state = state,
-        config = peripheral_config,
-        simulate = True,
+        name="Test", state=state, config=peripheral_config, simulate=True
     )

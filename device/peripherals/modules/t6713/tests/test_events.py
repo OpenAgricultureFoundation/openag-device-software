@@ -21,7 +21,7 @@ from device.peripherals.modules.t6713.manager import T6713Manager
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
-    
+
 # Import shared memory
 from device.state import State
 
@@ -39,8 +39,5 @@ state = State()
 
 def test_init():
     manager = T6713Manager(
-        name = "Test",
-        state = state,
-        config = peripheral_config,
-        simulate = True,
+        name="Test", state=state, config=peripheral_config, simulate=True
     )

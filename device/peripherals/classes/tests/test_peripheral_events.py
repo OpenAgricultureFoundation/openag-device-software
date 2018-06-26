@@ -38,16 +38,10 @@ config = {
     "type": "TestPeripheralManager",
     "uuid": "aaa-bbb-ccc",
     "parameters": {
-       "setup": {
-            "name": "Test Setup",
-            "file_name": "classes/tests/test_setup"
-        },
-        "variables": {
-            "sensor": None,
-            "actuator": None
-        },
-        "communication": None
-    }
+        "setup": {"name": "Test Setup", "file_name": "classes/tests/test_setup"},
+        "variables": {"sensor": None, "actuator": None},
+        "communication": None,
+    },
 }
 
 state = State()
@@ -58,13 +52,16 @@ Jake TODO, no PeripheralEventMixin class
 class PeripheralManagerExample(PeripheralManager, PeripheralEventMixin):
     ...
 """
+
+
 class PeripheralManagerExample(PeripheralManager):
+
     def process_event(self, request):
         pass
 
 
 def test_init():
-    manager = PeripheralManagerExample("Test", state, config, simulate = True)
+    manager = PeripheralManagerExample("Test", state, config, simulate=True)
 
 
 """

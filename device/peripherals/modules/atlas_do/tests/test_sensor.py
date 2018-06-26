@@ -10,16 +10,11 @@ except:
     # ... if running tests from same dir as sensor.py
     sys.path.append("../../../../")
     from device.peripherals.modules.atlas_do.sensor import AtlasDOSensor
-    
+
 
 def test_init():
-    sensor = AtlasDOSensor(
-        name = "Test", 
-        bus = 2, 
-        address = 0x64, 
-        simulate=True,
-    )
-    
+    sensor = AtlasDOSensor(name="Test", bus=2, address=0x64, simulate=True)
+
 
 def test_read_dissolved_oxygen():
     sensor = AtlasDOSensor("Test", 2, 0x64, simulate=True)

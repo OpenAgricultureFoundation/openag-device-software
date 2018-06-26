@@ -7,13 +7,8 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0003_iotconfigmodel'),
-    ]
+    dependencies = [("app", "0003_iotconfigmodel")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='deviceconfigmodel',
-            name='version',
-        ),
+        migrations.RemoveField(model_name="deviceconfigmodel", name="version")
     ]

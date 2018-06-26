@@ -17,16 +17,11 @@ else:
 
 # Import driver
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
-    
+
 
 def test_init():
-    driver = AtlasECDriver(
-        name = "Test", 
-        bus = 2, 
-        address = 0x77, 
-        simulate=True,
-    )
-    
+    driver = AtlasECDriver(name="Test", bus=2, address=0x77, simulate=True)
+
 
 def test_read_electrical_conductivity():
     driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
@@ -87,7 +82,7 @@ def test_disable_specific_gravity_output():
     driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
     error = driver.disable_specific_gravity_output()
     assert error.exists() == True
-    
+
 
 def test_set_probe_type():
     driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
@@ -104,7 +99,7 @@ def test_take_dry_calibration_reading():
 def test_take_single_point_calibration_reading():
     driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
     error = driver.take_single_point_calibration_reading(7.0)
-    assert error.exists() == True   
+    assert error.exists() == True
 
 
 def test_take_low_point_calibration_reading():

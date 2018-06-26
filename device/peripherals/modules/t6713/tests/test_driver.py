@@ -17,16 +17,11 @@ else:
 
 # Import sensor
 from device.peripherals.modules.t6713.driver import T6713Driver
-    
+
 
 def test_init():
-    driver = T6713Driver(
-        name = "Test", 
-        bus = 2, 
-        address = 0x77, 
-        simulate=True,
-    )
-    
+    driver = T6713Driver(name="Test", bus=2, address=0x77, simulate=True)
+
 
 def test_read_carbon_dioxide():
     driver = T6713Driver("Test", 2, 0x77, simulate=True)

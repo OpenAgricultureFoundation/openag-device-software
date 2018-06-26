@@ -13,7 +13,6 @@ from device.peripherals.classes.peripheral_events import PeripheralEvents
 class AtlasDOEvents(PeripheralEvents):
     """ Event mixin for atlas dissolved oxygen sensor. """
 
-
     def process_peripheral_specific_event(self, request: Dict) -> Dict:
         """ Processes an event. Gets request parameters, executes request,
             sets response in shared state. """

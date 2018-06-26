@@ -1,5 +1,5 @@
 # Import standard python modules
-from typing import Tuple, Optional 
+from typing import Tuple, Optional
 import time
 
 # Import device utilities
@@ -15,42 +15,43 @@ class T6713Sensor:
     """ T6713 carbon dioxide sensor. """
 
     # Initialize warmup parameters
-    _warmup_timeout = 120 # seconds
+    _warmup_timeout = 120  # seconds
 
-
-    def __init__(self, name: str, bus: int, address: str, mux: str = None, 
-        channel: int = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: str,
+        mux: str = None,
+        channel: int = None,
+        simulate: bool = False,
+    ) -> None:
         """ Instantiates panel. """
 
         # Initialize logger
-        self.logger = Logger(
-            name = "Sensor({})".format(name),
-            dunder_name = __name__,
-        )
-        
+        self.logger = Logger(name="Sensor({})".format(name), dunder_name=__name__)
+
         # Initialize name and simulation status
         self.name = name
         self.simulate = simulate
 
         # Initialize driver
         self.driver = T6713Driver(
-            name = name,
-            bus = bus,
-            address = address,
-            mux = mux,
-            channel = channel,
-            simulate = simulate,
+            name=name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            simulate=simulate,
         )
 
         # Initialize health metrics
-        self.health = Health(updates = 5, minimum = 60)
-
+        self.health = Health(updates=5, minimum=60)
 
     @property
     def healthy(self):
         """ Gets sensor healthyness. """
         return self.health.healthy
-
 
     def setup(self) -> Error:
         """ Sets up sensor. """
@@ -115,12 +116,10 @@ class T6713Sensor:
         self.health.reset()
         return Error(None)
 
-
     def reset(self):
         """ Resets sensor. """
         self.logger.info("Resetting")
         self.health.reset()
-
 
     def probe(self):
         """ Probes driver until successful or becomes too unhealthy. """
@@ -132,12 +131,12 @@ class T6713Sensor:
             # Read driver status
             status, error = self.driver.read_status()
 
-           # Check if simulating
+            # Check if simulating
             if self.simulate:
-               error = Error(None)
-               break
+                error = Error(None)
+                break
 
-           # Check for errors:
+            # Check for errors:
             if error.exists():
                 self.health.report_failure()
             else:
@@ -162,7 +161,6 @@ class T6713Sensor:
         # Successfuly probed!
         self.health.reset()
         return Error(None)
-
 
     def read_carbon_dioxide(self) -> Tuple[Optional[float], Error]:
         """ Tries to read carbon dioxide until successful or becomes too 
@@ -201,7 +199,6 @@ class T6713Sensor:
         self.health.reset()
         return carbon_dioxide, Error(None)
 
-
     def read_status(self) -> Tuple[Optional[Status], Error]:
         """ Tries to read status until successful or becomes too 
             unhealthy. """
@@ -229,8 +226,7 @@ class T6713Sensor:
         self.health.reset()
         return status, Error(None)
 
-
-    def enable_abc_logic(self) ->  Error:
+    def enable_abc_logic(self) -> Error:
         """ Tries to disable abc logic until successful or becomes too 
             unhealthy. """
 
@@ -256,8 +252,7 @@ class T6713Sensor:
         # Successfuly enabled abc logic!
         return Error(None)
 
-
-    def disable_abc_logic(self) ->  Error:
+    def disable_abc_logic(self) -> Error:
         """ Tries to disable abc logic until successful or becomes too 
             unhealthy. """
 

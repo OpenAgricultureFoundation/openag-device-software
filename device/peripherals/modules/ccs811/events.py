@@ -13,7 +13,6 @@ from device.peripherals.classes.peripheral_events import PeripheralEvents
 class SHT25Events(PeripheralEvents):
     """ Event mixin for sht25 temperature and humidity sensor. """
 
-
     def process_peripheral_specific_event(self, request: Dict) -> Dict:
         """ Processes an event. Gets request parameters, executes request, returns 
             response. """

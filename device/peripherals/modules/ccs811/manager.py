@@ -25,47 +25,56 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.temperature_name = self.parameters["variables"]["sensor"]["temperature_celcius"]
+        self.temperature_name = self.parameters["variables"]["sensor"][
+            "temperature_celcius"
+        ]
         self.humidity_name = self.parameters["variables"]["sensor"]["humidity_percent"]
 
         # Initialize sensor
         self.sensor = SHT25Sensor(
-            name = self.name, 
-            bus = self.parameters["communication"]["bus"], 
-            mux = int(self.parameters["communication"]["mux"], 16),
-            channel = self.parameters["communication"]["channel"],
-            address = int(self.parameters["communication"]["address"], 16), 
-            simulate = self.simulate,
+            name=self.name,
+            bus=self.parameters["communication"]["bus"],
+            mux=int(self.parameters["communication"]["mux"], 16),
+            channel=self.parameters["communication"]["channel"],
+            address=int(self.parameters["communication"]["address"], 16),
+            simulate=self.simulate,
         )
-
 
     @property
     def temperature(self) -> None:
         """ Gets temperature value. """
-        return self.state.get_peripheral_reported_sensor_value(self.name, self.temperature_name)
-
+        return self.state.get_peripheral_reported_sensor_value(
+            self.name, self.temperature_name
+        )
 
     @temperature.setter
     def temperature(self, value: float) -> None:
         """ Sets temperature value in shared state. Does not update environment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(self.name, self.temperature_name, value)
+        self.state.set_peripheral_reported_sensor_value(
+            self.name, self.temperature_name, value
+        )
         if self.mode != Modes.CALIBRATE:
-            self.state.set_environment_reported_sensor_value(self.name, self.temperature_name, value)
-
+            self.state.set_environment_reported_sensor_value(
+                self.name, self.temperature_name, value
+            )
 
     @property
     def humidity(self) -> None:
         """ Gets humidity value. """
-        return self.state.get_peripheral_reported_sensor_value(self.name, self.humidity_name)
-
+        return self.state.get_peripheral_reported_sensor_value(
+            self.name, self.humidity_name
+        )
 
     @humidity.setter
     def humidity(self, value: float) -> None:
         """ Sets humidity value in shared state. Does not update environment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(self.name, self.humidity_name, value)
+        self.state.set_peripheral_reported_sensor_value(
+            self.name, self.humidity_name, value
+        )
         if self.mode != Modes.CALIBRATE:
-            self.state.set_environment_reported_sensor_value(self.name, self.humidity_name, value)
-
+            self.state.set_environment_reported_sensor_value(
+                self.name, self.humidity_name, value
+            )
 
     def initialize(self) -> None:
         """ Initializes manager."""
@@ -90,7 +99,6 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         # Successful initialization!
         self.logger.info("Initialized successfully")
 
-
     def setup(self) -> None:
         """ Sets up manager. Programs device operation parameters into 
             sensor driver circuit. """
@@ -107,8 +115,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
             return
 
         # Successfully setup!
-        self.logger.info("Successfully setup!")   
-
+        self.logger.info("Successfully setup!")
 
     def update(self) -> None:
         """ Updates sensor when in normal mode. """
@@ -139,8 +146,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         self.temperature = temperature
         self.humidity = humidity
         self.health = self.sensor.health.percent
-        
-        
+
     def reset(self) -> None:
         """ Resets sensor. """
         self.logger.info("Resetting")
@@ -154,7 +160,6 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")
 
-
     def shutdown(self) -> None:
         """ Shuts down sensor. """
         self.logger.info("Shutting down")
@@ -164,7 +169,6 @@ class SHT25Manager(PeripheralManager, SHT25Events):
 
         # Successfully shutdown
         self.logger.info("Successfully shutdown!")
-
 
     def clear_reported_values(self):
         """ Clears reported values. """

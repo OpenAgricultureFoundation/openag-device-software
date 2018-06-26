@@ -1,5 +1,5 @@
 # Import standard python modules
-from typing import Tuple, Optional 
+from typing import Tuple, Optional
 
 # Import device utilities
 from device.utilities.error import Error
@@ -8,11 +8,9 @@ from device.utilities.error import Error
 class AtlasSensorMixin:
     """ Atlas sensor mixin for common functions across atlas sensors. """
 
-
     @property
     def healthy(self):
         return self.health.healthy
-
 
     def enable_led(self) -> Error:
         """ Tries to enable protocol lock until successful or becomes too unhealthy. """
@@ -38,7 +36,6 @@ class AtlasSensorMixin:
         # Successfuly enabled led!
         return Error(None)
 
-
     def disable_led(self) -> Error:
         """ Tries to disable protocol lock until successful or becomes too unhealthy. """
 
@@ -62,7 +59,6 @@ class AtlasSensorMixin:
 
         # Successfuly disables led!
         return Error(None)
-
 
     def enable_protocol_lock(self) -> Error:
         """ Tries to enable protocol lock until successful or becomes too unhealthy. """
@@ -88,7 +84,6 @@ class AtlasSensorMixin:
         # Successfuly enabled protocol lock!
         return Error(None)
 
-
     def disable_protocol_lock(self) -> Error:
         """ Tries to disable protocol lock until successful or becomes too unhealthy. """
 
@@ -112,4 +107,3 @@ class AtlasSensorMixin:
 
         # Successfuly disables protocol lock!
         return Error(None)
-

@@ -10,151 +10,201 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ActuatorVariableModel',
+            name="ActuatorVariableModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.TextField(unique=True)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("key", models.TextField(unique=True)),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Actuator Variable',
-                'verbose_name_plural': 'Actuator Variables',
+                "verbose_name": "Actuator Variable",
+                "verbose_name_plural": "Actuator Variables",
             },
         ),
         migrations.CreateModel(
-            name='CultivarModel',
+            name="CultivarModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
+            ],
+            options={"verbose_name": "Cultivar", "verbose_name_plural": "Cultivars"},
+        ),
+        migrations.CreateModel(
+            name="CultivationMethodModel",
+            fields=[
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Cultivar',
-                'verbose_name_plural': 'Cultivars',
+                "verbose_name": "Cultivation Method",
+                "verbose_name_plural": "Cultivation Methods",
             },
         ),
         migrations.CreateModel(
-            name='CultivationMethodModel',
+            name="DeviceConfigModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("version", models.TextField()),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Cultivation Method',
-                'verbose_name_plural': 'Cultivation Methods',
+                "verbose_name": "Device Configuration",
+                "verbose_name_plural": "Device Configurations",
             },
         ),
         migrations.CreateModel(
-            name='DeviceConfigModel',
+            name="EnvironmentModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('version', models.TextField()),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("state", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Device Configuration',
-                'verbose_name_plural': 'Device Configurations',
+                "verbose_name": "Environment",
+                "verbose_name_plural": "Environments",
+                "get_latest_by": "timestamp",
             },
         ),
         migrations.CreateModel(
-            name='EnvironmentModel',
+            name="EventModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('state', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("request", django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "response",
+                    django.contrib.postgres.fields.jsonb.JSONField(
+                        blank=True, null=True
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Environment',
-                'verbose_name_plural': 'Environments',
-                'get_latest_by': 'timestamp',
+                "verbose_name": "Event",
+                "verbose_name_plural": "Events",
+                "get_latest_by": "timestamp",
             },
         ),
         migrations.CreateModel(
-            name='EventModel',
+            name="PeripheralSetupModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('request', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('response', django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True)),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Event',
-                'verbose_name_plural': 'Events',
-                'get_latest_by': 'timestamp',
+                "verbose_name": "Peripheral Setup",
+                "verbose_name_plural": "Peripheral Setups",
             },
         ),
         migrations.CreateModel(
-            name='PeripheralSetupModel',
+            name="RecipeModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
+                ("name", models.TextField()),
+                ("version", models.TextField()),
+            ],
+            options={"verbose_name": "Recipe", "verbose_name_plural": "Recipes"},
+        ),
+        migrations.CreateModel(
+            name="RecipeTransitionModel",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("minute", models.IntegerField()),
+                ("phase", models.TextField()),
+                ("cycle", models.TextField()),
+                ("environment_name", models.TextField()),
+                ("environment_state", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Peripheral Setup',
-                'verbose_name_plural': 'Peripheral Setups',
+                "verbose_name": "Recipe Transition",
+                "verbose_name_plural": "Recipe Transitions",
             },
         ),
         migrations.CreateModel(
-            name='RecipeModel',
+            name="SensorVariableModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('name', models.TextField()),
-                ('version', models.TextField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("key", models.TextField(unique=True)),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Recipe',
-                'verbose_name_plural': 'Recipes',
+                "verbose_name": "Sensor Variable",
+                "verbose_name_plural": "Sensor Variables",
             },
         ),
         migrations.CreateModel(
-            name='RecipeTransitionModel',
+            name="StateModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('minute', models.IntegerField()),
-                ('phase', models.TextField()),
-                ('cycle', models.TextField()),
-                ('environment_name', models.TextField()),
-                ('environment_state', django.contrib.postgres.fields.jsonb.JSONField()),
+                ("id", models.IntegerField(primary_key=True, serialize=False)),
+                ("device", django.contrib.postgres.fields.jsonb.JSONField()),
+                ("recipe", django.contrib.postgres.fields.jsonb.JSONField()),
+                ("environment", django.contrib.postgres.fields.jsonb.JSONField()),
+                ("peripherals", django.contrib.postgres.fields.jsonb.JSONField()),
+                ("controllers", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
-            options={
-                'verbose_name': 'Recipe Transition',
-                'verbose_name_plural': 'Recipe Transitions',
-            },
-        ),
-        migrations.CreateModel(
-            name='SensorVariableModel',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.TextField(unique=True)),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
-            ],
-            options={
-                'verbose_name': 'Sensor Variable',
-                'verbose_name_plural': 'Sensor Variables',
-            },
-        ),
-        migrations.CreateModel(
-            name='StateModel',
-            fields=[
-                ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('device', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('recipe', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('environment', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('peripherals', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('controllers', django.contrib.postgres.fields.jsonb.JSONField()),
-            ],
-            options={
-                'verbose_name': 'State',
-                'verbose_name_plural': 'State',
-            },
+            options={"verbose_name": "State", "verbose_name_plural": "State"},
         ),
     ]

@@ -24,14 +24,14 @@ class StateModel(models.Model):
 
 class EventModel(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
-    recipient=JSONField()
+    recipient = JSONField()
     request = JSONField()
     response = JSONField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Event"
         verbose_name_plural = "Events"
-        get_latest_by="timestamp"
+        get_latest_by = "timestamp"
 
 
 class EnvironmentModel(models.Model):
@@ -41,7 +41,7 @@ class EnvironmentModel(models.Model):
     class Meta:
         verbose_name = "Environment"
         verbose_name_plural = "Environments"
-        get_latest_by="timestamp"
+        get_latest_by = "timestamp"
 
 
 class DeviceConfigModel(models.Model):
@@ -174,12 +174,10 @@ class RecipeTransitionModel(models.Model):
         verbose_name_plural = "Recipe Transitions"
 
 
-class IoTConfigModel( models.Model ):
+class IoTConfigModel(models.Model):
     last_config_version = models.IntegerField()
 
     class Meta:
         verbose_name = "IoTConfig"
         verbose_name_plural = "IoTConfigs"
-        get_latest_by="last_config_version"
-
-
+        get_latest_by = "last_config_version"

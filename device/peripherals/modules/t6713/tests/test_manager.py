@@ -21,7 +21,7 @@ from device.peripherals.modules.t6713.manager import T6713Manager
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
-    
+
 # Import shared memory
 from device.state import State
 
@@ -39,38 +39,35 @@ state = State()
 
 def test_init():
     manager = T6713Manager(
-        name = "Test",
-        state = state,
-        config = peripheral_config,
-        simulate = True,
+        name="Test", state=state, config=peripheral_config, simulate=True
     )
 
 
 def test_initialize():
-    manager = T6713Manager("Test", state, peripheral_config, simulate = True)
+    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
     manager.initialize()
     assert True
 
 
 def test_setup():
-    manager = T6713Manager("Test", state, peripheral_config, simulate = True)
+    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
     manager.setup()
     assert True
 
 
 def test_update():
-    manager = T6713Manager("Test", state, peripheral_config, simulate = True)
+    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
     manager.update()
     assert True
 
 
 def test_reset():
-    manager = T6713Manager("Test", state, peripheral_config, simulate = True)
+    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
     manager.reset()
     assert True
 
 
 def test_shutdown():
-    manager = T6713Manager("Test", state, peripheral_config, simulate = True)
+    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
     manager.shutdown()
     assert True

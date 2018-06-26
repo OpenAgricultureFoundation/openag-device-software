@@ -14,21 +14,18 @@ class Health:
         self.percent = 100.0
         self.queue: List[float] = []
 
-
     def __str__(self) -> str:
         return "Health(healthy={}, percent={}, minimum={}, updates={})".format(
-                self.healthy, self.percent, self.minimum, self.updates)
-
+            self.healthy, self.percent, self.minimum, self.updates
+        )
 
     def report_success(self) -> None:
         """ Reports sucessful update. """
         self.update(successful=True)
 
-
     def report_failure(self) -> None:
         """ Reports failed update. """
         self.update(successful=False)
-
 
     def update(self, successful: bool) -> None:
         """ Updates health. """
@@ -46,12 +43,10 @@ class Health:
         # Calculate health percent
         self.percent = sum(self.queue) / len(self.queue) * 100.0
 
-
     def reset(self) -> None:
         """ Resets health. """
         self.percent = 100.0
         self.queue = []
-
 
     @property
     def healthy(self) -> bool:

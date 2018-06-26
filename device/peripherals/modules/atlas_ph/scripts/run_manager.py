@@ -65,16 +65,16 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-Reservoir")
+        peripheral_config = get_peripheral_config(
+            device_config["peripherals"], "AtlasPH-Reservoir"
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Instantiate manager
     manager = AtlasPHManager(
-        name = "AtlasPH-Reservoir", 
-        state = state, 
-        config = peripheral_config,
+        name="AtlasPH-Reservoir", state=state, config=peripheral_config
     )
 
     # Initialize and setup manager

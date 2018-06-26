@@ -37,7 +37,9 @@ parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
 parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
-parser.add_argument("-s", "--read-status", action="store_true", help="read sensor status")
+parser.add_argument(
+    "-s", "--read-status", action="store_true", help="read sensor status"
+)
 parser.add_argument("-r", "--read-ph", action="store_true", help="read pH")
 
 
@@ -59,18 +61,20 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasPH-Reservoir")
+        peripheral_config = get_peripheral_config(
+            device_config["peripherals"], "AtlasPH-Reservoir"
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize driver
     driver = AtlasPHDriver(
-        name = "AtlasPH-Reservoir", 
-        bus = peripheral_config["parameters"]["communication"]["bus"], 
-        address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
-        mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 
-        channel = peripheral_config["parameters"]["communication"]["channel"],
+        name="AtlasPH-Reservoir",
+        bus=peripheral_config["parameters"]["communication"]["bus"],
+        address=int(peripheral_config["parameters"]["communication"]["address"], 16),
+        mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
+        channel=peripheral_config["parameters"]["communication"]["channel"],
     )
 
     # Check for loop

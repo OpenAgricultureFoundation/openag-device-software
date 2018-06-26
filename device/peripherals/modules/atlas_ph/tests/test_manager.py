@@ -20,7 +20,7 @@ from device.peripherals.modules.atlas_ph.manager import AtlasPHManager
 
 # Import device utilities
 from device.utilities.modes import Modes
-    
+
 # Import shared memory
 from device.state import State
 
@@ -31,40 +31,38 @@ peripheral_config = device_config["peripherals"][0]
 # Initialize state
 state = State()
 
+
 def test_init():
     manager = AtlasPHManager(
-        name = "Test",
-        state = state,
-        config = peripheral_config,
-        simulate = True,
+        name="Test", state=state, config=peripheral_config, simulate=True
     )
 
 
 def test_initialize():
-    manager = AtlasPHManager("Test", state, peripheral_config, simulate = True)
+    manager = AtlasPHManager("Test", state, peripheral_config, simulate=True)
     manager.initialize()
     assert True
 
 
 def test_setup():
-    manager = AtlasPHManager("Test", state, peripheral_config, simulate = True)
+    manager = AtlasPHManager("Test", state, peripheral_config, simulate=True)
     manager.setup()
     assert True
 
 
 def test_update():
-    manager = AtlasPHManager("Test", state, peripheral_config, simulate = True)
+    manager = AtlasPHManager("Test", state, peripheral_config, simulate=True)
     manager.update()
     assert True
 
 
 def test_reset():
-    manager = AtlasPHManager("Test", state, peripheral_config, simulate = True)
+    manager = AtlasPHManager("Test", state, peripheral_config, simulate=True)
     manager.reset()
     assert True
 
 
 def test_shutdown():
-    manager = AtlasPHManager("Test", state, peripheral_config, simulate = True)
+    manager = AtlasPHManager("Test", state, peripheral_config, simulate=True)
     manager.shutdown()
     assert True

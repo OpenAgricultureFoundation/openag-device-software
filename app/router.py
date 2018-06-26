@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 
 class Router(routers.DefaultRouter):
+
     def get_api_root_view(self, api_urls=None):
         """
         Return a basic root view.
@@ -16,7 +17,6 @@ class Router(routers.DefaultRouter):
         list_name = self.routes[0].name
         for prefix, viewset, basename in self.registry:
             api_root_dict[prefix] = list_name.format(basename=basename)
-
 
         class APIRootView(views.APIView):
             """ The default basic root view for DefaultRouter """
@@ -30,14 +30,14 @@ class Router(routers.DefaultRouter):
                 namespace = request.resolver_match.namespace
                 for key, url_name in self.api_root_dict.items():
                     if namespace:
-                        url_name = namespace + ':' + url_name
+                        url_name = namespace + ":" + url_name
                     try:
                         ret[key] = reverse(
                             url_name,
                             args=args,
                             kwargs=kwargs,
                             request=request,
-                            format=kwargs.get('format', None)
+                            format=kwargs.get("format", None),
                         )
                     except NoReverseMatch:
                         # Don't bail out if eg. no list routes exist, only detail routes.
@@ -45,7 +45,7 @@ class Router(routers.DefaultRouter):
 
                 # Add APIView endpoints
                 endpoints = ["recipe/stop", "recipe/{pk}/start/"]
-                base = ret["state"].split("api",1)[0] + "api/"
+                base = ret["state"].split("api", 1)[0] + "api/"
                 for endpoint in endpoints:
                     ret[endpoint] = base + endpoint
 

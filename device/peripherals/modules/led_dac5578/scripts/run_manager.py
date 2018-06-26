@@ -43,10 +43,18 @@ parser.add_argument("--reset", action="store_true", help="resets manager")
 parser.add_argument("--shutdown", action="store_true", help="shutsdown manager")
 parser.add_argument("-c", "--channel", type=str, help="specifies channel name")
 parser.add_argument("-v", "--value", type=float, help="specifies output value (0-100)")
-parser.add_argument("--on", action="store_true", help="turns on LEDs, can specify channel")
-parser.add_argument("--off", action="store_true", help="turns off LEDs, can specify channel")
-parser.add_argument("--fade", action="store_true", help="fades LEDs, can specify channel")
-parser.add_argument("-s", "--spectrum", type=str, help="sets SPD spectrum from name in data/spectrums")
+parser.add_argument(
+    "--on", action="store_true", help="turns on LEDs, can specify channel"
+)
+parser.add_argument(
+    "--off", action="store_true", help="turns off LEDs, can specify channel"
+)
+parser.add_argument(
+    "--fade", action="store_true", help="fades LEDs, can specify channel"
+)
+parser.add_argument(
+    "-s", "--spectrum", type=str, help="sets SPD spectrum from name in data/spectrums"
+)
 parser.add_argument("-i", "--intensity", type=float, help="sets SPD intensity in Watts")
 parser.add_argument("-d", "--distance", type=float, help="sets SPD distance in cm")
 
@@ -68,17 +76,15 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-Top")
+        peripheral_config = get_peripheral_config(
+            device_config["peripherals"], "LEDPanel-Top"
+        )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize manager
-    manager = LEDDAC5578Manager(
-        name = "SMHZ1", 
-        state = state, 
-        config = peripheral_config,
-    )
+    manager = LEDDAC5578Manager(name="SMHZ1", state=state, config=peripheral_config)
 
     # Check if looping
     if args.loop:
@@ -110,8 +116,13 @@ if __name__ == "__main__":
 
         # Check if turning device on
         elif args.on:
-            print("Turning on {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Turning on {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             manager.mode = Modes.MANUAL
             manager.process_event({"type": "Turn On"})
             if manager.response["status"] != 200:
@@ -119,8 +130,13 @@ if __name__ == "__main__":
 
         # Check if turning device off
         elif args.off:
-            print("Turning off {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Turning off {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             manager.mode = Modes.MANUAL
             manager.process_event({"type": "Turn Off"})
             if manager.response["status"] != 200:
@@ -128,8 +144,13 @@ if __name__ == "__main__":
 
         # Check if fading
         elif args.fade:
-            print("Fading {channel}".format(channel = "all channels" if \
-                args.channel == None else "channel: " + str(args.channel)))
+            print(
+                "Fading {channel}".format(
+                    channel="all channels"
+                    if args.channel == None
+                    else "channel: " + str(args.channel)
+                )
+            )
             manager.mode = Modes.MANUAL
             manager.process_event({"type": "Fade"})
 
@@ -138,7 +159,7 @@ if __name__ == "__main__":
                 print("Error: {}".format(manager.response["message"]))
             else:
                 print(manager.response["message"])
-        
+
         # Check if setting spd
         elif args.spectrum != None:
 
@@ -171,14 +192,13 @@ if __name__ == "__main__":
             # Set spd
             print("Setting SPD")
             channel_outputs, output_spectrum, output_intensity, error = manager.set_spd(
-                desired_distance_cm = distance, 
-                desired_intensity_watts = intensity, 
-                desired_spectrum_nm_percent = spectrum,
+                desired_distance_cm=distance,
+                desired_intensity_watts=intensity,
+                desired_spectrum_nm_percent=spectrum,
             )
             print("Channel outputs (%): {}".format(channel_outputs))
             print("Output spectrum (%): {}".format(output_spectrum))
             print("Output intensity: {} Watts".format(output_intensity))
-
 
         # Check for new command if loop enabled
         if loop:

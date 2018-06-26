@@ -1,5 +1,5 @@
 # Import standard python modules
-from typing import Tuple, Optional 
+from typing import Tuple, Optional
 import time
 
 # Import device utilities
@@ -17,33 +17,38 @@ from device.peripherals.classes.atlas_sensor import AtlasSensorMixin
 class AtlasDOSensor(AtlasSensorMixin):
     """ Atlas EC sensor instance. """
 
-    def __init__(self, name: str, bus: int, address: str, mux: str = None, 
-        channel: int = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: str,
+        mux: str = None,
+        channel: int = None,
+        simulate: bool = False,
+    ) -> None:
         """ Instantiates panel. """
 
         # Initialize logger
         self.logger = Logger(
-            name = "AtlasDOSensor({})".format(name),
-            dunder_name = __name__,
+            name="AtlasDOSensor({})".format(name), dunder_name=__name__
         )
-        
+
         # Initialize name and simulation status
         self.name = name
         self.simulate = simulate
 
         # Initialize driver
         self.driver = AtlasDODriver(
-            name = name,
-            bus = bus,
-            address = address,
-            mux = mux,
-            channel = channel,
-            simulate = simulate,
+            name=name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            simulate=simulate,
         )
 
         # Initialize health metrics
-        self.health = Health(updates = 5, minimum = 60)
-
+        self.health = Health(updates=5, minimum=60)
 
     # def initialize(self) -> Error:
     #     """ Initializes sensor. """
@@ -51,7 +56,7 @@ class AtlasDOSensor(AtlasSensorMixin):
     #     # Check if simulating
     #     if self.simulate:
     #         return Error(None)
-        
+
     #     # Probe driver
     #     error = self.probe()
 
@@ -62,7 +67,6 @@ class AtlasDOSensor(AtlasSensorMixin):
 
     #     # Successfully initialized!
     #     return Error(None)
-
 
     def setup(self) -> Error:
         """ Sets up sensor. """
@@ -83,7 +87,11 @@ class AtlasDOSensor(AtlasSensorMixin):
         # Check if using new firmware
         if self.firmware_version < 1.95:
             # Successfuly setup older firmware!
-            self.logger.warning("Using old circuit stamp (version {}), consider upgrading".format(self.firmware_version))
+            self.logger.warning(
+                "Using old circuit stamp (version {}), consider upgrading".format(
+                    self.firmware_version
+                )
+            )
             return Error(None)
 
         # Enable protocol lock
@@ -116,11 +124,9 @@ class AtlasDOSensor(AtlasSensorMixin):
         # Setup successful!
         return Error(None)
 
-
     def reset(self):
         """ Resets sensor. """
         self.health.reset()
-
 
     def probe(self):
         """ Probes driver until successful or becomes too unhealthy. """
@@ -131,14 +137,14 @@ class AtlasDOSensor(AtlasSensorMixin):
             # Read driver info
             self.sensor_type, self.firmware_version, error = self.driver.read_info()
 
-           # Check if simulating
+            # Check if simulating
             if self.simulate:
-               self.sensor_type = "DO"
-               self.firmware_version = 2.0
-               error = Error(None)
-               break
+                self.sensor_type = "DO"
+                self.firmware_version = 2.0
+                error = Error(None)
+                break
 
-           # Check for errors:
+            # Check for errors:
             if error.exists():
                 self.health.report_failure()
             else:
@@ -156,14 +162,17 @@ class AtlasDOSensor(AtlasSensorMixin):
 
         # Check for correct sensor type
         if self.sensor_type != "DO":
-            error = Error("Sensor probe failed, incorrect sensor type. `{}` != `DO`".format(self.sensor_type))
+            error = Error(
+                "Sensor probe failed, incorrect sensor type. `{}` != `DO`".format(
+                    self.sensor_type
+                )
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly probed!
         self.health.reset()
         return Error(None)
-
 
     def read_dissolved_oxygen(self) -> Tuple[Optional[float], Error]:
         """ Tries to read dissolved oxygen until successful or becomes too unhealthy. """
@@ -198,7 +207,6 @@ class AtlasDOSensor(AtlasSensorMixin):
         self.health.reset()
         return do, Error(None)
 
-
     def set_compensation_temperature(self, value: float) -> Error:
         """ Tries to set compensation temperature until successful or becomes too unhealthy. """
 
@@ -217,13 +225,14 @@ class AtlasDOSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to set compensation temperature, became too unhealthy")
+            error.report(
+                "Sensor unable to set compensation temperature, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly set compensation temperature!
         return Error(None)
-
 
     def set_compensation_pressure(self, value: float) -> Error:
         """ Tries to set compensation pressure until successful or becomes too unhealthy. """
@@ -243,13 +252,14 @@ class AtlasDOSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to set compensation pressure, became too unhealthy")
+            error.report(
+                "Sensor unable to set compensation pressure, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly set compensation pressure!
         return Error(None)
-
 
     def set_compensation_electrical_conductivity(self, value: float) -> Error:
         """ Tries to set compensation electrical conductivity until successful or becomes too unhealthy. """
@@ -269,13 +279,14 @@ class AtlasDOSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to set compensation electrical conductivity, became too unhealthy")
+            error.report(
+                "Sensor unable to set compensation electrical conductivity, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 
         # Successfuly set compensation electrical conductivity!
         return Error(None)
-
 
     def enable_mg_l_output(self) -> Error:
         """ Tries to enable dissolved oxygen mg/L output until successful or 
@@ -303,7 +314,6 @@ class AtlasDOSensor(AtlasSensorMixin):
         # Successfuly enabled mg/L output!
         return Error(None)
 
-
     def disable_percent_saturation_output(self) -> Error:
         """ Tries to disable percent saturation output until successful or 
             becomes too unhealthy. """
@@ -323,7 +333,9 @@ class AtlasDOSensor(AtlasSensorMixin):
 
         # Check if sensor became unhealthy
         if not self.healthy:
-            error.report("Sensor unable to disable percent saturation output, became too unhealthy")
+            error.report(
+                "Sensor unable to disable percent saturation output, became too unhealthy"
+            )
             self.logger.error(error.latest())
             return error
 

@@ -17,10 +17,9 @@ class I2C(object):
         via an I2C mux. """
 
     # Initialize I2C communication options
-    I2C_SLAVE = 0x0703 # Use this slave address
+    I2C_SLAVE = 0x0703  # Use this slave address
     I2C_RDWR = 0x0707  # Combined R/W transfer (one STOP only)
     I2C_M_RD = 0x0001  # read data, from slave to master
-
 
     def __init__(self, name, bus, address, mux=None, channel=None, simulate=False):
         """ Initialize I2C device. """
@@ -38,20 +37,15 @@ class I2C(object):
 
         # Initialize logger instance
         logger_name = "I2C({})".format(self.name)
-        self.logger = Logger(
-            name = logger_name,
-            dunder_name = __name__,
-        )
+        self.logger = Logger(name=logger_name, dunder_name=__name__)
 
         # Initialize file managers
         if not self.simulate:
             self.device = io.open("/dev/i2c-" + str(bus), "r+b", buffering=0)
 
-
     def __del__(self):
         """Clean up any resources used by the I2c instance."""
         self.close()
-
 
     def __enter__(self):
         """Context manager enter function."""
@@ -60,12 +54,10 @@ class I2C(object):
         #     # do stuff!
         return self
 
-
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit function, ensures resources are cleaned up."""
         self.close()
         return False  # Don't suppress exceptions.
-
 
     def write(self, byte_list, disable_mux=False):
         """ Writes byte list to device. Converts byte list to byte array then 
@@ -91,7 +83,7 @@ class I2C(object):
 
         # Build byte array and string
         byte_array = bytearray(byte_list)
-        byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
+        byte_string = "".join("0x{:02X} ".format(b) for b in byte_array)
 
         # Check if i2c is simulated
         if self.simulate:
@@ -107,7 +99,6 @@ class I2C(object):
                 return Error(None)
         except IOError:
             return Error("I2C write failed due to IO error")
-
 
     def write_raw(self, bytes_, disable_mux=False):
         """ Writes raw bytes to device. """
@@ -135,7 +126,6 @@ class I2C(object):
         except IOError:
             return Error("I2C unable to write raw due to IO error")
 
-
     def read(self, num_bytes, disable_mux=False):
         """ Reads num bytes from device. Returns byte array. """
         self.logger.debug("Reading {} bytes".format(num_bytes))
@@ -151,7 +141,7 @@ class I2C(object):
         # Check if i2c is simulated
         if self.simulate:
             byte_array = bytearray(num_bytes)
-            byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
+            byte_string = "".join("0x{:02X} ".format(b) for b in byte_array)
             self.logger.debug("Simulated read: {}".format(byte_string))
             return byte_array, Error(None)
 
@@ -161,12 +151,11 @@ class I2C(object):
                 fcntl.ioctl(self.device, self.I2C_SLAVE, self.address)
                 raw_bytes = self.device.read(num_bytes)
                 byte_array = bytearray(raw_bytes)
-                byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
+                byte_string = "".join("0x{:02X} ".format(b) for b in byte_array)
                 self.logger.debug("Read: {}".format(byte_string))
                 return byte_array, Error(None)
         except IOError:
             return None, Error("I2C unable to read due to IO error")
-
 
     def read_raw(self, num_bytes, disable_mux=False):
         """ Reads num bytes from device. Returns raw bytes. """
@@ -197,10 +186,9 @@ class I2C(object):
         except IOError:
             return None, Error("I2C unable to read raw due to IO error")
 
-
     def read_register(self, register_address, disable_mux=False):
         """ Reads byte stored in register at address. """
-        
+
         # Handle mux interactions
         error = self.manage_mux(disable_mux=disable_mux)
 
@@ -220,17 +208,20 @@ class I2C(object):
             with threading.Lock():
                 reg = c_uint8(register_address)
                 result = c_uint8()
-                request = make_i2c_rdwr_data([
-                    (self.address, 0, 1, pointer(reg)), # write cmd register
-                    (self.address, self.I2C_M_RD, 1, pointer(result)) # read 1 byte as result
-                ])
+                request = make_i2c_rdwr_data(
+                    [
+                        (self.address, 0, 1, pointer(reg)),  # write cmd register
+                        (
+                            self.address, self.I2C_M_RD, 1, pointer(result)
+                        ),  # read 1 byte as result
+                    ]
+                )
                 fcntl.ioctl(self.device.fileno(), self.I2C_RDWR, request)
                 byte_ = result.value
                 self.logger.debug("Read register: {}".format(byte_))
                 return byte_, Error(None)
         except IOError:
             return None, Error("I2C unable to read register due to IO error")
-
 
     def manage_mux(self, disable_mux=False):
         """ Sets mux to channel if enabled. """
@@ -243,25 +234,30 @@ class I2C(object):
         channel_byte = 0x01 << self.channel
         byte_list = [channel_byte]
         byte_array = bytearray(byte_list)
-        byte_string = "".join('0x{:02X} '.format(b) for b in byte_array)
+        byte_string = "".join("0x{:02X} ".format(b) for b in byte_array)
 
         # Check if mux is simulated
         if self.simulate:
-            self.logger.debug("Simulating setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
-            self.mux, self.channel, channel_byte))
+            self.logger.debug(
+                "Simulating setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
+                    self.mux, self.channel, channel_byte
+                )
+            )
             return Error(None)
 
         # Mux is not simulated!
         try:
             with threading.Lock():
-                self.logger.debug("Setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
-                    self.mux, self.channel, channel_byte))
+                self.logger.debug(
+                    "Setting mux 0x{:02X} to channel {}, writing: 0x{:02X}".format(
+                        self.mux, self.channel, channel_byte
+                    )
+                )
                 fcntl.ioctl(self.device, self.I2C_SLAVE, self.mux)
                 self.device.write(byte_array)
                 return Error(None)
         except IOError:
             return Error("I2C unable to set mux due to IO error")
-
 
     def close(self):
         """ Closes device. """
