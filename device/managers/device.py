@@ -596,7 +596,6 @@ class DeviceManager:
 
         # Get peripheral setups
         peripheral_setups = []
-        # for filepath in glob.glob("device/peripherals/setups/*.json"):
         for filepath in glob.glob("device/peripherals/modules/*/setups/*.json"):
             self.logger.debug("Loading peripheral setup file: {}".format(filepath))
             peripheral_setups.append(json.load(open(filepath)))
@@ -752,19 +751,13 @@ class DeviceManager:
 
             # Create peripheral manager
             peripheral_name = peripheral_config_dict["name"]
+
             peripheral_manager = class_instance(
                 name=peripheral_name,
                 state=self.state,
                 config=peripheral_config_dict,
                 simulate=simulate,
                 mux_simulator=mux_simulator,
-            )
-            if os.environ.get("SIMULATE") == "true":
-                simulate = True
-            else:
-                simulate = False
-            peripheral_manager = class_instance(
-                peripheral_name, self.state, peripheral_config_dict, simulate
             )
             self.peripheral_managers[peripheral_name] = peripheral_manager
 

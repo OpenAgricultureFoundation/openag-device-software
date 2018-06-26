@@ -46,7 +46,7 @@ class SHT25Driver:
         address: int,
         mux: Optional[int] = None,
         channel: Optional[int] = None,
-        simulate: Optional[bool] = False,  # TODO: Remove this once no more legacy code
+        simulate: Optional[bool] = False,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
         """ Initializes sht25 driver. """

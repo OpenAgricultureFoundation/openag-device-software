@@ -53,6 +53,7 @@ class PeripheralSimulator:
         # Initialize parameters
         self.name = name
         self.bus = bus
+        self.device_address = device_address
         self.mux_address = mux_address
         self.mux_channel = mux_channel
         self.mux_simulator = mux_simulator
@@ -115,7 +116,7 @@ class PeripheralSimulator:
             self.mux_simulator.set(self.mux_address, bytes_[0])
 
         # Check if writing to device
-        elif address == self.address:
+        elif address == self.device_address:
 
             # Verify mux connection
             if self.mux_address != None:
@@ -136,7 +137,7 @@ class PeripheralSimulator:
         """Reads register byte."""
 
         # Check address matches
-        if address != self.address:
+        if address != self.device_address:
             message = "Address not found: 0x{:02X}".format(address)
             raise ReadError(message)
 
@@ -157,7 +158,7 @@ class PeripheralSimulator:
         """Writes byte to register."""
 
         # Check address matches
-        if address != self.address:
+        if address != self.device_address:
             message = "Address not found: 0x{:02X}".format(address)
             raise WriteError(message)
 

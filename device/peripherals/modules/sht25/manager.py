@@ -29,6 +29,10 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         ]
         self.humidity_name = self.parameters["variables"]["sensor"]["humidity_percent"]
 
+        self.logger.warning(
+            "~~~INIT SHT25 Manager~~~ mux_simulator={}".format(self.mux_simulator)
+        )
+
     @property
     def temperature(self) -> None:
         """ Gets temperature value. """
@@ -76,6 +80,10 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         self.health = 100.0
 
         # Initialize driver
+        self.logger.warning(
+            "~~~Initialize SHT25 Manager~~~ mux_simulator={}".format(self.mux_simulator)
+        )
+
         try:
             self.driver = SHT25Driver(
                 name=self.name,
