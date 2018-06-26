@@ -76,10 +76,6 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         self.health = 100.0
 
         # Initialize driver
-        self.logger.warning(
-            "~~~Initialize SHT25 Manager~~~ mux_simulator={}".format(self.mux_simulator)
-        )
-
         try:
             self.driver = SHT25Driver(
                 name=self.name,
