@@ -54,24 +54,23 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
+
     # Check for device config
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "SHT25-Top"
-        )
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize driver
     driver = SHT25Driver(
-        name="SHT25-Top",
-        bus=peripheral_config["parameters"]["communication"]["bus"],
-        address=int(peripheral_config["parameters"]["communication"]["address"], 16),
-        mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
-        channel=peripheral_config["parameters"]["communication"]["channel"],
+        name = "SHT25-Top", 
+        bus = peripheral_config["parameters"]["communication"]["bus"], 
+        address = int(peripheral_config["parameters"]["communication"]["address"], 16), 
+        mux = int(peripheral_config["parameters"]["communication"]["mux"], 16), 
+        channel = peripheral_config["parameters"]["communication"]["channel"],
     )
 
     # Check for loop

@@ -8,7 +8,7 @@ from device.comms.i2c import I2C
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.error import Error
-from device.utilities import math
+from device.utilities import maths
 
 # Import parent class
 from device.peripherals.classes.atlas_driver import AtlasDriver
@@ -22,23 +22,28 @@ class AtlasECDriver(AtlasDriver):
     _min_electrical_conductivity = 0.005
     _max_electrical_conductivity = 200
 
-
-    def __init__(self, name: str, bus: int, address: int, mux: Optional[int] = None, 
-                channel: Optional[int] = None, simulate: bool = False) -> None:
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: int,
+        mux: Optional[int] = None,
+        channel: Optional[int] = None,
+        simulate: bool = False,
+    ) -> None:
         """ Initializes driver. """
 
         super().__init__(
-            name = name, 
-            bus = bus, 
-            address = address, 
-            mux = mux,
-            channel = channel,
-            logger_name = "Driver({})".format(name),
-            i2c_name = name, 
-            dunder_name = __name__,
-            simulate = simulate,
+            name=name,
+            bus=bus,
+            address=address,
+            mux=mux,
+            channel=channel,
+            logger_name="Driver({})".format(name),
+            i2c_name=name,
+            dunder_name=__name__,
+            simulate=simulate,
         )
-
 
     def read_electrical_conductivity(self) -> Tuple[float, Error]:
         """ Reads electrical conductivity from sensor, sets significant 
@@ -62,19 +67,21 @@ class AtlasECDriver(AtlasDriver):
 
         # Set significant figures based off error magnitude
         error_value = electrical_conductivity * self._electrical_conductivity_accuracy_percent / 100
-        error_magnitude = math.magnitude(error_value)
+        error_magnitude = maths.magnitude(error_value)
         significant_figures = error_magnitude * -1
         electrical_conductivity = round(electrical_conductivity, significant_figures)
 
         # Verify electrical conductivity value within valid range
-        if electrical_conductivity > self._min_electrical_conductivity and electrical_conductivity < self._min_electrical_conductivity:
+        if (
+            electrical_conductivity > self._min_electrical_conductivity
+            and electrical_conductivity < self._min_electrical_conductivity
+        ):
             self.logger.warning("Electrical conductivity outside of valid range")
             electrical_conductivity = None
 
         # Successfully read electical conductivity!
         self.logger.info("EC: {} mS/cm".format(electrical_conductivity))
         return electrical_conductivity, Error(None)
-
 
     def set_compensation_temperature(self, temperature: float) -> Error:
         """ Commands sensor to set compensation temperature. """
@@ -92,7 +99,6 @@ class AtlasECDriver(AtlasDriver):
         # Successfully set compensation temperature!
         return Error(None)
 
-
     def enable_electrical_conductivity_output(self) -> Error:
         """ Commands sensor to enable electrical conductivity output when 
             reporting readings. """
@@ -108,7 +114,6 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully enabled electrical conductivity output!
         return Error(None)
-
 
     def disable_electrical_conductivity_output(self) -> Error:
         """ Commands sensor to disable electrical conductivity output when 
@@ -126,7 +131,6 @@ class AtlasECDriver(AtlasDriver):
         # Successfully disabled electrical conductivity output!
         return Error(None)
 
-
     def enable_total_dissolved_solids_output(self) -> Error:
         """ Commands sensor to enable total dissolved solids output when 
             reporting readings. """
@@ -142,7 +146,6 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully enabled total dissolved solids output!
         return Error(None)
-
 
     def disable_total_dissolved_solids_output(self) -> Error:
         """ Commands sensor to disable total dissolved solids output when 
@@ -160,7 +163,6 @@ class AtlasECDriver(AtlasDriver):
         # Successfully disabled total dissolved solids output!
         return Error(None)
 
-
     def enable_salinity_output(self) -> Error:
         """ Commands sensor to enable salinity output when reporting 
             readings. """
@@ -176,7 +178,6 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully enabled salinity output!
         return Error(None)
-
 
     def disable_salinity_output(self) -> Error:
         """ Commands sensor to disable salinity output when reporting 
@@ -194,7 +195,6 @@ class AtlasECDriver(AtlasDriver):
         # Successfully disabled salinity output!
         return Error(None)
 
-
     def enable_specific_gravity_output(self) -> Error:
         """ Commands sensor to enable specific gravity output when reporting
             readings. """
@@ -210,7 +210,6 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully enabled specific gravity output!
         return Error(None)
-
 
     def disable_specific_gravity_output(self) -> Error:
         """ Commands sensor to disable specific gravity output when reporting
@@ -228,7 +227,6 @@ class AtlasECDriver(AtlasDriver):
         # Successfully disable specific gravity output!
         return Error(None)
 
-
     def set_probe_type(self, value: str) -> Error:
         """ Commands sensor to set probe type to value. """
         self.logger.info("Setting probe type in hardware")
@@ -243,7 +241,6 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully set probe type!
         return Error(None)
-
 
     def take_dry_calibration_reading(self) -> Error:
         """ Commands sensor to take a dry calibration reading. """
@@ -260,8 +257,9 @@ class AtlasECDriver(AtlasDriver):
         # Successfully took dry calibration reading!
         return Error(None)
 
-
-    def take_single_point_calibration_reading(self, electrical_conductivity: float) -> Error:
+    def take_single_point_calibration_reading(
+        self, electrical_conductivity: float
+    ) -> Error:
         """ Commands sensor to take a single point calibration reading. """
         self.logger.info("Taking single point calibration reading in hardware.")
 
@@ -280,8 +278,9 @@ class AtlasECDriver(AtlasDriver):
         # Successfully took single point calibration reading!
         return Error(None)
 
-
-    def take_low_point_calibration_reading(self, electrical_conductivity: float) -> Error:
+    def take_low_point_calibration_reading(
+        self, electrical_conductivity: float
+    ) -> Error:
         """ Commands sensor to take a low point calibration reading. """
         self.logger.info("Taking low point calibration reading in hardware.")
 
@@ -300,8 +299,9 @@ class AtlasECDriver(AtlasDriver):
         # Successfully took low point calibration reading!
         return Error(None)
 
-
-    def take_high_point_calibration_reading(self, electrical_conductivity: float) -> Error:
+    def take_high_point_calibration_reading(
+        self, electrical_conductivity: float
+    ) -> Error:
         """ Commands sensor to take a high point calibration reading. """
         self.logger.info("Taking high point calibration reading in hardware.")
 
@@ -319,7 +319,6 @@ class AtlasECDriver(AtlasDriver):
 
         # Successfully took high point calibration reading!
         return Error(None)
-
 
     def clear_calibration_readings(self) -> Error:
         """ Commands sensor to clear calibration readings. """

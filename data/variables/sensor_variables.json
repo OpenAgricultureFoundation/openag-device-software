@@ -42,6 +42,20 @@
 		}
 	},
 	{
+		"key": "air_total_volatile_organic_compounds_ppb",
+		"info": {
+			"name": {
+				"brief": "TVOC",
+				"verbose": "Total Volatile Organic Compounds"
+			},
+			"unit": {
+				"brief": "ppb",
+				"verbose": "Parts Per Billion",
+				"type": "number"
+			}
+		}
+	},
+	{
 		"key": "water_potential_hydrogen",
 		"info": {
 			"name": {

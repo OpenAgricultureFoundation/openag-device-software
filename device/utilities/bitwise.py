@@ -1,6 +1,5 @@
 """ Bitwise utility functions. """
 
-
 def get_bit_from_byte(bit, byte):
     """ Gets a bit from a byte. """
     
@@ -11,3 +10,20 @@ def get_bit_from_byte(bit, byte):
     # Get bit value
     mask = 0x1 << bit
     return (byte & mask) >> bit
+
+
+def get_byte_from_bits(bits) -> int:
+	""" Gets a byte from an ordered dict of bits. """
+
+	# Verify bits structure
+	for position in range(8):
+		if position not in bits:
+			raise ValueError("Invalid bits, must contain entry for bit at position {}".format(position))
+
+	# Get byte value
+	byte = bits[0]
+	for i in range(1, 8):
+		byte += bits[i] << i
+
+	# Return byte value
+	return byte

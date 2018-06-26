@@ -7,15 +7,10 @@ class Logger:
 
     def __init__(self, name: str, dunder_name: str) -> None:
         """ Initializes logger. """
-
-        # Initialize parameters
         self.name = name
-
-        # Initialize logger
-        extra = {'console_name':name, 'file_name': name}
+        extra = {"console_name": name, "file_name": name}
         logger = logging.getLogger(dunder_name)
         self.logger = logging.LoggerAdapter(logger, extra)
-
 
     def debug(self, message: str) -> None:
         """ Reports standard logging debug message if in normal runtime
@@ -26,7 +21,6 @@ class Logger:
         else:
             self.logger.debug(message)
 
-
     def info(self, message: str) -> None:
         """ Reports standard info debug message if in normal runtime
             environment. If in test environment, prepends message with 
@@ -35,7 +29,6 @@ class Logger:
             self.logger.info(self.name + ": " + str(message))
         else:
             self.logger.info(message)
-
 
     def warning(self, message: str) -> None:
         """ Reports standard logging warning message if in normal runtime
@@ -46,7 +39,6 @@ class Logger:
         else:
             self.logger.warning(message)
 
-
     def error(self, message: str) -> None:
         """ Reports standard logging error message if in normal runtime
             environment. If in test environment, prepends message with 
@@ -55,7 +47,6 @@ class Logger:
             self.logger.error(self.name + ": " + str(message))
         else:
             self.logger.error(message)
-
 
     def critical(self, message: str) -> None:
         """ Reports standard logging critical message if in normal runtime
@@ -66,7 +57,6 @@ class Logger:
         else:
             self.logger.critical(message)
 
-
     def exception(self, message: str) -> None:
         """ Reports standard logging exception message if in normal runtime
             environment. If in test environment, prepends message with 
@@ -75,7 +65,6 @@ class Logger:
             self.logger.exception(self.name + ": " + str(message))
         else:
             self.logger.exception(message)
-
 
 
 class PeripheralFileHandler(logging.Handler):
@@ -108,15 +97,14 @@ class PeripheralFileHandler(logging.Handler):
             name = peripheral_config["name"]
             filename = "logs/peripherals/" + name + ".log"
             self.file_handlers[name] = logging.handlers.RotatingFileHandler(
-                filename = filename, 
-                mode='a', 
-                maxBytes=5*1024*1024, 
-                backupCount=1, 
-                encoding=None, 
+                filename=filename,
+                mode="a",
+                maxBytes=5 * 1024 * 1024,
+                backupCount=1,
+                encoding=None,
                 delay=0,
             )
             self.file_handlers[name].format = self.format
-
 
     def emit(self, record):
         """ Emits a log record. """

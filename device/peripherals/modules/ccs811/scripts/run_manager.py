@@ -15,18 +15,25 @@ else:
     print("Running from invalid location")
     sys.exit(0)
 
-# Import driver
-from device.peripherals.modules.sht25.driver import SHT25Driver
+# Import manager
+from device.peripherals.modules.sht25.manager import SHT25Manager
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
+# Import device state
+from device.state import State
+
 # Set directory for loading files
-os.chdir("../../../../")
+if cwd.endswith("sht25"):
+    os.chdir("../../../../")
+
+# Initialize state
+state = State()
 
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
+parser = argparse.ArgumentParser(description="Test and debug manager")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
@@ -35,9 +42,9 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
-parser.add_argument("--temperature", action="store_true", help="read temperature")
-parser.add_argument("--humidity", action="store_true", help="read humidity")
-parser.add_argument("--user-register", action="store_true", help="read user register")
+parser.add_argument("--update", action="store_true", help="updates sensor")
+parser.add_argument("--reset", action="store_true", help="resets sensor")
+parser.add_argument("--shutdown", action="store_true", help="shuts down sensor")
 
 
 # Run main
@@ -58,21 +65,23 @@ if __name__ == "__main__":
     if args.device != None:
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "SHT25-Top"
-        )
+        peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
-    # Initialize driver
-    driver = SHT25Driver(
-        name="SHT25-Top",
-        bus=peripheral_config["parameters"]["communication"]["bus"],
-        address=int(peripheral_config["parameters"]["communication"]["address"], 16),
-        mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
-        channel=peripheral_config["parameters"]["communication"]["channel"],
+    # Instantiate manager
+    manager = SHT25Manager(
+        name = "SHT25-Top", 
+        state = state, 
+        config = peripheral_config,
     )
+
+    # Initialize and setup manager
+    print("Initializing...")
+    manager.initialize()
+    print("Setting up...")
+    manager.setup()
 
     # Check for loop
     if args.loop:
@@ -83,32 +92,20 @@ if __name__ == "__main__":
     # Loop forever
     while True:
 
-        # Check if reading temperature
-        if args.temperature:
-            print("Reading temperature")
-            temperature, error = driver.read_temperature()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Temperature: {} C".format(temperature))
+        # Check if updating
+        if args.update:
+            print("Updating...")
+            manager.update()
 
-        # Check if reading humidity
-        elif args.humidity:
-            print("Reading humidity")
-            humidity, error = driver.read_humidity()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Humidity: {} %".format(humidity))
+        # Check if resetting
+        if args.reset:
+            print("Resetting...")
+            manager.reset()
 
-        # Check if reading user register
-        elif args.user_register:
-            print("Reading user register")
-            user_register, error = driver.read_user_register()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("User Register: {}".format(user_register))
+        # Check if updating
+        if args.shutdown:
+            print("Shutting down...")
+            manager.shutdown()
 
         # Check for new command if loop enabled
         if loop:
