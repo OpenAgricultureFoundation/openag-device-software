@@ -134,19 +134,25 @@ class SMBus(object):
 
     def read_byte(self, addr):
         """Read a single byte from the specified device."""
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         self._select_device(addr)
         return ord(self._device.read(1))
 
     def read_bytes(self, addr, length):
         """Read a single byte from the specified device."""
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         self._select_device(addr)
         return self._device.read(length)
 
     def read_byte_data(self, addr, cmd):
         """Read a single byte from the specified cmd register of the device."""
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Build ctypes values to marshall between ioctl and Python.
         reg = c_uint8(cmd)
         result = c_uint8()
@@ -166,7 +172,9 @@ class SMBus(object):
         Note that this will interpret data using the endianness of the processor
         running Python (typically little endian)!
         """
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Build ctypes values to marshall between ioctl and Python.
         reg = c_uint8(cmd)
         result = c_uint16()
@@ -175,7 +183,10 @@ class SMBus(object):
             [
                 (addr, 0, 1, pointer(reg)),  # Write cmd register.
                 (
-                    addr, I2C_M_RD, 2, cast(pointer(result), POINTER(c_uint8))
+                    addr,
+                    I2C_M_RD,
+                    2,
+                    cast(pointer(result), POINTER(c_uint8)),
                 ),  # Read word (2 bytes).
             ]
         )
@@ -198,7 +209,9 @@ class SMBus(object):
         """Perform a read from the specified cmd register of device.  Length number
         of bytes (default of 32) will be read and returned as a bytearray.
         """
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Build ctypes values to marshall between ioctl and Python.
         reg = c_uint8(cmd)
         result = create_string_buffer(length)
@@ -221,7 +234,9 @@ class SMBus(object):
         # just write a single byte that initiates a write to the specified device
         # address (but writes no data!).  The functionality is duplicated below
         # but the actual use case for this is unknown.
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Build ioctl request.
         request = make_i2c_rdwr_data([(addr, 0, 0, None)])  # Write with no data.
         # Make ioctl call and return result data.
@@ -229,7 +244,9 @@ class SMBus(object):
 
     def write_byte(self, addr, val):
         """Write a single byte to the specified device."""
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         self._select_device(addr)
         data = bytearray(1)
         data[0] = val & 0xFF
@@ -238,7 +255,9 @@ class SMBus(object):
     def write_byte_data(self, addr, cmd, val):
         """Write a byte of data to the specified cmd register of the device.
         """
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Construct a string of data to send with the command register and byte value.
         data = bytearray(2)
         data[0] = cmd & 0xFF
@@ -252,7 +271,9 @@ class SMBus(object):
         device.  Note that this will write the data in the endianness of the
         processor running Python (typically little endian)!
         """
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Construct a string of data to send with the command register and word value.
         data = struct.pack("=BH", cmd & 0xFF, val & 0xFFFF)
         # Send the data to the device.
@@ -275,7 +296,9 @@ class SMBus(object):
     def write_i2c_block_data(self, addr, cmd, vals):
         """Write a buffer of data to the specified cmd register of the device.
         """
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Construct a string of data to send, including room for the command register.
         data = bytearray(len(vals) + 1)
         data[0] = cmd & 0xFF  # Command register at the start.
@@ -290,7 +313,9 @@ class SMBus(object):
         the specified register of the device, and then reading a word of response
         data (which is returned).
         """
-        assert self._device is not None, "Bus must be opened before operations are made against it!"
+        assert (
+            self._device is not None
+        ), "Bus must be opened before operations are made against it!"
         # Build ctypes values to marshall between ioctl and Python.
         data = create_string_buffer(struct.pack("=BH", cmd, val))
         result = c_uint16()
@@ -299,7 +324,10 @@ class SMBus(object):
             [
                 (addr, 0, 3, cast(pointer(data), POINTER(c_uint8))),  # Write data.
                 (
-                    addr, I2C_M_RD, 2, cast(pointer(result), POINTER(c_uint8))
+                    addr,
+                    I2C_M_RD,
+                    2,
+                    cast(pointer(result), POINTER(c_uint8)),
                 ),  # Read word (2 bytes).
             ]
         )

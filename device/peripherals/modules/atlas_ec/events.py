@@ -59,7 +59,8 @@ class AtlasECEvents(PeripheralEvents):
 
         # Successfully took dry calibration reading!
         response = {
-            "status": 200, "message": "Successfully took dry calibration reading!"
+            "status": 200,
+            "message": "Successfully took dry calibration reading!",
         }
         return response
 
@@ -74,7 +75,8 @@ class AtlasECEvents(PeripheralEvents):
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
+                "status": 400,
+                "message": "Invalid request parameters: {}".format(e),
             }
             return response
         except ValueError as e:
@@ -120,7 +122,8 @@ class AtlasECEvents(PeripheralEvents):
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
+                "status": 400,
+                "message": "Invalid request parameters: {}".format(e),
             }
             return response
         except ValueError as e:
@@ -150,7 +153,8 @@ class AtlasECEvents(PeripheralEvents):
 
         # Successfully took low point calibration reading!
         response = {
-            "status": 200, "message": "Successfully took low point calibration reading!"
+            "status": 200,
+            "message": "Successfully took low point calibration reading!",
         }
         return response
 
@@ -165,7 +169,8 @@ class AtlasECEvents(PeripheralEvents):
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
+                "status": 400,
+                "message": "Invalid request parameters: {}".format(e),
             }
             return response
         except ValueError as e:
@@ -225,6 +230,7 @@ class AtlasECEvents(PeripheralEvents):
 
         # Successfully took high point calibration reading!
         response = {
-            "status": 200, "message": "Successfully cleared calibration readings!"
+            "status": 200,
+            "message": "Successfully cleared calibration readings!",
         }
         return response

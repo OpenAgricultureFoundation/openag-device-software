@@ -113,12 +113,12 @@ def nnls(A, b, tol=1e-8):
         else:
             currP = currPs[0]
             s[currP] = A_dot_b[currP] / A_dot_A[currP, currP]
-        s_P_l_0 = (s[currPs] < 0)
+        s_P_l_0 = s[currPs] < 0
         while s_P_l_0.any():
             currPs_s_P_l_0 = currPs[s_P_l_0]
             alpha = (x[currPs_s_P_l_0] / (x[currPs_s_P_l_0] - s[currPs_s_P_l_0])).min()
             x += alpha * (s - x)
-            P_bool[currPs] = (x[currPs] > tol)
+            P_bool[currPs] = x[currPs] > tol
             s[:] = 0
             currPs = numpy.flatnonzero(P_bool)
             if len(currPs) > 1:
@@ -128,7 +128,7 @@ def nnls(A, b, tol=1e-8):
             else:
                 currP = currPs[0]
                 s[currP] = A_dot_b[currP] / A_dot_A[currP, currP]
-            s_P_l_0 = (s[currPs] < 0)
+            s_P_l_0 = s[currPs] < 0
         x[:] = s[:]
         if x[newly_allowed] == 0:
             break  # avoid infinite loop

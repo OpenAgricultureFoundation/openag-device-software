@@ -106,9 +106,9 @@ class ResourceManager:
                     with subprocess.Popen(
                         cmd3, stdin=proc2.stdout, stdout=subprocess.PIPE
                     ) as proc3:
-                        available_disk_space = proc3.stdout.read().decode(
-                            "utf-8"
-                        ).rstrip()
+                        available_disk_space = (
+                            proc3.stdout.read().decode("utf-8").rstrip()
+                        )
 
             if sys.platform == "darwin":
                 available_disk_space += "G"  # for OSX, add on 'G' like Linux

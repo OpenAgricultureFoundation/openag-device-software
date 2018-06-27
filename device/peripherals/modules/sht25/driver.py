@@ -25,6 +25,7 @@ from device.peripherals.modules.sht25.exceptions import (
 
 class UserRegister(NamedTuple):
     """ Dataclass for parsed user register byte. """
+
     resolution: int
     end_of_battery: bool
     heater_enabled: bool
@@ -88,7 +89,9 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xF3]), retry=retry)
         except I2CError as e:
-            message = "Driver unable to read temperature"  # TODO: Make better error messages
+            message = (
+                "Driver unable to read temperature"
+            )  # TODO: Make better error messages
             raise ReadTemperatureError(message, logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
@@ -99,7 +102,9 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
-            message = "Driver unable to read temperature"  # TODO: Make better error messages
+            message = (
+                "Driver unable to read temperature"
+            )  # TODO: Make better error messages
             raise ReadTemperatureError(message, logger=self.logger) from e
 
         # Convert temperature data and set significant figures

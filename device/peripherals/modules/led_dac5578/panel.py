@@ -236,8 +236,11 @@ class LEDDAC5578Panel:
                 channel_outputs, output_spectrum_nm_percent, output_intensity_watts
             )
         )
-        return channel_outputs, output_spectrum_nm_percent, output_intensity_watts, Error(
-            None
+        return (
+            channel_outputs,
+            output_spectrum_nm_percent,
+            output_intensity_watts,
+            Error(None),
         )
 
     def turn_on(self, channel_name: Optional[str] = None) -> Error:

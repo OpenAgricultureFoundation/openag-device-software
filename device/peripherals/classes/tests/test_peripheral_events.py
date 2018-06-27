@@ -55,7 +55,6 @@ class PeripheralManagerExample(PeripheralManager, PeripheralEventMixin):
 
 
 class PeripheralManagerExample(PeripheralManager):
-
     def process_event(self, request):
         pass
 

@@ -117,10 +117,16 @@ def test_read_power_register():
     dac5578 = DAC5578("Test", 2, 0x77, simulate=True)
     powered, error = dac5578.read_power_register()
     print(powered, error)
-    assert (
-        powered
-        == {0: True, 1: True, 2: True, 3: True, 4: True, 5: True, 6: True, 7: True}
-    )
+    assert powered == {
+        0: True,
+        1: True,
+        2: True,
+        3: True,
+        4: True,
+        5: True,
+        6: True,
+        7: True,
+    }
     assert error.exists() == False
 
 

@@ -211,7 +211,10 @@ class I2C(object):
                     [
                         (self.address, 0, 1, pointer(reg)),  # write cmd register
                         (
-                            self.address, self.I2C_M_RD, 1, pointer(result)
+                            self.address,
+                            self.I2C_M_RD,
+                            1,
+                            pointer(result),
                         ),  # read 1 byte as result
                     ]
                 )

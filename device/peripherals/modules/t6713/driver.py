@@ -13,6 +13,7 @@ from device.utilities import bitwise
 
 class Status(NamedTuple):
     """ Data class for parsed status. """
+
     error_condition: bool
     flash_error: bool
     calibration_error: bool

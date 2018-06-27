@@ -65,6 +65,7 @@ from app.viewers import ResourceViewer
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows state to be viewed. """
+
     serializer_class = StateSerializer
 
     def get_queryset(self):
@@ -74,6 +75,7 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
 
 class EventViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows events to be viewed and created. """
+
     serializer_class = EventSerializer
 
     def get_queryset(self):
@@ -99,6 +101,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
 class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows events to be viewed. """
+
     serializer_class = EnvironmentSerializer
 
     def get_queryset(self):
@@ -108,6 +111,7 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """ API endpoint that allows recipes to be viewed. """
+
     serializer_class = RecipeSerializer
 
     def get_queryset(self):
@@ -140,6 +144,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows recipe transitions to be viewed. """
+
     serializer_class = RecipeTransitionSerializer
 
     def get_queryset(self):
@@ -149,6 +154,7 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivars to be viewed. """
+
     serializer_class = CultivarSerializer
 
     def get_queryset(self):
@@ -158,6 +164,7 @@ class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivation methods to be viewed. """
+
     serializer_class = CultivationMethodSerializer
 
     def get_queryset(self):
@@ -167,6 +174,7 @@ class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows sensor variables to be viewed. """
+
     serializer_class = SensorVariableSerializer
 
     def get_queryset(self):
@@ -176,6 +184,7 @@ class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows actuator variables to be viewed. """
+
     serializer_class = ActuatorVariableSerializer
 
     def get_queryset(self):
@@ -185,6 +194,7 @@ class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
 
 class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows peripheral setups to be viewed. """
+
     serializer_class = PeripheralSetupSerializer
 
     def get_queryset(self):
@@ -194,6 +204,7 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
 
 class Dashboard(APIView):
     """ UI page for dashboard. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "dashboard.html"
 
@@ -226,6 +237,7 @@ class Dashboard(APIView):
 
 class RecipeBuilder(APIView):
     """ UI page for building recipes. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "recipe_builder.html"
 
@@ -255,6 +267,7 @@ class RecipeBuilder(APIView):
 
 class Events(APIView):
     """ UI page for events. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "events.html"
 
@@ -265,6 +278,7 @@ class Events(APIView):
 
 class Logs(APIView):
     """ UI page for logs. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "logs.html"
 
@@ -286,7 +300,9 @@ class Logs(APIView):
 
             # Load in peripheral log file
             log_file = open("logs/peripherals/{}.log".format(name))
-            lines = log_file.readlines()  # As long as file doesn't get too big, readlines is OK
+            lines = (
+                log_file.readlines()
+            )  # As long as file doesn't get too big, readlines is OK
 
             # Return up to 500 lines
             if len(lines) < 500:
@@ -303,6 +319,7 @@ class Logs(APIView):
 
 class Peripherals(APIView):
     """ UI page for peripherals. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "peripherals.html"
 
@@ -342,6 +359,7 @@ class Peripherals(APIView):
 
 class DeviceConfigList(APIView):
     """ UI page for device configurations. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "device_config_list.html"
 
@@ -356,6 +374,7 @@ class DeviceConfigList(APIView):
 
 class Recipes(APIView):
     """ UI page for recipes. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "recipes.html"
 
@@ -370,6 +389,7 @@ class Recipes(APIView):
 
 class Environments(APIView):
     """ UI page for environments. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "environments.html"
 
@@ -380,6 +400,7 @@ class Environments(APIView):
 
 class IoT(APIView):
     """ UI page for IoT. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "iot.html"
 
@@ -399,6 +420,7 @@ class IoT(APIView):
 
 class Resource(APIView):
     """ UI page for ResourceManager. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "resource.html"
 
@@ -420,6 +442,7 @@ class Resource(APIView):
 
 class Manual(APIView):
     """ UI page for manual controls. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "manual.html"
 
@@ -429,6 +452,7 @@ class Manual(APIView):
 
 class Entry(APIView):
     """ UI page for data entry. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "entry.html"
 
@@ -438,6 +462,7 @@ class Entry(APIView):
 
 class Scratchpad(APIView):
     """ UI page for scratchpad. """
+
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "scratchpad.html"
 

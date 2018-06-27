@@ -66,7 +66,11 @@ class AtlasECDriver(AtlasDriver):
         electrical_conductivity = electrical_conductivity_us_cm / 1000
 
         # Set significant figures based off error magnitude
-        error_value = electrical_conductivity * self._electrical_conductivity_accuracy_percent / 100
+        error_value = (
+            electrical_conductivity
+            * self._electrical_conductivity_accuracy_percent
+            / 100
+        )
         error_magnitude = maths.magnitude(error_value)
         significant_figures = error_magnitude * -1
         electrical_conductivity = round(electrical_conductivity, significant_figures)

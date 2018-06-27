@@ -135,17 +135,20 @@ class IoTPubSub:
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
                         valuesJson += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                     elif isinstance(val, int):
                         valuesJson += "{'name':'%s', 'type':'int', 'value':%s}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                     else:  # assume str
                         valuesJson += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                 valuesJson += "]}"
@@ -370,6 +373,7 @@ class IoTPubSub:
     # private
     class IoTArgs:
         """ Class arguments with defaults. """
+
         project_id = None
         registry_id = None
         device_id = None
@@ -673,10 +677,8 @@ def getMQTTclient(
     """
 
     # projects/openag-v1/locations/us-central1/registries/device-registry/devices/my-python-device
-    client_id = (
-        "projects/{}/locations/{}/registries/{}/devices/{}".format(
-            project_id, cloud_region, registry_id, device_id
-        )
+    client_id = "projects/{}/locations/{}/registries/{}/devices/{}".format(
+        project_id, cloud_region, registry_id, device_id
     )
     ref_self.logger.debug("client_id={}".format(client_id))
 

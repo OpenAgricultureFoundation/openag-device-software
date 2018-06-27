@@ -72,7 +72,9 @@ class DeviceManager:
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
+        "recipe_uuid": None,
+        "start_timestamp_minutes": None,
+        "last_update_minute": None,
     }
 
     # Initialize recipe object
@@ -682,11 +684,7 @@ class DeviceManager:
             if "stored" in stored_peripherals_state[peripheral_name]:
                 self.state.peripherals[peripheral_name][
                     "stored"
-                ] = stored_peripherals_state[
-                    peripheral_name
-                ][
-                    "stored"
-                ]
+                ] = stored_peripherals_state[peripheral_name]["stored"]
 
         # Load controllers state
         stored_controllers_state = json.loads(stored_state.controllers)
@@ -695,11 +693,7 @@ class DeviceManager:
             if "stored" in stored_controllers_state[controller_name]:
                 self.state.controllers[controller_name][
                     "stored"
-                ] = stored_controllers_state[
-                    controller_name
-                ][
-                    "stored"
-                ]
+                ] = stored_controllers_state[controller_name]["stored"]
 
     def store_environment(self):
         """ Stores current environment state in environment table. """
@@ -740,9 +734,9 @@ class DeviceManager:
                 continue
 
             # Get peripheral module and class name
-            module_name = "device.peripherals.modules." + peripheral_setup_dict[
-                "module_name"
-            ]
+            module_name = (
+                "device.peripherals.modules." + peripheral_setup_dict["module_name"]
+            )
             class_name = peripheral_setup_dict["class_name"]
 
             # Import peripheral library
@@ -803,9 +797,9 @@ class DeviceManager:
                 continue
 
             # Get controller module and class name
-            module_name = "device.controllers.drivers." + controller_setup_dict[
-                "module_name"
-            ]
+            module_name = (
+                "device.controllers.drivers." + controller_setup_dict["module_name"]
+            )
             class_name = controller_setup_dict["class_name"]
 
             # Import controller library
@@ -906,7 +900,8 @@ class DeviceManager:
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
+                "status": 400,
+                "message": "Invalid request parameters: {}".format(e),
             }
             return
 
@@ -951,7 +946,8 @@ class DeviceManager:
             # Exit when recipe thread picks up new recipe
             if self.recipe.commanded_mode == None:
                 self.response = {
-                    "status": 200, "message": "Started recipe: {}".format(request_value)
+                    "status": 200,
+                    "message": "Started recipe: {}".format(request_value),
                 }
                 break
 

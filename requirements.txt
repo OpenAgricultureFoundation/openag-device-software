@@ -1,4 +1,5 @@
 Django==1.11.4
+black==18.6b4
 psycopg2-binary==2.7.4
 djangorestframework==3.7.3
 jsonschema==2.6.0

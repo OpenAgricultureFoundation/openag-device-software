@@ -180,7 +180,8 @@ LOGGING = {
         },
         "iot": {"handlers": ["iot_console", "iot_file"], "level": "DEBUG"},
         "resource": {
-            "handlers": ["resource_console", "resource_file"], "level": "DEBUG"
+            "handlers": ["resource_console", "resource_file"],
+            "level": "DEBUG",
         },
     },
 }

@@ -11,6 +11,7 @@ from app.models import EventModel
 
 class EventManager:
     """ Manages events. """
+
     _timeout = 10  # seconds
 
     # Initialize logger

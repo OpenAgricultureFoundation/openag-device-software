@@ -68,34 +68,28 @@ def test_individual():
         intensity_watts=desired_intensity_watts,
         spectrum_nm_percent=desired_spectrum_nm_percent,
     )
-    assert (
-        desired_spd
-        == {
-            "400-449": 10,
-            "449-499": 10,
-            "500-549": 30,
-            "550-559": 30,
-            "600-649": 10,
-            "650-699": 10,
-        }
-    )
+    assert desired_spd == {
+        "400-449": 10,
+        "449-499": 10,
+        "500-549": 30,
+        "550-559": 30,
+        "600-649": 10,
+        "650-699": 10,
+    }
 
     channel_spd_matrix = light.build_channel_spd_matrix(
         channel_configs=channel_configs,
         distance=desired_distance_cm,
         reference_spd=desired_spd,
     )
-    assert (
-        channel_spd_matrix.tolist()
-        == [
-            [10.0, 10.0],
-            [10.0, 10.0],
-            [40.0, 30.0],
-            [8.0, 6.0],
-            [10.0, 10.0],
-            [10.0, 10.0],
-        ]
-    )
+    assert channel_spd_matrix.tolist() == [
+        [10.0, 10.0],
+        [10.0, 10.0],
+        [40.0, 30.0],
+        [8.0, 6.0],
+        [10.0, 10.0],
+        [10.0, 10.0],
+    ]
 
     desired_spd_vector = light.build_desired_spd_vector(
         desired_spectrum_nm_percent=desired_spectrum_nm_percent,
@@ -129,17 +123,14 @@ def test_individual():
     output_spd_dict = light.dictify_vector(
         vector=output_spd_vector, reference_dict=desired_spd
     )
-    assert (
-        output_spd_dict
-        == {
-            "400-449": 10.0,
-            "449-499": 10.0,
-            "500-549": 34.6,
-            "550-559": 6.92,
-            "600-649": 10.0,
-            "650-699": 10.0,
-        }
-    )
+    assert output_spd_dict == {
+        "400-449": 10.0,
+        "449-499": 10.0,
+        "500-549": 34.6,
+        "550-559": 6.92,
+        "600-649": 10.0,
+        "650-699": 10.0,
+    }
 
     output_spectrum_vector, output_intensity_watts = light.deconstruct_spd_vector(
         spd_vector=output_spd_vector
@@ -150,17 +141,14 @@ def test_individual():
     output_spectrum_dict = light.dictify_vector(
         vector=output_spectrum_vector, reference_dict=desired_spd
     )
-    assert (
-        output_spectrum_dict
-        == {
-            "400-449": 12.27,
-            "449-499": 12.27,
-            "500-549": 42.44,
-            "550-559": 8.49,
-            "600-649": 12.27,
-            "650-699": 12.27,
-        }
-    )
+    assert output_spectrum_dict == {
+        "400-449": 12.27,
+        "449-499": 12.27,
+        "500-549": 42.44,
+        "550-559": 8.49,
+        "600-649": 12.27,
+        "650-699": 12.27,
+    }
 
 
 def test_approximate_spd():
@@ -171,17 +159,14 @@ def test_approximate_spd():
         desired_spectrum_nm_percent=desired_spectrum_nm_percent,
     )
     assert channel_output_setpoints == {"FR": 34.85, "WW": 40.91}
-    assert (
-        output_spectrum_nm_percent
-        == {
-            "400-449": 12.27,
-            "449-499": 12.27,
-            "500-549": 42.44,
-            "550-559": 8.49,
-            "600-649": 12.27,
-            "650-699": 12.27,
-        }
-    )
+    assert output_spectrum_nm_percent == {
+        "400-449": 12.27,
+        "449-499": 12.27,
+        "500-549": 42.44,
+        "550-559": 8.49,
+        "600-649": 12.27,
+        "650-699": 12.27,
+    }
     assert output_intensity_watts == 81.52
 
 
@@ -198,15 +183,12 @@ def tests_calculate_resultant_spd():
         channel_output_setpoints={"FR": 34.85, "WW": 40.91},
         distance=desired_distance_cm,
     )
-    assert (
-        output_spectrum_nm_percent
-        == {
-            "400-449": 12.27,
-            "449-499": 12.27,
-            "500-549": 42.44,
-            "550-559": 8.49,
-            "600-649": 12.27,
-            "650-699": 12.27,
-        }
-    )
+    assert output_spectrum_nm_percent == {
+        "400-449": 12.27,
+        "449-499": 12.27,
+        "500-549": 42.44,
+        "550-559": 8.49,
+        "600-649": 12.27,
+        "650-699": 12.27,
+    }
     assert output_intensity_watts == 81.52

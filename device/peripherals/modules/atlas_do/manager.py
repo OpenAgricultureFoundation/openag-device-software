@@ -44,9 +44,7 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
         ]
         self.electrical_conductivity_name = self.parameters["variables"][
             "compensation"
-        ][
-            "electrical_conductivity_ms_cm"
-        ]
+        ]["electrical_conductivity_ms_cm"]
 
         # Initialize sensor
         self.sensor = AtlasDOSensor(

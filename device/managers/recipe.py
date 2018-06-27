@@ -150,9 +150,12 @@ class RecipeManager:
 
         # Generate start datestring
         if value != None:
-            start_datestring = datetime.datetime.fromtimestamp(value * 60).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ) + " UTC"
+            start_datestring = (
+                datetime.datetime.fromtimestamp(value * 60).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                + " UTC"
+            )
         else:
             start_datestring = None
 
@@ -462,7 +465,9 @@ class RecipeManager:
             self.mode = Modes.QUEUED
         except:
             self.logger.exception("Unable to start recipe")
-            self.mode = Modes.NORECIPE  # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
+            self.mode = (
+                Modes.NORECIPE
+            )  # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
             self.error = "Unable to start recipe"
 
     def run_queued_mode(self):
@@ -576,9 +581,11 @@ class RecipeManager:
 
     def get_recipe_environment(self, minute):
         """ Gets environment object from database for provided minute. """
-        return RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
-            "-minute"
-        ).first()
+        return (
+            RecipeTransitionModel.objects.filter(minute__lte=minute)
+            .order_by("-minute")
+            .first()
+        )
 
     def store_recipe_transitions(self, recipe_transitions):
         """ Stores recipe transitions in database. """
@@ -599,7 +606,9 @@ class RecipeManager:
     def update_recipe_environment(self):
         """ Updates recipe environment. """
         self.logger.debug("Updating recipe environment")
-        self.last_update_minute = self.current_timestamp_minutes - self.start_timestamp_minutes
+        self.last_update_minute = (
+            self.current_timestamp_minutes - self.start_timestamp_minutes
+        )
         environment = self.get_recipe_environment(self.last_update_minute)
         self.current_phase = environment.phase
         self.current_cycle = environment.cycle
@@ -647,6 +656,4 @@ class RecipeManager:
             for variable in environment_dict:
                 self.state.environment["sensor"]["desired"][
                     variable
-                ] = environment_dict[
-                    variable
-                ]
+                ] = environment_dict[variable]

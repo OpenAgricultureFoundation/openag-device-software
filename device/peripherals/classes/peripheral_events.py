@@ -18,7 +18,8 @@ class PeripheralEvents:
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
+                "status": 400,
+                "message": "Invalid request parameters: {}".format(e),
             }
 
         # Process general event requests
@@ -85,7 +86,8 @@ class PeripheralEvents:
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
+                "status": 400,
+                "message": "Invalid request parameters: {}".format(e),
             }
 
         # Check sensor is in normal or shutdown mode

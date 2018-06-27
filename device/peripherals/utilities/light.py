@@ -85,9 +85,9 @@ def build_channel_spd_matrix(channel_configs, distance, reference_spd):
         # Scale channel spd to intensity at distance
         scaled_channel_spd = {}
         for wavelength_band, intensity_percent in channel_spd.items():
-            scaled_channel_spd[
-                wavelength_band
-            ] = intensity_watts * intensity_percent / 100
+            scaled_channel_spd[wavelength_band] = (
+                intensity_watts * intensity_percent / 100
+            )
 
         # Translate channel spd to match wavelength bands of desired spd
         translated_channel_spd = translate_spd(

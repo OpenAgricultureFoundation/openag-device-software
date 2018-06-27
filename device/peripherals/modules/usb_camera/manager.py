@@ -35,7 +35,9 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         )
 
         # Initialize sampling parameters
-        self._min_sampling_interval_seconds = 120  # should never take more than 2 minutes to capture an image
+        self._min_sampling_interval_seconds = (
+            120
+        )  # should never take more than 2 minutes to capture an image
         self._default_sampling_interval_seconds = 3600  # every hour
 
     def initialize(self) -> None:
