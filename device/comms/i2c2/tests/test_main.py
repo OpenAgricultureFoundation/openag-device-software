@@ -17,43 +17,51 @@ def test_init():
     i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
 
 
-# def test_write():
-#     config = I2CConfig("Test", 2, 0x40, 0x77, 4, MuxSimulator())
-#     i2c = I2C(config, PeripheralSimulator)
-#     i2c.write([0x01])
+def test_write():
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    i2c.write([0x01])
 
 
-# def test_read_empty():
-#     config = I2CConfig("Test", 2, 0x40, 0x77, 4, MuxSimulator())
-#     i2c = I2C(config, PeripheralSimulator)
-#     bytes_ = i2c.read(1)
-#     assert bytes_[0] == 0x00
+def test_read_empty():
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    bytes_ = i2c.read(2)
+    assert bytes_[0] == 0x00
+    assert bytes_[1] == 0x00
 
 
-# def test_write_read():
-#     config = I2CConfig("Test", 2, 0x40, 0x77, 4, MuxSimulator())
-#     i2c = I2C(config, PeripheralSimulator)
-#     i2c.write([0x01])
-#     bytes_ = i2c.read(1)
-#     assert bytes_[0] == 0x01
+def test_write_read():
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    i2c.write([0x01])
+    bytes_ = i2c.read(1)
+    assert bytes_[0] == 0x01
 
 
-# def test_write_register():
-#     config = I2CConfig("Test", 2, 0x40, 0x77, 4, MuxSimulator())
-#     i2c = I2C(config, PeripheralSimulator)
-#     i2c.write_register(0x01, 0x02)
+def test_write_register():
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    i2c.write_register(0x01, 0x02)
 
 
-# def test_read_empty_register():
-#     config = I2CConfig("Test", 2, 0x40, 0x77, 4, MuxSimulator())
-#     i2c = I2C(config, PeripheralSimulator)
-#     with pytest.raises(ReadError):
-#         byte = i2c.read_register(0x01)
+def test_read_empty_register():
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    with pytest.raises(ReadError):
+        byte = i2c.read_register(0x01)
 
 
-# def test_write_read_register():
-#     config = I2CConfig("Test", 2, 0x40, 0x77, 4, MuxSimulator())
-#     i2c = I2C(config, PeripheralSimulator)
-#     i2c.write_register(0x01, 0x02)
-#     byte = i2c.read_register(0x01)
-#     assert byte == 0x02
+def test_write_read_register():
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    i2c.write_register(0x01, 0x02)
+    byte = i2c.read_register(0x01)
+    assert byte == 0x02
+
+
+def test_read_custom_register():
+
+    class CustomPeripheralSimulator(PeripheralSimulator):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            self.registers = {0xE7: 0x00}
+
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), CustomPeripheralSimulator)
+    assert i2c.read_register(0xE7) == 0x00

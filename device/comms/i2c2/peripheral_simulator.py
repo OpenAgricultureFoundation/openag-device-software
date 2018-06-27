@@ -4,6 +4,7 @@ from types import TracebackType
 
 # Import device utilities
 from device.utilities.logger import Logger
+from device.utilities.bitwise import byte_str
 
 # Import i2c package elements
 from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
@@ -34,7 +35,7 @@ class PeripheralSimulator:
     Attributes:
         name -- name of device
         bus --  device bus
-        device_address -- device address
+        device_addr -- device address
         mux_address -- device mux address
         mux_channel -- device mux channel
         mux_simulator -- mux simulator
@@ -44,7 +45,7 @@ class PeripheralSimulator:
         self,
         name: str,
         bus: int,
-        device_address: int,
+        device_addr: int,
         mux_address: Optional[int],
         mux_channel: Optional[int],
         mux_simulator: Optional[MuxSimulator],
@@ -53,7 +54,7 @@ class PeripheralSimulator:
         # Initialize parameters
         self.name = name
         self.bus = bus
-        self.device_address = device_address
+        self.device_addr = device_addr
         self.mux_address = mux_address
         self.mux_channel = mux_channel
         self.mux_simulator = mux_simulator
@@ -65,7 +66,7 @@ class PeripheralSimulator:
         self.buffer: bytearray = bytearray([])  # mutable bytes
 
         # Initialize register
-        self.register: Dict[int, int] = {}
+        self.registers: Dict[int, int] = {}
 
     def __enter__(self) -> object:
         """Context manager enter function."""
@@ -76,14 +77,14 @@ class PeripheralSimulator:
         return False  # Don't suppress exceptions
 
     @verify_mux
-    def read(self, address: int, num_bytes: int) -> bytes:
+    def read(self, device_addr: int, num_bytes: int) -> bytes:
         """Reads bytes from buffer. Returns 0x00 if buffer is empty."""
-        self.logger.debug("Reading {} bytes".format(num_bytes))
-        self.logger.debug("buffer = {}".format(self.buffer))
+        msg = "Reading {} bytes, buffer: {}".format(num_bytes, byte_str(self.buffer))
+        self.logger.debug(msg)
 
         # Check device address matches
-        if address != self.device_address:
-            message = "Address not found: 0x{:02X}".format(address)
+        if device_addr != self.device_addr:
+            message = "Address not found: 0x{:02X}".format(device_addr)
             raise ReadError(message)
 
         # Pop bytes from buffer and return
@@ -116,7 +117,7 @@ class PeripheralSimulator:
             self.mux_simulator.set(self.mux_address, bytes_[0])
 
         # Check if writing to device
-        elif address == self.device_address:
+        elif address == self.device_addr:
 
             # Verify mux connection
             if self.mux_address != None:
@@ -133,38 +134,42 @@ class PeripheralSimulator:
             raise WriteError(message)
 
     @verify_mux
-    def read_register(self, address: int, register: int) -> int:
+    def read_register(self, device_addr: int, register_addr: int) -> int:
         """Reads register byte."""
 
         # Check address matches
-        if address != self.device_address:
-            message = "Address not found: 0x{:02X}".format(address)
+        if device_addr != self.device_addr:
+            message = "Address not found: 0x{:02X}".format(device_addr)
             raise ReadError(message)
 
         # Check register within range
-        if register not in range(256):
-            message = "Invalid register addrress: {}, must be 0-255".format(register)
+        if register_addr not in range(256):
+            message = "Invalid register addrress: {}, must be 0-255".format(
+                register_addr
+            )
             raise ReadError(message)
 
         # Read register value from register dict
         try:
-            return self.register[register]
+            return self.registers[register_addr]
         except KeyError:
-            message = "Register not found: 0x{:02X}".format(register)
+            message = "Register address not found: 0x{:02X}".format(register_addr)
             raise ReadError(message)
 
     @verify_mux
-    def write_register(self, address: int, register: int, value: int) -> None:
+    def write_register(self, device_addr: int, register_addr: int, value: int) -> None:
         """Writes byte to register."""
 
         # Check address matches
-        if address != self.device_address:
-            message = "Address not found: 0x{:02X}".format(address)
+        if device_addr != self.device_addr:
+            message = "Device address not found: 0x{:02X}".format(device_addr)
             raise WriteError(message)
 
         # Check register within range
-        if register not in range(256):
-            message = "Invalid register addrress: {}, must be 0-255".format(register)
+        if register_addr not in range(256):
+            message = "Invalid register addrress: {}, must be 0-255".format(
+                register_addr
+            )
             raise WriteError(message)
 
         # Check value within range
@@ -173,4 +178,4 @@ class PeripheralSimulator:
             raise WriteError(message)
 
         # Write value to register
-        self.register[register] = value
+        self.registers[register_addr] = value

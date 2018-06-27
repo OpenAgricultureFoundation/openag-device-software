@@ -27,6 +27,7 @@ def retry(
     """
 
     def deco_retry(f: F) -> F:
+
         @wraps(f)
         def f_retry(*args: Any, **kwargs: Any) -> Any:
 
@@ -61,9 +62,7 @@ def retry(
                 except exceptions as e:
                     # Try to log exceptions
                     try:
-                        msg = "Failed due to {}, retrying in {} seconds...".format(
-                            e, mdelay
-                        )
+                        msg = "{}, retrying in {} seconds...".format(e, mdelay)
                         self = args[0]
                         self.logger.warning(msg)
                     except:

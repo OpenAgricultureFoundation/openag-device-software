@@ -13,6 +13,7 @@ from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxEr
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.functiontools import retry
+from device.utilities.bitwise import byte_str
 
 
 class I2C(object):
@@ -94,7 +95,7 @@ class I2C(object):
     def write(self, bytes_: bytes, retry: bool = False) -> None:
         """Writes byte list to device. Converts byte list to byte array then
         sends bytes. Returns error message."""
-        self.logger.debug("Writing bytes: {}".format(bytes_))
+        self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
         self.io.write(self.address, bytes_)
 
     @manage_mux
@@ -103,7 +104,7 @@ class I2C(object):
         """Reads num bytes from device. Returns byte array."""
         self.logger.debug("Reading {} bytes".format(num_bytes))
         bytes_ = self.io.read(self.address, num_bytes)
-        self.logger.debug("Read bytes: {}".format(bytes_))
+        self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
         return bytes_
 
     @manage_mux
@@ -111,12 +112,14 @@ class I2C(object):
     def read_register(self, register: int, retry: bool = False) -> int:
         """ Reads byte stored in register at address. """
         self.logger.debug("Reading register: 0x{:02X}".format(register))
-        return self.io.read_register(self.address, register)
+        byte = self.io.read_register(self.address, register)
+        self.logger.debug("Register: 0x{:02X}, value: 0x{:02X}".format(register, byte))
+        return byte
 
     @manage_mux
     @retry(WriteError, tries=5, delay=0.2, backoff=3)
     def write_register(self, register: int, value: int, retry: bool = False) -> None:
-        message = "Writing register: 0x{:02X} value: 0x{:02X}".format(register, value)
+        message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(register, value)
         self.logger.debug(message)
         self.io.write_register(self.address, register, value)
 
