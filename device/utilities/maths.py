@@ -25,8 +25,16 @@ def interpolate(x_list, y_list, x):
         raise ValueError("x_list must be sorted")
 
     # Verify x in range of x_list
-    if x < x_list[0] or x > x_list[-1]:
-        raise ValueError("x is not in range of x_list")
+#    if x < x_list[0] or x > x_list[-1]:
+#        raise ValueError("x is not in range of x_list")
+
+    # if x < smallest in list, make that the new x
+    if x < x_list[0]:
+        x = x_list[0]
+
+    # if x > largest in list, make that the new x
+    if x > x_list[-1]:
+        x = x_list[-1]
 
     # Check if x matches entry in x_list
     if x in x_list:
