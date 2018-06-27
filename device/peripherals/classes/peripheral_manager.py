@@ -50,8 +50,6 @@ class PeripheralManager:
         self.setup_dict = self.load_setup_dict_from_file()
         self.setup_uuid = self.setup_dict["uuid"]
 
-    def process_event(self, request):
-        raise Exception("not implemented in the base class")
 
     @property
     def health(self) -> None:
