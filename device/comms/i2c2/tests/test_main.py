@@ -4,7 +4,7 @@ from unittest import TestCase
 
 # Import i2c elements
 from device.comms.i2c2.main import I2C
-from device.comms.i2c2.exceptions import ReadError
+from device.comms.i2c2.exceptions import ReadError, WriteError
 from device.comms.i2c2.utilities import I2CConfig
 from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
@@ -17,11 +17,6 @@ def test_init():
     i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
 
 
-def test_write():
-    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
-    i2c.write([0x01])
-
-
 def test_read_empty():
     i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
     bytes_ = i2c.read(2)
@@ -29,11 +24,24 @@ def test_read_empty():
     assert bytes_[1] == 0x00
 
 
-def test_write_read():
+def test_write_unknown():
     i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), PeripheralSimulator)
+    with pytest.raises(WriteError):
+        i2c.write([0x01])
+
+
+def test_write_read():
+
+    class CustomPeripheralSimulator(PeripheralSimulator):
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.writes = {bytes([0x01]): bytes([0x02])}
+
+    i2c = I2C("Test", 2, 0x40, 0x77, 4, MuxSimulator(), CustomPeripheralSimulator)
     i2c.write([0x01])
     bytes_ = i2c.read(1)
-    assert bytes_[0] == 0x01
+    assert bytes_[0] == 0x02
 
 
 def test_write_register():

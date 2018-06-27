@@ -67,6 +67,7 @@ class PeripheralSimulator:
 
         # Initialize register
         self.registers: Dict[int, int] = {}
+        self.writes: Dict[bytes, bytes] = {}
 
     def __enter__(self) -> object:
         """Context manager enter function."""
@@ -123,10 +124,20 @@ class PeripheralSimulator:
             if self.mux_address != None:
                 self.mux_simulator.verify(self.mux_address, self.mux_channel)
 
-            # Write bytes to buffer
-            for byte in bytes_:
+            # Get response bytes
+            response_bytes = self.writes.get(bytes(bytes_), None)
+
+            # Verify known write bytes
+            if response_bytes == None:
+                raise WriteError("Unknown write bytes: {}".format(byte_str(bytes_)))
+
+            # TODO: This is over simplified, what is setting compensation temperature?
+
+            # Write response bytes to buffer
+            self.logger.debug("Response bytes: {}".format(byte_str(response_bytes)))
+            for byte in response_bytes:
                 self.buffer.insert(0, byte)
-            self.logger.debug("buffer = {}".format(self.buffer))
+            self.logger.debug("Buffer: {}".format(byte_str(self.buffer)))
 
         # Check for invalid address
         else:
