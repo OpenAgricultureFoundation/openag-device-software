@@ -5,7 +5,6 @@ from unittest import TestCase
 # Import i2c elements
 from device.comms.i2c2.main import I2C
 from device.comms.i2c2.exceptions import ReadError, WriteError
-from device.comms.i2c2.utilities import I2CConfig
 from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
 

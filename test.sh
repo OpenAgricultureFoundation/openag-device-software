@@ -28,14 +28,22 @@ export GCLOUD_DEV_REG=device-registry
 source $DIR/tests/data/device_id.bash
 
 # Run our code formatter
+echo "Running code formatter..."
 black app/ device/ iot/ resource/
 
+echo "Running tests..."
 # Note remove the pytest '-s' arg to not show print()s from the test code.
 if [ $# -eq 0 ]; then
   # No command line args to this script, so run all tests:
-  python -m pytest -s tests 
+  # python -m pytest -s tests
+  python -m pytest tests --cov tests
 else
   # Run any tests passed on the command line of this script:
   python -m pytest -s $@
 fi
 
+# Run static type checks
+# TODO: Make this run for entire codebase
+echo "Running static type checks..."
+mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators device/comms/i2c2
+echo "...type checks complete!"
