@@ -4,8 +4,7 @@ from typing import Optional, List
 
 # # Import package elements
 from device.comms.i2c2.device_io import DeviceIO
-from device.comms.i2c2.utilities import make_i2c_rdwr_data, manage_mux
-from device.comms.i2c2.utilities import I2CConfig as Config
+from device.comms.i2c2.utilities import make_i2c_rdwr_data
 from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
 from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
@@ -90,45 +89,48 @@ class I2C(object):
             message = "Unable to verify device exists, mux error"
             raise InitError(message, logger=self.logger) from e
 
-    @manage_mux
-    @retry(WriteError, tries=5, delay=0.2, backoff=3)
+    @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def write(self, bytes_: bytes, retry: bool = False) -> None:
         """Writes byte list to device. Converts byte list to byte array then
         sends bytes. Returns error message."""
         self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
+        self.manage_mux()
         self.io.write(self.address, bytes_)
 
-    @manage_mux
-    @retry(ReadError, tries=5, delay=0.2, backoff=3)
+    @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def read(self, num_bytes: int, retry: bool = False) -> bytearray:
         """Reads num bytes from device. Returns byte array."""
         self.logger.debug("Reading {} bytes".format(num_bytes))
+        self.manage_mux()
         bytes_ = self.io.read(self.address, num_bytes)
         self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
         return bytes_
 
-    @manage_mux
-    @retry(ReadError, tries=5, delay=0.2, backoff=3)
+    @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def read_register(self, register: int, retry: bool = False) -> int:
         """ Reads byte stored in register at address. """
         self.logger.debug("Reading register: 0x{:02X}".format(register))
-        byte = self.io.read_register(self.address, register)
-        self.logger.debug("Register: 0x{:02X}, value: 0x{:02X}".format(register, byte))
-        return byte
+        self.manage_mux()
+        return self.io.read_register(self.address, register)
 
-    @manage_mux
-    @retry(WriteError, tries=5, delay=0.2, backoff=3)
+    @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def write_register(self, register: int, value: int, retry: bool = False) -> None:
         message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(register, value)
         self.logger.debug(message)
+        self.manage_mux()
         self.io.write_register(self.address, register, value)
 
-    @retry(MuxError, tries=5, delay=0.2, backoff=3)
+    @retry(MuxError, tries=5, delay=0.2, backoff=3, lock=True)
     def set_mux(self, mux: int, channel: int, retry: bool = False) -> None:
-        """ Sets mux to channel if enabled. """
+        """Sets mux to channel"""
         self.logger.debug("Setting mux 0x{:02X} to channel {}".format(mux, channel))
         channel_byte = 0x01 << channel
         try:
             self.io.write(mux, bytes([channel_byte]))
         except WriteError as e:
             raise MuxError("Unable to set mux", logger=self.logger) from e
+
+    def manage_mux(self):
+        """Sets mux if enabled."""
+        if self.mux != None:
+            self.set_mux(self.mux, self.channel, retry=False)

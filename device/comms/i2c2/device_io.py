@@ -1,5 +1,5 @@
 # Import standard python modules
-import fcntl, io, threading
+import fcntl, io
 from typing import Optional, Type, Callable, cast, Any, TypeVar
 from types import TracebackType
 
@@ -93,9 +93,8 @@ class DeviceIO(object):
     def write(self, address: int, bytes_: bytes) -> None:
         """ Writes bytes to IO stream. """
         try:
-            with threading.Lock():
-                fcntl.ioctl(self.io, I2C_SLAVE, address)
-                self.io.write(bytes_)
+            fcntl.ioctl(self.io, I2C_SLAVE, address)
+            self.io.write(bytes_)
         except IOError as e:
             message = "Unable to write: {}".format(bytes_)
             raise WriteError(message) from e
@@ -104,9 +103,8 @@ class DeviceIO(object):
     def read(self, address: int, num_bytes: int) -> bytes:
         """Reads bytes from io stream."""
         try:
-            with threading.Lock():
-                fcntl.ioctl(self.io, I2C_SLAVE, address)
-                return self.io.read(num_bytes)
+            fcntl.ioctl(self.io, I2C_SLAVE, address)
+            return self.io.read(num_bytes)
         except IOError as e:
             message = "Unable to read {} bytes".format(num_bytes)
             raise ReadError(message) from e
@@ -115,23 +113,18 @@ class DeviceIO(object):
     def read_register(self, address: int, register: int) -> int:
         """Reads register from io stream."""
         try:
-            with threading.Lock():
-                reg = c_uint8(register)
-                result = c_uint8()
-                request = make_i2c_rdwr_data(
-                    [
-                        (address, 0, 1, pointer(reg)),  # write cmd register
-                        (
-                            address,
-                            I2C_M_RD,
-                            1,
-                            pointer(result),
-                        ),  # read 1 byte as result
-                    ]
-                )
-                fcntl.ioctl(self.io.fileno(), I2C_RDWR, request)
-                byte_ = result.value
-            self.logger.debug("Register 0x{:02X}: 0x{:02X}".format(register, byte_))
+            reg = c_uint8(register)
+            result = c_uint8()
+            request = make_i2c_rdwr_data(
+                [
+                    (address, 0, 1, pointer(reg)),  # write cmd register
+                    (address, I2C_M_RD, 1, pointer(result)),  # read 1 byte as result
+                ]
+            )
+            fcntl.ioctl(self.io.fileno(), I2C_RDWR, request)
+            byte_ = result.value
+            message = "Read register 0x{:02X}, value: 0x{:02X}".format(register, byte_)
+            self.logger.debug(message)
             return byte_
         except IOError as e:
             message = "Unable to read register 0x{:02}".format(register)
