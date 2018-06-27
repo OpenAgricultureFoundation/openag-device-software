@@ -171,7 +171,6 @@ class SHT25Driver:
             raise ReadUserRegisterError(message, logger=self.logger) from e
 
         # Parse register content
-        self.logger.debug("byte = 0x{:02X}".format(byte))
         resolution_msb = bitwise.get_bit_from_byte(bit=7, byte=byte)
         resolution_lsb = bitwise.get_bit_from_byte(bit=0, byte=byte)
         user_register = UserRegister(

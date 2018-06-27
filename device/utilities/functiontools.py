@@ -1,4 +1,4 @@
-import time, inspect
+import time, inspect, threading
 from functools import wraps
 from typing import Any, Callable, TypeVar, Tuple, cast, Type
 
@@ -12,6 +12,7 @@ def retry(
     delay: float = 0.1,
     backoff: float = 2,
     logger: Any = None,
+    lock: bool = False,
 ) -> Any:
     """Retry calling the decorated function using an exponential backoff.
     Checks for retry kwarg and adheres to default or passed in value.
@@ -47,7 +48,13 @@ def retry(
 
             # Check if retry disabled
             if retry == False:
-                return f(*args, **kwargs)
+
+                # Check for thread lock
+                if lock:
+                    with threading.Lock():
+                        return f(*args, **kwargs)
+                else:
+                    return f(*args, **kwargs)
 
             # Note: If retry kwarg is None, we are assuming that if the decorator
             # is present, we should retry by default.
@@ -58,8 +65,16 @@ def retry(
             mtries, mdelay = tries, delay
             while mtries > 1:
                 try:
-                    return f(*args, **kwargs)
+
+                    # Check for thread lock
+                    if lock:
+                        with threading.Lock():
+                            return f(*args, **kwargs)
+                    else:
+                        return f(*args, **kwargs)
+
                 except exceptions as e:
+
                     # Try to log exceptions
                     try:
                         msg = "{}, retrying in {} seconds...".format(e, mdelay)
@@ -71,7 +86,12 @@ def retry(
                     mtries -= 1
                     mdelay *= backoff
 
-            return f(*args, **kwargs)
+            # Check for thread lock
+            if lock:
+                with threading.Lock():
+                    return f(*args, **kwargs)
+            else:
+                return f(*args, **kwargs)
 
         return cast(F, f_retry)  # true decorator
 
