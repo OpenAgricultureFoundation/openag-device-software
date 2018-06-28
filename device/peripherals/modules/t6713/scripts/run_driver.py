@@ -38,6 +38,9 @@ parser.add_argument("--device", type=str, help="specifies device config")
 # Setup parser functions
 parser.add_argument("--status", action="store_true", help="read status")
 parser.add_argument("--co2", action="store_true", help="read carbon dioxide")
+parser.add_argument("--reset", action="store_true", help="resets sensor")
+parser.add_argument("--enable-abc", action="store_true", help="resets sensor")
+parser.add_argument("--disable-abc", action="store_true", help="resets sensor")
 
 
 # Run main
@@ -100,6 +103,33 @@ if __name__ == "__main__":
                 print("Error: {}".format(error.trace))
             else:
                 print("Co2: {} ppm".format(co2))
+
+        # Check if resetting sensor
+        elif args.reset:
+            print("Resetting")
+            error = driver.reset()
+            if error.exists():
+                print("Error: {}".format(error.trace))
+            else:
+                print("Succussfully reset")
+
+        # Check if enabling abc logic
+        elif args.enable_abc:
+            print("Enabling abc logic")
+            error = driver.enable_abc_logic()
+            if error.exists():
+                print("Error: {}".format(error.trace))
+            else:
+                print("Succussfully enabled")
+
+        # Check if disabling abc logic
+        elif args.disable_abc:
+            print("Disabled abc logic")
+            error = driver.disable_abc_logic()
+            if error.exists():
+                print("Error: {}".format(error.trace))
+            else:
+                print("Succussfully disabled")
 
         # Check for new command if loop enabled
         if loop:
