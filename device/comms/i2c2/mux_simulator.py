@@ -11,12 +11,12 @@ from device.comms.i2c2.exceptions import MuxError
 class MuxSimulator(object):
     """I2C mux simulator."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.logger = Logger(name="Simulator(Mux)", dunder_name=__name__)
 
     # Initialize mux parameters
     valid_channel_bytes = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
-    connections = {}
+    connections: Dict[int, int] = {}
 
     def set(self, address: int, channel_byte: int) -> None:
         """Sets mux at address to channel."""

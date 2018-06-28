@@ -193,4 +193,4 @@ class SHT25Driver:
             self.i2c.write(bytes([0xFE]), retry=retry)
         except I2CError as e:
             message = "Driver unable to reset"
-            raise ResetError(messsage, logger=self.logger) from e
+            raise ResetError(message, logger=self.logger) from e

@@ -15,7 +15,7 @@ class i2c_rdwr_ioctl_data(Structure):
     _fields_ = [("msgs", POINTER(i2c_msg)), ("nmsgs", c_uint32)]
 
 
-def make_i2c_rdwr_data(messages):
+def make_i2c_rdwr_data(messages):  # type: ignore
     """Utility function to create and return an i2c_rdwr_ioctl_data structure
     populated with a list of specified I2C messages.  The messages parameter
     should be a list of tuples which represent the individual I2C messages to

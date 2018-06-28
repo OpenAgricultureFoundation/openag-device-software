@@ -50,7 +50,6 @@ class PeripheralManager:
         self.setup_dict = self.load_setup_dict_from_file()
         self.setup_uuid = self.setup_dict["uuid"]
 
-
     @property
     def health(self) -> None:
         """ Gets health value. """

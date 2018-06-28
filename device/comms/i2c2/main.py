@@ -50,9 +50,9 @@ class I2C(object):
         # Initialize io
         if PeripheralSimulator != None:
             self.logger.info("Using simulated io stream")
-            self.io = PeripheralSimulator(
+            self.io = PeripheralSimulator(  # type: ignore
                 name, bus, address, mux, channel, mux_simulator
-            )  # type: ignore
+            )
         else:
             self.logger.info("Using device io stream")
             self.io = DeviceIO(name, bus)
@@ -98,11 +98,11 @@ class I2C(object):
         self.io.write(self.address, bytes_)
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
-    def read(self, num_bytes: int, retry: bool = False) -> bytearray:
+    def read(self, num_bytes: int, retry: bool = False) -> bytes:
         """Reads num bytes from device. Returns byte array."""
         self.logger.debug("Reading {} bytes".format(num_bytes))
         self.manage_mux()
-        bytes_ = self.io.read(self.address, num_bytes)
+        bytes_ = bytes(self.io.read(self.address, num_bytes))
         self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
         return bytes_
 
@@ -111,7 +111,7 @@ class I2C(object):
         """ Reads byte stored in register at address. """
         self.logger.debug("Reading register: 0x{:02X}".format(register))
         self.manage_mux()
-        return self.io.read_register(self.address, register)
+        return int(self.io.read_register(self.address, register))
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def write_register(self, register: int, value: int, retry: bool = False) -> None:
@@ -130,7 +130,7 @@ class I2C(object):
         except WriteError as e:
             raise MuxError("Unable to set mux", logger=self.logger) from e
 
-    def manage_mux(self):
+    def manage_mux(self) -> None:
         """Sets mux if enabled."""
         if self.mux != None:
             self.set_mux(self.mux, self.channel, retry=False)

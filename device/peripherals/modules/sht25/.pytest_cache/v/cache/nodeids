@@ -3,18 +3,5 @@
   "tests/test_driver.py::test_read_temperature",
   "tests/test_driver.py::test_read_humidity",
   "tests/test_driver.py::test_read_user_register",
-  "tests/test_driver.py::test_reset",
-  "tests/test_events.py::test_init",
-  "tests/test_manager.py::test_init",
-  "tests/test_manager.py::test_initialize",
-  "tests/test_manager.py::test_setup",
-  "tests/test_manager.py::test_update",
-  "tests/test_manager.py::test_reset",
-  "tests/test_manager.py::test_shutdown",
-  "tests/test_sensor.py::test_init",
-  "tests/test_sensor.py::test_read_temperature",
-  "tests/test_sensor.py::test_read_humidity",
-  "tests/test_sensor.py::test_probe",
-  "tests/test_sensor.py::test_initialize",
-  "tests/test_sensor.py::test_setup"
+  "tests/test_driver.py::test_reset"
 ]
