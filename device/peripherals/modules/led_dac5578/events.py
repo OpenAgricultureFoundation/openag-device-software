@@ -1,6 +1,6 @@
 # Import standard python modules
 from typing import Optional, Tuple, List, Dict
-import time
+import time, json
 
 # Import device utilities
 from device.utilities.modes import Modes
@@ -8,6 +8,9 @@ from device.utilities.error import Error
 
 # Import peripheral event mixin
 from device.peripherals.classes.peripheral_events import PeripheralEvents
+
+# Import peripheral utilities
+from device.peripherals.utilities import light
 
 
 class LEDDAC5578Events(PeripheralEvents):
@@ -25,6 +28,10 @@ class LEDDAC5578Events(PeripheralEvents):
         elif request["type"] == "Fade":
             self.response = self.initialize_fade_event()
             self.fade()
+        elif request["type"] == "Calculate ULRF From Percents":
+            self.response = self.process_calculate_ulrf_from_percents(request)
+        elif request["type"] == "Calculate ULRF From Watts":
+            self.response = self.process_calculate_ulrf_from_watts(request)
         else:
             message = "Unknown event request type!"
             self.logger.info(message)
@@ -168,3 +175,41 @@ class LEDDAC5578Events(PeripheralEvents):
 
                     # Update every 100ms
                     time.sleep(0.1)
+
+    def process_calculate_ulrf_from_percents(self, request) -> Dict:
+        """Processes calculating light universal recipe format (URF) parameters 
+        from channel power percents."""
+        self.logger.debug("Processing calculating ULRF from percents")
+
+        # Verify request parameters
+        try:
+            data = json.loads(request["value"])
+            channel_power_percents = data["channel_power_percents"]
+            illumination_distance = data["illumination_distance_cm"]
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            return {"status": 400, "message": "Invalid request parameter: " + str(e)}
+
+        # Calculate light urf parameters
+        try:
+            spectrum, intensity, distance = light.calculate_ulrf_from_percents(
+                channel_configs=self.channel_configs,
+                channel_power_percents=channel_power_percents,
+                distance=illumination_distance,
+            )
+            return {
+                "status": 200,
+                "message": "Successfully calculated!",
+                "spectrum_nm_percents": spectrum,
+                "intensity_watts": intensity,
+                "illumination_distance_cm": distance,
+            }
+        except Exception as e:  # TODO: Break out exception types
+            self.logger.exception("Unable to calculate light urf from percents")
+            return {"status": 500, "message": str(e)}
+
+    def process_calculate_ulrf_from_watts(self, request) -> Dict:
+        """Processes calculating light universal recipe format (URF) parameters 
+        from channel power watts."""
+        self.logger.debug("Processing calculating ULRF from watts")
+        return {"status": 500, "message": "Not Implemented"}
