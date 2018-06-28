@@ -61,8 +61,9 @@ class T6713Sensor:
         if self.simulate:
             return Error(None)
 
-        # Enable led
-        error = self.disable_abc_logic()
+        # Disable abc logic
+        # error = self.disable_abc_logic() # TODO: revert?
+        error = self.enable_abc_logic()
 
         # Check for errors:
         if error.exists():

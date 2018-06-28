@@ -1,5 +1,6 @@
 # Import standard python modules
 import numpy
+from typing import Dict, Tuple
 
 # Import device utilities
 from device.utilities import maths
@@ -338,3 +339,46 @@ def calculate_resultant_spd(
     )
 
     return output_spectrum_dict, output_intensity_watts
+
+
+def calculate_ulrf_from_percents(
+    channel_configs: Dict[str, str],
+    channel_power_percents: Dict[str, float],
+    distance: float,
+) -> Tuple[Dict, float, float]:
+    """Calculates universal light recipe format (ULRF) for provided channel 
+    configuration, channel power percents, and illumination distance."""
+
+    # Get min/max distance for channels
+    # TODO: Verify code is being checked to ensure planar distance map is ordered list
+    min_distance = channel_configs[0]["planar_distance_map"][0]["distance_cm"]
+    max_distance = channel_configs[-1]["planar_distance_map"][0]["distance_cm"]
+
+    # Check distance in range, else use extrema
+    if distance > max_distance:
+        distance = max_distance
+    if distance < min_distance:
+        distance = min_distance
+
+    # Get reference SPD from channel configs
+    reference_spd = channel_configs[0]["spectrum_nm_percent"]
+
+    # Calculate resultant spectrum and intensity from channel power percents
+    spectrum, intensity = calculate_resultant_spd(
+        channel_configs=channel_configs,
+        reference_spd=reference_spd,
+        channel_output_setpoints=channel_power_percents,
+        distance=distance,
+    )
+
+    return spectrum, intensity, distance
+
+
+def calculate_ulrf_from_watts(
+    channel_configs: Dict[str, str],
+    channel_power_watts: Dict[str, float],
+    distance: float,
+) -> Tuple[Dict, float, float]:
+    """Calculates universal light recipe format (ULRF) for provided channel 
+    configuration, channel power watts, and illumination distance."""
+    raise NotImplementedError
