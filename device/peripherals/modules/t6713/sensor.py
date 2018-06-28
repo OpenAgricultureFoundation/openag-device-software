@@ -62,7 +62,8 @@ class T6713Sensor:
             return Error(None)
 
         # Disable abc logic
-        error = self.disable_abc_logic()
+        # error = self.disable_abc_logic() # TODO: revert?
+        error = self.enable_abc_logic()
 
         # Check for errors:
         if error.exists():

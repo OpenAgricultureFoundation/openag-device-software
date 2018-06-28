@@ -4,7 +4,7 @@
 i2cset -y 2 0x15 0x04 0x13 0x8b 0x00 0x01 i
 
 # Wait for sensor to process
-sleep 0.1
+sleep 1
 
 # Get raw bytes
 xx=`i2cget -y 2 0x15`
