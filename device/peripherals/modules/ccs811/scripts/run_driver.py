@@ -6,7 +6,7 @@ cwd = os.getcwd()
 print("Running from: {}".format(cwd))
 
 # Set correct import path
-if cwd.endswith("sht25"):
+if cwd.endswith("ccs811"):
     print("Running locally")
     sys.path.append("../../../../")
 elif cwd.endswith("openag-device-software"):
@@ -16,17 +16,14 @@ else:
     sys.exit(0)
 
 # Import driver
-from device.peripherals.modules.sht25.driver import SHT25Driver
+from device.peripherals.modules.ccs811.driver import CCS811Driver
 
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
-# Set directory for loading files
-os.chdir("../../../../")
-
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
+parser = argparse.ArgumentParser(description="Test and debug driver")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
@@ -35,9 +32,8 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
-parser.add_argument("--temperature", action="store_true", help="read temperature")
-parser.add_argument("--humidity", action="store_true", help="read humidity")
-parser.add_argument("--user-register", action="store_true", help="read user register")
+parser.add_argument("--co2", action="store_true", help="read co2")
+parser.add_argument("--tvoc", action="store_true", help="read tvoc")
 
 
 # Run main
@@ -56,18 +52,19 @@ if __name__ == "__main__":
 
     # Check for device config
     if args.device != None:
+        os.chdir("../../../../")
         print("Using device config: {}".format(args.device))
         device_config = json.load(open("data/devices/{}.json".format(args.device)))
         peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "SHT25-Top"
+            device_config["peripherals"], "CCS811-Top"
         )
     else:
         print("Please specify a device configuraion")
         sys.exit(0)
 
     # Initialize driver
-    driver = SHT25Driver(
-        name="SHT25-Top",
+    driver = CCS811Driver(
+        name="CCS811-Top",
         bus=peripheral_config["parameters"]["communication"]["bus"],
         address=int(peripheral_config["parameters"]["communication"]["address"], 16),
         mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
@@ -84,31 +81,14 @@ if __name__ == "__main__":
     while True:
 
         # Check if reading temperature
-        if args.temperature:
-            print("Reading temperature")
-            temperature, error = driver.read_temperature()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Temperature: {} C".format(temperature))
-
-        # Check if reading humidity
-        elif args.humidity:
-            print("Reading humidity")
-            humidity, error = driver.read_humidity()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Humidity: {} %".format(humidity))
-
-        # Check if reading user register
-        elif args.user_register:
-            print("Reading user register")
-            user_register, error = driver.read_user_register()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("User Register: {}".format(user_register))
+        if args.co2 or args.tvoc:
+            print("Reading co2/tvoc")
+            try:
+                co2, tvoc = driver.read_algorithm_data(retry=True)
+                print("CO2: {} ppm".format(co2))
+                print("TVOC: {} ppm".format(tvoc))
+            except Exception as e:
+                print(e)
 
         # Check for new command if loop enabled
         if loop:
