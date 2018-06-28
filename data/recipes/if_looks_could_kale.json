@@ -2,13 +2,13 @@
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-03-30T16:45:41Z",
-	"name": "If Looks Could Kale",
-	"uuid": "8d6e5501-a45a-4715-89c5-0b85c468aba2",
+	"name": "White Day",
+	"uuid": "1ef23d6a-575e-4892-a6f9-7e62631fd34f",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
 	"description": {
-		"brief": "Grows beautiful purple kale.",
-		"verbose": "Grows beautiful purple kale in 30 days in a shallow water culture hydroponic system. The lights are on a balanced spectrum and follow a standard 24 hour light cycle with 18 hour days. Moderate temperatures are maintained throughout the grow until the final harvest phase when they are radically dropped over one night to simulate a frost which makes the leaves more tender."
+		"brief": "Provides white lighting conditions for 12 hours.",
+		"verbose": "Sets a homogoneous spectrum at 100 Watts"
 	},
 	"authors": [
 		{
