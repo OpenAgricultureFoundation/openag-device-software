@@ -24,10 +24,6 @@ def interpolate(x_list, y_list, x):
     if not all(x_list[i] <= x_list[i + 1] for i in range(len(x_list) - 1)):
         raise ValueError("x_list must be sorted")
 
-    # Verify x in range of x_list
-#    if x < x_list[0] or x > x_list[-1]:
-#        raise ValueError("x is not in range of x_list")
-
     # if x < smallest in list, make that the new x
     if x < x_list[0]:
         x = x_list[0]
@@ -56,8 +52,12 @@ def interpolate(x_list, y_list, x):
     # Calculate slope
     m = (y1 - y0) / (x1 - x0)
 
+    # Calculate adjusted position
+    delta = x - x0
+
     # Calculate interpolated value and return
-    y = m * x
+    y = y0 + delta * m
+
     return y
 
 
