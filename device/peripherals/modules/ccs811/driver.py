@@ -85,7 +85,7 @@ class CCS811Driver:
         try:
             return self.i2c.read_register(0x20, retry=retry)
         except I2CError as e:
-            message = ("Driver unable to read harware id register")
+            message = "Driver unable to read harware id register"
             raise ReadRegisterError(message, logger=self.logger) from e
 
     def read_status_register(self, retry: bool = False) -> StatusRegister:
@@ -96,7 +96,7 @@ class CCS811Driver:
         try:
             byte = self.i2c.read_register(0x00, retry=retry)
         except I2CError as e:
-            message = ("Driver unable to read status register")
+            message = "Driver unable to read status register"
             raise ReadRegisterError(message, logger=self.logger) from e
 
         # Parse status register byte
@@ -115,7 +115,7 @@ class CCS811Driver:
         try:
             byte = self.i2c.read_register(0x0E, retry=retry)
         except I2CError as e:
-            message = ("Driver unable to read error register")
+            message = "Driver unable to read error register"
             raise ReadRegisterError(message, logger=self.logger) from e
 
         # Parse error register byte
@@ -162,9 +162,12 @@ class CCS811Driver:
         bits.update({2: int(enable_data_ready_interrupt)})
 
         # Convert bits to byte
-        self.logger.error("bits = {}".format(bits))  # TODO: remove
-        byte = bitwise.bits_to_byte(bits)
-        self.logger.error("byte = {:02X}".format(byte))  # TODO: remove
+        sbits = {}
+        for key in sorted(bits.keys(), reverse=True):
+            sbits[key] = bits[key]
+        self.logger.error("bits = {}".format(sbits))  # TODO: remove
+        byte = bitwise.get_byte_from_bits(bits)
+        self.logger.error("byte = 0x{:02X}".format(byte))  # TODO: remove
 
         # Write measurement mode to sensor
         try:
@@ -217,8 +220,8 @@ class CCS811Driver:
             raise ReadAlgorithmDataError(message) from e
 
         # Check if data is ready
-        if not status.data_ready:
-            raise ReadAlgorithmDataError("Algorithm data not ready")
+        # if not status.data_ready:
+        #     raise ReadAlgorithmDataError("Algorithm data not ready")
 
         # Get algorithm data
         try:

@@ -93,15 +93,15 @@ class I2C(object):
     def write(self, bytes_: bytes, retry: bool = False) -> None:
         """Writes byte list to device. Converts byte list to byte array then
         sends bytes. Returns error message."""
+        self.manage_mux("write bytes")
         self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
-        self.manage_mux()
         self.io.write(self.address, bytes_)
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def read(self, num_bytes: int, retry: bool = False) -> bytes:
         """Reads num bytes from device. Returns byte array."""
+        self.manage_mux("read bytes")
         self.logger.debug("Reading {} bytes".format(num_bytes))
-        self.manage_mux()
         bytes_ = bytes(self.io.read(self.address, num_bytes))
         self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
         return bytes_
@@ -109,15 +109,15 @@ class I2C(object):
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def read_register(self, register: int, retry: bool = False) -> int:
         """ Reads byte stored in register at address. """
+        self.manage_mux("read register")
         self.logger.debug("Reading register: 0x{:02X}".format(register))
-        self.manage_mux()
         return int(self.io.read_register(self.address, register))
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def write_register(self, register: int, value: int, retry: bool = False) -> None:
+        self.manage_mux("write register")
         message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(register, value)
         self.logger.debug(message)
-        self.manage_mux()
         self.io.write_register(self.address, register, value)
 
     @retry(MuxError, tries=5, delay=0.2, backoff=3, lock=True)
@@ -130,7 +130,8 @@ class I2C(object):
         except WriteError as e:
             raise MuxError("Unable to set mux", logger=self.logger) from e
 
-    def manage_mux(self) -> None:
+    def manage_mux(self, message: str) -> None:
         """Sets mux if enabled."""
         if self.mux != None:
+            self.logger.debug("Managing mux to {}".format(message))
             self.set_mux(self.mux, self.channel, retry=False)

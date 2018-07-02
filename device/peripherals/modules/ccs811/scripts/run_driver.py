@@ -34,6 +34,7 @@ parser.add_argument("--device", type=str, help="specifies device config")
 # Setup parser functions
 parser.add_argument("--co2", action="store_true", help="read co2")
 parser.add_argument("--tvoc", action="store_true", help="read tvoc")
+parser.add_argument("--mode", type=int, help="set device mode 1-4")
 
 
 # Run main
@@ -80,7 +81,15 @@ if __name__ == "__main__":
     # Loop forever
     while True:
 
-        # Check if reading temperature
+        # Check if setting measurement mode
+        if args.mode != None:
+            print("Setting measurement mode")
+            try:
+                driver.write_measurement_mode(args.mode, False, False, retry=True)
+            except Exception as e:
+                print("Error: {}".format(e))
+
+        # Check if reading co2/tvoc
         if args.co2 or args.tvoc:
             print("Reading co2/tvoc")
             try:
@@ -88,7 +97,7 @@ if __name__ == "__main__":
                 print("CO2: {} ppm".format(co2))
                 print("TVOC: {} ppm".format(tvoc))
             except Exception as e:
-                print(e)
+                print("Error: {}".format(e))
 
         # Check for new command if loop enabled
         if loop:
