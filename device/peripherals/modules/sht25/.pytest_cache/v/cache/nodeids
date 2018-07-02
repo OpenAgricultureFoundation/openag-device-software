@@ -1,7 +1,1 @@
-[
-  "tests/test_driver.py::test_init",
-  "tests/test_driver.py::test_read_temperature",
-  "tests/test_driver.py::test_read_humidity",
-  "tests/test_driver.py::test_read_user_register",
-  "tests/test_driver.py::test_reset"
-]
+[]
