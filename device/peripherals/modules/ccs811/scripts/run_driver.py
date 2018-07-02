@@ -32,9 +32,12 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 parser.add_argument("--device", type=str, help="specifies device config")
 
 # Setup parser functions
+parser.add_argument("--setup", action="store_true", help="setup sensor")
 parser.add_argument("--co2", action="store_true", help="read co2")
 parser.add_argument("--tvoc", action="store_true", help="read tvoc")
 parser.add_argument("--mode", type=int, help="set device mode 1-4")
+parser.add_argument("--status", action="store_true", help="read status register")
+parser.add_argument("--error", action="store_true", help="read error register")
 
 
 # Run main
@@ -81,21 +84,44 @@ if __name__ == "__main__":
     # Loop forever
     while True:
 
-        # Check if setting measurement mode
-        if args.mode != None:
-            print("Setting measurement mode")
-            try:
-                driver.write_measurement_mode(args.mode, False, False, retry=True)
-            except Exception as e:
-                print("Error: {}".format(e))
+        # Check if setting up sensor
+        if args.setup:
+            print("Setting up sensor")
+            driver.setup(retry=True)
 
         # Check if reading co2/tvoc
-        if args.co2 or args.tvoc:
+        elif args.co2 or args.tvoc:
             print("Reading co2/tvoc")
             try:
                 co2, tvoc = driver.read_algorithm_data(retry=True)
                 print("CO2: {} ppm".format(co2))
                 print("TVOC: {} ppm".format(tvoc))
+            except Exception as e:
+                print("Error: {}".format(e))
+
+        # Check if setting measurement mode
+        elif args.mode != None:
+            print("Setting measurement mode")
+            try:
+                driver.write_measurement_mode(args.mode, False, False, retry=True)
+            except Exception as e:
+                logger.exception("Unable to set measurement mode")
+
+        # Check if reading status register
+        elif args.status:
+            print("Reading status register")
+            try:
+                status_register = driver.read_status_register(retry=True)
+                print(status_register)
+            except Exception as e:
+                print("Error: {}".format(e))
+
+        # Check if reading error register
+        elif args.error:
+            print("Reading error register")
+            try:
+                error_register = driver.read_error_register(retry=True)
+                print(error_register)
             except Exception as e:
                 print("Error: {}".format(e))
 
