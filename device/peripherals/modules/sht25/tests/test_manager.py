@@ -1,19 +1,19 @@
 # Import standard python libraries
 import sys, os, json
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
+# # Get current working directory
+# cwd = os.getcwd()
+# print("Running from: {}".format(cwd))
 
-# Set correct import path
-if cwd.endswith("sht25"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
+# # Set correct import path
+# if cwd.endswith("sht25"):
+#     print("Running locally")
+#     sys.path.append("../../../../")
+# elif cwd.endswith("openag-device-software"):
+#     print("Running globally")
+# else:
+#     print("Running from invalid location")
+#     sys.exit(0)
 
 # Import manager
 from device.peripherals.modules.sht25.manager import SHT25Manager

@@ -3,8 +3,6 @@ import fcntl, io
 from typing import Optional, Type, Callable, cast, Any, TypeVar
 from types import TracebackType
 
-# from ctypes import *
-
 # Import device utilities
 from device.utilities.logger import Logger
 
@@ -22,13 +20,13 @@ I2C_M_RD = 0x0001  # read data, from slave to master
 F = TypeVar("F", bound=Callable[..., Any])
 ET = TypeVar("ET", bound=Optional[Type[BaseException]])
 EV = TypeVar("EV", bound=Optional[BaseException])
-EB = TypeVar("ET", bound=Optional[TracebackType])
+EB = TypeVar("EB", bound=Optional[TracebackType])
 
 
 def manage_io(func: F) -> F:
     """Manages opening/closing io stream."""
 
-    def wrapper(*args, **kwds):
+    def wrapper(*args, **kwds):  # type: ignore
         self = args[0]
         self.open()
         resp = func(*args, **kwds)
@@ -74,20 +72,21 @@ class DeviceIO(object):
         self.close()
         return False  # Don't suppress exceptions
 
-    def open(self):
+    def open(self) -> None:
         """Opens io stream."""
         try:
             device_name = "/dev/i2c-{}".format(self.bus)
             self.io = io.open(device_name, "r+b", buffering=0)
         except PermissionError as e:
-            self.io = None
             message = "Unable to open device io: {}".format(device_name)
             raise InitError(message, logger=self.logger) from e
 
-    def close(self):
+    def close(self) -> None:
         """Closes io stream."""
-        if self.io != None:
+        try:
             self.io.close()
+        except:
+            self.logger.exception("Unable to close")
 
     @manage_io
     def write(self, address: int, bytes_: bytes) -> None:
@@ -104,7 +103,7 @@ class DeviceIO(object):
         """Reads bytes from io stream."""
         try:
             fcntl.ioctl(self.io, I2C_SLAVE, address)
-            return self.io.read(num_bytes)
+            return bytes(self.io.read(num_bytes))
         except IOError as e:
             message = "Unable to read {} bytes".format(num_bytes)
             raise ReadError(message) from e
@@ -115,14 +114,14 @@ class DeviceIO(object):
         try:
             reg = c_uint8(register)
             result = c_uint8()
-            request = make_i2c_rdwr_data(
+            request = make_i2c_rdwr_data(  # type: ignore
                 [
                     (address, 0, 1, pointer(reg)),  # write cmd register
                     (address, I2C_M_RD, 1, pointer(result)),  # read 1 byte as result
                 ]
             )
             fcntl.ioctl(self.io.fileno(), I2C_RDWR, request)
-            byte_ = result.value
+            byte_ = int(result.value)
             message = "Read register 0x{:02X}, value: 0x{:02X}".format(register, byte_)
             self.logger.debug(message)
             return byte_
@@ -145,4 +144,4 @@ class DeviceIO(object):
             raise WriteError(message)
 
         # Write to register
-        self.write(address, bytes[register, value])
+        self.write(address, bytes([register, value]))

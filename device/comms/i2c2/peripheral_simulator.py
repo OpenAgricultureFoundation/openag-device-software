@@ -14,13 +14,13 @@ from device.comms.i2c2.mux_simulator import MuxSimulator
 F = TypeVar("F", bound=Callable[..., Any])
 ET = TypeVar("ET", bound=Optional[Type[BaseException]])
 EV = TypeVar("EV", bound=Optional[BaseException])
-EB = TypeVar("ET", bound=Optional[TracebackType])
+EB = TypeVar("EB", bound=Optional[TracebackType])
 
 
 def verify_mux(func: F) -> F:
     """Verifies mux set to correct channel."""
 
-    def wrapper(*args, **kwds):
+    def wrapper(*args, **kwds):  # type: ignore
         self = args[0]
         if self.mux_address != None:
             self.mux_simulator.verify(self.mux_address, self.mux_channel)
@@ -102,7 +102,7 @@ class PeripheralSimulator:
             num_bytes = num_bytes - 1
 
         # Successfully read bytes!
-        return bytes_
+        return bytes(bytes_)
 
     def write(self, address: int, bytes_: bytes) -> None:
         """Writes bytes to buffer."""
@@ -115,14 +115,16 @@ class PeripheralSimulator:
                 raise MuxError("Unable to set mux, only 1 command byte is allowed")
 
             # Set mux to channel
-            self.mux_simulator.set(self.mux_address, bytes_[0])
+            self.mux_simulator.set(self.mux_address, bytes_[0])  # type: ignore
 
         # Check if writing to device
         elif address == self.device_addr:
 
             # Verify mux connection
             if self.mux_address != None:
-                self.mux_simulator.verify(self.mux_address, self.mux_channel)
+                self.mux_simulator.verify(  # type: ignore
+                    self.mux_address, self.mux_channel
+                )
 
             # Get response bytes
             response_bytes = self.writes.get(bytes(bytes_), None)
@@ -135,7 +137,7 @@ class PeripheralSimulator:
 
             # Write response bytes to buffer
             self.logger.debug("Response bytes: {}".format(byte_str(response_bytes)))
-            for byte in response_bytes:
+            for byte in response_bytes:  # type: ignore
                 self.buffer.insert(0, byte)
             self.logger.debug("Buffer: {}".format(byte_str(self.buffer)))
 

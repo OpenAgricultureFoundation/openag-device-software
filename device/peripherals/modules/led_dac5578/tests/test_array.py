@@ -15,16 +15,14 @@ except:
 os.chdir("../../../../")
 
 # Import test device config
-device_config = json.load(
-    open("device/peripherals/modules/led_dac5578/tests/config.json")
-)
+filename = "device/peripherals/modules/led_dac5578/tests/config.json"
+device_config = json.load(open(filename))
 peripheral_config = device_config["peripherals"][0]
 panel_configs = peripheral_config["parameters"]["communication"]["panels"]
 
 # Import test peripheral setup
-peripheral_setup = json.load(
-    open("device/peripherals/modules/led_dac5578/tests/setup.json")
-)
+filename = "device/peripherals/modules/led_dac5578/tests/setup.json"
+peripheral_setup = json.load(open(filename))
 channel_configs = peripheral_setup["channel_configs"]
 
 # Initialize test desired spd
@@ -85,12 +83,274 @@ def test_set_spd():
     )
     assert error.exists() == False
     assert channel_outputs == {"FR": 46.0, "WW": 54.0}
-    assert output_spectrum_nm_percent == {
-        "400-449": 12.27,
-        "449-499": 12.27,
-        "500-549": 42.44,
-        "550-559": 8.49,
-        "600-649": 12.27,
-        "650-699": 12.27,
-    }
+    assert (
+        output_spectrum_nm_percent
+        == {
+            "400-449": 12.27,
+            "449-499": 12.27,
+            "500-549": 42.44,
+            "550-559": 8.49,
+            "600-649": 12.27,
+            "650-699": 12.27,
+        }
+    )
     assert output_intensity_watts == 81.52
+
+
+def test_set_spd_flat_taurus():
+
+    # Load in channel configs
+    filename = "device/peripherals/modules/led_dac5578/setups/taurus.json"
+    peripheral_setup = json.load(open(filename))
+    channel_configs = peripheral_setup["channel_configs"]
+
+    # Initialize array
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate=True)
+
+    # Set desired setpoints
+    spectrum_flat = {
+        "400-449": 16.67,
+        "449-499": 16.67,
+        "500-549": 16.67,
+        "550-559": 16.67,
+        "600-649": 16.67,
+        "650-699": 16.67,
+    }
+
+    # Set expected outputs
+    expected_channel_outputs = {
+        "WW": 0.0, "CW": 0.0, "B": 33.0, "G": 38.0, "R": 33.0, "FR": 0.0
+    }
+    expected_output_spectrum = {
+        "400-449": 18.58,
+        "449-499": 18.58,
+        "500-549": 21.4,
+        "550-559": 4.28,
+        "600-649": 18.58,
+        "650-699": 18.58,
+    }
+    expected_output_intensity = 88.8
+
+    # Set SPD
+    channel_outputs, output_spectrum, output_intensity, error = array.set_spd(
+        desired_distance_cm=desired_distance_cm,
+        desired_intensity_watts=desired_intensity_watts,
+        desired_spectrum_nm_percent=spectrum_flat,
+    )
+
+    # Evaluate results
+    assert error.exists() == False
+    assert channel_outputs == expected_channel_outputs
+    assert output_spectrum == expected_output_spectrum
+    assert output_intensity == expected_output_intensity
+
+
+def test_set_spd_blue_taurus():
+
+    # Load in channel configs
+    filename = "device/peripherals/modules/led_dac5578/setups/taurus.json"
+    peripheral_setup = json.load(open(filename))
+    channel_configs = peripheral_setup["channel_configs"]
+
+    # Initialize array
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate=True)
+
+    # Set desired setpoints
+    spectrum_flat = {
+        "400-449": 50,
+        "449-499": 50,
+        "500-549": 0,
+        "550-559": 0,
+        "600-649": 0,
+        "650-699": 0,
+    }
+
+    # Set expected outputs
+    expected_channel_outputs = {
+        "WW": 0.0, "CW": 0.0, "B": 100.0, "G": 0.0, "R": 0.0, "FR": 0.0
+    }
+    expected_output_spectrum = {
+        "400-449": 50.0,
+        "449-499": 50.0,
+        "500-549": 0.0,
+        "550-559": 0.0,
+        "600-649": 0.0,
+        "650-699": 0.0,
+    }
+    expected_output_intensity = 100.0
+
+    # Set SPD
+    channel_outputs, output_spectrum, output_intensity, error = array.set_spd(
+        desired_distance_cm=desired_distance_cm,
+        desired_intensity_watts=desired_intensity_watts,
+        desired_spectrum_nm_percent=spectrum_flat,
+    )
+
+    # Print results
+    print(channel_outputs)
+    print(output_spectrum)
+    print(output_intensity)
+
+    # Evaluate results
+    assert error.exists() == False
+    assert channel_outputs == expected_channel_outputs
+    assert output_spectrum == expected_output_spectrum
+    assert output_intensity == expected_output_intensity
+
+    def test_set_spd_blue_taurus():
+
+        # Load in channel configs
+        filename = "device/peripherals/modules/led_dac5578/setups/taurus.json"
+        peripheral_setup = json.load(open(filename))
+        channel_configs = peripheral_setup["channel_configs"]
+
+        # Initialize array
+        array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate=True)
+
+        # Set desired setpoints
+        spectrum_flat = {
+            "400-449": 50,
+            "449-499": 50,
+            "500-549": 0,
+            "550-559": 0,
+            "600-649": 0,
+            "650-699": 0,
+        }
+
+        # Set expected outputs
+        expected_channel_outputs = {
+            "WW": 0.0, "CW": 0.0, "B": 100.0, "G": 0.0, "R": 0.0, "FR": 0.0
+        }
+        expected_output_spectrum = {
+            "400-449": 50.0,
+            "449-499": 50.0,
+            "500-549": 0.0,
+            "550-559": 0.0,
+            "600-649": 0.0,
+            "650-699": 0.0,
+        }
+        expected_output_intensity = 100.0
+
+        # Set SPD
+        channel_outputs, output_spectrum, output_intensity, error = array.set_spd(
+            desired_distance_cm=desired_distance_cm,
+            desired_intensity_watts=desired_intensity_watts,
+            desired_spectrum_nm_percent=spectrum_flat,
+        )
+
+        # Print results
+        print(channel_outputs)
+        print(output_spectrum)
+        print(output_intensity)
+
+        # Evaluate results
+        assert error.exists() == False
+        assert channel_outputs == expected_channel_outputs
+        assert output_spectrum == expected_output_spectrum
+        assert output_intensity == expected_output_intensity
+
+
+def test_set_spd_green_taurus():
+
+    # Load in channel configs
+    filename = "device/peripherals/modules/led_dac5578/setups/taurus.json"
+    peripheral_setup = json.load(open(filename))
+    channel_configs = peripheral_setup["channel_configs"]
+
+    # Initialize array
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate=True)
+
+    # Set desired setpoints
+    spectrum_flat = {
+        "400-449": 0,
+        "449-499": 0,
+        "500-549": 50,
+        "550-559": 50,
+        "600-649": 0,
+        "650-699": 0,
+    }
+
+    # Set expected outputs
+    expected_channel_outputs = {
+        "WW": 0.0, "CW": 0.0, "B": 0.0, "G": 100.0, "R": 0.0, "FR": 0.0
+    }
+    expected_output_spectrum = {
+        "400-449": 0.0,
+        "449-499": 0.0,
+        "500-549": 83.33,
+        "550-559": 16.67,
+        "600-649": 0.0,
+        "650-699": 0.0,
+    }
+    expected_output_intensity = 60.0
+
+    # Set SPD
+    channel_outputs, output_spectrum, output_intensity, error = array.set_spd(
+        desired_distance_cm=desired_distance_cm,
+        desired_intensity_watts=desired_intensity_watts,
+        desired_spectrum_nm_percent=spectrum_flat,
+    )
+
+    # Print results
+    print(channel_outputs)
+    print(output_spectrum)
+    print(output_intensity)
+
+    # Evaluate results
+    assert error.exists() == False
+    assert channel_outputs == expected_channel_outputs
+    assert output_spectrum == expected_output_spectrum
+    assert output_intensity == expected_output_intensity
+
+
+def test_set_spd_red_taurus():
+
+    # Load in channel configs
+    filename = "device/peripherals/modules/led_dac5578/setups/taurus.json"
+    peripheral_setup = json.load(open(filename))
+    channel_configs = peripheral_setup["channel_configs"]
+
+    # Initialize array
+    array = LEDDAC5578Array("Test", panel_configs, channel_configs, simulate=True)
+
+    # Set desired setpoints
+    spectrum_flat = {
+        "400-449": 0,
+        "449-499": 0,
+        "500-549": 0,
+        "550-559": 0,
+        "600-649": 50,
+        "650-699": 50,
+    }
+
+    # Set expected outputs
+    expected_channel_outputs = {
+        "WW": 0.0, "CW": 0.0, "B": 0.0, "G": 0.0, "R": 100.0, "FR": 0.0
+    }
+    expected_output_spectrum = {
+        "400-449": 0.0,
+        "449-499": 0.0,
+        "500-549": 0.0,
+        "550-559": 0.0,
+        "600-649": 50.0,
+        "650-699": 50.0,
+    }
+    expected_output_intensity = 100.0
+
+    # Set SPD
+    channel_outputs, output_spectrum, output_intensity, error = array.set_spd(
+        desired_distance_cm=desired_distance_cm,
+        desired_intensity_watts=desired_intensity_watts,
+        desired_spectrum_nm_percent=spectrum_flat,
+    )
+
+    # Print results
+    print(channel_outputs)
+    print(output_spectrum)
+    print(output_intensity)
+
+    # Evaluate results
+    assert error.exists() == False
+    assert channel_outputs == expected_channel_outputs
+    assert output_spectrum == expected_output_spectrum
+    assert output_intensity == expected_output_intensity
