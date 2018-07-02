@@ -38,4 +38,6 @@ python manage.py migrate
 # Also need to make our user super again for the django admin
 echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python manage.py shell
 
+# How to test access to the backend, if you see weird IoT errors:
+# openssl s_client -connect mqtt.googleapis.com:8883
 
