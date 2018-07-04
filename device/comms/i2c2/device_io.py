@@ -55,7 +55,7 @@ class DeviceIO(object):
         self.logger = Logger(name=logger_name, dunder_name=__name__)
 
         # Verify io exists
-        self.logger.info("Verifying io stream exists")
+        self.logger.debug("Verifying io stream exists")
         self.open()
         self.close()
 

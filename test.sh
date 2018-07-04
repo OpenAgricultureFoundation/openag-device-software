@@ -1,5 +1,7 @@
 #!/bin/bash
 
+printf "\n~~~ Running tests...this can take a few minutes ~~~\n"
+
 # Get the path to THIS script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
@@ -28,10 +30,15 @@ export GCLOUD_DEV_REG=device-registry
 source $DIR/tests/data/device_id.bash
 
 # Run our code formatter
-echo "Running code formatter..."
+printf "\nRunning code formatter...\n"
 black app/ device/ iot/ resource/
 
-echo "Running tests..."
+# Run static type checks, TODO: run for all codebase
+printf "\nRunning static type checks...\n"
+mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators device/comms/i2c2
+printf "...type checks complete!\n"
+
+printf "\nRunning unit tests...\n"
 # Note remove the pytest '-s' arg to not show print()s from the test code.
 if [ $# -eq 0 ]; then
   # No command line args to this script, so run all tests:
@@ -42,8 +49,3 @@ else
   python -m pytest -s $@
 fi
 
-# Run static type checks
-# TODO: Make this run for entire codebase
-echo "Running static type checks..."
-mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators device/comms/i2c2
-echo "...type checks complete!"

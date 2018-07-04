@@ -83,17 +83,14 @@ def test_set_spd():
     )
     assert error.exists() == False
     assert channel_outputs == {"FR": 46.0, "WW": 54.0}
-    assert (
-        output_spectrum_nm_percent
-        == {
-            "400-449": 12.27,
-            "449-499": 12.27,
-            "500-549": 42.44,
-            "550-559": 8.49,
-            "600-649": 12.27,
-            "650-699": 12.27,
-        }
-    )
+    assert output_spectrum_nm_percent == {
+        "400-449": 12.27,
+        "449-499": 12.27,
+        "500-549": 42.44,
+        "550-559": 8.49,
+        "600-649": 12.27,
+        "650-699": 12.27,
+    }
     assert output_intensity_watts == 81.52
 
 
@@ -119,7 +116,12 @@ def test_set_spd_flat_taurus():
 
     # Set expected outputs
     expected_channel_outputs = {
-        "WW": 0.0, "CW": 0.0, "B": 33.0, "G": 38.0, "R": 33.0, "FR": 0.0
+        "WW": 0.0,
+        "CW": 0.0,
+        "B": 33.0,
+        "G": 38.0,
+        "R": 33.0,
+        "FR": 0.0,
     }
     expected_output_spectrum = {
         "400-449": 18.58,
@@ -167,7 +169,12 @@ def test_set_spd_blue_taurus():
 
     # Set expected outputs
     expected_channel_outputs = {
-        "WW": 0.0, "CW": 0.0, "B": 100.0, "G": 0.0, "R": 0.0, "FR": 0.0
+        "WW": 0.0,
+        "CW": 0.0,
+        "B": 100.0,
+        "G": 0.0,
+        "R": 0.0,
+        "FR": 0.0,
     }
     expected_output_spectrum = {
         "400-449": 50.0,
@@ -219,7 +226,12 @@ def test_set_spd_blue_taurus():
 
         # Set expected outputs
         expected_channel_outputs = {
-            "WW": 0.0, "CW": 0.0, "B": 100.0, "G": 0.0, "R": 0.0, "FR": 0.0
+            "WW": 0.0,
+            "CW": 0.0,
+            "B": 100.0,
+            "G": 0.0,
+            "R": 0.0,
+            "FR": 0.0,
         }
         expected_output_spectrum = {
             "400-449": 50.0,
@@ -272,7 +284,12 @@ def test_set_spd_green_taurus():
 
     # Set expected outputs
     expected_channel_outputs = {
-        "WW": 0.0, "CW": 0.0, "B": 0.0, "G": 100.0, "R": 0.0, "FR": 0.0
+        "WW": 0.0,
+        "CW": 0.0,
+        "B": 0.0,
+        "G": 100.0,
+        "R": 0.0,
+        "FR": 0.0,
     }
     expected_output_spectrum = {
         "400-449": 0.0,
@@ -325,7 +342,12 @@ def test_set_spd_red_taurus():
 
     # Set expected outputs
     expected_channel_outputs = {
-        "WW": 0.0, "CW": 0.0, "B": 0.0, "G": 0.0, "R": 100.0, "FR": 0.0
+        "WW": 0.0,
+        "CW": 0.0,
+        "B": 0.0,
+        "G": 0.0,
+        "R": 100.0,
+        "FR": 0.0,
     }
     expected_output_spectrum = {
         "400-449": 0.0,
