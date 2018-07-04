@@ -1,5 +1,0 @@
-[
-  "tests/test_light.py::test_individual",
-  "tests/test_light.py::test_approximate_spd",
-  "tests/test_light.py::tests_calculate_resultant_spd"
-]

@@ -1,7 +1,0 @@
-[
-  "tests/test_driver.py::test_init",
-  "tests/test_driver.py::test_read_carbon_dioxide",
-  "tests/test_driver.py::test_read_status",
-  "tests/test_driver.py::test_enable_abc_logic",
-  "tests/test_driver.py::test_disable_abc_logic"
-]
