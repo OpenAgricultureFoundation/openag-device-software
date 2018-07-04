@@ -24,7 +24,7 @@ class StatusRegister(NamedTuple):
 
 
 class ErrorRegister(NamedTuple):
-    message_invalid: bool
+    write_register_invalid: bool
     read_register_invalid: bool
     measurement_mode_invalid: bool
     max_resistance: bool
@@ -160,7 +160,7 @@ class CCS811Driver:
 
         # Parse error register byte
         return ErrorRegister(
-            message_invalid=bool(bitwise.get_bit_from_byte(0, byte)),
+            write_register_invalid=bool(bitwise.get_bit_from_byte(0, byte)),
             read_register_invalid=bool(bitwise.get_bit_from_byte(1, byte)),
             measurement_mode_invalid=bool(bitwise.get_bit_from_byte(2, byte)),
             max_resistance=bool(bitwise.get_bit_from_byte(3, byte)),

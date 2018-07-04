@@ -41,7 +41,7 @@ class I2C(object):
         # Initialize logger instance
         logger_name = "I2C({})".format(self.name)
         self.logger = Logger(name=logger_name, dunder_name=__name__)
-        self.logger.info("Initializing communication")
+        self.logger.debug("Initializing communication")
 
         # Verify mux config
         if self.mux != None and self.channel == None:
@@ -49,12 +49,12 @@ class I2C(object):
 
         # Initialize io
         if PeripheralSimulator != None:
-            self.logger.info("Using simulated io stream")
+            self.logger.debug("Using simulated io stream")
             self.io = PeripheralSimulator(  # type: ignore
                 name, bus, address, mux, channel, mux_simulator
             )
         else:
-            self.logger.info("Using device io stream")
+            self.logger.debug("Using device io stream")
             self.io = DeviceIO(name, bus)
 
         # Verify mux exists
@@ -66,12 +66,12 @@ class I2C(object):
             self.verify_device()
 
         # Successfully initialized!
-        self.logger.info("Initialization successful")
+        self.logger.debug("Initialization successful")
 
     def verify_mux(self) -> None:
         """Verifies mux exists by trying to set it to a channel."""
         try:
-            self.logger.info("Verifying mux exists")
+            self.logger.debug("Verifying mux exists")
             byte = self.set_mux(self.mux, self.channel, retry=True)
         except MuxError as e:
             message = "Unable to verify mux exists"
@@ -80,7 +80,7 @@ class I2C(object):
     def verify_device(self) -> None:
         """Verifies device exists by trying to read a byte from it."""
         try:
-            self.logger.info("Verifying device exists")
+            self.logger.debug("Verifying device exists")
             byte = self.read(1, retry=True)
         except ReadError as e:
             message = "Unable to verify device exists, read error"
