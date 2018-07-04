@@ -1,8 +1,0 @@
-{
-  "tests/test_events.py::test_clear_calibration": true,
-  "tests/test_events.py::test_dry_calibration": true,
-  "tests/test_events.py::test_high_point_calibration": true,
-  "tests/test_events.py::test_initialize": true,
-  "tests/test_events.py::test_low_point_calibration": true,
-  "tests/test_events.py::test_single_point_calibration": true
-}

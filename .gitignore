@@ -13,3 +13,5 @@ images/
 about.json
 .idea
 htmlcov
+.pytest_cache/
+.coverage
