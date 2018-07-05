@@ -47,7 +47,7 @@ class DeviceManager:
         and manage external events. """
 
     # Initialize logger
-    extra = {"console_name": "Device", "file_name": "device"}
+    extra = {"console_name": "Device", "file_name": "Device"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
@@ -72,9 +72,7 @@ class DeviceManager:
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None,
-        "start_timestamp_minutes": None,
-        "last_update_minute": None,
+        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
     }
 
     # Initialize recipe object
@@ -684,7 +682,11 @@ class DeviceManager:
             if "stored" in stored_peripherals_state[peripheral_name]:
                 self.state.peripherals[peripheral_name][
                     "stored"
-                ] = stored_peripherals_state[peripheral_name]["stored"]
+                ] = stored_peripherals_state[
+                    peripheral_name
+                ][
+                    "stored"
+                ]
 
         # Load controllers state
         stored_controllers_state = json.loads(stored_state.controllers)
@@ -693,7 +695,11 @@ class DeviceManager:
             if "stored" in stored_controllers_state[controller_name]:
                 self.state.controllers[controller_name][
                     "stored"
-                ] = stored_controllers_state[controller_name]["stored"]
+                ] = stored_controllers_state[
+                    controller_name
+                ][
+                    "stored"
+                ]
 
     def store_environment(self):
         """ Stores current environment state in environment table. """
@@ -896,12 +902,10 @@ class DeviceManager:
         # Get request parameters
         try:
             request_type = request["type"]
-            request_value = request["value"]
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {
-                "status": 400,
-                "message": "Invalid request parameters: {}".format(e),
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
             }
             return
 
@@ -909,7 +913,7 @@ class DeviceManager:
         if request_type == "Load Recipe":
             self.process_load_recipe_event()
         elif request_type == "Start Recipe":
-            self.process_start_recipe_event(request_value)
+            self.process_start_recipe_event(request)
         elif request_type == "Stop Recipe":
             self.process_stop_recipe_event()
         elif request_type == "Reset":
@@ -929,14 +933,38 @@ class DeviceManager:
     # Also called from the IoTManager command receiver.
     # Need to save the json recipe to the DB first
     # (referenced here by UUID)
-    def process_start_recipe_event(self, request_value):
+    def process_start_recipe_event(self, request):
         """ Processes load recipe event. """
         self.logger.debug("Processing start recipe event")
 
         # TODO: Check for valid mode transition
 
+        # Get recipe uuid value and timestamp:
+        # TODO: change `value` key to `uuid`, requires coordination w/cloud UI
+        request_uuid = request.get("uuid", None)
+        request_timestamp = request.get("timestamp", None)
+
+        # Verify uuid value exists
+        if request_uuid == None:
+            message = "Invalid request parameters: `uuid`"
+            self.response = {"status": 400, "message": message}
+            return
+
+        # Check if starting recipe at timestamp
+        if request_timestamp != None:
+
+            # Check timestamp is in the future
+            if request_timestamp < time.time():
+                message = "Invalid timestamp, value must be in the future"
+                self.response = {"status": 400, "message": message}
+                return
+
+            # Convert timestamp (seconds) to minutes
+            request_timestamp_minutes = int(request_timestamp / 60.0)
+
         # Send start recipe command to recipe thread
-        self.recipe.commanded_recipe_uuid = request_value
+        self.recipe.commanded_recipe_uuid = request_uuid
+        self.recipe.commanded_start_timestamp_minutes = request_timestamp_minutes
         self.recipe.commanded_mode = Modes.START
 
         # Wait for recipe to be picked up by recipe thread or timeout event
@@ -946,8 +974,7 @@ class DeviceManager:
             # Exit when recipe thread picks up new recipe
             if self.recipe.commanded_mode == None:
                 self.response = {
-                    "status": 200,
-                    "message": "Started recipe: {}".format(request_value),
+                    "status": 200, "message": "Started recipe: {}".format(request_uuid)
                 }
                 break
 

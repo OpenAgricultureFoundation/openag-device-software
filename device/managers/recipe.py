@@ -17,7 +17,7 @@ class RecipeManager:
     """ Manages recipe state machine. """
 
     # Initialize logger
-    extra = {"console_name": "Recipe", "file_name": "device"}
+    extra = {"console_name": "Recipe", "file_name": "Recipe"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
@@ -453,7 +453,7 @@ class RecipeManager:
 
             # Load recipe start time, if not set, start recipe immediately
             if self.commanded_start_timestamp_minutes != None:
-                self.start_timestamp_minutes = commanded_start_timestamp_minutes
+                self.start_timestamp_minutes = self.commanded_start_timestamp_minutes
                 self.commanded_start_timestamp_minutes = None
             else:
                 self.start_timestamp_minutes = self.current_timestamp_minutes
@@ -474,11 +474,41 @@ class RecipeManager:
         """ Runs queued mode. Waits for recipe start timestamp to be greater than
         or equal to current timestamp then transitions to NORMAL. """
         self.logger.info("Entered QUEUED")
+
+        # Initialize time counter
+        prev_time_seconds = 0
+
+        # Loop forever
         while True:
-            if self.start_timestamp_minutes >= self.current_timestamp_minutes:
+
+            # Check for transition to NORMAL
+            if self.current_timestamp_minutes >= self.start_timestamp_minutes:
                 self.mode = Modes.NORMAL
                 break
-            time.sleep(0.1)  # 100ms
+
+            # Calculate remaining delay time
+            delay_minutes = self.start_timestamp_minutes - self.current_timestamp_minutes
+
+            # Log remaining delay time every hour if remaining time > 1 hour
+            if delay_minutes > 60 and time.time() > prev_time_seconds + 3600:
+                prev_time_seconds = time.time()
+                delay_hours = int(delay_minutes / 60.0)
+                self.logger.debug("Starting recipe in {} hours".format(delay_hours))
+
+            # Log remaining delay time every minute if remaining time < 1 hour
+            elif delay_minutes < 60 and time.time() > prev_time_seconds + 60:
+                prev_time_seconds = time.time()
+                self.logger.debug("Starting recipe in {} minutes".format(delay_minutes))
+
+            # Check for transition to STOP
+            if self.commanded_mode == Modes.STOP:
+                self.logger.info("Received request to transition from NORMAL to STOP")
+                self.mode = self.commanded_mode
+                self.commanded_mode = Modes.NONE
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
 
     def run_normal_mode(self):
         """ Runs normal operation mode. Updates recipe and environment states 
@@ -582,9 +612,9 @@ class RecipeManager:
     def get_recipe_environment(self, minute):
         """ Gets environment object from database for provided minute. """
         return (
-            RecipeTransitionModel.objects.filter(minute__lte=minute)
-            .order_by("-minute")
-            .first()
+            RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
+                "-minute"
+            ).first()
         )
 
     def store_recipe_transitions(self, recipe_transitions):
@@ -656,4 +686,6 @@ class RecipeManager:
             for variable in environment_dict:
                 self.state.environment["sensor"]["desired"][
                     variable
-                ] = environment_dict[variable]
+                ] = environment_dict[
+                    variable
+                ]
