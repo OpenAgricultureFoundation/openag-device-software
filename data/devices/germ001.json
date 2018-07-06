@@ -1,0 +1,55 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "GERMINATOR 001",
+    "uuid": "ca9097eb-b51c-4735-8f83-d24aaed01e67",
+    "peripherals": [
+        {
+            "name": "SHT25-Left",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor Default",
+                    "file_name": "sht25/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"                    
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 0, 
+                    "address": "0x40"
+                }
+            }
+        },
+        {
+            "name": "T6713-Left",
+            "type": "T6713",
+            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "parameters": {
+                "setup": {
+                    "name": "T6713 CO2 Sensor",
+                    "file_name": "t6713/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "carbon_dioxide_ppm": "air_carbon_dioxide_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 0, 
+                    "address": "0x15"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}
