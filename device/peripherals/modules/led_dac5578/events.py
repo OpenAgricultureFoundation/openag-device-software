@@ -25,6 +25,8 @@ class LEDDAC5578Events(PeripheralEvents):
             self.response = self.process_turn_on_event()
         elif request["type"] == "Turn Off":
             self.response = self.process_turn_off_event()
+        elif request["type"] == "Set Channel":
+            self.response = self.process_set_channel_event(request)
         elif request["type"] == "Fade":
             self.response = self.initialize_fade_event()
             self.fade()
@@ -69,8 +71,9 @@ class LEDDAC5578Events(PeripheralEvents):
             response = {"status": 400, "message": "Must be in manual mode."}
             return response
 
-        # Turn off array
+        # Turn off array and update reported variables
         error = self.array.turn_off()
+        self.update_reported_variables()
 
         # Check for errors
         if error.exists():
@@ -80,6 +83,36 @@ class LEDDAC5578Events(PeripheralEvents):
 
         # Successfully turned on!
         response = {"status": 200, "message": "Turned off!"}
+        return response
+
+    def process_set_channel_event(self, request) -> None:
+        """ Processes set channel event. """
+        self.logger.debug("Processing set channel event")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            response = {"status": 400, "message": "Must be in manual mode."}
+            return response
+
+        # Verify request parameters
+        try:
+            channel_name, percent = request["value"].split(",")
+        except KeyError as e:
+            self.logger.exception("Invalid request parameters")
+            return {"status": 400, "message": "Invalid request parameter: " + str(e)}
+
+        # Set channel and update reported variables
+        error = self.array.set_output(channel_name, float(percent))
+        self.update_reported_variables()
+
+        # Check for errors
+        if error.exists():
+            self.mode = Modes.ERROR
+            response = {"status": 400, "message": error.trace}
+            return response
+
+        # Successfully turned on!
+        response = {"status": 200, "message": "Turned on!"}
         return response
 
     def initialize_fade_event(self) -> Dict:
