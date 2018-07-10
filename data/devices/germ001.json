@@ -49,6 +49,58 @@
                     "address": "0x15"
                 }
             }
+        },
+        {
+            "name": "AtlasEC-Reservoir",
+            "type": "AtlasEC",
+            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
+                    "file_name": "atlas_ec/setups/default_k1_0"
+                },
+                "variables": {
+                    "sensor": {
+                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": null
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "address": "0x64",
+                    "mux": "0x77", 
+                    "channel": 4
+                }
+            }
+        },
+        {
+            "name": "AtlasPH-Reservoir",
+            "type": "AtlasPH",
+            "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Potential Hydrogen Sensor Default",
+                    "file_name": "atlas_ph/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "potential_hydrogen": "water_potential_hydrogen"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": "water_temperature_celcius"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 4, 
+                    "address": "0x63"
+                }
+            }
         }
     ],
     "controllers": null
