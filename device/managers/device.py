@@ -939,10 +939,15 @@ class DeviceManager:
 
         # TODO: Check for valid mode transition
 
-        # Get recipe uuid value and timestamp:
-        # TODO: change `value` key to `uuid`, requires coordination w/cloud UI
-        request_uuid = request.get("uuid", None)
-        request_timestamp = request.get("timestamp", None)
+        # For backwards compatibility with v0.1.0
+        if type(request) == str:
+            request_uuid = request
+            request_timestamp = None
+        else:
+            # Get recipe uuid value and timestamp:
+            self.logger.info("request = {}".format(request))
+            request_uuid = request.get("uuid", None)
+            request_timestamp = request.get("timestamp", None)
 
         # Verify uuid value exists
         if request_uuid == None:
