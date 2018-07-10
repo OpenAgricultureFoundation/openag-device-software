@@ -271,6 +271,16 @@
 		    "is_manual": true
 		},
 		{
+		    "name": "Set Channel",
+		    "description": "Set channel name to intensity percent.",
+		    "value": {
+                "default": "WW, 100",
+                "unit": "ch, %"
+            },
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
 		    "name": "Fade",
 		    "description": "Fades all channels up/down concurrently.",
 		    "value": null,

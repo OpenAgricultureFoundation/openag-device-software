@@ -961,6 +961,8 @@ class DeviceManager:
 
             # Convert timestamp (seconds) to minutes
             request_timestamp_minutes = int(request_timestamp / 60.0)
+        else:
+            request_timestamp_minutes = None
 
         # Send start recipe command to recipe thread
         self.recipe.commanded_recipe_uuid = request_uuid
