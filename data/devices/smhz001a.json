@@ -7,7 +7,7 @@
         {
             "name": "LEDArray-1",
             "type": "LEDDAC5578",
-            "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+            "uuid": "bd45340b-e64c-42a4-9fe4-e77f57e671b5",
             "parameters": {
                "setup": {
                     "name": "LEDDAC5578 Array Orion Actuator",

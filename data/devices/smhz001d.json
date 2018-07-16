@@ -2,12 +2,12 @@
     "format": "openag-standard-v1",
     "name": "Small Hazelnut D",
     "version": "1",
-    "uuid": "cac8693b-fe33-44a6-a212-c42f78694362",
+    "uuid": "e2a00375-f703-4d35-a89c-aaf334fba18d",
     "peripherals": [
         {
             "name": "LEDArray-1",
             "type": "LEDDAC5578",
-            "uuid": "c754a626-02c9-47b7-b386-d353c7f70420",
+            "uuid": "7c692e32-b71b-48ca-8fc0-ec838187fd30",
             "parameters": {
                "setup": {
                     "name": "LEDDAC5578 Array Orion Actuator",

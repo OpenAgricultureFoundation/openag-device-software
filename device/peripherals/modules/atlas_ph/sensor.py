@@ -120,7 +120,7 @@ class AtlasPHSensor(AtlasSensorMixin):
 
             # Check if simulating
             if self.simulate:
-                self.sensor_type = "PH"
+                self.sensor_type = "ph"
                 self.firmware_version = 2.0
                 error = Error(None)
                 break
@@ -142,10 +142,10 @@ class AtlasPHSensor(AtlasSensorMixin):
             return error
 
         # Check for correct sensor type
-        if self.sensor_type != "PH":
+        if self.sensor_type.lower() != "ph":
             error = Error(
-                "Sensor probe failed, incorrect sensor type. `{}` != `PH`".format(
-                    self.sensor_type
+                "Sensor probe failed, incorrect sensor type. `{}` != `ph`".format(
+                    self.sensor_type.lower()
                 )
             )
             return error
