@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Small Hazelnut",
+    "name": "Small Hazelnut A",
     "version": "1",
     "uuid": "65dba26a-f9b4-48d7-a8d5-d180645cf4c6",
     "peripherals": [
@@ -25,8 +25,11 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0},
-                        {"name": "LP2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "x": 0, "y": 0}
+                        {"name": "LP13", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2},
+                        {"name": "LP23", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                        {"name": "LP33", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
+                        {"name": "LP41", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1},
+                        {"name": "LP42", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 0}
                     ]
                 }
             }

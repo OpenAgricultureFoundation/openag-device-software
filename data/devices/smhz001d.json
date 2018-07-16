@@ -1,0 +1,40 @@
+{	
+    "format": "openag-standard-v1",
+    "name": "Small Hazelnut D",
+    "version": "1",
+    "uuid": "cac8693b-fe33-44a6-a212-c42f78694362",
+    "peripherals": [
+        {
+            "name": "LEDArray-1",
+            "type": "LEDDAC5578",
+            "uuid": "c754a626-02c9-47b7-b386-d353c7f70420",
+            "parameters": {
+               "setup": {
+                    "name": "LEDDAC5578 Array Orion Actuator",
+                    "file_name": "led_dac5578/setups/orion"
+                },
+                "variables": {
+                    "sensor": {
+                        "intensity_watts": "light_intensity_watts",
+                        "spectrum_nm_percent": "light_spectrum_nm_percent",
+                        "illumination_distance_cm": "light_illumination_distance_cm"
+                    },
+                    "actuator": {
+                        "channel_output_percents": "light_channel_output_percents"
+                    }
+                },
+                "communication": {
+                    "panels": [
+                        {"name": "LP14", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5},
+                        {"name": "LP15", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
+                        {"name": "LP24", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7},
+                        {"name": "LP32", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                        {"name": "LP45", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6},
+                        {"name": "LP55", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
+                    ]
+                }
+            }
+        }
+    ],
+    "controllers": null
+}
