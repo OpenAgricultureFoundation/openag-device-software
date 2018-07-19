@@ -33,10 +33,12 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--device", type=str, help="specifies device config")
+parser.add_argument("--device", type=str, help="specifies device config file name")
+parser.add_argument("--name", type=str, help="specifies peripheral name in config")
 
 # Setup parser functions
 parser.add_argument("--status", action="store_true", help="read status")
+parser.add_argument("--setup", action="store_true", help="sets up sensor")
 parser.add_argument("--co2", action="store_true", help="read carbon dioxide")
 parser.add_argument("--reset", action="store_true", help="resets sensor")
 parser.add_argument("--enable-abc", action="store_true", help="resets sensor")
@@ -58,19 +60,23 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.WARNING)
 
     # Check for device config
-    if args.device != None:
-        print("Using device config: {}".format(args.device))
-        device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "T6713-Top"
-        )
-    else:
+    if args.device == None:
         print("Please specify a device configuraion")
         sys.exit(0)
 
+    # Check for peripheral name
+    if args.name == None:
+        print("Please specify a peripheral name")
+        sys.exit(0)
+
+    # Set device config
+    print("Using device config: {}".format(args.device))
+    device_config = json.load(open("data/devices/{}.json".format(args.device)))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], args.name)
+
     # Initialize driver
     driver = T6713Driver(
-        name="T6713-Top",
+        name=args.name,
         bus=peripheral_config["parameters"]["communication"]["bus"],
         address=int(peripheral_config["parameters"]["communication"]["address"], 16),
         mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
@@ -89,47 +95,34 @@ if __name__ == "__main__":
         # Check if reading status
         if args.status:
             print("Reading status")
-            status, error = driver.read_status()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Status: {}".format(status))
+            status = driver.read_status(retry=True)
+            print("Status: {}".format(status))
+
+        # Check if setting up sensor
+        if args.setup:
+            print("Setting up sensor")
+            driver.setup(retry=True)
 
         # Check if reading carbon dioxide
         elif args.co2:
-            print("Reading carbon dioxide")
-            co2, error = driver.read_carbon_dioxide()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Co2: {} ppm".format(co2))
+            print("Reading co2")
+            co2 = driver.read_co2(retry=True)
+            print("Co2: {} ppm".format(co2))
 
         # Check if resetting sensor
         elif args.reset:
             print("Resetting")
-            error = driver.reset()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Succussfully reset")
+            driver.reset(retry=True)
 
         # Check if enabling abc logic
         elif args.enable_abc:
             print("Enabling abc logic")
-            error = driver.enable_abc_logic()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Succussfully enabled")
+            driver.enable_abc_logic(retry=True)
 
         # Check if disabling abc logic
         elif args.disable_abc:
-            print("Disabled abc logic")
-            error = driver.disable_abc_logic()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Succussfully disabled")
+            print("Disabling abc logic")
+            driver.disable_abc_logic(retry=True)
 
         # Check for new command if loop enabled
         if loop:

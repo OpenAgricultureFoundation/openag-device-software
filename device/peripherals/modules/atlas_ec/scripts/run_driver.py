@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     # Initialize driver
     driver = AtlasECDriver(
-        name="AtlasEC-Reservoir",
+        name=args.name,
         bus=peripheral_config["parameters"]["communication"]["bus"],
         address=int(peripheral_config["parameters"]["communication"]["address"], 16),
         mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
