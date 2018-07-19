@@ -10,6 +10,7 @@ from device.utilities.logger import Logger
 from device.utilities.error import Error
 from device.utilities import maths
 
+0.0065
 # Import parent class
 from device.peripherals.classes.atlas_driver import AtlasDriver
 
@@ -334,6 +335,23 @@ class AtlasECDriver(AtlasDriver):
         # Check for errors
         if error.exists():
             error.report("Driver unable to clear calibration readings")
+            return error
+
+        # Successfully cleared calibration readings!
+        return Error(None)
+
+    def factory_reset(self) -> Error:
+        """ Commands sensor to clear calibration readings. """
+        self.logger.info("Performing factory reset")
+
+        # Send command
+        _, error = self.process_command(
+            "Factory", processing_seconds=0.3, read_response=False
+        )
+
+        # Check for errors
+        if error.exists():
+            error.report("Driver unable to perform factory reset")
             return error
 
         # Successfully cleared calibration readings!

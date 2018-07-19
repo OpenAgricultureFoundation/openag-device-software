@@ -6,7 +6,7 @@ cwd = os.getcwd()
 print("Running from: {}".format(cwd))
 
 # Set correct import path
-if cwd.endswith("dac5578"):
+if cwd.endswith("atlas_ec"):
     print("Running locally")
     sys.path.append("../../../../")
 elif cwd.endswith("openag-device-software"):
@@ -28,16 +28,18 @@ parser.add_argument("--info", action="store_true", help="set logger in info mode
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
-parser.add_argument("--device", type=str, help="specifies device config")
+parser.add_argument("--device", type=str, help="specifies device config file name")
+parser.add_argument("--name", type=str, help="specifies peripheral name in config")
+
 
 # Setup parser functions
-parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
-parser.add_argument(
-    "-s", "--read-status", action="store_true", help="read sensor status"
-)
-parser.add_argument(
-    "-r", "--read-ec", action="store_true", help="read electrical conductivity"
-)
+parser.add_argument("--device-info", action="store_true", help="read sensor info")
+parser.add_argument("--status", action="store_true", help="read sensor status")
+parser.add_argument("--ec", action="store_true", help="read electrical conductivity")
+parser.add_argument("--factory", action="store_true", help="perform factory reset")
+
+# TODO: Remove me, this is a hack
+os.chdir("../../../../")
 
 # Run main
 if __name__ == "__main__":
@@ -54,15 +56,19 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.WARNING)
 
     # Check for device config
-    if args.device != None:
-        print("Using device config: {}".format(args.device))
-        device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "AtlasEC-Reservoir"
-        )
-    else:
+    if args.device == None:
         print("Please specify a device configuraion")
         sys.exit(0)
+
+    # Check for peripheral name
+    if args.name == None:
+        print("Please specify a peripheral name")
+        sys.exit(0)
+
+    # Set device config
+    print("Using device config: {}".format(args.device))
+    device_config = json.load(open("data/devices/{}.json".format(args.device)))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], args.name)
 
     # Initialize driver
     driver = AtlasECDriver(
@@ -83,7 +89,7 @@ if __name__ == "__main__":
     while True:
 
         # Check if reading info
-        if args.read_info:
+        if args.device_info:
             print("Reading info")
             sensor_type, firmware_version, error = driver.read_info()
             if error.exists():
@@ -93,7 +99,7 @@ if __name__ == "__main__":
                 print("Firmware version: {}".format(firmware_version))
 
         # Check if reading status
-        elif args.read_status:
+        elif args.status:
             print("Reading status")
             prev_restart_reason, voltage, error = driver.read_status()
             if error.exists():
@@ -103,13 +109,22 @@ if __name__ == "__main__":
                 print("Voltage: {}".format(voltage))
 
         # Check if reading electrical conductivity
-        elif args.read_ec:
+        elif args.ec:
             print("Reading electrical conductivity")
             ec, error = driver.read_electrical_conductivity()
             if error.exists():
                 print("Error: {}".format(error.trace))
             else:
                 print("EC: {} mS/cm".format(ec))
+
+        # Check if performing factory reset
+        elif args.factory:
+            print("Performing factory reset")
+            error = driver.factory_reset()
+            if error.exists():
+                print("Error: {}".format(error.trace))
+            else:
+                print("Successfully performed factory reset")
 
         # Check for new command if loop enabled
         if loop:
