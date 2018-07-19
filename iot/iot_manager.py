@@ -200,8 +200,9 @@ class IoTManager:
                 for imageFile in imageFileList:
 
                     # Is this file open by a process? (fswebcam)
-                    if 0 == os.system(
-                        "lsof -f -- {} > /dev/null 2>&1".format(imageFile)
+                    if (
+                        0
+                        == os.system("lsof -f -- {} > /dev/null 2>&1".format(imageFile))
                     ):
                         continue  # Yes, so skip it and try the next one.
 
@@ -216,7 +217,7 @@ class IoTManager:
                     f.close()
 
                     self.iot.publishBinaryImage(cameraName, "png", fileBytes)
-                    os.remove(imageFile)  # clean up!
+                    # os.remove(imageFile)  # clean up!
 
             except (Exception) as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
