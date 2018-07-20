@@ -1,5 +1,5 @@
 # Import standard python modules
-import numpy, math
+import numpy, math, operator
 
 
 def magnitude(x):
@@ -72,8 +72,15 @@ def discretize(minimum: int, maximum: int, value: float) -> dict:
     return output
 
 
+def bnnls(A, b, bound):
+    """Solves for bounded non-negative least squares approximation. When solving Ax=b, 
+    x is constrained to be within 0-bound"""
+    x = nnls(A, b)
+    mcol, mval = max(enumerate(x.tolist()), key=operator.itemgetter(1))
+
+
 def nnls(A, b, tol=1e-8):
-    """ Origninal function by @alexfields
+    """Origninal function by @alexfields
 
     Solve ``argmin_x || Ax - b ||_2`` for ``x>=0``. This version may be superior to the FORTRAN implementation when ``A`` has more rows than
     columns, and especially when ``A`` is sparse.
