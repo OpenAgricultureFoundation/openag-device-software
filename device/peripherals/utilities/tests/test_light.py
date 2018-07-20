@@ -12,46 +12,6 @@ except:
     from device.peripherals.utilities import light
 
 
-# channel_configs = [
-#     {
-#         "name": {"brief": "FR", "verbose": "Far Red"},
-#         "channel": {"hardware": 1, "software": 6},
-#         "spectrum_nm_percent": {"400-499": 20, "500-599": 80, "600-699": 20},
-#         "planar_distance_map": [
-#             {"distance_cm": 5, "ppfd_umol_m2_s": 100},
-#             {"distance_cm": 10, "ppfd_umol_m2_s": 50},
-#             {"distance_cm": 15, "ppfd_umol_m2_s": 25},
-#             {"distance_cm": 20, "ppfd_umol_m2_s": 12},
-#         ],
-#         "output_percent_map": [
-#             {"setpoint_percent": 0, "intensity_percent": 0},
-#             {"setpoint_percent": 25, "intensity_percent": 0},
-#             {"setpoint_percent": 50, "intensity_percent": 33},
-#             {"setpoint_percent": 75, "intensity_percent": 66},
-#             {"setpoint_percent": 100, "intensity_percent": 100},
-#         ],
-#     },
-#     {
-#         "name": {"brief": "WW", "verbose": "Warm White"},
-#         "channel": {"hardware": 2, "software": 7},
-#         "spectrum_nm_percent": {"400-499": 20, "500-599": 60, "600-699": 20},
-#         "planar_distance_map": [
-#             {"distance_cm": 5, "ppfd_umol_m2_s": 100},
-#             {"distance_cm": 10, "ppfd_umol_m2_s": 50},
-#             {"distance_cm": 15, "ppfd_umol_m2_s": 25},
-#             {"distance_cm": 20, "ppfd_umol_m2_s": 12},
-#         ],
-#         "output_percent_map": [
-#             {"setpoint_percent": 0, "intensity_percent": 0},
-#             {"setpoint_percent": 25, "intensity_percent": 0},
-#             {"setpoint_percent": 50, "intensity_percent": 33},
-#             {"setpoint_percent": 75, "intensity_percent": 66},
-#             {"setpoint_percent": 100, "intensity_percent": 100},
-#         ],
-#     },
-# ]
-
-
 channel_configs = [  # Config from taurus light panel
     {
         "name": {"brief": "FR", "verbose": "Far Red"},
@@ -285,7 +245,7 @@ def test_calculate_channel_output_vector():
     )
     print("channel_outputs = {}".format(channel_outputs))
 
-    assert channel_outputs == [1, 1, 1, 1, 1, 1]
+    assert channel_outputs == [1, 0.75, 0.25, 0.75, 1, 1]
 
 
 # channel_output_intensities_dict = light.dictify_channel_output_vector(

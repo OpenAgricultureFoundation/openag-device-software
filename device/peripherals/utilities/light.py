@@ -124,31 +124,13 @@ def calculate_channel_output_vector(channel_spd_matrix, desired_spd_vector):
     print("channel_spd_matrix = {}".format(channel_spd_matrix.tolist()))
     print("desired_spd_vector = {}".format(desired_spd_vector.tolist()))
 
-    # Calculate weighted channel outputs
-    weighted_channel_outputs = maths.nnls(channel_spd_matrix, desired_spd_vector)
-
-    # print("weighted_channel_outputs = {}".format(weighted_channel_outputs.tolist()))
-
-    # # Get max output value and corresponding channel
-    # max_channel, max_output = max(
-    #     enumerate(weighted_channel_outputs.tolist()), key=operator.itemgetter(1)
-    # )
-
-    # # Check if max value is saturated (>1)
-    # print(max_channel, max_output)
-
-    # Scale channel outputs
-    max_output = max(weighted_channel_outputs)
-    if max_output > 1:
-        scaled_channel_outputs = weighted_channel_outputs / max_output
-    else:
-        scaled_channel_outputs = weighted_channel_outputs
+    # Calculate channel outputs via bounded non-negative least squares approximation
+    channel_outputs = maths.bnnls(channel_spd_matrix, desired_spd_vector)
 
     # Create channel output vector
     channel_output_vector = []
-    for scaled_channel_output in scaled_channel_outputs:
-        rounded_channel_output = float("{:.2f}".format(scaled_channel_output))
-        channel_output_vector.append(rounded_channel_output)
+    for channel_output in channel_outputs:
+        channel_output_vector.append(round(channel_output, 2))
 
     # Return channel output vector
     return channel_output_vector
