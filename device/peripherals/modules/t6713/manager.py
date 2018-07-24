@@ -1,21 +1,20 @@
 # Import standard python modules
-from typing import Optional, Tuple, Dict, NamedTuple
+from typing import Optional, Tuple, Dict
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.health import Health
-from device.utilities.error import Error
 
 # Import peripheral parent class
 from device.peripherals.classes.peripheral_manager import PeripheralManager
 
-# Import led array and events
-from device.peripherals.modules.t6713.sensor import T6713Sensor
+# Import sht25 elements
 from device.peripherals.modules.t6713.events import T6713Events
+from device.peripherals.modules.t6713.driver import T6713Driver
+from device.peripherals.modules.t6713.exceptions import DriverError
 
 
 class T6713Manager(PeripheralManager, T6713Events):
-    """ Manages a t6713 carbon dioxide sensor. """
+    """ Manages an t6713 co2 sensor. """
 
     def __init__(self, *args, **kwargs):
         """ Instantiates manager Instantiates parent class, and initializes 
@@ -25,96 +24,71 @@ class T6713Manager(PeripheralManager, T6713Events):
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.carbon_dioxide_name = self.parameters["variables"]["sensor"][
-            "carbon_dioxide_ppm"
-        ]
-
-        # Initialize sensor
-        self.sensor = T6713Sensor(
-            name=self.name,
-            bus=self.parameters["communication"]["bus"],
-            mux=int(self.parameters["communication"]["mux"], 16),
-            channel=self.parameters["communication"]["channel"],
-            address=int(self.parameters["communication"]["address"], 16),
-            simulate=self.simulate,
-        )
+        self.co2_name = self.parameters["variables"]["sensor"]["carbon_dioxide_ppm"]
 
     @property
-    def carbon_dioxide(self) -> None:
+    def co2(self) -> None:
         """ Gets carbon dioxide value. """
-        return self.state.get_peripheral_reported_sensor_value(
-            self.name, self.carbon_dioxide_name
-        )
+        return self.state.get_peripheral_reported_sensor_value(self.name, self.co2_name)
 
-    @carbon_dioxide.setter
-    def carbon_dioxide(self, value: float) -> None:
+    @co2.setter
+    def co2(self, value: float) -> None:
         """ Sets carbon dioxide value in shared state. Does not update enironment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(
-            self.name, self.carbon_dioxide_name, value
-        )
+        self.state.set_peripheral_reported_sensor_value(self.name, self.co2_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
-                self.name, self.carbon_dioxide_name, value
+                self.name, self.co2_name, value
             )
 
     def initialize(self) -> None:
-        """ Initializes manager."""
+        """Initializes manager."""
         self.logger.info("Initializing")
 
         # Clear reported values
         self.clear_reported_values()
 
         # Initialize health
-        self.health = self.sensor.health.percent
+        self.health = 100.0
 
-        # Initialize sensor
-        error = self.sensor.probe()
-
-        # Check for errors
-        if error.exists():
-            error.report("Manager unable to initialize")
-            self.logger.error(error.summary())
+        # Initialize driver
+        try:
+            self.driver = T6713Driver(
+                name=self.name,
+                bus=self.parameters["communication"]["bus"],
+                mux=int(self.parameters["communication"]["mux"], 16),
+                channel=self.parameters["communication"]["channel"],
+                address=int(self.parameters["communication"]["address"], 16),
+                simulate=self.simulate,
+                mux_simulator=self.mux_simulator,
+            )
+        except DriverError as e:
+            self.logger.exception("Manager unable to initialize")
+            self.health = 0.0
             self.mode = Modes.ERROR
             return
 
         # Successful initialization!
-        self.logger.debug("Initialized successfully")
+        self.logger.info("Initialized successfully")
 
     def setup(self) -> None:
-        """ Sets up manager. Programs device operation parameters into 
-            sensor driver circuit. """
-        self.logger.debug("Setting up sensor")
-
-        # Setup sensor
-        error = self.sensor.setup()
-
-        # Check for errors:
-        if error.exists():
-            error.report("Manager setup failed")
-            self.logger.error(error.summary())
-            self.mode = Modes.ERROR
-            return
-
-        # Successfully setup!
-        self.logger.debug("Successfully setup!")
+        """Sets up sensor."""
+        self.driver.setup(retry=True)
 
     def update(self) -> None:
-        """ Updates sensor when in normal mode. """
+        """Updates sensor by reading co2 value then reporting to shared state."""
 
-        # Read carbon_dioxide
-        co2, error = self.sensor.read_carbon_dioxide()
-
-        # Check for errors:
-        if error.exists():
-            error.report("Manager unable to update")
-            self.logger.error(error.summary())
+        # Read co2
+        try:
+            co2 = self.driver.read_co2(retry=True)
+        except DriverError:
+            self.logger.exception("Unable to read co2")
             self.mode = Modes.ERROR
-            self.health = self.sensor.health.percent
+            self.health = 0.0
             return
 
         # Update reported values
-        self.carbon_dioxide = co2
-        self.health = self.sensor.health.percent
+        self.co2 = co2
+        self.health = 100.0
 
     def reset(self) -> None:
         """ Resets sensor. """
@@ -123,19 +97,26 @@ class T6713Manager(PeripheralManager, T6713Events):
         # Clear reported values
         self.clear_reported_values()
 
-        # Reset sensor
-        self.sensor.reset()
+        # Reset driver if not in error mode
+        try:
+            if self.mode != Modes.ERROR:
+                self.driver.reset()
+        except DriverError:
+            self.logger.exception("Unable to reset driver")
 
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")
 
     def shutdown(self) -> None:
         """ Shuts down sensor. """
-        self.logger.info("Shutting down sensor")
+        self.logger.info("Shutting down")
 
         # Clear reported values
         self.clear_reported_values()
 
+        # Successfully shutdown
+        self.logger.info("Successfully shutdown!")
+
     def clear_reported_values(self):
         """ Clears reported values. """
-        self.carbon_dioxide = None
+        self.co2 = None

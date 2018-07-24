@@ -9,41 +9,34 @@ class DriverError(Exception):
 
 class InitError(DriverError):
     """Initialization errors for sensor driver."""
+    ...
 
+
+class SetupError(DriverError):
+    """Setup errors for sensor driver."""
     ...
 
 
 class ReadCo2Error(DriverError):
-    """Read co2 errors for sensor driver."""
-
+    """Read Co2 errors for sensor driver."""
     ...
 
 
-class ReadRegisterError(DriverError):
-    """Exception raised for register read errors."""
-
+class ReadStatusError(DriverError):
+    """Read status errors for sensor driver."""
     ...
 
 
-class ReadAlgorithmDataError(DriverError):
-    """Exception raised for read algorithm data errors."""
-
+class EnableABCLogicError(DriverError):
+    """Enable ABC logic errors for sensor driver."""
     ...
 
 
-class WriteMeasurementModeError(DriverError):
-    """Exception raised for write measurement mode errors."""
-
-    ...
-
-
-class WriteEnvironmentDataError(DriverError):
-    """Exception raised for write environment data errors."""
-
+class DisableABCLogicError(DriverError):
+    """Disable ABC logic errors for sensor driver."""
     ...
 
 
 class ResetError(DriverError):
-    """Exception raised for reset errors."""
-
+    """Reset errors for sensor driver."""
     ...

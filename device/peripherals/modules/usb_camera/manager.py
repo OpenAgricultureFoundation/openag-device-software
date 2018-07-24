@@ -27,7 +27,7 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Initialize camera
         self.sensor = USBCameraSensor(
             name=self.name,
-            directory=self.parameters["directory"],
+            directory="images/",
             vendor_id=int(self.setup_dict["properties"]["vendor_id"], 16),
             product_id=int(self.setup_dict["properties"]["product_id"], 16),
             resolution=self.setup_dict["properties"]["resolution"],

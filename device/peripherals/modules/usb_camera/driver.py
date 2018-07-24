@@ -111,6 +111,7 @@ class USBCameraDriver:
             command = "fswebcam -d {} -r {} --background --png 9 --no-banner --save {}".format(
                 camera, self.resolution, filepath
             )
+            self.logger.debug("command = {}".format(command))
             os.system(command)
 
         except Exception as e:

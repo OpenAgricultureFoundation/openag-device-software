@@ -40,6 +40,7 @@ parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
 # Setup parser configs
 parser.add_argument("--device", type=str, help="specifies device config")
+parser.add_argument("--name", type=str, help="specifies peripheral name in config")
 
 # Setup parser functions
 parser.add_argument("--update", action="store_true", help="updates sensor")
@@ -62,18 +63,22 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.WARNING)
 
     # Check for device config
-    if args.device != None:
-        print("Using device config: {}".format(args.device))
-        device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "T6713-Top"
-        )
-    else:
+    if args.device == None:
         print("Please specify a device configuraion")
         sys.exit(0)
 
+    # Check for peripheral name
+    if args.name == None:
+        print("Please specify a peripheral name")
+        sys.exit(0)
+
+    # Set device config
+    print("Using device config: {}".format(args.device))
+    device_config = json.load(open("data/devices/{}.json".format(args.device)))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], args.name)
+
     # Instantiate manager
-    manager = T6713Manager(name="T6713-Top", state=state, config=peripheral_config)
+    manager = T6713Manager(name=args.name, state=state, config=peripheral_config)
 
     # Initialize and setup manager
     print("Initializing...")

@@ -3,7 +3,6 @@ import time
 from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
-# from device.comms.i2c import I2C
 from device.comms.i2c2.main import I2C
 from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.exceptions import I2CError
@@ -89,9 +88,7 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xF3]), retry=retry)
         except I2CError as e:
-            message = (
-                "Driver unable to read temperature"
-            )  # TODO: Make better error messages
+            message = ("Driver unable to read temperature")
             raise ReadTemperatureError(message, logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
