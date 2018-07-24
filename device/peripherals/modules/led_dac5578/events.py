@@ -210,7 +210,7 @@ class LEDDAC5578Events(PeripheralEvents):
                     time.sleep(0.1)
 
     def process_calculate_ulrf_from_percents(self, request) -> Dict:
-        """Processes calculating light universal recipe format (URF) parameters 
+        """Processes calculating universal light recipe format (ULRF) parameters 
         from channel power percents."""
         self.logger.debug("Processing calculating ULRF from percents")
 
@@ -225,7 +225,7 @@ class LEDDAC5578Events(PeripheralEvents):
 
         # Calculate light urf parameters
         try:
-            spectrum, intensity, distance = light.calculate_ulrf_from_percents(
+            spectrum, ppfd, distance = light.calculate_ulrf_from_percents(
                 channel_configs=self.channel_configs,
                 channel_power_percents=channel_power_percents,
                 distance=illumination_distance,
@@ -234,15 +234,9 @@ class LEDDAC5578Events(PeripheralEvents):
                 "status": 200,
                 "message": "Successfully calculated!",
                 "spectrum_nm_percents": spectrum,
-                "intensity_watts": intensity,
+                "ppfd_umol_m2_s": ppfd,
                 "illumination_distance_cm": distance,
             }
         except Exception as e:  # TODO: Break out exception types
             self.logger.exception("Unable to calculate light urf from percents")
             return {"status": 500, "message": str(e)}
-
-    def process_calculate_ulrf_from_watts(self, request) -> Dict:
-        """Processes calculating light universal recipe format (URF) parameters 
-        from channel power watts."""
-        self.logger.debug("Processing calculating ULRF from watts")
-        return {"status": 500, "message": "Not Implemented"}

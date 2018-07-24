@@ -98,15 +98,15 @@
 		}
 	},
 	{
-		"key": "light_intensity_watts",
+		"key": "light_ppfd_umol_m2_s",
 		"info": {
 			"name": {
-				"brief": "Intensity",
-				"verbose": "Light Intensity"
+				"brief": "PPFD",
+				"verbose": "Photosynthetic Photon Flux Density"
 			},
 			"unit": {
-				"brief": "W",
-				"verbose": "Watts",
+				"brief": "umol/m2/s",
+				"verbose": "Micro-Mole per Meter Squared per Second",
 				"type": "number"
 			}
 		}

@@ -38,7 +38,7 @@
 		"green_day": {
 			"name": "Green Day",
 			"light_spectrum_nm_percent": {"400-449": 0, "450-499": 0, "500-549": 50, "550-559": 50, "600-649": 0, "650-699": 0},
-			"light_intensity_watts": 100,
+			"light_ppfd_umol_m2_s": 100,
 			"light_illumination_distance_cm": 10
 		}
 	},

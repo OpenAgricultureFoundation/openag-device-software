@@ -8,29 +8,30 @@ from device.utilities import maths
 # TODO: Verify spectrums sum to 100%
 
 
-def calculate_desired_spd(intensity_watts, spectrum_nm_percent):
-    """ Calculates desired spd. """
+def calculate_desired_spd(ppfd_umol_m2_s, spectrum_nm_percent):
+    """Calculates desired spd."""
+    desired_spd = {}
     for wavelength_band, percent in spectrum_nm_percent.items():
-        spectrum_nm_percent[wavelength_band] = intensity_watts * percent / 100.0
-    return spectrum_nm_percent
+        desired_spd[wavelength_band] = ppfd_umol_m2_s * percent / 100.0
+    return desired_spd
 
 
-def get_intensity_at_distance(channel_config, distance):
-    """ Gets intensity (watts) at illumination distance (cm). """
+def get_ppfd_at_distance(channel_config, distance):
+    """Gets photosynthetic photon flux density (ppfd) at illumination distance (cm)."""
     planar_distance_map = channel_config["planar_distance_map"]
     distance_list = []
-    intensity_list = []
+    ppfd_list = []
     for entry in planar_distance_map:
         distance_list.append(entry["distance_cm"])
-        intensity_list.append(entry["intensity_watts"])
-    intensity = maths.interpolate(distance_list, intensity_list, distance)
-    return intensity
+        ppfd_list.append(entry["ppfd_umol_m2_s"])
+    ppfd = maths.interpolate(distance_list, ppfd_list, distance)
+    return ppfd
 
 
 def discretize_spd(spd):
-    """ Discretizes channel spd. Converts values banded by wavelengths greater
-        than 1 nm into a set of wavelengths at 1nm granularity with corresponding
-        value. """
+    """Discretizes channel spd. Converts values banded by wavelengths greater
+    than 1 nm into a set of wavelengths at 1nm granularity with corresponding
+    value. Applies no weighting based on wavelength, but should (E=hf)."""
     discretized_spd = {}
     for wavelength_band, intensity in spd.items():
         minimum, maximum = list(map(int, wavelength_band.split("-")))
@@ -80,14 +81,14 @@ def build_channel_spd_matrix(channel_configs, distance, reference_spd):
     for channel_config in channel_configs:
 
         # Get channel intensity and spd
-        intensity_watts = get_intensity_at_distance(channel_config, distance)
+        ppfd_umol_m2_s = get_ppfd_at_distance(channel_config, distance)
         channel_spd = channel_config["spectrum_nm_percent"]
 
         # Scale channel spd to intensity at distance
         scaled_channel_spd = {}
         for wavelength_band, intensity_percent in channel_spd.items():
             scaled_channel_spd[wavelength_band] = (
-                intensity_watts * intensity_percent / 100
+                ppfd_umol_m2_s * intensity_percent / 100
             )
 
         # Translate channel spd to match wavelength bands of desired spd
@@ -107,34 +108,29 @@ def build_channel_spd_matrix(channel_configs, distance, reference_spd):
     return channel_spd_matrix
 
 
-def build_desired_spd_vector(desired_spectrum_nm_percent, desired_intensity_watts):
-    """ Builds desired spd vector. """
+def build_desired_spd_vector(desired_spectrum_nm_percent, desired_ppfd_umol_m2_s):
+    """Builds desired spd vector."""
     desired_spd_vector = []
     for band, percent in desired_spectrum_nm_percent.items():
-        desired_spd_vector.append(desired_intensity_watts * percent / 100)
+        desired_spd_vector.append(desired_ppfd_umol_m2_s * percent / 100)
     desired_spd_vector = numpy.array(desired_spd_vector)
     return desired_spd_vector
 
 
 def calculate_channel_output_vector(channel_spd_matrix, desired_spd_vector):
-    """ Generates channel output percents to approximate desired
-        spectral power distribution. """
+    """Calculates channel output percents to approximate desired
+    spectral power distribution."""
 
-    # Calculate weighted channel outputs
-    weighted_channel_outputs = maths.nnls(channel_spd_matrix, desired_spd_vector)
+    print("channel_spd_matrix = {}".format(channel_spd_matrix.tolist()))
+    print("desired_spd_vector = {}".format(desired_spd_vector.tolist()))
 
-    # Scale channel outputs
-    max_output = max(weighted_channel_outputs)
-    if max_output > 1:
-        scaled_channel_outputs = weighted_channel_outputs / max_output
-    else:
-        scaled_channel_outputs = weighted_channel_outputs
+    # Calculate channel outputs via bounded non-negative least squares approximation
+    channel_outputs = maths.bnnls(channel_spd_matrix, desired_spd_vector)
 
     # Create channel output vector
     channel_output_vector = []
-    for scaled_channel_output in scaled_channel_outputs:
-        rounded_channel_output = float("{:.2f}".format(scaled_channel_output))
-        channel_output_vector.append(rounded_channel_output)
+    for channel_output in channel_outputs:
+        channel_output_vector.append(round(channel_output, 2))
 
     # Return channel output vector
     return channel_output_vector
@@ -258,13 +254,13 @@ def vectorize_dict(dict_):
 def approximate_spd(
     channel_configs,
     desired_distance_cm,
-    desired_intensity_watts,
+    desired_ppfd_umol_m2_s,
     desired_spectrum_nm_percent,
 ):
     """ Approximates spectral power distribution. """
 
     desired_spd = calculate_desired_spd(
-        intensity_watts=desired_intensity_watts,
+        ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
         spectrum_nm_percent=desired_spectrum_nm_percent,
     )
 
@@ -276,7 +272,7 @@ def approximate_spd(
 
     desired_spd_vector = build_desired_spd_vector(
         desired_spectrum_nm_percent=desired_spectrum_nm_percent,
-        desired_intensity_watts=desired_intensity_watts,
+        desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
     )
 
     channel_output_intensities_vector = calculate_channel_output_vector(
@@ -298,7 +294,7 @@ def approximate_spd(
         channel_output_vector=channel_output_intensities_vector,
     )
 
-    output_spectrum_vector, output_intensity_watts = deconstruct_spd_vector(
+    output_spectrum_vector, output_ppfd_umol_m2_s = deconstruct_spd_vector(
         spd_vector=output_spd_vector
     )
 
@@ -306,7 +302,7 @@ def approximate_spd(
         vector=output_spectrum_vector, reference_dict=desired_spd
     )
 
-    return channel_output_setpoints_dict, output_spectrum_dict, output_intensity_watts
+    return channel_output_setpoints_dict, output_spectrum_dict, output_ppfd_umol_m2_s
 
 
 def calculate_resultant_spd(
@@ -330,7 +326,7 @@ def calculate_resultant_spd(
         channel_output_vector=channel_output_vector,
     )
 
-    output_spectrum_vector, output_intensity_watts = deconstruct_spd_vector(
+    output_spectrum_vector, output_ppfd_umol_m2_s = deconstruct_spd_vector(
         spd_vector=output_spd_vector
     )
 
@@ -338,7 +334,7 @@ def calculate_resultant_spd(
         vector=output_spectrum_vector, reference_dict=reference_spd
     )
 
-    return output_spectrum_dict, output_intensity_watts
+    return output_spectrum_dict, output_ppfd_umol_m2_s
 
 
 def calculate_ulrf_from_percents(

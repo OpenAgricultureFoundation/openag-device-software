@@ -1,5 +1,5 @@
 # Import standard python modules
-import numpy, math
+import numpy, math, operator
 
 
 def magnitude(x):
@@ -72,8 +72,67 @@ def discretize(minimum: int, maximum: int, value: float) -> dict:
     return output
 
 
+def bnnls(A, b, bound=1, index_map=None):
+    """Solves for bounded non-negative least squares approximation. When solving Ax=b, 
+    x is constrained to be within 0-bound."""
+
+    # Solve non-negative least squares approximation
+    x = nnls(A, b)
+    rows, cols = A.shape
+
+    # Build initial index map
+    if index_map == None:
+        index_map = list(range(cols))
+
+    # Get max column and value
+    max_col, max_val = max(enumerate(x.tolist()), key=operator.itemgetter(1))
+
+    # Check for saturated entry in x
+    if max_val > bound:
+
+        # Get saturated column
+        AT = numpy.transpose(A)
+        A_col = AT[max_col]
+
+        # Remove saturated value from b
+        new_b = b - A_col * bound
+
+        # Remove saturated column from A
+        new_AT = numpy.delete(AT, max_col, 0)
+        new_A = numpy.transpose(new_AT)
+
+        # Update index map
+        new_index_map = index_map[:]
+        del new_index_map[max_col]
+
+        # Recalculate new x for new A and b
+        new_x = bnnls(new_A, new_b, bound=bound, index_map=new_index_map)
+
+        # Build x mapped dictionary
+        x_mapped_dict = {}
+
+        # Add saturated value to x mapped dict
+        x_mapped_dict = {index_map[max_col]: bound}
+
+        # Add remaining values to x mapped dict
+        for i, index in enumerate(new_index_map):
+            x_mapped_dict[index] = new_x[i]
+
+        # Convert x mapped dict to list
+        sorted_keys = sorted(x_mapped_dict)
+        x_mapped_list = []
+        for key in sorted_keys:
+            x_mapped_list.append(x_mapped_dict[key])
+
+        # Return x mapped list
+        return x_mapped_list
+
+    else:
+        return x
+
+
 def nnls(A, b, tol=1e-8):
-    """ Origninal function by @alexfields
+    """Origninal function by @alexfields
 
     Solve ``argmin_x || Ax - b ||_2`` for ``x>=0``. This version may be superior to the FORTRAN implementation when ``A`` has more rows than
     columns, and especially when ``A`` is sparse.

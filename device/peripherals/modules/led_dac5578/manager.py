@@ -21,7 +21,7 @@ from device.peripherals.modules.led_dac5578.events import LEDDAC5578Events
 class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
     """ Manages an LED array controlled by a dac5578. """
 
-    _prev_desired_intensity = None
+    _prev_desired_ppfd = None
     _prev_desired_spectrum = None
     _prev_desired_distance = None
 
@@ -37,7 +37,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         self.channel_configs = self.setup_dict["channel_configs"]
 
         # Initialize variable names
-        self.intensity_name = self.parameters["variables"]["sensor"]["intensity_watts"]
+        self.ppfd_name = self.parameters["variables"]["sensor"]["ppfd_umol_m2_s"]
         self.spectrum_name = self.parameters["variables"]["sensor"][
             "spectrum_nm_percent"
         ]
@@ -85,31 +85,31 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
             )
 
     @property
-    def intensity(self) -> float:
-        """ Gets intensity value. """
+    def ppfd(self) -> float:
+        """ Gets ppfd value. """
         return self.state.get_peripheral_reported_sensor_value(
-            self.name, self.intensity_name
+            self.name, self.ppfd_name
         )
 
-    @intensity.setter
-    def intensity(self, value: float) -> None:
-        """ Sets intensity value in shared state. """
+    @ppfd.setter
+    def ppfd(self, value: float) -> None:
+        """ Sets ppfd value in shared state. """
         self.state.set_peripheral_reported_sensor_value(
-            self.name, self.intensity_name, value
+            self.name, self.ppfd_name, value
         )
         self.state.set_environment_reported_sensor_value(
-            self.name, self.intensity_name, value, simple=True
+            self.name, self.ppfd_name, value, simple=True
         )
 
     @property
-    def desired_intensity(self) -> float:
-        """ Gets desired intensity value from shared environment state if not 
+    def desired_ppfd(self) -> float:
+        """ Gets desired ppfd value from shared environment state if not 
             in manual mode, otherwise gets it from peripheral state. """
         if self.mode != Modes.MANUAL:
-            return self.state.get_environment_desired_sensor_value(self.intensity_name)
+            return self.state.get_environment_desired_sensor_value(self.ppfd_name)
         else:
             return self.state.get_peripheral_desired_sensor_value(
-                self.name, self.intensity_name
+                self.name, self.ppfd_name
             )
 
     @property
@@ -211,21 +211,16 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         self.logger.debug("Setup successfully")
 
     def update(self) -> None:
-        """ Updates led array if desired spectrum, intensity, or distance value 
+        """ Updates led array if desired spectrum, ppfd, or distance value 
             changes. """
 
         # Initialize update flag
         update = False
 
-        # Check for new desired intensity
-        if (
-            self.desired_intensity != None
-            and self.desired_intensity != self._prev_desired_intensity
-        ):
-            self.logger.info("Received new desired intensity")
-            self.logger.debug(
-                "desired_intensity = {} Watts".format(self.desired_intensity)
-            )
+        # Check for new desired ppfd
+        if self.desired_ppfd != None and self.desired_ppfd != self._prev_desired_ppfd:
+            self.logger.info("Received new desired ppfd")
+            self.logger.debug("desired_ppfd = {} Watts".format(self.desired_ppfd))
             self.distance = self.desired_distance
             update = True
 
@@ -253,7 +248,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
 
         # Verify all desired values exist:
         if (
-            self.desired_intensity == None
+            self.desired_ppfd == None
             or self.desired_spectrum == None
             or self.desired_distance == None
         ):
@@ -263,7 +258,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         # Set spectral power distribution from desired values
         result = self.array.set_spd(
             desired_distance_cm=self.desired_distance,
-            desired_intensity_watts=self.desired_intensity,
+            desired_ppfd_umol_m2_s=self.desired_ppfd,
             desired_spectrum_nm_percent=self.desired_spectrum,
         )
 
@@ -278,10 +273,10 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         # Update reported values
         self.channel_outputs = result[0]
         self.spectrum = result[1]
-        self.intensity = result[2]
+        self.ppfd = result[2]
 
         # Update prev desired values
-        self._prev_desired_intensity = self.desired_intensity
+        self._prev_desired_ppfd = self.desired_ppfd
         self._prev_desired_spectrum = self.desired_spectrum
         self._prev_desired_distance = self.desired_distance
 
@@ -291,7 +286,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
     def reset(self) -> None:
         """ Resets manager. """
         self.array.reset()
-        self._prev_desired_intensity = None
+        self._prev_desired_ppfd = None
         self._prev_desired_spectrum = None
         self._prev_desired_distance = None
 
@@ -302,7 +297,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
     def clear_reported_values(self):
         """ Clears reported values. """
         self.health = None
-        self.intensity = None
+        self.ppfd = None
         self.spectrum = None
         self.distance = None
         self.channel_outputs = None
@@ -325,8 +320,8 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         else:
             reference_spd = self.channel_configs[0]["spectrum_nm_percent"]
 
-        # Calculate resultant spectrum and intensity
-        self.spectrum, self.intensity = light.calculate_resultant_spd(
+        # Calculate resultant spectrum and ppfd
+        self.spectrum, self.ppfd = light.calculate_resultant_spd(
             channel_configs=self.channel_configs,
             reference_spd=reference_spd,
             channel_output_setpoints=self.channel_outputs,

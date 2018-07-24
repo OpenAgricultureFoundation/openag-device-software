@@ -23,7 +23,7 @@ channel_configs = peripheral_setup["channel_configs"]
 
 # Set desired setpoints
 desired_distance_cm = 5
-desired_intensity_watts = 100
+desired_ppfd_umol_m2_s = 100
 desired_spectrum_nm_percent = {
     "400-449": 10,
     "449-499": 10,
@@ -82,19 +82,22 @@ def test_set_spd():
     panel = LEDDAC5578Panel(
         "Test", channel_configs, 2, 0x47, mux=0x77, channel=0, simulate=True
     )
-    channel_outputs, output_spectrum_nm_percent, output_intensity_watts, error = panel.set_spd(
+    channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s, error = panel.set_spd(
         desired_distance_cm=desired_distance_cm,
-        desired_intensity_watts=desired_intensity_watts,
+        desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
         desired_spectrum_nm_percent=desired_spectrum_nm_percent,
     )
     assert error.exists() == False
     assert channel_outputs == {"FR": 46.0, "WW": 54.0}
-    assert output_spectrum_nm_percent == {
-        "400-449": 12.27,
-        "449-499": 12.27,
-        "500-549": 42.44,
-        "550-559": 8.49,
-        "600-649": 12.27,
-        "650-699": 12.27,
-    }
-    assert output_intensity_watts == 81.52
+    assert (
+        output_spectrum_nm_percent
+        == {
+            "400-449": 12.27,
+            "449-499": 12.27,
+            "500-549": 42.44,
+            "550-559": 8.49,
+            "600-649": 12.27,
+            "650-699": 12.27,
+        }
+    )
+    assert output_ppfd_umol_m2_s == 81.52

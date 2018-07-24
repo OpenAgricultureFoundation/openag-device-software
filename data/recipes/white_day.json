@@ -38,7 +38,7 @@
 		"white_day": {
 			"name": "White Day",
 			"light_spectrum_nm_percent": {"400-449": 16.67, "450-499": 16.67, "500-549": 16.67, "550-559": 16.67, "600-649": 16.17, "650-699": 16.67},
-			"light_intensity_watts": 100,
+			"light_ppfd_umol_m2_s": 100,
 			"light_illumination_distance_cm": 10
 		}
 	},

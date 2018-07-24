@@ -7,10 +7,10 @@
 	"parameters": {
 		"variables": {
 			"sensor": {
-				"intensity_watts": {
+				"ppfd_umol_m2_s": {
 					"name": {
 						"type": "string",
-						"default": "light_intensity_watts"
+						"default": "light_ppfd_umol_m2_s"
 					}
 				},
 				"spectrum_nm_percent": {
@@ -59,81 +59,55 @@
 		}
 	},
 	"channel_configs": [
-		{
-			"name": {
-				"brief": "WW",
-				"verbose": "Warm White"
-			},
-			"channel": {
-				"hardware": null,
-				"software": 4
-			},
-			"spectrum_nm_percent": {
-	            "400-499": 10,
-	            "500-599": 80,
-	            "600-699": 10
-	        },
-			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 50},
-				{"distance_cm": 10, "intensity_watts": 25},
-				{"distance_cm": 15, "intensity_watts": 13},
-				{"distance_cm": 20, "intensity_watts": 6}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
+			{
+				"name": {
+					"brief": "FR",
+					"verbose": "Far Red"
+				},
+				"channel": {
+					"hardware": null,
+					"software": 0
+				},
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 0,
+		            "500-599": 0,
+		            "600-700": 12,
+		            "701-780": 88
+	        	},
+				"planar_distance_map": [
+					{"distance_cm": 4, "ppfd_umol_m2_s": 34},
+					{"distance_cm": 10, "ppfd_umol_m2_s": 16},
+					{"distance_cm": 18, "ppfd_umol_m2_s": 8}
+				],
+				"output_percent_map": [
+					{"setpoint_percent": 0, "intensity_percent": 0},
+					{"setpoint_percent": 25, "intensity_percent": 25},
+					{"setpoint_percent": 50, "intensity_percent": 50},
+					{"setpoint_percent": 75, "intensity_percent": 75},
+					{"setpoint_percent": 100, "intensity_percent": 100}
+				]
 		},
 		{
 			"name": {
-				"brief": "CW",
-				"verbose": "Cool White"
+				"brief": "R",
+				"verbose": "Red"
 			},
 			"channel": {
 				"hardware": null,
-				"software": 6
+				"software": 2
 			},
 			"spectrum_nm_percent": {
-	            "400-499": 70,
-	            "500-599": 20,
-	            "600-699": 10
-	        },
-			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
-		},
-		{
-			"name": {
-				"brief": "B",
-				"verbose": "Blue"
-			},
-			"channel": {
-				"hardware": null,
-				"software": 7
-			},
-			"spectrum_nm_percent": {
-	            "400-499": 100,
+	            "380-399": 0,
+	            "400-499": 0,
 	            "500-599": 0,
-	            "600-699": 0
-	        },
+	            "600-700": 98,
+	            "701-780": 2
+        	},
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 4, "ppfd_umol_m2_s": 372},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 227},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 107}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -153,15 +127,16 @@
 				"software": 5
 			},
 			"spectrum_nm_percent": {
-	            "400-499": 0,
-	            "500-599": 100,
-	            "600-699": 0
-	        },
+	            "380-399": 0,
+	            "400-499": 10,
+	            "500-599": 89,
+	            "600-700": 1,
+	            "701-780": 0
+        	},
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 4, "ppfd_umol_m2_s": 130},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 70},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 35}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -173,23 +148,24 @@
 		},
 		{
 			"name": {
-				"brief": "R",
-				"verbose": "Red"
+				"brief": "B",
+				"verbose": "Blue"
 			},
 			"channel": {
 				"hardware": null,
-				"software": 2
+				"software": 7
 			},
 			"spectrum_nm_percent": {
-	            "400-499": 0,
-	            "500-599": 0,
-	            "600-699": 100
-	        },
+	            "380-399": 0,
+	            "400-499": 99,
+	            "500-599": 1,
+	            "600-700": 0,
+	            "701-780": 0
+        	},
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 4, "ppfd_umol_m2_s": 261},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 200},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 116}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -201,23 +177,53 @@
 		},
 		{
 			"name": {
-				"brief": "FR",
-				"verbose": "Far Red"
+				"brief": "CW",
+				"verbose": "Cool White"
 			},
 			"channel": {
 				"hardware": null,
-				"software": 0
+				"software": 6
 			},
 			"spectrum_nm_percent": {
-	            "400-499": 0,
-	            "500-599": 0,
-	            "600-699": 100
-	        },
+	            "380-399": 0,
+	            "400-499": 23,
+	            "500-599": 47,
+	            "600-700": 27,
+	            "701-780": 3
+        	},
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 4, "ppfd_umol_m2_s": 234},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 178},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 104}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 25},
+				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "WW",
+				"verbose": "Warm White"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 4
+			},
+			"spectrum_nm_percent": {
+	            "380-399": 0,
+	            "400-499": 8,
+	            "500-599": 38,
+	            "600-700": 49,
+	            "701-780": 5
+        	},
+			"planar_distance_map": [
+				{"distance_cm": 4, "ppfd_umol_m2_s": 504},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 198},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 96}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},

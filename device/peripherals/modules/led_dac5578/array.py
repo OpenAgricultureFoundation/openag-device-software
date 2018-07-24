@@ -194,16 +194,14 @@ class LEDDAC5578Array(object):
     def set_spd(
         self,
         desired_distance_cm: float,
-        desired_intensity_watts: float,
+        desired_ppfd_umol_m2_s: float,
         desired_spectrum_nm_percent: dict,
     ) -> Tuple[Optional[dict], Optional[dict], Optional[dict], Error]:
         """ Sets spectral power distribution. Approximates spd, sets output 
             channels then returns output parameters and error status. """
         self.logger.debug(
-            "Setting spd, distance={}cm, intensity={}W, spectrum={}".format(
-                desired_distance_cm,
-                desired_intensity_watts,
-                desired_spectrum_nm_percent,
+            "Setting spd, distance={}cm, ppfd={}umol/m2/s, spectrum={}".format(
+                desired_distance_cm, desired_ppfd_umol_m2_s, desired_spectrum_nm_percent
             )
         )
 
@@ -213,10 +211,10 @@ class LEDDAC5578Array(object):
 
         # Approximate spectral power distribution
         try:
-            channel_outputs, output_spectrum_nm_percent, output_intensity_watts = light.approximate_spd(
+            channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s = light.approximate_spd(
                 channel_configs=self.channel_configs,
                 desired_distance_cm=desired_distance_cm,
-                desired_intensity_watts=desired_intensity_watts,
+                desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
                 desired_spectrum_nm_percent=desired_spectrum_nm_percent,
             )
         except:
@@ -235,14 +233,14 @@ class LEDDAC5578Array(object):
 
         # Return output parameters and error status
         self.logger.debug(
-            "Successfully set spd, output: channels={}, spectrum={}, intensity={}W".format(
-                channel_outputs, output_spectrum_nm_percent, output_intensity_watts
+            "Successfully set spd, output: channels={}, spectrum={}, ppfd={} umol/m2/s".format(
+                channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s
             )
         )
         return (
             channel_outputs,
             output_spectrum_nm_percent,
-            output_intensity_watts,
+            output_ppfd_umol_m2_s,
             Error(None),
         )
 

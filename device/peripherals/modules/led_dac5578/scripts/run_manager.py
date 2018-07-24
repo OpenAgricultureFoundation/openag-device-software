@@ -193,7 +193,7 @@ if __name__ == "__main__":
             print("Setting SPD")
             channel_outputs, output_spectrum, output_intensity, error = manager.set_spd(
                 desired_distance_cm=distance,
-                desired_intensity_watts=intensity,
+                desired_ppfd_umol_m2_s=intensity,
                 desired_spectrum_nm_percent=spectrum,
             )
             print("Channel outputs (%): {}".format(channel_outputs))

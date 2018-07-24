@@ -15,7 +15,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "intensity_watts": "light_intensity_watts",
+                        "ppfd_umol_m2_s": "light_ppfd_umol_m2_s",
                         "spectrum_nm_percent": "light_spectrum_nm_percent",
                         "illumination_distance_cm": "light_illumination_distance_cm"
                     },
