@@ -72,7 +72,7 @@ def test_calculate_ulrf_from_percents():
 
     led_manager.process_event(request)
     assert led_manager.response["status"] == 200
-    assert led_manager.response["intensity_watts"] == 160.0
+    assert led_manager.response["ppfd_umol_m2_s"] == 160.0
     assert led_manager.response["illumination_distance_cm"] == 5.0
     spectrum = {"400-499": 17.5, "500-599": 65.0, "600-699": 17.5}
     assert led_manager.response["spectrum_nm_percents"] == spectrum

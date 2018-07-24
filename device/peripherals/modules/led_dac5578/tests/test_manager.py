@@ -25,7 +25,7 @@ peripheral_config = device_config["peripherals"][0]
 
 # Set testing variable values
 desired_distance_cm = 5
-desired_intensity_watts = 100
+desired_ppfd_umol_m2_s = 100
 desired_spectrum_nm_percent = {
     "400-449": 10,
     "449-499": 10,

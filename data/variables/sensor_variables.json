@@ -98,20 +98,6 @@
 		}
 	},
 	{
-		"key": "light_intensity_watts",
-		"info": {
-			"name": {
-				"brief": "Intensity (Remove Me)",
-				"verbose": "Light Intensity"
-			},
-			"unit": {
-				"brief": "W",
-				"verbose": "Watts",
-				"type": "number"
-			}
-		}
-	},
-	{
 		"key": "light_ppfd_umol_m2_s",
 		"info": {
 			"name": {

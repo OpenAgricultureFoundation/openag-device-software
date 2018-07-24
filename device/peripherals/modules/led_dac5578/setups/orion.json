@@ -7,10 +7,10 @@
 	"parameters": {
 		"variables": {
 			"sensor": {
-				"intensity_watts": {
+				"ppfd_umol_m2_s": {
 					"name": {
 						"type": "string",
-						"default": "light_intensity_watts"
+						"default": "light_ppfd_umol_m2_s"
 					}
 				},
 				"spectrum_nm_percent": {
@@ -74,10 +74,10 @@
 	            "600-699": 100
 	        },
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 50},
-				{"distance_cm": 10, "intensity_watts": 25},
-				{"distance_cm": 15, "intensity_watts": 13},
-				{"distance_cm": 20, "intensity_watts": 6}
+				{"distance_cm": 5, "ppfd_umol_m2_s": 50},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 25},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 13},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 6}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -102,10 +102,10 @@
 	            "600-699": 10
 	        },
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 5, "ppfd_umol_m2_s": 100},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 75},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 50},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 25}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -130,10 +130,10 @@
 	            "600-699": 10
 	        },
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 5, "ppfd_umol_m2_s": 100},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 75},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 50},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 25}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -158,10 +158,10 @@
 	            "600-699": 10
 	        },
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 5, "ppfd_umol_m2_s": 100},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 75},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 50},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 25}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -186,10 +186,10 @@
 	            "600-699": 10
 	        },
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 100},
-				{"distance_cm": 10, "intensity_watts": 75},
-				{"distance_cm": 15, "intensity_watts": 50},
-				{"distance_cm": 20, "intensity_watts": 25}
+				{"distance_cm": 5, "ppfd_umol_m2_s": 100},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 75},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 50},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 25}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -214,10 +214,10 @@
 	            "600-699": 10
 	        },
 			"planar_distance_map": [
-				{"distance_cm": 5, "intensity_watts": 75},
-				{"distance_cm": 10, "intensity_watts": 55},
-				{"distance_cm": 15, "intensity_watts": 25},
-				{"distance_cm": 20, "intensity_watts": 12.5}
+				{"distance_cm": 5, "ppfd_umol_m2_s": 75},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 55},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 25},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 12.5}
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
@@ -303,61 +303,61 @@
 			"name": "Far Red",
 			"data": {
 				"output_percent_calibration": [
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 6.25},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 6.25},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 0},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 0}
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 6.25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 6.25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 0},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 0}
 				],
 				"location_calibation": [
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 100},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 100},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
 
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 50},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
 
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 25},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
 
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 0, "y_cm": 0, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": 10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": -10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "intensity_watts": 12.5},
-					{"x_cm": -10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "intensity_watts": 12.5}
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 0, "y_cm": 0, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": 10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": -10, "y_cm": 10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
+					{"x_cm": -10, "y_cm": -10, "distance_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5}
 				]
 			}
 		}
