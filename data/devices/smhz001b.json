@@ -28,6 +28,7 @@
                         {"name": "LP11", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6},
                         {"name": "LP12", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
                         {"name": "LP21", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7},
+                        {"name": "LP22", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
                         {"name": "LP31", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5},
                         {"name": "LP51", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 0},
                         {"name": "LP52", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1},
