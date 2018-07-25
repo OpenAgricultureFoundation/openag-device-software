@@ -82,8 +82,8 @@
 				],
 				"output_percent_map": [
 					{"setpoint_percent": 0, "intensity_percent": 0},
-					{"setpoint_percent": 25, "intensity_percent": 25},
-					{"setpoint_percent": 50, "intensity_percent": 50},
+					{"setpoint_percent": 25, "intensity_percent": 6},
+					{"setpoint_percent": 50, "intensity_percent": 42},
 					{"setpoint_percent": 75, "intensity_percent": 75},
 					{"setpoint_percent": 100, "intensity_percent": 100}
 				]
@@ -111,8 +111,8 @@
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
@@ -140,8 +140,8 @@
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
@@ -169,8 +169,8 @@
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
@@ -198,8 +198,8 @@
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
@@ -227,8 +227,8 @@
 			],
 			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
