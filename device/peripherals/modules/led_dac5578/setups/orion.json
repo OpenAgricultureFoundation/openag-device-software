@@ -271,8 +271,18 @@
 		    "is_manual": true
 		},
 		{
+		    "name": "Set Channel",
+		    "description": "Set channel name to intensity percent.",
+		    "value": {
+                "default": "WW, 100",
+                "unit": "ch, %"
+            },
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
 		    "name": "Fade",
-		    "description": "Fades all channels concurrently.",
+		    "description": "Fades all channels up/down concurrently.",
 		    "value": null,
 		    "sequence": null,
 		    "is_manual": true
@@ -280,14 +290,10 @@
 		{
 		    "name": "Calculate ULRF From Percents",
 		    "description": "Calculates universal light recipe format (ULRF) from channel power percents.",
-		    "value": null,
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Calculate ULRF From Watts",
-		    "description": "Calculates universal light recipe format (ULRF) from channel power watts.",
-		    "value": null,
+		    "value": {
+                "default": null,
+                "unit": "nm: %"
+            },
 		    "sequence": null,
 		    "is_manual": true
 		}
