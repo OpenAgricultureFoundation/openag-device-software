@@ -8,5 +8,15 @@
 				"verbose": "A hydroponic cultivation method where plant roots sit in a mix of water and nutrients. Root zone depth is usually ten inches or less."
 			}
 		}
+	},
+	{
+		"name": "Soil",
+		"uuid": "dc919f3d-f110-4371-965c-3e89041cecfe",
+		"info": {
+			"description": {
+				"brief": "Plant roots grow in soil.",
+				"verbose": "Plant roots grow in soil."
+			}
+		}
 	}
 ]

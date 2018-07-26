@@ -1,0 +1,1029 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-07-26T16:45:41Z",
+	"name": "Small Hazelnut Viability Test Grow",
+	"uuid": "4a7718f1-acfe-478e-91a3-ed82ac1740cf",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Test grow running for 5 weeks with 600 PAR white light cultivating 2.5 year old hazelnut trees.",
+		"verbose": "Fixed spectrum approximating sunlight. Ramps intensity from 0-600 PAR over 4 hours, holds at 600 for 8 hours, ramps down from 600-0 over 4 hours. Then off for 8 hours."
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		},
+		{
+			"name": "Dan Poitrast",
+			"email": "poitrast@mit.edu",
+			"uuid": "117a72aa-6288-46bc-87f9-5b37630fd944"
+		},
+		{
+			"name": "Zander Auerbach",
+			"email": "zandera@mit.edu",
+			"uuid": "0935948e-e2c9-4db7-902e-6db5922ff0a3"
+		}
+
+	],
+	"cultivars": [
+		{
+			"name": "2.5 Year Old Hazelnut Tree",
+			"uuid": "4b348702-6e23-40ac-aa89-597f06d64a26"
+		}
+	],
+	"cultivation_methods": [
+		{
+			"name": "Soil",
+			"uuid": "dc919f3d-f110-4371-965c-3e89041cecfe"
+		}
+	],
+	"environments": {
+		"light_0": {
+			"name": "Light 0",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 0
+		},
+		"light_10": {
+			"name": "Light 10",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 10
+		},
+		"light_20": {
+			"name": "Light 20",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 20
+		},
+		"light_30": {
+			"name": "Light 30",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 30
+		},
+		"light_40": {
+			"name": "Light 40",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 40
+		},
+		"light_50": {
+			"name": "Light 50",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 50
+		},
+		"light_60": {
+			"name": "Light 60",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 60
+		},
+		"light_70": {
+			"name": "Light 70",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 70
+		},
+		"light_80": {
+			"name": "Light 80",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 80
+		},
+		"light_90": {
+			"name": "Light 90",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 90
+		},
+		"light_100": {
+			"name": "Light 100",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 100
+		},
+		"light_110": {
+			"name": "Light 110",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 110
+		},
+		"light_120": {
+			"name": "Light 120",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 120
+		},
+		"light_130": {
+			"name": "Light 130",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 130
+		},
+		"light_140": {
+			"name": "Light 140",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 140
+		},
+		"light_150": {
+			"name": "Light 150",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 150
+		},
+		"light_160": {
+			"name": "Light 160",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 160
+		},
+		"light_170": {
+			"name": "Light 170",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 170
+		},
+		"light_180": {
+			"name": "Light 180",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 180
+		},
+		"light_190": {
+			"name": "Light 190",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 190
+		},
+		"light_200": {
+			"name": "Light 200",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 200
+		},
+		"light_210": {
+			"name": "Light 210",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 210
+		},
+		"light_220": {
+			"name": "Light 220",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 220
+		},
+		"light_230": {
+			"name": "Light 230",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 230
+		},
+		"light_240": {
+			"name": "Light 240",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 240
+		},
+		"light_250": {
+			"name": "Light 250",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 250
+		},
+		"light_260": {
+			"name": "Light 260",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 260
+		},
+		"light_270": {
+			"name": "Light 270",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 270
+		},
+		"light_280": {
+			"name": "Light 280",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 280
+		},
+		"light_290": {
+			"name": "Light 290",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 290
+		},
+		"light_300": {
+			"name": "Light 300",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 300
+		},
+		"light_310": {
+			"name": "Light 310",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 310
+		},
+		"light_320": {
+			"name": "Light 320",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 320
+		},
+		"light_330": {
+			"name": "Light 330",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 330
+		},
+		"light_340": {
+			"name": "Light 340",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 340
+		},
+		"light_350": {
+			"name": "Light 350",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 350
+		},
+		"light_360": {
+			"name": "Light 360",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 360
+		},
+		"light_370": {
+			"name": "Light 370",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 370
+		},
+		"light_380": {
+			"name": "Light 380",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 380
+		},
+		"light_390": {
+			"name": "Light 390",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 390
+		},
+		"light_400": {
+			"name": "Light 400",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 400
+		},
+		"light_410": {
+			"name": "Light 410",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 410
+		},
+		"light_420": {
+			"name": "Light 420",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 420
+		},
+		"light_430": {
+			"name": "Light 430",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 430
+		},
+		"light_440": {
+			"name": "Light 440",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 440
+		},
+		"light_450": {
+			"name": "Light 450",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 450
+		},
+		"light_460": {
+			"name": "Light 460",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 460
+		},
+		"light_470": {
+			"name": "Light 470",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 470
+		},
+		"light_480": {
+			"name": "Light 480",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 480
+		},
+		"light_490": {
+			"name": "Light 490",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 490
+		},
+		"light_500": {
+			"name": "Light 500",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 500
+		},
+		"light_510": {
+			"name": "Light 510",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 510
+		},
+		"light_520": {
+			"name": "Light 520",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 520
+		},
+		"light_530": {
+			"name": "Light 530",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 530
+		},
+		"light_540": {
+			"name": "Light 540",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 540
+		},
+		"light_550": {
+			"name": "Light 550",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 550
+		},
+		"light_560": {
+			"name": "Light 560",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 560
+		},
+		"light_570": {
+			"name": "Light 570",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 570
+		},
+		"light_580": {
+			"name": "Light 580",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 580
+		},
+		"light_590": {
+			"name": "Light 590",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 590
+		},
+		"light_600": {
+			"name": "Light 600",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 600
+		}
+	},
+	"phases": [
+		{
+			"name": "5 Week Viability Test",
+			"repeat": 35,
+			"cycles": [
+				{
+					"name": "Morning 1/60",
+					"environment": "light_10",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 2/60",
+					"environment": "light_20",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 3/60",
+					"environment": "light_30",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 4/60",
+					"environment": "light_40",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 5/60",
+					"environment": "light_50",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 6/60",
+					"environment": "light_60",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 7/60",
+					"environment": "light_70",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 8/60",
+					"environment": "light_80",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 9/60",
+					"environment": "light_90",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 10/60",
+					"environment": "light_100",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 11/60",
+					"environment": "light_110",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 12/60",
+					"environment": "light_120",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 13/60",
+					"environment": "light_130",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 14/60",
+					"environment": "light_140",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 15/60",
+					"environment": "light_150",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 16/60",
+					"environment": "light_160",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 17/60",
+					"environment": "light_170",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 18/60",
+					"environment": "light_180",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 19/60",
+					"environment": "light_190",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 20/60",
+					"environment": "light_200",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 21/60",
+					"environment": "light_210",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 22/60",
+					"environment": "light_220",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 23/60",
+					"environment": "light_230",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 24/60",
+					"environment": "light_240",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 25/60",
+					"environment": "light_250",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 26/60",
+					"environment": "light_260",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 27/60",
+					"environment": "light_270",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 28/60",
+					"environment": "light_280",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 29/60",
+					"environment": "light_290",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 30/60",
+					"environment": "light_300",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 31/60",
+					"environment": "light_310",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 32/60",
+					"environment": "light_320",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 33/60",
+					"environment": "light_330",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 34/60",
+					"environment": "light_340",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 35/60",
+					"environment": "light_350",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 36/60",
+					"environment": "light_360",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 37/60",
+					"environment": "light_370",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 38/60",
+					"environment": "light_380",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 39/60",
+					"environment": "light_390",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 40/60",
+					"environment": "light_400",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 41/60",
+					"environment": "light_410",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 42/60",
+					"environment": "light_420",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 43/60",
+					"environment": "light_430",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 44/60",
+					"environment": "light_440",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 45/60",
+					"environment": "light_450",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 46/60",
+					"environment": "light_460",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 47/60",
+					"environment": "light_470",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 48/60",
+					"environment": "light_480",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 49/60",
+					"environment": "light_490",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 50/60",
+					"environment": "light_500",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 51/60",
+					"environment": "light_510",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 52/60",
+					"environment": "light_520",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 53/60",
+					"environment": "light_530",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 54/60",
+					"environment": "light_540",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 55/60",
+					"environment": "light_550",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 56/60",
+					"environment": "light_560",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 57/60",
+					"environment": "light_570",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 58/60",
+					"environment": "light_580",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 59/60",
+					"environment": "light_590",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Morning 60/60",
+					"environment": "light_600",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Afternoon",
+					"environment": "light_600",
+					"duration_minutes": 480
+				},
+				{
+					"name": "Evening 1/60",
+					"environment": "light_590",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 2/60",
+					"environment": "light_580",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 3/60",
+					"environment": "light_570",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 4/60",
+					"environment": "light_560",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 5/60",
+					"environment": "light_550",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 6/60",
+					"environment": "light_540",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 7/60",
+					"environment": "light_530",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 8/60",
+					"environment": "light_520",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 9/60",
+					"environment": "light_510",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 10/60",
+					"environment": "light_500",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 11/60",
+					"environment": "light_490",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 12/60",
+					"environment": "light_480",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 13/60",
+					"environment": "light_470",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 14/60",
+					"environment": "light_460",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 15/60",
+					"environment": "light_450",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 16/60",
+					"environment": "light_440",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 17/60",
+					"environment": "light_430",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 18/60",
+					"environment": "light_420",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 19/60",
+					"environment": "light_410",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 20/60",
+					"environment": "light_400",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 21/60",
+					"environment": "light_390",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 22/60",
+					"environment": "light_380",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 23/60",
+					"environment": "light_370",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 24/60",
+					"environment": "light_360",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 25/60",
+					"environment": "light_350",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 26/60",
+					"environment": "light_340",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 27/60",
+					"environment": "light_330",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 28/60",
+					"environment": "light_320",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 29/60",
+					"environment": "light_310",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 30/60",
+					"environment": "light_300",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 31/60",
+					"environment": "light_290",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 32/60",
+					"environment": "light_280",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 33/60",
+					"environment": "light_270",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 34/60",
+					"environment": "light_260",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 35/60",
+					"environment": "light_250",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 36/60",
+					"environment": "light_240",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 37/60",
+					"environment": "light_230",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 38/60",
+					"environment": "light_220",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 39/60",
+					"environment": "light_210",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 40/60",
+					"environment": "light_200",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 41/60",
+					"environment": "light_190",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 42/60",
+					"environment": "light_180",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 43/60",
+					"environment": "light_170",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 44/60",
+					"environment": "light_160",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 45/60",
+					"environment": "light_150",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 46/60",
+					"environment": "light_140",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 47/60",
+					"environment": "light_130",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 48/60",
+					"environment": "light_120",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 49/60",
+					"environment": "light_110",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 50/60",
+					"environment": "light_100",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 51/60",
+					"environment": "light_90",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 52/60",
+					"environment": "light_80",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 53/60",
+					"environment": "light_70",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 54/60",
+					"environment": "light_60",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 55/60",
+					"environment": "light_50",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 56/60",
+					"environment": "light_40",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 57/60",
+					"environment": "light_30",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 58/60",
+					"environment": "light_20",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 59/60",
+					"environment": "light_10",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Evening 60/60",
+					"environment": "light_0",
+					"duration_minutes": 4
+				},
+				{
+					"name": "Night",
+					"environment": "light_0",
+					"duration_minutes": 480
+				}
+			]
+		}
+	]
+}

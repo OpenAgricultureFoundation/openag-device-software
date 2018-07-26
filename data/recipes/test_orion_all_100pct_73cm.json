@@ -25,8 +25,8 @@
 	],
 	"cultivation_methods": [
 		{
-		"name": "Shallow Water Culture",
-		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+			"name": "Shallow Water Culture",
+			"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
 		}
 	],
 	"environments": {

@@ -974,27 +974,33 @@ class DeviceManager:
         self.recipe.commanded_start_timestamp_minutes = request_timestamp_minutes
         self.recipe.commanded_mode = Modes.START
 
-        # Wait for recipe to be picked up by recipe thread or timeout event
-        start_time_seconds = time.time()
-        timeout_seconds = 10
-        while True:
-            # Exit when recipe thread picks up new recipe
-            if self.recipe.commanded_mode == None:
-                self.response = {
-                    "status": 200, "message": "Started recipe: {}".format(request_uuid)
-                }
-                break
+        # Set response
+        self.response = {
+            "status": 200,
+            "message": "Starting recipe: {}. This may take a few moments.".format(
+                request_uuid
+            ),
+        }
 
-            # Exit on timeout
-            if time.time() - start_time_seconds > timeout_seconds:
-                self.logger.critical(
-                    "Unable to start recipe within 10 seconds. Something is wrong with code."
-                )
-                self.response = {
-                    "status": 500,
-                    "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
-                }
-                break
+        # # Wait for recipe to be picked up by recipe thread or timeout event
+        # start_time_seconds = time.time()
+        # timeout_seconds = 10
+        # while True:
+        #     # Exit when recipe thread picks up new recipe
+        #     if self.recipe.commanded_mode == None:
+
+        #         break
+
+        #     # Exit on timeout
+        #     if time.time() - start_time_seconds > timeout_seconds:
+        #         self.logger.critical(
+        #             "Unable to start recipe within 10 seconds. Something is wrong with code."
+        #         )
+        #         self.response = {
+        #             "status": 500,
+        #             "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
+        #         }
+        #         break
 
     # Also called from the IoTManager command receiver.
     def process_stop_recipe_event(self):

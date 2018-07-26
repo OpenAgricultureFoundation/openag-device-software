@@ -14,5 +14,21 @@
 			"average_duration_days": 60,
 			"duration_start_stage": "seedling"
 		}
+	},
+	{
+		"uuid": "4b348702-6e23-40ac-aa89-597f06d64a26",
+		"name": "2.5 Year Old Hazelnut Tree",
+		"info": 
+		{
+			"description": {
+				"brief": "2.5 year old hazelnut tree.",
+				"verbose": "2.5 year old hazelnut tree."
+			},
+			"link": "https://en.wikipedia.org/wiki/Hazel",
+			"average_height_centimeters": 50,
+			"average_width_centimeters": 25,
+			"average_duration_days": 35,
+			"duration_start_stage": "2.5 year old sapling"
+		}
 	}
 ]
