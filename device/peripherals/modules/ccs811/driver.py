@@ -82,11 +82,11 @@ class CCS811Driver:
         """Setups sensor."""
         try:
             self.reset(retry=retry)
-            time.sleep(0.1)  # wait 100ms
             self.check_hardware_id(retry=retry)
             self.start_app(retry=retry)
             self.check_for_errors(retry=retry)
             self.write_measurement_mode(1, False, False, retry=retry)
+            time.sleep(3)
         except DriverError as e:
             raise SetupError("Unable to setup", logger=self.logger) from e
 
@@ -96,7 +96,8 @@ class CCS811Driver:
 
         # Write a byte to app start register
         try:
-            byte = self.i2c.write_register(0xF4, 0x00, retry=retry)
+            # byte = self.i2c.write_register(0xF4, 0x00, retry=retry)
+            self.i2c.write(bytes([0xF4]), retry=retry)
         except I2CError as e:
             raise StartAppError("Unable to start app", logger=self.logger) from e
 
@@ -228,6 +229,7 @@ class CCS811Driver:
 
         # TODO: Calculate temperature bytes
         if temperature != None:
+
             ...
         else:
             temperature_msb = 0x64
@@ -248,7 +250,9 @@ class CCS811Driver:
             message = "Unable to write measurement mode"
             raise WriteEnvironmentDataError(messsage, logger=self.logger) from e
 
-    def read_algorithm_data(self, retry: bool = False) -> Tuple[float, float]:
+    def read_algorithm_data(
+        self, retry: bool = False, reread: bool = True
+    ) -> Tuple[float, float]:
         """Reads algorighm data from sensor hardware."""
         self.logger.debug("Reading co2/tvoc algorithm data")
 
@@ -261,7 +265,12 @@ class CCS811Driver:
 
         # Check if data is ready
         if not status.data_ready:
-            raise ReadAlgorithmDataError("Algorithm data not ready")
+            if reread:
+                time.sleep(0.5)
+                self.logger.debug("Re-reading algorithm data")
+                self.read_algorithm_data(retry=retry, reread=False)
+            else:
+                raise ReadAlgorithmDataError("Algorithm data not ready")
 
         # Get algorithm data
         try:
@@ -300,7 +309,7 @@ class CCS811Driver:
         self.logger.debug("Resetting sensor")
 
         # Write reset bytes to sensor
-        bytes_ = [0x11, 0xE5, 0x72, 0x8A]
+        bytes_ = [0xFF, 0x11, 0xE5, 0x72, 0x8A]
         try:
             self.i2c.write(bytes(bytes_), retry=retry)
         except I2CError as e:

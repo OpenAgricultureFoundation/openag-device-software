@@ -38,6 +38,9 @@ parser.add_argument("--tvoc", action="store_true", help="read tvoc")
 parser.add_argument("--mode", type=int, help="set device mode 1-4")
 parser.add_argument("--status", action="store_true", help="read status register")
 parser.add_argument("--error", action="store_true", help="read error register")
+parser.add_argument("--reset", action="store_true", help="resets sensor")
+parser.add_argument("--check-hardware-id", action="store_true", help="checks hw id")
+parser.add_argument("--start-app", action="store_true", help="starts app")
 
 
 # Run main
@@ -122,6 +125,31 @@ if __name__ == "__main__":
             try:
                 error_register = driver.read_error_register(retry=True)
                 print(error_register)
+            except Exception as e:
+                print("Error: {}".format(e))
+
+        # Check if resetting
+        elif args.reset:
+            print("Resetting")
+            try:
+                driver.reset(retry=True)
+            except Exception as e:
+                print("Error: {}".format(e))
+
+        # Check if checking hardware id
+        elif args.check_hardware_id:
+            print("Checking hardware ID")
+            try:
+                driver.check_hardware_id(retry=True)
+                print("Hardware ID is Valid")
+            except Exception as e:
+                print("Error: {}".format(e))
+
+        # Check if starting app
+        elif args.start_app:
+            print("Starting app")
+            try:
+                driver.start_app(retry=True)
             except Exception as e:
                 print("Error: {}".format(e))
 
