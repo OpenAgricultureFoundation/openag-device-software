@@ -118,6 +118,7 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
 
             # Set compensation temperature
             error = self.sensor.set_compensation_temperature(self.temperature)
+            self._prev_temperature = self.temperature
 
             # Check for errors
             if error.exists():

@@ -16,6 +16,12 @@ from device.peripherals.modules.ccs811.exceptions import DriverError
 class CCS811Manager(PeripheralManager, CCS811Events):
     """ Manages an ccs811 co2 sensor. """
 
+    # Initialize compensation variable parameters
+    _temperature_threshold = 0.1  # celcius
+    _prev_temperature = 25
+    _humidity_threshold = 0.1  # percent
+    _prev_humidity = 50
+
     def __init__(self, *args, **kwargs):
         """ Instantiates manager Instantiates parent class, and initializes 
             sensor variable name. """
@@ -26,6 +32,12 @@ class CCS811Manager(PeripheralManager, CCS811Events):
         # Initialize variable names
         self.co2_name = self.parameters["variables"]["sensor"]["co2_ppm"]
         self.tvoc_name = self.parameters["variables"]["sensor"]["tvoc_ppb"]
+        self.temperature_name = self.parameters["variables"]["compensation"][
+            "temperature_celcius"
+        ]
+        self.humidity_name = self.parameters["variables"]["compensation"][
+            "humidity_percent"
+        ]
 
     @property
     def co2(self) -> None:
@@ -58,6 +70,16 @@ class CCS811Manager(PeripheralManager, CCS811Events):
             self.state.set_environment_reported_sensor_value(
                 self.name, self.tvoc_name, value
             )
+
+    @property
+    def temperature(self) -> None:
+        """ Gets compensation temperature value from shared environment state. """
+        return self.state.get_environment_reported_sensor_value(self.temperature_name)
+
+    @property
+    def humidity(self) -> None:
+        """ Gets compensation humidity value from shared environment state. """
+        return self.state.get_environment_reported_sensor_value(self.humidity_name)
 
     def initialize(self) -> None:
         """Initializes manager."""
@@ -97,7 +119,25 @@ class CCS811Manager(PeripheralManager, CCS811Events):
         """Updates sensor by reading co2 and tvoc values then reports them to shared 
         state. Checks for compensation variables before read."""
 
-        # TODO: Check for new compensation values
+        # Update compensation variables if new value
+        if self.new_compensation_variables():
+
+            # Set compensation variables
+            try:
+                self.driver.write_environment_data(
+                    temperature=self.temperature, humidity=self.humidity, retry=True
+                )
+
+                # Update previous values
+                if self.temperature != None:
+                    self._prev_temperature = self.temperature
+                if self.humidity != None:
+                    self._prev_humidity = self.humidity
+
+            except DriverError:
+                self.logger.error("Unable to set compensation variables")
+                self.mode = Modes.ERROR
+                self.health = 0.0
 
         # Read co2 and tvoc
         try:
@@ -144,3 +184,24 @@ class CCS811Manager(PeripheralManager, CCS811Events):
         """ Clears reported values. """
         self.co2 = None
         self.tvoc = None
+
+    def new_compensation_variables(self) -> bool:
+        """ Check if there is a new compensation variable value. """
+
+        # Check if calibrating
+        if self.mode == Modes.CALIBRATE:
+            return False
+
+        # Check if compensation variables exists
+        if self.temperature == None and self.humidity == None:
+            return False
+
+        # Check if variables value sufficiently different
+        if (
+            abs(self.temperature - self._prev_temperature) < self._temperature_threshold
+            and abs(self.humidity - self._prev_humidity) < self._humidity_threshold
+        ):
+            return False
+
+        # New compensation variables exists!
+        return True
