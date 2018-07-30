@@ -208,6 +208,10 @@ class IoTManager:
 
                     self.iot.publishBinaryImage(camera_name, "png", file_bytes)
 
+                    # Check if stored directory exists, if not create it
+                    if not os.path.isdir("images/stored"):
+                        os.mkdir("images/stored")
+
                     # Move image from /images once processed
                     stored_image_file = image_file.replace("images", "images/stored")
                     shutil.move(image_file, stored_image_file)
