@@ -94,7 +94,7 @@
                     "bus": 2, 
                     "mux": "0x77", 
                     "channel": 2, 
-                    "address": "0x5b"
+                    "address": "0x5a"
                 }
             }
         }
