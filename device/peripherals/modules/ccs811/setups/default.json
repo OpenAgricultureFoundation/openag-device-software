@@ -2,8 +2,8 @@
 	"name":  "CCS811 Carbon Dioxide Sensor",
 	"version": "1",
 	"uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
-	"module_name": "sht25.manager",
-	"class_name": "SHT25Manager",
+	"module_name": "ccs811.manager",
+	"class_name": "CCS811Manager",
 	"parameters": {
 		"variables": {
 			"sensor": {
@@ -47,11 +47,11 @@
 			},
 			"channel": {
 				"type": "integer",
-				"default": 1
+				"default": 2
 			},
 			"address": {
 				"type": "string",
-				"default": "0x40"
+				"default": "0x5b"
 			}
 		}
 	},
@@ -80,29 +80,7 @@
 	],
 	"info": {
 		"variables": {
-			"sensor":{
-				"temperature_celcius": {
-					"range": [-40, 125],
-			        "accuracy": {
-			            "typical": 0.2,
-			            "plot": [[-40, 0.5],[5,0.2],[60,0.2],
-			            	[100,0.5],[120,0.7]]   
-			        },
-			        "repeatability": 0.1,
-			        "response_time_seconds": 15,
-			        "yearly_drift": 0.02
-				},
-				"humidity_percent": {
-                    "range": [0, 100],
-                    "accuracy": {
-                        "typical": 1.8,
-                        "plot": [[0,3],[10,2],[90,2],[100,3]]
-                    },
-                    "repeatability": 0.1,
-                    "response_time_seconds": 8,
-                    "yearly_drift": 0.25
-				}
-			},
+			"sensor":null,
 			"actuator": null
 		}
 	}

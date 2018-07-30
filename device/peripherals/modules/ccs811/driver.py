@@ -227,23 +227,22 @@ class CCS811Driver:
         if temperature == None and humidity == None:
             raise ValueError("Temperature and/or humidity value required")
 
-        # TODO: Calculate temperature bytes
+        # Calculate temperature bytes
         if temperature != None:
-
-            ...
+            temp_msb, temp_lsb = bitwise.convert_base_1_512(temperature + 25)
         else:
-            temperature_msb = 0x64
-            temperature_lsb = 0x00
+            temp_msb = 0x64
+            temp_lsb = 0x00
 
-        # TODO: Calculate humidity bytes
+        # Calculate humidity bytes
         if humidity != None:
-            ...
+            hum_msb, hum_lsb = bitwise.convert_base_1_512(humidity)
         else:
-            humidity_msb = 0x64
-            humidity_lsb = 0x00
+            hum_msb = 0x64
+            hum_lsb = 0x00
 
         # Write environment data to sensor
-        bytes_ = [0x05, humidity_msb, humidity_lsb, temperature_msb, temperature_lsb]
+        bytes_ = [0x05, hum_msb, hum_lsb, temp_msb, temp_lsb]
         try:
             self.i2c.write(bytes(bytes_), retry=retry)
         except I2CError as e:

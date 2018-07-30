@@ -1,5 +1,10 @@
 from typing import Tuple
 
+import sys
+
+sys.path.append("../../../../")
+from device.utilities.bitwise import get_byte_from_bit_list
+
 RH = 48.5
 T = 23.5
 
@@ -7,8 +12,8 @@ T = 23.5
 def convert_base_1_512(n: float) -> Tuple[int, int]:
     """Convert a float into base 1/512 msb and lsb."""
 
-    # Initialize byte list
-    byte_list = []
+    # Initialize bit list
+    bits = []
 
     # Iterage over 16 bits starting with most significant
     for i in range(15, -1, -1):
@@ -18,34 +23,25 @@ def convert_base_1_512(n: float) -> Tuple[int, int]:
 
         # Check if bit at position i should be enabled
         if n >= val:
-            byte_list.append(1)
+            bits.append(1)
 
             # If bit enabled, subtract float value from number
             n = n - val
 
         # Check if bit at position i should be disabled
         else:
-            byte_list.append(0)
+            bits.append(0)
+
+    # Adjust endianness
+    msb_bits = list(reversed(bits[:8]))
+    lsb_bits = list(reversed(bits[8:]))
 
     # Convert byte list to msb and lsb
-    msb_list = byte_list[:8]
-    lsb_list = byte_list[8:]
+    msb = get_byte_from_bit_list(msb_bits)
+    lsb = get_byte_from_bit_list(lsb_bits)
 
-    return msb_list, lsb_list
-
-
-print(convert_base_1_512(T))
+    return msb, lsb
 
 
-# def conver(n, b):
-#     a = 0
-#     i = 0
-#     while n:
-#         n, r = divmod(n, b)
-#         a += 10 ** i * r
-#         i += 1
-
-#     return a
-
-
-# print(conver(16, 8))
+msb, lsb = convert_base_1_512(50)
+print("[0x{:02X}, 0x{:02X}]".format(msb, lsb))

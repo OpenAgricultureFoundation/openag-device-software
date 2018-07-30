@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC EDU 001",
+    "name": "CCS811 Mux 0x77, Channel 2, Address 0x5b",
     "uuid": "f89b1cf6-8326-4cac-9a51-9f3318fbd155",
     "peripherals": [
         {

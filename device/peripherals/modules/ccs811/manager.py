@@ -3,19 +3,18 @@ from typing import Optional, Tuple, Dict
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.health import Health
-from device.utilities.error import Error
 
 # Import peripheral parent class
 from device.peripherals.classes.peripheral_manager import PeripheralManager
 
-# Import led array and events
-from device.peripherals.modules.sht25.sensor import SHT25Sensor
-from device.peripherals.modules.sht25.events import SHT25Events
+# Import ccs811 elements
+from device.peripherals.modules.ccs811.events import CCS811Events
+from device.peripherals.modules.ccs811.driver import CCS811Driver
+from device.peripherals.modules.ccs811.exceptions import DriverError
 
 
-class CCS811Manager(PeripheralManager, SHT25Events):
-    """ Manages an sht25 temperature and humidity sensor. """
+class CCS811Manager(PeripheralManager, CCS811Events):
+    """ Manages an ccs811 co2 sensor. """
 
     def __init__(self, *args, **kwargs):
         """ Instantiates manager Instantiates parent class, and initializes 
@@ -25,74 +24,65 @@ class CCS811Manager(PeripheralManager, SHT25Events):
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.temperature_name = self.parameters["variables"]["sensor"][
-            "temperature_celcius"
-        ]
-        self.humidity_name = self.parameters["variables"]["sensor"]["humidity_percent"]
-
-        # Initialize sensor
-        self.sensor = SHT25Sensor(
-            name=self.name,
-            bus=self.parameters["communication"]["bus"],
-            mux=int(self.parameters["communication"]["mux"], 16),
-            channel=self.parameters["communication"]["channel"],
-            address=int(self.parameters["communication"]["address"], 16),
-            simulate=self.simulate,
-        )
+        self.co2_name = self.parameters["variables"]["sensor"]["co2_ppm"]
+        self.tvoc_name = self.parameters["variables"]["sensor"]["tvoc_ppb"]
 
     @property
-    def temperature(self) -> None:
-        """ Gets temperature value. """
-        return self.state.get_peripheral_reported_sensor_value(
-            self.name, self.temperature_name
-        )
+    def co2(self) -> None:
+        """ Gets co2 value. """
+        return self.state.get_peripheral_reported_sensor_value(self.name, self.co2_name)
 
-    @temperature.setter
-    def temperature(self, value: float) -> None:
-        """ Sets temperature value in shared state. Does not update environment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(
-            self.name, self.temperature_name, value
-        )
+    @co2.setter
+    def co2(self, value: float) -> None:
+        """ Sets co2 value in shared state. Does not update environment from calibration mode. """
+        self.state.set_peripheral_reported_sensor_value(self.name, self.co2_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
-                self.name, self.temperature_name, value
+                self.name, self.co2_name, value
             )
 
     @property
-    def humidity(self) -> None:
-        """ Gets humidity value. """
+    def tvoc(self) -> None:
+        """ Gets tvoc value. """
         return self.state.get_peripheral_reported_sensor_value(
-            self.name, self.humidity_name
+            self.name, self.tvoc_name
         )
 
-    @humidity.setter
-    def humidity(self, value: float) -> None:
-        """ Sets humidity value in shared state. Does not update environment from calibration mode. """
+    @tvoc.setter
+    def tvoc(self, value: float) -> None:
+        """ Sets tvoc value in shared state. Does not update environment from calibration mode. """
         self.state.set_peripheral_reported_sensor_value(
-            self.name, self.humidity_name, value
+            self.name, self.tvoc_name, value
         )
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
-                self.name, self.humidity_name, value
+                self.name, self.tvoc_name, value
             )
 
     def initialize(self) -> None:
-        """ Initializes manager."""
+        """Initializes manager."""
         self.logger.info("Initializing")
 
         # Clear reported values
         self.clear_reported_values()
 
         # Initialize health
-        self.health = self.sensor.health.percent
+        self.health = 100.0
 
-        # Initialize sensor
-        error = self.sensor.probe()
-
-        # Check for errors
-        if error.exists():
-            error.report("Manager unable to initialize")
-            self.logger.error(error.summary())
+        # Initialize driver
+        try:
+            self.driver = CCS811Driver(
+                name=self.name,
+                bus=self.parameters["communication"]["bus"],
+                mux=int(self.parameters["communication"]["mux"], 16),
+                channel=self.parameters["communication"]["channel"],
+                address=int(self.parameters["communication"]["address"], 16),
+                simulate=self.simulate,
+                mux_simulator=self.mux_simulator,
+            )
+        except DriverError as e:
+            self.logger.exception("Manager unable to initialize")
+            self.health = 0.0
             self.mode = Modes.ERROR
             return
 
@@ -100,52 +90,28 @@ class CCS811Manager(PeripheralManager, SHT25Events):
         self.logger.info("Initialized successfully")
 
     def setup(self) -> None:
-        """ Sets up manager. Programs device operation parameters into 
-            sensor driver circuit. """
-        self.logger.info("Setting up")
-
-        # Setup sensor
-        error = self.sensor.setup()
-
-        # Check for errors:
-        if error.exists():
-            error.report("Manager setup failed")
-            self.logger.error(error.summary())
-            self.mode = Modes.ERROR
-            return
-
-        # Successfully setup!
-        self.logger.info("Successfully setup!")
+        """Sets up sensor."""
+        self.logger.info("No setup required")
 
     def update(self) -> None:
-        """ Updates sensor when in normal mode. """
+        """Updates sensor by reading co2 and tvoc values then reports them to shared 
+        state. Checks for compensation variables before read."""
 
-        # Read temperature
-        temperature, error = self.sensor.read_temperature()
+        # TODO: Check for new compensation values
 
-        # Check for errors:
-        if error.exists():
-            error.report("Manager unable to update")
-            self.logger.error(error.summary())
+        # Read co2 and tvoc
+        try:
+            co2, tvoc = self.driver.read_algorithm_data(retry=True)
+        except DriverError:
+            self.logger.exception("Unable to read co2, tvoc")
             self.mode = Modes.ERROR
-            self.health = self.sensor.health.percent
-            return
-
-        # Read temperature
-        humidity, error = self.sensor.read_humidity()
-
-        # Check for errors:unix pipe an output stream gtrep
-        if error.exists():
-            error.report("Manager unable to update")
-            self.logger.error(error.summary())
-            self.mode = Modes.ERROR
-            self.health = self.sensor.health.percent
+            self.health = 0.0
             return
 
         # Update reported values
-        self.temperature = temperature
-        self.humidity = humidity
-        self.health = self.sensor.health.percent
+        self.co2 = co2
+        self.tvoc = tvoc
+        self.health = 100.0
 
     def reset(self) -> None:
         """ Resets sensor. """
@@ -154,8 +120,12 @@ class CCS811Manager(PeripheralManager, SHT25Events):
         # Clear reported values
         self.clear_reported_values()
 
-        # Reset sensor
-        self.sensor.reset()
+        # Reset driver if not in error mode
+        try:
+            if self.mode != Modes.ERROR:
+                self.driver.reset()
+        except DriverError:
+            self.logger.exception("Unable to reset driver")
 
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")
@@ -172,5 +142,5 @@ class CCS811Manager(PeripheralManager, SHT25Events):
 
     def clear_reported_values(self):
         """ Clears reported values. """
-        self.temperature = None
-        self.humidity = None
+        self.co2 = None
+        self.tvoc = None
