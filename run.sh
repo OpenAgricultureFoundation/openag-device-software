@@ -82,6 +82,12 @@ esac
 done
 set -- "${POSITIONAL[@]}" 
 
+# Check if about.json if configured
+if grep "<DEVICE>-<VERSION>-<ID>" about.json > /dev/null; then
+    echo "Device about.json is not configured, running with --no-device option"
+    NO_DEVICE="true"
+fi
+
 # Export command line arguments
 export NO_DEVICE
 export SIMULATE
