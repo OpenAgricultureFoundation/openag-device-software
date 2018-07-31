@@ -48,6 +48,5 @@ python3 -m pip install -U mypy
 
 # if you are a VIM geek:  https://github.com/Integralist/vim-mypy
 
-
-
-
+# Install autossh for persistent ssh forwarding
+sudo apt-get install autossh
