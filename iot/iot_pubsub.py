@@ -88,7 +88,8 @@ class IoTPubSub:
         except:
             # or create a DB entry since none exists.
             IoTConfigModel.objects.create(
-                last_config_version=self._lastConfigVersion)
+                last_config_version=self._lastConfigVersion
+            )
 
         # validate our deviceId
         if self.deviceId or 0 == len(self.deviceId) is None:
@@ -143,24 +144,21 @@ class IoTPubSub:
 
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
-                        valuesJson += \
-                            "{'name':'%s', 'type':'float', 'value':%s}" % (
-                            vname,
-                            val,
+                        valuesJson += (
+                            "{'name':'%s', 'type':'float', 'value':%s}"
+                            % (vname, val)
                         )
 
                     elif isinstance(val, int):
-                        valuesJson += \
-                            "{'name':'%s', 'type':'int', 'value':%s}" % (
-                            vname,
-                            val,
+                        valuesJson += (
+                            "{'name':'%s', 'type':'int', 'value':%s}"
+                            % (vname, val)
                         )
 
                     else:  # assume str
-                        valuesJson += \
-                            "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                            vname,
-                            val,
+                        valuesJson += (
+                            "{'name':'%s', 'type':'str', 'value':'%s'}"
+                            % (vname, val)
                         )
 
                 valuesJson += "]}"
@@ -174,8 +172,9 @@ class IoTPubSub:
             self.mqtt_client.publish(self.mqtt_topic, message_json, qos=1)
 
             self.logger.info(
-                "publishEnvVar: sent '{}' to {}".format(message_json,
-                                                        self.mqtt_topic)
+                "publishEnvVar: sent '{}' to {}".format(
+                    message_json, self.mqtt_topic
+                )
             )
             return True
 
@@ -197,7 +196,8 @@ class IoTPubSub:
 
             if None == valuesJsonString or 0 == len(valuesJsonString):
                 self.logger.error(
-                    "publishCommandReply: missing valuesJsonString")
+                    "publishCommandReply: missing valuesJsonString"
+                )
                 return False
 
             # publish the command reply as an env. var.
@@ -217,15 +217,15 @@ class IoTPubSub:
     def publishBinaryImage(self, variableName, imageType, imageBytes):
         """ Publish a blob as (multiple < 256K) base64 messages. """
         if (
-                None == variableName
-                or 0 == len(variableName)
-                or None == imageType
-                or 0 == len(imageType)
-                or None == imageBytes
-                or 0 == len(imageBytes)
-                or not isinstance(variableName, str)
-                or not isinstance(imageType, str)
-                or not isinstance(imageBytes, bytes)
+            None == variableName
+            or 0 == len(variableName)
+            or None == imageType
+            or 0 == len(imageType)
+            or None == imageBytes
+            or 0 == len(imageBytes)
+            or not isinstance(variableName, str)
+            or not isinstance(imageType, str)
+            or not isinstance(imageBytes, bytes)
         ):
             self.logger.critical("publishBinaryImage: invalid args.")
             return False
@@ -285,7 +285,8 @@ class IoTPubSub:
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.critical(
-                "publishBinaryImage: Exception: {}".format(e))
+                "publishBinaryImage: Exception: {}".format(e)
+            )
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
@@ -297,12 +298,13 @@ class IoTPubSub:
         try:
             # let the mqtt client process any data it has received or
             # needs to publish
-            if None == self.mqtt_client:
+            if self.mqtt_client is None:
                 return
             self.mqtt_client.loop()
 
             seconds_since_issue = (
-                    datetime.datetime.utcnow() - self.jwt_iat).seconds
+                datetime.datetime.utcnow() - self.jwt_iat
+            ).seconds
 
             # refresh the JWT if it is about to expire
             if seconds_since_issue > 60 * self.jwt_exp_mins:
@@ -356,9 +358,8 @@ class IoTPubSub:
         self._connected = value
         if value:
             self.state_dict[
-                "connected"] = datetime.datetime.utcnow().strftime(
-                "%Y-%m-%d-T%H:%M:%SZ"
-            )
+                "connected"
+            ] = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
         else:
             self.state_dict["connected"] = "No"
 
@@ -390,6 +391,7 @@ class IoTPubSub:
     # private
     class IoTArgs:
         """ Class arguments with defaults. """
+
         project_id = None
         registry_id = None
         device_id = None
@@ -519,12 +521,14 @@ class IoTPubSub:
         try:
             if not validDictKey(d, self.COMMANDS):
                 self.logger.error(
-                    "Message is missing %s key." % self.COMMANDS)
+                    "Message is missing %s key." % self.COMMANDS
+                )
                 return
 
             if not validDictKey(d, self.MESSAGEID):
                 self.logger.error(
-                    "Message is missing %s key." % self.MESSAGEID)
+                    "Message is missing %s key." % self.MESSAGEID
+                )
                 return
 
             # unpack an array of commands from the dict
@@ -648,7 +652,8 @@ def on_message(unused_client, ref_self, message):
             messageVersion = int(payloadDict["lastConfigVersion"])
     except Exception as e:
         ref_self.logger.debug(
-            "on_message: Exception parsing payload: {}".format(e))
+            "on_message: Exception parsing payload: {}".format(e)
+        )
         return
 
     # The broker will keep sending config messages everytime we connect.
@@ -679,16 +684,16 @@ def on_subscribe(unused_client, ref_self, mid, granted_qos):
 # ------------------------------------------------------------------------------
 # private
 def getMQTTclient(
-        ref_self,
-        project_id,
-        cloud_region,
-        registry_id,
-        device_id,
-        private_key_file,
-        algorithm,
-        ca_certs,
-        mqtt_bridge_hostname,
-        mqtt_bridge_port,
+    ref_self,
+    project_id,
+    cloud_region,
+    registry_id,
+    device_id,
+    private_key_file,
+    algorithm,
+    ca_certs,
+    mqtt_bridge_hostname,
+    mqtt_bridge_port,
 ):
     """
     Create our MQTT client. The client_id is a unique string that identifies
@@ -709,8 +714,9 @@ def getMQTTclient(
     # password field is used to transmit a JWT to authorize the device.
     client.username_pw_set(
         username="unused",
-        password=create_jwt(ref_self, project_id, private_key_file,
-                            algorithm),
+        password=create_jwt(
+            ref_self, project_id, private_key_file, algorithm
+        ),
     )
 
     # Enable SSL/TLS support.

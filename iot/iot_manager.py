@@ -9,6 +9,8 @@ import sys
 import threading
 import time
 import traceback
+import ast
+import socket
 
 # Import the IoT communications class
 from iot.iot_pubsub import IoTPubSub
@@ -29,7 +31,9 @@ class IoTManager:
     # We only publish a value if it changes.
     prev_vars = None
     sentAboutJson = False
+    last_status = datetime.datetime.utcnow()
 
+    # ------------------------------------------------------------------------
     def __init__(self, state, ref_device_manager):
         """ Class constructor """
         self.iot = None
@@ -47,6 +51,7 @@ class IoTManager:
         self._stop_event = threading.Event()  # so we can stop this thread
         self.reset()
 
+    # ------------------------------------------------------------------------
     def reset(self):
         try:
             # pass in the callback that receives commands
@@ -58,6 +63,7 @@ class IoTManager:
             self.logger.error("Couldn't create IoT connection: {}".format(e))
             # traceback.print_tb( exc_traceback, file=sys.stdout )
 
+    # ------------------------------------------------------------------------
     def command_received(self, command, arg0, arg1):
         """Process commands received from the backend (UI).
             This is a callback that is called by the IoTPubSub class when this
@@ -73,9 +79,9 @@ class IoTManager:
 
                 # Make sure we have a valid recipe uuid
                 if (
-                        "uuid" not in recipe_dict
-                        or None == recipe_dict["uuid"]
-                        or 0 == len(recipe_dict["uuid"])
+                    "uuid" not in recipe_dict
+                    or None == recipe_dict["uuid"]
+                    or 0 == len(recipe_dict["uuid"])
                 ):
                     self.logger.error("command_received: missing recipe UUID")
                     return
@@ -89,7 +95,8 @@ class IoTManager:
 
                 # start this recipe from our DB (by uuid)
                 self.ref_device_manager.process_start_recipe_event(
-                    recipe_uuid)
+                    recipe_uuid
+                )
 
                 # record that we processed this command
                 self.iot.publishCommandReply(command, recipe_json)
@@ -101,18 +108,21 @@ class IoTManager:
                 return
 
             self.logger.error(
-                "command_received: Unknown command: {}".format(command))
+                "command_received: Unknown command: {}".format(command)
+            )
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.critical("Exception in command_received(): %s" % e)
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
+    # ------------------------------------------------------------------------
     @property
     def error(self):
         """ Gets error value. """
         return self._error
 
+    # ------------------------------------------------------------------------
     @error.setter
     def error(self, value):
         """ Safely updates recipe error in shared state. """
@@ -120,44 +130,50 @@ class IoTManager:
         with threading.Lock():
             self.state.iot["error"] = value
 
+    # ------------------------------------------------------------------------
     @property
     def connected(self):
         if None == self.iot:
             return False
         return self.iot.connected
 
+    # ------------------------------------------------------------------------
     @connected.setter
     def connected(self, value):
         if None == self.iot:
             return
         self.iot.connected = value
 
+    # ------------------------------------------------------------------------
     def publishMessage(name, msg_json):
         """ Send a command reply. """
         if None == self.iot:
             return
         self.iot.publishCommandReply(name, msg_json)
 
+    # ------------------------------------------------------------------------
     def spawn(self):
         self.logger.info("Spawning IoT thread")
         self.thread = threading.Thread(target=self.thread_proc)
         self.thread.daemon = True
         self.thread.start()
 
+    # ------------------------------------------------------------------------
     def stop(self):
         self.logger.info("Stopping IoT thread")
         self._stop_event.set()
 
+    # ------------------------------------------------------------------------
     def stopped(self):
         return self._stop_event.is_set()
 
+    # ------------------------------------------------------------------------
     def publish(self):
         if None == self.iot:
             return
-        vars_dict = \
-        self.state.environment["reported_sensor_stats"]["individual"][
-            "instantaneous"
-        ]
+        vars_dict = self.state.environment["reported_sensor_stats"][
+            "individual"
+        ]["instantaneous"]
 
         # Keep a copy of the first set of values (usually None).
         if self.prev_vars == None:
@@ -169,10 +185,22 @@ class IoTManager:
                 self.prev_vars[var] = copy.deepcopy(vars_dict[var])
                 self.iot.publishEnvVar(var, vars_dict[var])
 
+    # ------------------------------------------------------------------------
+    def get_IP(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(("8.8.8.8", 80))
+        except:
+            pass
+        IP = s.getsockname()[0]
+        s.close()
+        return IP
+
+    # ------------------------------------------------------------------------
     def thread_proc(self):
         while True:
 
-            if None == self.iot:
+            if self.iot is None:
                 time.sleep(5)
                 continue
 
@@ -181,11 +209,34 @@ class IoTManager:
                 self.sentAboutJson = True
                 try:
                     about_json = open("about.json").read()
+                    about_dict = ast.literal_eval(about_json)
+                    about_dict["IP"] = self.get_IP()
+                    about_json = json.dumps(about_dict)
                     self.iot.publishCommandReply("boot", about_json)
-                    self.logger.info("Published boot message with versions.")
+                    self.logger.info("Published boot message.")
                 except:
                     self._error = "Unable to load about.json file."
                     self.logger.critical(self._error)
+
+            # Publish status every 5 minutes
+            secs_since_last_status = (
+                datetime.datetime.utcnow() - self.last_status
+            ).seconds
+            if secs_since_last_status > 300:
+                self.last_status = datetime.datetime.utcnow()
+                status_dict = {}
+                status_dict["timestamp"] = time.strftime(
+                    "%FT%XZ", time.gmtime()
+                )
+# debugrob, fill all these in, get from state.resource[...]
+                status_dict["status"] = "OK"
+                status_dict["recipe_time_elapsed"] = "debugrob"
+                status_dict["recipe_time_remaining"] = "debugrob"
+                status_dict["internet_connection"] = "debugrob"
+                status_dict["iot_status"] = "debugrob"
+                status_dict["memory_available"] = "debugrob"
+                status_dict["disk_available"] = "debugrob"
+                status_dict["IP"] = self.get_IP()
 
             if self.stopped():
                 break
@@ -200,8 +251,8 @@ class IoTManager:
 
                     # Is this file open by a process? (fswebcam)
                     if 0 == os.system(
-                            "lsof -f -- {} > /dev/null 2>&1"
-                            .format(image_file)):
+                        "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                    ):
                         continue  # Yes, so skip it and try the next one.
 
                     # 2018-06-15-T18:34:45Z_Camera-Top.png
@@ -220,23 +271,25 @@ class IoTManager:
                         os.remove(image_file)
                         continue
 
-                    self.iot.publishBinaryImage(camera_name, "png",
-                                                file_bytes)
+                    self.iot.publishBinaryImage(
+                        camera_name, "png", file_bytes
+                    )
 
                     # Check if stored directory exists, if not create it
                     if not os.path.isdir("images/stored"):
                         os.mkdir("images/stored")
 
                     # Move image from /images once processed
-                    stored_image_file = image_file.replace("images",
-                                                           "images/stored")
+                    stored_image_file = image_file.replace(
+                        "images", "images/stored"
+                    )
                     shutil.move(image_file, stored_image_file)
 
-                    # TODO: Check for external storage device to move image to
-                    # Need to think through how this will interact with on-device UI
-                    # image display...how does find images
+                    # TODO: Check for external storage device for images
+                    # Need to think through how this will interact with
+                    # on-device UI image display...how does find images
 
-            except (Exception) as e:
+            except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 self.logger.critical("Exception: {}".format(e))
                 traceback.print_tb(exc_traceback, file=sys.stdout)
