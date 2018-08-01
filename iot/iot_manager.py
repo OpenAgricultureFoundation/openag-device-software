@@ -1,6 +1,14 @@
 # Import python modules
-import logging, time, threading, os, sys, datetime, json, sys, traceback, copy
-import glob, shutil
+import copy
+import glob
+import json
+import logging
+import os
+import shutil
+import sys
+import threading
+import time
+import traceback
 
 # Import the IoT communications class
 from iot.iot_pubsub import IoTPubSub
@@ -65,9 +73,9 @@ class IoTManager:
 
                 # Make sure we have a valid recipe uuid
                 if (
-                    "uuid" not in recipe_dict
-                    or None == recipe_dict["uuid"]
-                    or 0 == len(recipe_dict["uuid"])
+                        "uuid" not in recipe_dict
+                        or None == recipe_dict["uuid"]
+                        or 0 == len(recipe_dict["uuid"])
                 ):
                     self.logger.error("command_received: missing recipe UUID")
                     return
@@ -80,7 +88,8 @@ class IoTManager:
                 self.ref_device_manager.load_recipe_json(recipe_json)
 
                 # start this recipe from our DB (by uuid)
-                self.ref_device_manager.process_start_recipe_event(recipe_uuid)
+                self.ref_device_manager.process_start_recipe_event(
+                    recipe_uuid)
 
                 # record that we processed this command
                 self.iot.publishCommandReply(command, recipe_json)
@@ -91,7 +100,8 @@ class IoTManager:
                 self.iot.publishCommandReply(command, "")
                 return
 
-            self.logger.error("command_received: Unknown command: {}".format(command))
+            self.logger.error(
+                "command_received: Unknown command: {}".format(command))
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.critical("Exception in command_received(): %s" % e)
@@ -144,7 +154,8 @@ class IoTManager:
     def publish(self):
         if None == self.iot:
             return
-        vars_dict = self.state.environment["reported_sensor_stats"]["individual"][
+        vars_dict = \
+        self.state.environment["reported_sensor_stats"]["individual"][
             "instantaneous"
         ]
 
@@ -188,12 +199,9 @@ class IoTManager:
                 for image_file in image_file_list:
 
                     # Is this file open by a process? (fswebcam)
-                    if (
-                        0
-                        == os.system(
-                            "lsof -f -- {} > /dev/null 2>&1".format(image_file)
-                        )
-                    ):
+                    if 0 == os.system(
+                            "lsof -f -- {} > /dev/null 2>&1"
+                            .format(image_file)):
                         continue  # Yes, so skip it and try the next one.
 
                     # 2018-06-15-T18:34:45Z_Camera-Top.png
@@ -202,18 +210,26 @@ class IoTManager:
                     fn3 = fn2.split(".")
                     camera_name = fn3[0]  # Camera-Top
 
+                    # get the file contents
                     f = open(image_file, "rb")
                     file_bytes = f.read()
                     f.close()
 
-                    self.iot.publishBinaryImage(camera_name, "png", file_bytes)
+                    # if the size is < 40KB, then it is garbage we delete
+                    if len(file_bytes) < 40000:
+                        os.remove(image_file)
+                        continue
+
+                    self.iot.publishBinaryImage(camera_name, "png",
+                                                file_bytes)
 
                     # Check if stored directory exists, if not create it
                     if not os.path.isdir("images/stored"):
                         os.mkdir("images/stored")
 
                     # Move image from /images once processed
-                    stored_image_file = image_file.replace("images", "images/stored")
+                    stored_image_file = image_file.replace("images",
+                                                           "images/stored")
                     shutil.move(image_file, stored_image_file)
 
                     # TODO: Check for external storage device to move image to
