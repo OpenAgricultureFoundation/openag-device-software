@@ -13,5 +13,5 @@ if [[ "$subdomain" = "" ]] || [[ "$subdomain" = "<DEVICE>-<VERSION>-<ID>" ]]; th
 	echo Device serial number not set, please edit about.json
 else
 	echo Forwarding ports with subdomain: $subdomain
-	autossh -M 0 -R $subdomain.serveo.net:80:localhost:8000 serveo.net -R $subdomain:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
+	autossh -M 0 -R $subdomain.serveo.net:80:localhost:80 serveo.net -R $subdomain:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
 fi
