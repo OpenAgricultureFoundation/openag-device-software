@@ -7,11 +7,11 @@ function jsonval {
 json=`cat about.json`
 prop='serial_number'
 serial_number=`jsonval`
-subdomain=`echo "$serial_number" | sed -r 's/[-]+/./g'`
 
-if [[ "$subdomain" = "" ]] || [[ "$subdomain" = "<DEVICE>-<VERSION>-<ID>" ]]; then
+if [[ "$serial_number" = "" ]] || [[ "$serial_number" = "<DEVICE>-<VERSION>-<ID>" ]]; then
 	echo Device serial number not set, please edit about.json
 else
+	subdomain=`echo "$serial_number" | sed -r 's/[-]+/./g'`
 	echo Forwarding ports with subdomain: $subdomain
 	autossh -M 0 -R $subdomain.serveo.net:80:localhost:80 serveo.net -R $subdomain:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
 fi
