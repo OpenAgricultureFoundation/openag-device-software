@@ -92,7 +92,7 @@ class IoTPubSub:
             )
 
         # validate our deviceId
-        if self.deviceId or 0 == len(self.deviceId) is None:
+        if self.deviceId is None or 0 == len(self.deviceId):
             self.logger.error("Invalid or missing DEVICE_ID env. var.")
             exit(1)
         self.logger.debug("Using device_id={}".format(self.deviceId))
@@ -414,7 +414,7 @@ class IoTPubSub:
             args = self.IoTArgs()
 
             args.project_id = os.environ.get("GCLOUD_PROJECT")
-            if None == args.project_id:
+            if args.project_id is None:
                 self.logger.critical(
                     "iot_pubsub: get_env_vars: "
                     "Missing GCLOUD_PROJECT environment variable."
@@ -422,7 +422,7 @@ class IoTPubSub:
                 exit(1)
 
             args.cloud_region = os.environ.get("GCLOUD_REGION")
-            if None == args.cloud_region:
+            if args.cloud_region is None:
                 self.logger.critical(
                     "iot_pubsub: get_env_vars: "
                     "Missing GCLOUD_REGION environment variable."
@@ -430,7 +430,7 @@ class IoTPubSub:
                 exit(1)
 
             args.registry_id = os.environ.get("GCLOUD_DEV_REG")
-            if None == args.registry_id:
+            if args.registry_id is None:
                 self.logger.critical(
                     "iot_pubsub: get_env_vars: "
                     "Missing GCLOUD_DEV_REG environment variable."
@@ -438,7 +438,7 @@ class IoTPubSub:
                 exit(1)
 
             args.device_id = os.environ.get("DEVICE_ID")
-            if None == args.device_id:
+            if args.device_id is None:
                 self.logger.critical(
                     "iot_pubsub: get_env_vars: "
                     "Missing DEVICE_ID environment variable."
@@ -446,7 +446,7 @@ class IoTPubSub:
                 exit(1)
 
             args.private_key_file = os.environ.get("IOT_PRIVATE_KEY")
-            if None == args.private_key_file:
+            if args.private_key_file is None:
                 self.logger.critical(
                     "iot_pubsub: get_env_vars: "
                     "Missing IOT_PRIVATE_KEY environment variable."
@@ -454,7 +454,7 @@ class IoTPubSub:
                 exit(1)
 
             args.ca_certs = os.environ.get("CA_CERTS")
-            if None == args.ca_certs:
+            if args.ca_certs is None:
                 self.logger.critical(
                     "iot_pubsub: get_env_vars: "
                     "Missing CA_CERTS environment variable."
