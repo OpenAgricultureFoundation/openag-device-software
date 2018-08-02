@@ -154,17 +154,23 @@ class ResourceManager:
         return free_memory
 
     # --------------------------------------------------------------------------
-    def clean_up_disk(self):
-        """
-        Delete image files.
-        """
+    # private
+    def _delete_files(self, path):
         try:
-            imageFileList = glob.glob("images/*.png")
+            imageFileList = glob.glob(path)
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
                 self.logger.debug("Deleted {}".format(imageFile))
         except Exception as e:
             self.logger.error(e)
+
+    # --------------------------------------------------------------------------
+    def clean_up_disk(self):
+        """
+        Delete image files.
+        """
+        self._delete_files('images/*.png')
+        self._delete_files('images/stored/*.png')
 
     # --------------------------------------------------------------------------
     def clean_up_database(self):

@@ -7,6 +7,7 @@ import os
 import shutil
 import sys
 import threading
+import datetime
 import time
 import traceback
 import ast
@@ -32,6 +33,7 @@ class IoTManager:
     prev_vars = None
     sentAboutJson = False
     last_status = datetime.datetime.utcnow()
+    status_publish_freq_secs = 300
 
     # ------------------------------------------------------------------------
     def __init__(self, state, ref_device_manager):
@@ -222,13 +224,25 @@ class IoTManager:
             secs_since_last_status = (
                 datetime.datetime.utcnow() - self.last_status
             ).seconds
-            if secs_since_last_status > 300:
+            if secs_since_last_status > self.status_publish_freq_secs:
                 self.last_status = datetime.datetime.utcnow()
                 status_dict = {}
                 status_dict["timestamp"] = time.strftime(
                     "%FT%XZ", time.gmtime()
                 )
-# debugrob, fill all these in, get from state.resource[...]
+#debugrob, fill all these in, get from state.resource[...]
+"""
+        self.state.resource["status"] 
+        self.state.resource["available_disk_space"] 
+        self.state.resource["free_memory"] 
+        self.state.resource["database_size"] 
+        self.state.resource["internet_connection"] 
+        
+        self.state.iot["error"]
+        self.state.iot["connected"]
+        self.state.iot["received_message_count"]
+        self.state.iot["published_message_count"]
+"""
                 status_dict["status"] = "OK"
                 status_dict["recipe_time_elapsed"] = "debugrob"
                 status_dict["recipe_time_remaining"] = "debugrob"
