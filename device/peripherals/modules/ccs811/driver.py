@@ -52,6 +52,9 @@ class CCS811Driver:
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
 
+        # Initialize simulation mode
+        self.simulate = simulate
+
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
         self.logger.info("Initializing driver")
