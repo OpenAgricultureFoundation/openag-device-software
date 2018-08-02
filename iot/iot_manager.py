@@ -215,9 +215,9 @@ class IoTManager:
                     about_dict["IP"] = self.get_IP()
                     about_json = json.dumps(about_dict)
                     self.iot.publishCommandReply("boot", about_json)
-                    self.logger.info("Published boot message.")
+                    # self.logger.info("Published boot message.")
                 except:
-                    self._error = "Unable to load about.json file."
+                    self._error = "Unable to send boot message."
                     self.logger.critical(self._error)
 
             # Publish status every 5 minutes
@@ -225,32 +225,46 @@ class IoTManager:
                 datetime.datetime.utcnow() - self.last_status
             ).seconds
             if secs_since_last_status > self.status_publish_freq_secs:
-                self.last_status = datetime.datetime.utcnow()
-                status_dict = {}
-                status_dict["timestamp"] = time.strftime(
-                    "%FT%XZ", time.gmtime()
-                )
-#debugrob, fill all these in, get from state.resource[...]
-"""
-        self.state.resource["status"] 
-        self.state.resource["available_disk_space"] 
-        self.state.resource["free_memory"] 
-        self.state.resource["database_size"] 
-        self.state.resource["internet_connection"] 
-        
-        self.state.iot["error"]
-        self.state.iot["connected"]
-        self.state.iot["received_message_count"]
-        self.state.iot["published_message_count"]
-"""
-                status_dict["status"] = "OK"
-                status_dict["recipe_time_elapsed"] = "debugrob"
-                status_dict["recipe_time_remaining"] = "debugrob"
-                status_dict["internet_connection"] = "debugrob"
-                status_dict["iot_status"] = "debugrob"
-                status_dict["memory_available"] = "debugrob"
-                status_dict["disk_available"] = "debugrob"
-                status_dict["IP"] = self.get_IP()
+                try:
+                    self.last_status = datetime.datetime.utcnow()
+                    status_dict = {}
+                    status_dict["timestamp"] = time.strftime(
+                        "%FT%XZ", time.gmtime()
+                    )
+                    status_dict["IP"] = self.get_IP()
+
+                    status_dict["status"] = \
+                        self.state.resource["status"]
+                    status_dict["internet_connection"] = \
+                        self.state.resource["internet_connection"]
+                    status_dict["memory_available"] = \
+                        self.state.resource["free_memory"]
+                    status_dict["disk_available"] = \
+                        self.state.resource["available_disk_space"]
+
+                    status_dict["iot_status"] = \
+                        self.state.iot["connected"]
+                    status_dict["iot_received_message_count"] = \
+                        self.state.iot["received_message_count"]
+                    status_dict["iot_published_message_count"] = \
+                        self.state.iot["published_message_count"]
+
+                    status_dict["recipe_percent_complete"] = \
+                        self.state.recipe["percent_complete"]
+                    status_dict["recipe_percent_complete_string"] = \
+                        self.state.recipe["percent_complete_string"]
+                    status_dict["recipe_time_remaining_minutes"] = \
+                        self.state.recipe["time_remaining_minutes"]
+                    status_dict["recipe_time_remaining_string"] = \
+                        self.state.recipe["time_remaining_string"]
+                    status_dict["recipe_time_elapsed_string"] = \
+                        self.state.recipe["time_elapsed_string"]
+
+                    status_json = json.dumps(status_dict)
+                    self.iot.publishCommandReply("status", status_json)
+                except:
+                    self._error = "Unable to send status message."
+                    self.logger.critical(self._error)
 
             if self.stopped():
                 break
