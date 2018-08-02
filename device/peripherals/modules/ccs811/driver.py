@@ -86,7 +86,21 @@ class CCS811Driver:
             self.start_app(retry=retry)
             # self.check_for_errors(retry=retry)
             self.write_measurement_mode(1, False, False, retry=retry)
-            time.sleep(1200)  # Warm up for 20 minutes
+
+            # Wait 20 minutes for sensor to stabilize
+            start_time = time.time()
+            while time.time() - start_time < 1200:
+
+                # Keep logs active
+                self.logger.info("Warming up, waiting for 20 minutes")
+
+                # Update every 30 seconds
+                time.sleep(30)
+
+                # Break out if simulating
+                if self.simulate:
+                    break
+
         except DriverError as e:
             raise SetupError("Unable to setup", logger=self.logger) from e
 
