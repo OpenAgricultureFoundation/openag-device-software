@@ -26,6 +26,12 @@ fi
 # Automatically generate keys the first time we are run.  Saved to data dir.
 IOT_PRIVATE_KEY=$DIR/registration/data/rsa_private.pem
 if [ ! -f $IOT_PRIVATE_KEY ]; then
+    # make sure this device is on the internet
+    if ! ping -c 1 google.com > /dev/null 2>&1; then
+        echo "Exiting.  Please use the scripts/get_wifis.sh and scripts/connect_wifi.sh to connect to the internet."
+        exit 0
+    fi
+
     # automatically create our keys the first time
     echo "Registering this device..."
     $DIR/registration/one_time_key_creation_and_iot_device_registration.sh $DIR/registration/data
