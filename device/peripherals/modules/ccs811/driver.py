@@ -1,5 +1,5 @@
 # Import standard python modules
-import time
+import time, threading
 from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
@@ -52,6 +52,9 @@ class CCS811Driver:
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
 
+        # Initialize simulation mode
+        self.simulate = simulate
+
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
         self.logger.info("Initializing driver")
@@ -84,9 +87,23 @@ class CCS811Driver:
             self.reset(retry=retry)
             self.check_hardware_id(retry=retry)
             self.start_app(retry=retry)
-            self.check_for_errors(retry=retry)
+            # self.check_for_errors(retry=retry)
             self.write_measurement_mode(1, False, False, retry=retry)
-            time.sleep(3)
+
+            # Wait 20 minutes for sensor to stabilize
+            start_time = time.time()
+            while time.time() - start_time < 1200:
+
+                # Keep logs active
+                self.logger.info("Warming up, waiting for 20 minutes")
+
+                # Update every 30 seconds
+                time.sleep(30)
+
+                # Break out if simulating
+                if self.simulate:
+                    break
+
         except DriverError as e:
             raise SetupError("Unable to setup", logger=self.logger) from e
 
@@ -96,7 +113,6 @@ class CCS811Driver:
 
         # Write a byte to app start register
         try:
-            # byte = self.i2c.write_register(0xF4, 0x00, retry=retry)
             self.i2c.write(bytes([0xF4]), retry=retry)
         except I2CError as e:
             raise StartAppError("Unable to start app", logger=self.logger) from e
@@ -207,12 +223,12 @@ class CCS811Driver:
         for key in sorted(bits.keys(), reverse=True):
             sbits[key] = bits[key]
         self.logger.error("bits = {}".format(sbits))  # TODO: remove
-        byte = bitwise.get_byte_from_bits(bits)
-        self.logger.error("byte = 0x{:02X}".format(byte))  # TODO: remove
+        write_byte = bitwise.get_byte_from_bits(bits)
+        self.logger.error("write_byte = 0x{:02X}".format(write_byte))  # TODO: remove
 
         # Write measurement mode to sensor
         try:
-            self.i2c.write(bytes([0x01, byte]), retry=retry)
+            self.i2c.write(bytes([0x01, write_byte]), retry=retry)
         except I2CError as e:
             message = "Unable to write measurement mode"
             raise WriteMeasurementModeError(messsage, logger=self.logger) from e
@@ -250,7 +266,7 @@ class CCS811Driver:
             raise WriteEnvironmentDataError(messsage, logger=self.logger) from e
 
     def read_algorithm_data(
-        self, retry: bool = False, reread: bool = True
+        self, retry: bool = False, reread: int = 5
     ) -> Tuple[float, float]:
         """Reads algorighm data from sensor hardware."""
         self.logger.debug("Reading co2/tvoc algorithm data")
@@ -265,9 +281,9 @@ class CCS811Driver:
         # Check if data is ready
         if not status.data_ready:
             if reread:
-                time.sleep(0.5)
-                self.logger.debug("Re-reading algorithm data")
-                self.read_algorithm_data(retry=retry, reread=False)
+                self.logger.debug("Data not ready yet, re-reading in 1 second")
+                time.sleep(1)
+                self.read_algorithm_data(retry=retry, reread=reread - 1)
             else:
                 raise ReadAlgorithmDataError("Algorithm data not ready")
 

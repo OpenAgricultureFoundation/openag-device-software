@@ -113,7 +113,7 @@ class CCS811Manager(PeripheralManager, CCS811Events):
 
     def setup(self) -> None:
         """Sets up sensor."""
-        self.logger.info("No setup required")
+        self.driver.setup(retry=True)
 
     def update(self) -> None:
         """Updates sensor by reading co2 and tvoc values then reports them to shared 

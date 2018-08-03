@@ -74,8 +74,8 @@ if __name__ == "__main__":
     # Initialize driver
     driver = USBCameraDriver(
         name="Test",
-        vendor_id=peripheral_setup["properties"]["vendor_id"],
-        product_id=peripheral_setup["properties"]["product_id"],
+        vendor_id=int(peripheral_setup["properties"]["vendor_id"], 16),
+        product_id=int(peripheral_setup["properties"]["product_id"], 16),
         resolution=peripheral_setup["properties"]["resolution"],
         directory=directory,
     )
