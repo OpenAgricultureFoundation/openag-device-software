@@ -22,10 +22,12 @@ class USBCameraDriver:
         resolution: str,
         directory: str,
         simulate=False,
+        usb_mux_comms=None,
+        usb_mux_channel=None,
     ):
         """Initializes USB camera camera."""
 
-        # Initialize parametersrecent
+        # Initialize parameters
         self.name = name
         self.vendor_id = vendor_id
         self.product_id = product_id
@@ -39,6 +41,20 @@ class USBCameraDriver:
         # Check directory exists else create it
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+        # Check is using usb mux
+        if usb_mux_comms != None and usb_mux_channel != None:
+            self.usb_mux = DAC5578(
+                name=name,
+                bus=usb_mux_comms.get("bus", None),
+                address=usb_mux_comms.get("address", None),
+                mux=usb_mux_comms.get("mux", None),
+                channel=usb_mux_comms.get("channel", None),
+                simulate=simulate,
+            )
+            self.usb_mux_channel = usb_mux_channel
+        else:
+            self.usb_mux = None
 
     def list_cameras(self, vendor_id: int = None, product_id: int = None):
         """ Returns list of cameras that match the provided vendor id and 
@@ -76,15 +92,37 @@ class USBCameraDriver:
         return cameras[0], Error(None)
 
     def capture(self) -> Error:
-        """Manages usb 'mux' to capture an image."""
+        """Manages usb mux and captures an image."""
 
-        # with threading.Lock():
-        # TODO: Turn on usb mux channel
-        # self.dac5578.set_channel()
-        error = self.capture_image()
-        # TODO: Turn off usb mux channel
+        # Keep thread locked while capturing image / managing usb mux
+        # TODO: Is there a better way to do this?
+        with threading.Lock():
 
-        return error
+            # Turn on usb mux channel if enable
+            if self.usb_mux != None:
+                error = self.usb_mux.write_output(self.usb_mux_channel, 100)
+
+                # Check for error
+                if error.exists():
+                    return error
+
+            # Capture image
+            error = self.capture_image()
+
+            # Check for error
+            if error.exists():
+                return error
+
+            # Turn off usb mux channel
+            if self.usb_mux != None:
+                error = self.usb_mux.write_output(self.usb_mux_channel, 0)
+
+                # Check for error
+                if error.exists():
+                    return error
+
+        # Successfully captured image
+        return Error(None)
 
     def capture_image(self) -> Error:
         """Captures an image."""
