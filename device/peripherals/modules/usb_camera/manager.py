@@ -1,10 +1,12 @@
 # Import standard python modules
 from typing import Optional, Tuple, Dict
+import json
 
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.health import Health
 from device.utilities.error import Error
+from device.utilities.accessors import get_nested_dict_safely
 
 # Import peripheral parent class
 from device.peripherals.classes.peripheral_manager import PeripheralManager
@@ -24,6 +26,16 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
+        self.logger.error("self.parameters = {}".format(self.parameters))
+
+        # Get usb mux parameters
+        if self.parameters["communication"] != None:
+            usb_mux_comms = self.parameters["communication"]["usb_mux_comms"]
+            usb_mux_channel = self.parameters["communication"]["usb_mux_channel"]
+        else:
+            usb_mux_comms = None
+            usb_mux_channel = None
+
         # Initialize camera
         self.sensor = USBCameraSensor(
             name=self.name,
@@ -31,6 +43,8 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
             vendor_id=int(self.setup_dict["properties"]["vendor_id"], 16),
             product_id=int(self.setup_dict["properties"]["product_id"], 16),
             resolution=self.setup_dict["properties"]["resolution"],
+            usb_mux_comms=usb_mux_comms,
+            usb_mux_channel=usb_mux_channel,
             simulate=self.simulate,
         )
 

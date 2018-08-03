@@ -21,6 +21,8 @@ class USBCameraSensor:
         product_id: int,
         resolution: str,
         simulate: bool = False,
+        usb_mux_comms=None,
+        usb_mux_channel=None,
     ) -> None:
         """ Instantiates camera. """
 
@@ -40,6 +42,8 @@ class USBCameraSensor:
             resolution=resolution,
             directory=directory,
             simulate=simulate,
+            usb_mux_comms=usb_mux_comms,
+            usb_mux_channel=usb_mux_channel,
         )
 
         # Initialize health metrics
