@@ -1,5 +1,5 @@
 # Import standard python modules
-import time, os, datetime, glob
+import time, os, datetime, glob, threading
 from typing import Optional, Tuple
 
 # Import device comms
@@ -12,7 +12,7 @@ from device.utilities.accessors import usb_device_matches
 
 
 class USBCameraDriver:
-    """ Driver for a usb camera. """
+    """Driver for a usb camera."""
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class USBCameraDriver:
         directory: str,
         simulate=False,
     ):
-        """ Initializes USB camera camera. """
+        """Initializes USB camera camera."""
 
         # Initialize parametersrecent
         self.name = name
@@ -56,10 +56,12 @@ class USBCameraDriver:
         for camera in cameras:
             if usb_device_matches(camera, vendor_id, product_id):
                 matches.append(camera)
+
         return matches
 
     def get_camera(self) -> Tuple[Optional[str], Error]:
-        """ Gets camera paths. """
+        """Gets camera paths."""
+        self.logger.debug("Getting camera")
 
         # Get camera paths that match vendor and product ID
         cameras = self.list_cameras(self.vendor_id, self.product_id)
@@ -74,8 +76,18 @@ class USBCameraDriver:
         return cameras[0], Error(None)
 
     def capture(self) -> Error:
-        """ Captures an image. """
-        # self.logger.debug("Capturing image")
+        """Manages usb 'mux' to capture an image."""
+
+        # with threading.Lock():
+        # TODO: Turn on usb mux channel
+        # self.dac5578.set_channel()
+        error = self.capture_image()
+        # TODO: Turn off usb mux channel
+
+        return error
+
+    def capture_image(self) -> Error:
+        """Captures an image."""
 
         # Name image according to ISO8601
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
