@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<html>
+   <body>
+      <div class="connect">
+         <div class="card">
+            <b>Connections</b>
+            <ul>
+              <li><b>Status:</b> {{ status }}
+
+              <li><b>debugrob: need to connect to internet?</b>
+              <li>if not connected to wifi, use scripts to show list of wifis
+              <li>prompt for AP password
+
+              <li>if on eth, should already be connected
+              <li>show IP address
+              <li>show serveo link
+
+              <li><b>debugrob: need to register with IoT?</b>
+              <li>enable "register this device" button
+              <li>show verification code
+              <li>show device ID
+
+              <li>Advanced... button to delete all connmanctl settings.
+              <li>Advanced... button to deregister device.
+
+              {% if error != None %}
+              <li><b>Error:</b> {{ error }}
+              {% endif %}
+            </ul>
+         </div>
+      </div>
+   </body>
+</html>
+{% endblock %}

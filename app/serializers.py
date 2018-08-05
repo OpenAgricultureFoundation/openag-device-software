@@ -26,6 +26,7 @@ class StateSerializer(serializers.HyperlinkedModelSerializer):
             "controllers",
             "iot",
             "resource",
+            "connect",
         )
 
 

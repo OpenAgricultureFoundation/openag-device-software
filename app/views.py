@@ -440,6 +440,24 @@ class Resource(APIView):
         return Response(response)
 
 
+class Connect(APIView):
+    """ UI page for ConnectManager. """
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "connect.html"
+
+    def get(self, request):
+
+        rv = ConnectViewer()
+
+        # Build and return response
+        response = {
+            "status": rv.connect_dict["status"],
+            "error": rv.connect_dict["error"],
+        }
+        return Response(response)
+
+
 class Manual(APIView):
     """ UI page for manual controls. """
 

@@ -282,3 +282,15 @@ class ResourceViewer:
 
     def __init__(self):
         self.resource_dict = Common.get_resource_dict()
+
+
+class ConnectViewer:
+    connect_dict = {}
+
+    def __init__(self):
+        self.connect_dict = Common.get_connect_dict()
+
+
+
+
+

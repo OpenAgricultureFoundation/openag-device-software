@@ -135,21 +135,21 @@ class IoTManager:
     # ------------------------------------------------------------------------
     @property
     def connected(self):
-        if None == self.iot:
+        if self.iot is None:
             return False
         return self.iot.connected
 
     # ------------------------------------------------------------------------
     @connected.setter
     def connected(self, value):
-        if None == self.iot:
+        if self.iot is None:
             return
         self.iot.connected = value
 
     # ------------------------------------------------------------------------
     def publishMessage(name, msg_json):
         """ Send a command reply. """
-        if None == self.iot:
+        if self.iot is None:
             return
         self.iot.publishCommandReply(name, msg_json)
 
@@ -171,14 +171,13 @@ class IoTManager:
 
     # ------------------------------------------------------------------------
     def publish(self):
-        if None == self.iot:
+        if self.iot is None:
             return
         vars_dict = self.state.environment["reported_sensor_stats"][
-            "individual"
-        ]["instantaneous"]
+            "individual"]["instantaneous"]
 
         # Keep a copy of the first set of values (usually None).
-        if self.prev_vars == None:
+        if self.prev_vars is None:
             self.prev_vars = copy.deepcopy(vars_dict)
 
         # for each value, only publish the ones that have changed.
