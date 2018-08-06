@@ -1,3 +1,4 @@
 #!/bin/sh
 chdir /home/debian/openag-device-software
 /home/debian/openag-device-software/run.sh &
+/home/debian/openag-device-software/forward_ports.sh &
