@@ -26,12 +26,12 @@ https://wiki.openag.media.mit.edu/users/rbaynes/notes/bbb/debian
    ```
    sudo ./upgrade.sh
    ```
- - Added port forwarding script to to `/etc/rc.local` 
+ - Added port forwarding script to to `/etc/rc.local`.  
    ```
-   #!/bin/sh
-   chdir /home/debian/openag-device-software
-   /home/debian/openag-device-software/run.sh &
-   /home/debian/openag-device-software/forward_ports.sh &
+   cd ~/openag-device-software
+   git checkout master 
+   git pull
+   sudo cp rc.local /etc
    ```  
  - Uninstalled apache
    ```
@@ -62,6 +62,16 @@ https://wiki.openag.media.mit.edu/users/rbaynes/notes/bbb/debian
  - Blow away registration data
    ```
    sudo rm -r registration/data
+   ```
+ - Verify `about.json` looks like this:
+   ```
+   {
+     "serial_number": "<DEVICE>-<VERSION>-<ID>",
+     "hardware_version": "0.3.0",
+     "software_version": "pre-0.1.2",
+     "device_config": "edu004",
+     "notes": ""
+   }
    ```
 
 ## Copy eMMC to SD Image
