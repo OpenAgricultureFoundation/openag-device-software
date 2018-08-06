@@ -58,6 +58,7 @@ from app.viewers import CultivarsViewer
 from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
+from app.viewers import ConnectViewer
 
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py

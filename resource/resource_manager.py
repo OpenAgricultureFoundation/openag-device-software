@@ -1,11 +1,17 @@
 # Import python modules
-import logging, time, threading, os, sys, datetime, json, sys, traceback
-import subprocess, glob, urllib.request
-
-from app.models import EventModel
-from app.models import EnvironmentModel
+import glob
+import logging
+import os
+import subprocess
+import sys
+import threading
+import time
+import urllib.request
 
 from django.db import connection  # so we can do raw sql queries
+
+from app.models import EnvironmentModel
+from app.models import EventModel
 
 
 class ResourceManager:

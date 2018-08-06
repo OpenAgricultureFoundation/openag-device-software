@@ -48,11 +48,9 @@ class State(object):
         if "individual" not in self.environment["reported_sensor_stats"]:
             self.environment["reported_sensor_stats"]["individual"] = {}
         if "instantaneous" not in self.environment["reported_sensor_stats"][
-            "individual"
-        ]:
+            "individual"]:
             self.environment["reported_sensor_stats"]["individual"][
-                "instantaneous"
-            ] = {}
+                "instantaneous"] = {}
         if "average" not in self.environment["reported_sensor_stats"]["individual"]:
             self.environment["reported_sensor_stats"]["individual"]["average"] = {}
 
@@ -71,7 +69,7 @@ class State(object):
             self.environment["sensor"]["reported"] = {}
 
         # Force simple if value is None (don't want to try averaging `None`)
-        if value == None:
+        if value is None:
             simple = True
 
         with threading.Lock():
@@ -152,16 +150,7 @@ class State(object):
 
                 # Update simple sensor value with instantaneous group value
                 self.environment["sensor"]["reported"][variable] = self.environment[
-                    "reported_sensor_stats"
-                ][
-                    "group"
-                ][
-                    "instantaneous"
-                ][
-                    variable
-                ][
-                    "value"
-                ]
+                    "reported_sensor_stats"]["group"]["instantaneous"][variable]["value"]
 
     def set_environment_desired_sensor_value(self, variable, value):
         """ Sets desired sensor value to shared environment state. """

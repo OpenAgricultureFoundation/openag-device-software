@@ -75,6 +75,9 @@
               <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
             {% endif %}
+            <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
+            </li>
           </ul>
         </div>
       </nav>

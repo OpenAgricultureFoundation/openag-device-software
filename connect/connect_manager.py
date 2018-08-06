@@ -29,6 +29,7 @@ class ConnectManager:
         self.state = state
         self.connected = False
         self.error = None
+        self.status = 'OK'
         self.ref_iot_manager = ref_iot_manager
         self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
