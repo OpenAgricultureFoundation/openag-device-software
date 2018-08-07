@@ -2,6 +2,67 @@
 
 {% block javascript %}
 <script>
+  function getWifis() {
+     /*debugrob, do ajax POST to API that returns list of wifis
+     // Create recipient and request dicts
+     recipient =  {
+         "type": "Peripheral",
+         "name": recipient};
+     request = {
+         "type": event_name,
+         "value": value};
+
+     // Send create event request to endpoint
+     $.ajax({
+         url: "/api/event/",
+         type: "POST",
+         data: {
+           "csrfmiddlewaretoken": "{{ csrf_token }}",
+           "recipient": JSON.stringify(recipient),
+           "request": JSON.stringify(request)
+         },
+         dataType: 'json',
+         success: function(data) {
+          console.log("Event request succeeded")
+
+          // Get response message
+          message = data.message
+          console.log("Alert message: " + message)
+
+          // Set alert message
+          document.getElementById(event_id + "SuccessAlertMessage").innerHTML = message;
+
+          // Hide error alert
+          $(base_name + "ErrorAlert").collapse("hide");
+
+          // Show alert
+          $(base_name + "SuccessAlert").collapse("show");
+
+          // Show next button
+          $(base_name + "NextButton").collapse("show");
+        },
+        error: function(data) {
+           console.log("Event request failed")
+
+           // Get response message
+           response_dict = JSON.parse(data.responseText)
+           message = response_dict["message"]
+           console.log("Alert message: " + message)
+
+           // Set alert message
+           document.getElementById(event_id + "ErrorAlertMessage").innerHTML = message;
+
+           // Hide success alert
+           $(base_name + "SuccessAlert").collapse("hide");
+
+           // Show alert
+           $(base_name + 'ErrorAlert').collapse('show');
+         },
+         complete: function(data) {
+         }
+     });
+     */
+  }
 </script>
 {% endblock %}
 
@@ -10,11 +71,14 @@
    <body>
       <div class="connect">
          <div class="card" id="inet-card">
-            <b>Connections</b>
+            <b>Wifi or Ethernet</b>
             <ul>
               <li><b>Status:</b> {{ status }}
 
-              <a class="badge badge-secondary" data-toggle="collapse" href="" role="button" onclick="showEvent('${event.id}');">${event.name}</a>
+              <a class="badge badge-secondary" data-toggle="collapse"
+                 href="" role="button" onclick="getWifis();">
+                 Get Wifis</a>
+
               <li><b>debugrob: need to connect to internet?</b>
               <li>if not connected to wifi, use scripts to show list of wifis
               <li>prompt for AP password
@@ -36,7 +100,11 @@
               {% endif %}
             </ul>
          </div>
-         <div class="card" id="iot-card">
+          <div class="card" id="iot-card">
+              <b>IoT Registration</b>
+          </div>
+         <div class="card" id="adv-card">
+             <b>Danger Zone</b>
          </div>
       </div>
    </body>

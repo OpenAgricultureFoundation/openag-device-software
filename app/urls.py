@@ -26,7 +26,7 @@ from app import views
 from app.router import Router
 
 
-# Setup rest framework routes
+# Setup REST framework routes
 router = Router()
 router.register(r"state", views.StateViewSet, base_name="api-state")
 router.register(r"event", views.EventViewSet, base_name="api-event")
