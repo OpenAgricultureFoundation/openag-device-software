@@ -2,111 +2,110 @@
 
 {% block javascript %}
 <script>
-  function getWifis() {
-     /*debugrob, do ajax POST to API that returns list of wifis
-     // Create recipient and request dicts
-     recipient =  {
-         "type": "Peripheral",
-         "name": recipient};
-     request = {
-         "type": event_name,
-         "value": value};
+  var wifiSel = document.getElementById("wifiList");
+  wifiSel.addEventListener("change", configureWifi);
 
-     // Send create event request to endpoint
-     $.ajax({
-         url: "/api/event/",
-         type: "POST",
-         data: {
-           "csrfmiddlewaretoken": "{{ csrf_token }}",
-           "recipient": JSON.stringify(recipient),
-           "request": JSON.stringify(request)
-         },
-         dataType: 'json',
-         success: function(data) {
-          console.log("Event request succeeded")
+  // debugrob, get the rest of the "status" vars
 
-          // Get response message
-          message = data.message
-          console.log("Alert message: " + message)
+  //--------------------------------------------------------------------------
+  window.onload = function() {
+    var wifis = document.getElementById("wifis").value;
+    console.log("connect.html onload wifis=" + wifis);
 
-          // Set alert message
-          document.getElementById(event_id + "SuccessAlertMessage").innerHTML = message;
+  }
 
-          // Hide error alert
-          $(base_name + "ErrorAlert").collapse("hide");
+  //--------------------------------------------------------------------------
+  function configureWifi() {
+    console.log("current wifiSel=" + wifiSel.value);
+  }
 
-          // Show alert
-          $(base_name + "SuccessAlert").collapse("show");
+  //--------------------------------------------------------------------------
+  function connectWifi() {
+    console.log("debugrob, connect to wifi:"+wifiSel.value);
+    // debugrob, do POST with selected wifi to API to connect.
+  }
 
-          // Show next button
-          $(base_name + "NextButton").collapse("show");
+  //--------------------------------------------------------------------------
+  // debugrob, example of GET that returns data
+  function getWifi() {
+    return new Promise(function (resolve, reject) {
+      console.log("Calling /api/connect/wifis")
+      $.ajax({
+        url: "/api/connect/wifis/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: "json",
+        success: function(data) {;
+          console.log("got wifi data: " + data['wifis'])
+          var wifis = data;
+          resolve(wifis);
         },
         error: function(data) {
-           console.log("Event request failed")
-
-           // Get response message
-           response_dict = JSON.parse(data.responseText)
-           message = response_dict["message"]
-           console.log("Alert message: " + message)
-
-           // Set alert message
-           document.getElementById(event_id + "ErrorAlertMessage").innerHTML = message;
-
-           // Hide success alert
-           $(base_name + "SuccessAlert").collapse("hide");
-
-           // Show alert
-           $(base_name + 'ErrorAlert').collapse('show');
-         },
-         complete: function(data) {
-         }
-     });
-     */
+          console.log("get wifi data failed");
+          reject(data);
+        }
+      });
+    })
   }
+
 </script>
 {% endblock %}
 
 {% block content %}
 <html>
-   <body>
-      <div class="connect">
-         <div class="card" id="inet-card">
-            <b>Wifi or Ethernet</b>
-            <ul>
-              <li><b>Status:</b> {{ status }}
+<input type="hidden" id="wifis" name="variable" value="{{ wifis }}">
+<input type="hidden" id="valid_internet_connection" name="variable"
+       value="{{ valid_internet_connection }}">
+<input type="hidden" id="is_wifi_bbb" name="variable"
+       value="{{ is_wifi_bbb }}">
+<body>
+<div class="connect">
+  <div class="card" id="inet-card">
+    <b>Wifi or Ethernet</b>
 
-              <a class="badge badge-secondary" data-toggle="collapse"
-                 href="" role="button" onclick="getWifis();">
-                 Get Wifis</a>
+    <select id="wifiList" class="selectpicker" style="width:200px">
+      {% for wifi in wifis %}
+      <option value={{wifi}}>{{wifi}}</option>
+      {% endfor %}
+    </select>
+    <a class="badge badge-secondary" data-toggle="collapse"
+      style="width:200px" href="" role="button" onclick="connectWifi();">
+      Connect to Wifi</a>
+    </br>
 
-              <li><b>debugrob: need to connect to internet?</b>
-              <li>if not connected to wifi, use scripts to show list of wifis
-              <li>prompt for AP password
+    <ul>
+      <li><b>Status:</b> {{ status }}
+      <li><b>valid_internet_connection:</b> {{ valid_internet_connection }}
+      <li><b>is_wifi_bbb:</b> {{ is_wifi_bbb }}
 
-              <li>if on eth, should already be connected
-              <li>show IP address
-              <li>show serveo link
+      <li><b>debugrob: need to connect to internet?</b>
+      <li>if not connected to wifi, use scripts to show list of wifis
+      <li>prompt for AP password
 
-              <li><b>debugrob: need to register with IoT?</b>
-              <li>enable "register this device" button
-              <li>show verification code
-              <li>show device ID
+      <li>if on eth, should already be connected
+      <li>show IP address
+      <li>show serveo link
 
-              <li>Advanced... button to delete all connmanctl settings.
-              <li>Advanced... button to deregister device.
+      <li><b>debugrob: need to register with IoT?</b>
+      <li>enable "register this device" button
+      <li>show verification code
+      <li>show device ID
 
-              {% if error != None %}
-              <li><b>Error:</b> {{ error }}
-              {% endif %}
-            </ul>
-         </div>
-          <div class="card" id="iot-card">
-              <b>IoT Registration</b>
-          </div>
-         <div class="card" id="adv-card">
-             <b>Danger Zone</b>
-         </div>
-      </div>
-   </body>
+      <li>Advanced... button to delete all connmanctl settings.
+      <li>Advanced... button to deregister device.
+
+      {% if error != None %}
+      <li><b>Error:</b> {{ error }}
+      {% endif %}
+    </ul>
+  </div>
+  <div class="card" id="iot-card">
+    <b>IoT Registration</b>
+  </div>
+  <div class="card" id="adv-card">
+    <b>Danger Zone</b>
+  </div>
+</div>
+</body>
 </html>
 {% endblock %}

@@ -1,17 +1,19 @@
 # Import standard python modules
-import threading, logging, time
 import json as json_
-
-# Import device utilities
-from device.utilities.events import EventRequests
+import logging
+import time
+import sys
+import urllib.request
+import subprocess
 
 # Import common app funcitons
 from app.common import Common
-
-# Import app models
-from app.models import EventModel
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+# Import app models
+from app.models import EventModel
+# Import device utilities
+from device.utilities.events import EventRequests
 
 
 class EventViewer:
@@ -97,7 +99,7 @@ class RecipeViewer:
         return Common.manage_event(event_request)
 
     def start(self, request_dict, pk):
-        """ Start a recipe. Sends start recipe command to event thread, waits 
+        """ Start a recipe. Sends start recipe command to event thread, waits
         for recipe to start, then returns response. """
         self.logger.info("Received stop recipe request")
 
@@ -284,12 +286,53 @@ class ResourceViewer:
         self.resource_dict = Common.get_resource_dict()
 
 
+# ----------------------------------------------------------------------------
+#debugrob, new
 class ConnectViewer:
+    extra = {"console_name": "ConnectViewer", "file_name": "connect_viewer"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
     connect_dict = {}
 
     def __init__(self):
         self.connect_dict = Common.get_connect_dict()
 
+    def get_wifis(self):
+        """ Return the list of local wifis. """
+        self.logger.info("ConnectViewer.get_wifis() top")
+        response = ['wifi1', 'wifi2', 'debugrob']
+        self.logger.info("ConnectViewer.get_wifis() returning {}".format(
+            response))
+        return response
+        #status = 200
+        #return response, status
+
+    def valid_internet_connection(self):
+        """ Returns True if there is a valid internet connection and DNS. """
+        try:
+            urllib.request.urlopen("http://google.com")
+            return True
+        except:
+            return False
+
+    def is_wifi_bbb(self):
+        """ Returns True if this BBB is a wifi model. """
+        if sys.platform != "linux":
+            return False
+        try:
+            # command and list of args as list of string
+            cmd = ["ifconfig", "wlan0"]
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE) as proc1:
+                output = proc1.stdout.read().decode("utf-8")
+                output += proc1.stderr.read().decode("utf-8")
+                self.logger.info("ConnectViewer.is_wifi_bbb proc OP={}".
+                                 format(output))
+                if 'wlan0: flags' in output:
+                    return True
+        except:
+            pass
+        return False
 
 
 

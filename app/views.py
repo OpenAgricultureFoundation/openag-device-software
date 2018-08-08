@@ -1,5 +1,6 @@
 # Import standard python modules
 import json
+import logging
 
 # Import django modules
 from django.shortcuts import render
@@ -34,6 +35,7 @@ from app.models import CultivarModel
 from app.models import CultivationMethodModel
 from app.models import SensorVariableModel
 from app.models import ActuatorVariableModel
+from app.models import ConnectModel
 
 # Import app serializers
 from app.serializers import StateSerializer
@@ -46,6 +48,7 @@ from app.serializers import CultivationMethodSerializer
 from app.serializers import PeripheralSetupSerializer
 from app.serializers import SensorVariableSerializer
 from app.serializers import ActuatorVariableSerializer
+from app.serializers import ConnectSerializer
 
 
 # Import app viewers
@@ -441,6 +444,7 @@ class Resource(APIView):
         return Response(response)
 
 
+# ----------------------------------------------------------------------------
 class Connect(APIView):
     """ UI page for ConnectManager. """
 
@@ -448,15 +452,57 @@ class Connect(APIView):
     template_name = "connect.html"
 
     def get(self, request):
-
-        rv = ConnectViewer()
-
-        # Build and return response
+        cv = ConnectViewer()
+#debugrob, set initial page render vars here
         response = {
-            "status": rv.connect_dict["status"],
-            "error": rv.connect_dict["error"],
+            "status": cv.connect_dict["status"],
+            "error": cv.connect_dict["error"],
+            "wifis": cv.get_wifis(),
+            "valid_internet_connection": cv.valid_internet_connection(),
+            "is_wifi_bbb": cv.is_wifi_bbb(),
         }
         return Response(response)
+
+
+# ----------------------------------------------------------------------------
+#debugrob, new below
+class ConnectGetWifis(viewsets.ViewSet):
+    """ REST API to get list of available wifis.
+        This class extends the ViewSet (not ModelViewSet) because it
+        dynamically gets its data and the Model get data from the DB.
+    """
+    def list(self, request):
+        cv = ConnectViewer()
+        response = {
+            "status": cv.connect_dict["status"],
+            "error": cv.connect_dict["error"],
+            "wifis": cv.get_wifis()
+        }
+        return Response(response)
+
+"""
+class ConnectViewSet(viewsets.ReadOnlyModelViewSet):
+    extra = {"console_name": "ConnectViewSet", "file_name": "connect_viewset"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
+    # API endpoints that handles the connect tab actions.
+
+    serializer_class = ConnectSerializer
+
+    def get_queryset(self):
+        return ConnectModel.objects.all()
+
+#debugrob, not used yet
+    # @permission_classes((IsAuthenticated, IsAdminUser,))
+    @detail_route(methods=["post"],
+                  permission_classes=[IsAuthenticated, IsAdminUser])
+    def get_something(self, request):
+        cv = ConnectViewer()
+        response, status = cv.get_wifis()
+        return Response(response, status)
+
+"""
 
 
 class Manual(APIView):

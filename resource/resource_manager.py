@@ -276,13 +276,11 @@ class ResourceManager:
 
     # --------------------------------------------------------------------------
     def valid_internet_connection(self):
-        ret = False
         try:
             urllib.request.urlopen("http://google.com")
-            ret = True
+            return True
         except:
-            ret = False
-        return ret
+            return False
 
     # --------------------------------------------------------------------------
     def thread_proc(self):

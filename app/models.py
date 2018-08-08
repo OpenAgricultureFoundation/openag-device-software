@@ -182,3 +182,12 @@ class IoTConfigModel(models.Model):
         verbose_name = "IoTConfig"
         verbose_name_plural = "IoTConfigs"
         get_latest_by = "last_config_version"
+
+
+class ConnectModel(models.Model):
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Connect"
+        verbose_name_plural = "Connects"
+

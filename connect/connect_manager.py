@@ -22,7 +22,7 @@ class ConnectManager:
     # Place holder for thread object.
     thread = None
 
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     def __init__(self, state, ref_iot_manager):
         """ Class constructor """
         # Initialize our state
@@ -34,7 +34,7 @@ class ConnectManager:
         self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
 
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     @property
     def error(self):
         """ Gets error value. """
@@ -47,7 +47,7 @@ class ConnectManager:
         with threading.Lock():
             self.state.connect["error"] = value
 
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     @property
     def status(self):
         """ Gets status value. """
@@ -60,7 +60,7 @@ class ConnectManager:
         with threading.Lock():
             self.state.connect["status"] = value
 
-    # --------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     @property
     def connected(self):
         return self._connected
