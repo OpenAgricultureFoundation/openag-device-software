@@ -2,9 +2,6 @@
 import json as json_
 import logging
 import time
-import sys
-import urllib.request
-import subprocess
 
 # Import common app funcitons
 from app.common import Common
@@ -279,6 +276,7 @@ class IoTViewer:
         self.iot_dict = Common.get_iot_dict()
 
 
+# ----------------------------------------------------------------------------
 class ResourceViewer:
     resource_dict = {}
 
@@ -287,52 +285,25 @@ class ResourceViewer:
 
 
 # ----------------------------------------------------------------------------
-#debugrob, new
 class ConnectViewer:
-    extra = {"console_name": "ConnectViewer", "file_name": "connect_viewer"}
-    logger = logging.getLogger(__name__)
-    logger = logging.LoggerAdapter(logger, extra)
     connect_dict = {}
 
     def __init__(self):
         self.connect_dict = Common.get_connect_dict()
+        """debugrob, don't need to do this!
+        # add place holders here
+        self.connect_dict["is_bbb"] = False
+        self.connect_dict["is_wifi_bbb"] = False
+        self.connect_dict["device_UI"] = ''
+        self.connect_dict["valid_internet_connection"] = False
+        self.connect_dict["wifis"] = []
+        self.connect_dict["IP"] = ''
+        self.connect_dict["is_registered_with_IoT"] = False
+        self.connect_dict["device_id"] = ''
+        self.connect_dict["iot_connection"] = ''
+        """
 
-    def get_wifis(self):
-        """ Return the list of local wifis. """
-        self.logger.info("ConnectViewer.get_wifis() top")
-        response = ['wifi1', 'wifi2', 'debugrob']
-        self.logger.info("ConnectViewer.get_wifis() returning {}".format(
-            response))
-        return response
-        #status = 200
-        #return response, status
 
-    def valid_internet_connection(self):
-        """ Returns True if there is a valid internet connection and DNS. """
-        try:
-            urllib.request.urlopen("http://google.com")
-            return True
-        except:
-            return False
-
-    def is_wifi_bbb(self):
-        """ Returns True if this BBB is a wifi model. """
-        if sys.platform != "linux":
-            return False
-        try:
-            # command and list of args as list of string
-            cmd = ["ifconfig", "wlan0"]
-            with subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE) as proc1:
-                output = proc1.stdout.read().decode("utf-8")
-                output += proc1.stderr.read().decode("utf-8")
-                self.logger.info("ConnectViewer.is_wifi_bbb proc OP={}".
-                                 format(output))
-                if 'wlan0: flags' in output:
-                    return True
-        except:
-            pass
-        return False
 
 
 

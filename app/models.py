@@ -20,7 +20,7 @@ class StateModel(models.Model):
 
     class Meta:
         verbose_name = "State"
-        verbose_name_plural = "State"
+        verbose_name_plural = "States"
 
 
 class EventModel(models.Model):

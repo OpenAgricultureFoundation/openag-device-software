@@ -2,31 +2,45 @@
 
 {% block javascript %}
 <script>
-  var wifiSel = document.getElementById("wifiList");
-  wifiSel.addEventListener("change", configureWifi);
-
-  // debugrob, get the rest of the "status" vars
-
   //--------------------------------------------------------------------------
   window.onload = function() {
     var wifis = document.getElementById("wifis").value;
     console.log("connect.html onload wifis=" + wifis);
-
-  }
-
-  //--------------------------------------------------------------------------
-  function configureWifi() {
-    console.log("current wifiSel=" + wifiSel.value);
   }
 
   //--------------------------------------------------------------------------
   function connectWifi() {
+    var wifiSel = document.getElementById("wifiList");
+    if( null == wifiSel ) {
+      console.log("Error: could not get wifiList element")
+      return
+    }
     console.log("debugrob, connect to wifi:"+wifiSel.value);
+//debugrob: also get password to send, OK to be empty
+
     // debugrob, do POST with selected wifi to API to connect.
   }
 
   //--------------------------------------------------------------------------
-  // debugrob, example of GET that returns data
+  function registerIoT() {
+    console.log("debugrob, registerIoT");
+    // debugrob, do POST
+  }
+
+  //--------------------------------------------------------------------------
+  function deleteWifis() {
+    console.log("debugrob, deleteWifis");
+    // debugrob, do POST
+  }
+
+  //--------------------------------------------------------------------------
+  function deleteIoTreg() {
+    console.log("debugrob, deleteIoTreg");
+    // debugrob, do POST
+  }
+
+  //--------------------------------------------------------------------------
+//debugrob, example of GET that returns data, delete later if not used
   function getWifi() {
     return new Promise(function (resolve, reject) {
       console.log("Calling /api/connect/wifis")
@@ -48,63 +62,85 @@
     })
   }
 
+  function makePasswordVisible() {
+    var x = document.getElementById("wifi_password");
+    if (x.type === "password") {
+        x.type = "text";
+    } else {
+        x.type = "password";
+    }
+  }
+
 </script>
 {% endblock %}
 
 {% block content %}
 <html>
+
+<!-- holds list of available wifis before we put them in a drop list -->
 <input type="hidden" id="wifis" name="variable" value="{{ wifis }}">
-<input type="hidden" id="valid_internet_connection" name="variable"
-       value="{{ valid_internet_connection }}">
-<input type="hidden" id="is_wifi_bbb" name="variable"
-       value="{{ is_wifi_bbb }}">
+
 <body>
 <div class="connect">
   <div class="card" id="inet-card">
-    <b>Wifi or Ethernet</b>
+    {% if is_bbb %}
 
-    <select id="wifiList" class="selectpicker" style="width:200px">
-      {% for wifi in wifis %}
-      <option value={{wifi}}>{{wifi}}</option>
-      {% endfor %}
-    </select>
-    <a class="badge badge-secondary" data-toggle="collapse"
-      style="width:200px" href="" role="button" onclick="connectWifi();">
-      Connect to Wifi</a>
-    </br>
+      {% if is_wifi_bbb and not valid_internet_connection %}
+        <b>Wifi</b>
+        <select id="wifiList" class="selectpicker" style="width:200px">
+          {% for wifi in wifis %}
+          <option value={{wifi}}>{{wifi}}</option>
+          {% endfor %}
+        </select>
+        <p>
+          <input type="password" id="wifi_password" name="wifi_password"
+           placeholder='Wifi Password' style="width:200px">
+          <input type="checkbox" onclick="makePasswordVisible()"> Show Password
+        </p>
+        <a class="badge badge-secondary" data-toggle="collapse"
+          style="width:200px" href="" role="button" onclick="connectWifi();">
+          Join Wifi</a>
+        </br>
+
+      {% else %}
+        <b>Ethernet</b>
+      {% endif %}
+    {% endif %}
 
     <ul>
-      <li><b>Status:</b> {{ status }}
-      <li><b>valid_internet_connection:</b> {{ valid_internet_connection }}
-      <li><b>is_wifi_bbb:</b> {{ is_wifi_bbb }}
-
-      <li><b>debugrob: need to connect to internet?</b>
-      <li>if not connected to wifi, use scripts to show list of wifis
-      <li>prompt for AP password
-
-      <li>if on eth, should already be connected
-      <li>show IP address
-      <li>show serveo link
-
-      <li><b>debugrob: need to register with IoT?</b>
-      <li>enable "register this device" button
-      <li>show verification code
-      <li>show device ID
-
-      <li>Advanced... button to delete all connmanctl settings.
-      <li>Advanced... button to deregister device.
+      <li><b>Device IP:</b> {{ IP }}
+      <li><b>Device UI:</b> <a href="{{ device_UI }}" target="_blank">{{ device_UI }}</a>
 
       {% if error != None %}
       <li><b>Error:</b> {{ error }}
       {% endif %}
     </ul>
   </div>
+
   <div class="card" id="iot-card">
-    <b>IoT Registration</b>
+    <b>IoT Registration</b><br/>
+    {% if is_registered_with_IoT %}
+    <ul>
+      <li><b>Device ID:</b> {{ device_id }}
+      <li><b>IoT Connection:</b> {{ iot_connection }}
+    </ul>
+    {% else %}
+    <a class="badge badge-secondary" data-toggle="collapse"
+       style="width:200px" href="" role="button" onclick="registerIoT();">
+      Register this IoT device</a><br/>
+    {% endif %}
   </div>
+
   <div class="card" id="adv-card">
-    <b>Danger Zone</b>
+    <b>Danger Zone</b><br/>
+    <a class="badge badge-secondary" data-toggle="collapse"
+       style="width:200px" href="" role="button" onclick="deleteWifis();">
+      Delete all wifi connections</a><br/>
+    <a class="badge badge-secondary" data-toggle="collapse"
+       style="width:200px" href="" role="button" onclick="deleteIoTreg();">
+      Delete IoT registration</a>
   </div>
+
 </div>
 </body>
 </html>

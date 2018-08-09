@@ -453,13 +453,41 @@ class Connect(APIView):
 
     def get(self, request):
         cv = ConnectViewer()
-#debugrob, set initial page render vars here
         response = {
             "status": cv.connect_dict["status"],
             "error": cv.connect_dict["error"],
-            "wifis": cv.get_wifis(),
-            "valid_internet_connection": cv.valid_internet_connection(),
-            "is_wifi_bbb": cv.is_wifi_bbb(),
+
+            "is_bbb": cv.connect_dict["is_bbb"],
+            "is_wifi_bbb": cv.connect_dict["is_wifi_bbb"],
+            "device_UI": cv.connect_dict["device_UI"],
+
+            "valid_internet_connection":
+                cv.connect_dict["valid_internet_connection"],
+            "wifis": cv.connect_dict["wifis"],
+            "IP": cv.connect_dict["IP"],
+            "is_registered_with_IoT":
+                cv.connect_dict["is_registered_with_IoT"],
+            "device_id": cv.connect_dict["device_id"],
+            "iot_connection": cv.connect_dict["iot_connection"],
+        }
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+#debugrob, new below
+class ConnectJoinWifi(viewsets.ViewSet):
+    """ REST API to get list of available wifis.
+        This class extends the ViewSet (not ModelViewSet) because it
+        dynamically gets its data and the Model gets data from the DB.
+    """
+    # @permission_classes((IsAuthenticated, IsAdminUser,))
+    @detail_route(methods=["post"],
+                  permission_classes=[IsAuthenticated, IsAdminUser])
+    def list(self, request):
+        print('debugrob ConnectJoinWifi request={}'.format(
+            request.data.dict()))
+        response = {
+            "result": "OK",
         }
         return Response(response)
 
@@ -469,30 +497,16 @@ class Connect(APIView):
 class ConnectGetWifis(viewsets.ViewSet):
     """ REST API to get list of available wifis.
         This class extends the ViewSet (not ModelViewSet) because it
-        dynamically gets its data and the Model get data from the DB.
+        dynamically gets its data and the Model gets data from the DB.
     """
     def list(self, request):
         cv = ConnectViewer()
         response = {
-            "status": cv.connect_dict["status"],
-            "error": cv.connect_dict["error"],
-            "wifis": cv.get_wifis()
+            "wifis": cv.connect_dict["wifis"],
         }
         return Response(response)
 
 """
-class ConnectViewSet(viewsets.ReadOnlyModelViewSet):
-    extra = {"console_name": "ConnectViewSet", "file_name": "connect_viewset"}
-    logger = logging.getLogger(__name__)
-    logger = logging.LoggerAdapter(logger, extra)
-
-    # API endpoints that handles the connect tab actions.
-
-    serializer_class = ConnectSerializer
-
-    def get_queryset(self):
-        return ConnectModel.objects.all()
-
 #debugrob, not used yet
     # @permission_classes((IsAuthenticated, IsAdminUser,))
     @detail_route(methods=["post"],

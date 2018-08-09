@@ -3,7 +3,6 @@ import threading
 
 # Import device utilities
 from device.utilities.accessors import set_nested_dict_safely
-from device.utilities.accessors import get_nested_dict_safely
 
 
 class State(object):
@@ -23,15 +22,15 @@ class State(object):
         return "State(device={}, environment={}, recipe={}, "\
             "peripherals={}, controllers={}, iot={}, resource={}, "\
             "connect={})".format(
-            self.device,
-            self.environment,
-            self.recipe,
-            self.peripherals,
-            self.controllers,
-            self.iot,
-            self.resource,
-            self.connect,
-        )
+                self.device,
+                self.environment,
+                self.recipe,
+                self.peripherals,
+                self.controllers,
+                self.iot,
+                self.resource,
+                self.connect,
+            )
 
     def set_environment_reported_sensor_value(
         self, sensor, variable, value, simple=False

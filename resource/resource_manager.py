@@ -266,7 +266,9 @@ class ResourceManager:
             self.error = None
 
         if low_resources:
-            self.logger.error("Handling low resources")
+            self.status = "Warning: low resources"
+            self.error = "Low resources"
+            self.logger.error(self.error)
             if self.connected:
                 self.ref_iot_manager.publishMessage("alert", self.status)
 
@@ -303,4 +305,4 @@ class ResourceManager:
             if self.connected:
                 time.sleep(300)  # idle for 5 min
             else:
-                time.sleep(1)  # fast idle until we get connected
+                time.sleep(5)  # fast idle until we get connected

@@ -49,10 +49,13 @@ router.register(r"variables/sensor",
 router.register(r"variables/actuator",
                 views.ActuatorVariableViewSet,
                 base_name="api-actuator-variables")
-#debugrob, new below
+#debugrob, delete later if not used
 router.register(r"connect/wifis",
                 views.ConnectGetWifis,
                 base_name="api-connect-wifis")
+router.register(r"connect/joinwifi",
+                views.ConnectJoinWifi,
+                base_name="api-join-wifi")
 
 
 # Setup dashboard redirect
