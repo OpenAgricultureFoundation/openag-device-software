@@ -35,7 +35,6 @@ from app.models import CultivarModel
 from app.models import CultivationMethodModel
 from app.models import SensorVariableModel
 from app.models import ActuatorVariableModel
-from app.models import ConnectModel
 
 # Import app serializers
 from app.serializers import StateSerializer
@@ -48,8 +47,6 @@ from app.serializers import CultivationMethodSerializer
 from app.serializers import PeripheralSetupSerializer
 from app.serializers import SensorVariableSerializer
 from app.serializers import ActuatorVariableSerializer
-from app.serializers import ConnectSerializer
-
 
 # Import app viewers
 from app.viewers import DeviceViewer
@@ -63,6 +60,7 @@ from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 from app.viewers import ConnectViewer
 
+from connect.connect_utils import ConnectUtils
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
@@ -474,20 +472,29 @@ class Connect(APIView):
 
 
 # ----------------------------------------------------------------------------
-#debugrob, new below
 class ConnectJoinWifi(viewsets.ViewSet):
-    """ REST API to get list of available wifis.
+    """ REST API to join a wifi.
+        Request is POSTed with wifi and pass.
         This class extends the ViewSet (not ModelViewSet) because it
         dynamically gets its data and the Model gets data from the DB.
     """
-    # @permission_classes((IsAuthenticated, IsAdminUser,))
-    @detail_route(methods=["post"],
-                  permission_classes=[IsAuthenticated, IsAdminUser])
-    def list(self, request):
-        print('debugrob ConnectJoinWifi request={}'.format(
-            request.data.dict()))
+    @permission_classes((IsAuthenticated, IsAdminUser))
+    def create(self, request):
+        # Get req parameters
+        try:
+            reqd = request.data.dict()
+        except Exception as e:
+            response = {
+                "message": "Internal error: {}".format(e)
+            }
+            return Response(response, 400)
+
+        wifi = reqd["wifi"]
+        password = reqd["password"]
+        print('debugrob ConnectJoinWifi wifi={} pass={}'.format(wifi, password))
+        message = ConnectUtils.join_wifi(wifi, password)
         response = {
-            "result": "OK",
+            "message": message,
         }
         return Response(response)
 
@@ -500,9 +507,8 @@ class ConnectGetWifis(viewsets.ViewSet):
         dynamically gets its data and the Model gets data from the DB.
     """
     def list(self, request):
-        cv = ConnectViewer()
         response = {
-            "wifis": cv.connect_dict["wifis"],
+            "wifis": ConnectUtils.get_wifis(),
         }
         return Response(response)
 

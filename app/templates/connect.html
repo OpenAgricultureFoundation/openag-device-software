@@ -5,20 +5,51 @@
   //--------------------------------------------------------------------------
   window.onload = function() {
     var wifis = document.getElementById("wifis").value;
-    console.log("connect.html onload wifis=" + wifis);
+    document.getElementById("status").innerHTML = "{{status}}";
+    console.log("debugrob connect.html onload wifis=" + wifis + " status="+ status);
   }
 
   //--------------------------------------------------------------------------
-  function connectWifi() {
+  function joinWifi() {
     var wifiSel = document.getElementById("wifiList");
     if( null == wifiSel ) {
       console.log("Error: could not get wifiList element")
       return
     }
-    console.log("debugrob, connect to wifi:"+wifiSel.value);
-//debugrob: also get password to send, OK to be empty
+    console.log("debugrob, join wifi:"+wifiSel.value);
+
+    var pass = document.getElementById("wifi_password");
+    if( null == pass ) {
+      console.log("Error: could not get password element")
+      return
+    }
+    console.log("debugrob, join pass:"+pass.value);
 
     // debugrob, do POST with selected wifi to API to connect.
+    $.ajax({
+      url: "/api/connect/joinwifi/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+        "wifi": wifiSel.value,
+        "password": pass.value
+      },
+      dataType: 'json',
+      success: function(data) {
+        // Get response message
+        message = data.message
+        console.log("connect_wifi succeeded: "+message)
+        document.getElementById("status").innerHTML = message;
+      },
+      error: function(data) {
+        response_dict = JSON.parse(data.responseText)
+        message = response_dict["message"]
+        console.log("Join wifi failed: "+message)
+        document.getElementById("status").innerHTML = message;
+      },
+      complete: function(data) {
+      }
+     });
   }
 
   //--------------------------------------------------------------------------
@@ -63,11 +94,11 @@
   }
 
   function makePasswordVisible() {
-    var x = document.getElementById("wifi_password");
-    if (x.type === "password") {
-        x.type = "text";
+    var pass = document.getElementById("wifi_password");
+    if (pass.type === "password") {
+        pass.type = "text";
     } else {
-        x.type = "password";
+        pass.type = "password";
     }
   }
 
@@ -98,7 +129,7 @@
           <input type="checkbox" onclick="makePasswordVisible()"> Show Password
         </p>
         <a class="badge badge-secondary" data-toggle="collapse"
-          style="width:200px" href="" role="button" onclick="connectWifi();">
+          style="width:200px" href="" role="button" onclick="joinWifi();">
           Join Wifi</a>
         </br>
 
@@ -108,6 +139,7 @@
     {% endif %}
 
     <ul>
+      <li><b>Status:</b> <span id="status"></span>
       <li><b>Device IP:</b> {{ IP }}
       <li><b>Device UI:</b> <a href="{{ device_UI }}" target="_blank">{{ device_UI }}</a>
 

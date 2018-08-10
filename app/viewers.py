@@ -290,18 +290,6 @@ class ConnectViewer:
 
     def __init__(self):
         self.connect_dict = Common.get_connect_dict()
-        """debugrob, don't need to do this!
-        # add place holders here
-        self.connect_dict["is_bbb"] = False
-        self.connect_dict["is_wifi_bbb"] = False
-        self.connect_dict["device_UI"] = ''
-        self.connect_dict["valid_internet_connection"] = False
-        self.connect_dict["wifis"] = []
-        self.connect_dict["IP"] = ''
-        self.connect_dict["is_registered_with_IoT"] = False
-        self.connect_dict["device_id"] = ''
-        self.connect_dict["iot_connection"] = ''
-        """
 
 
 
