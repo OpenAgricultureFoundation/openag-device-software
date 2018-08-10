@@ -1,28 +1,28 @@
 # Import python modules
-import logging
 import subprocess
 import socket
 import json
 import os
 import platform
+import urllib.request
 
 
 class ConnectUtils:
     """ Utilities to connect to the internet and IoT. """
 
-    # Initialize logger
-    extra = {"console_name": "ConnectUtils", "file_name": "connect_utils"}
-    logger = logging.getLogger("connect")
-    logger = logging.LoggerAdapter(logger, extra)
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def valid_internet_connection():
+        try:
+            urllib.request.urlopen("http://google.com")
+            return True
+        except:
+            return False
 
     # ------------------------------------------------------------------------
     # Returns True if this is a Beaglebone.
     @staticmethod
     def is_bbb():
-        # Only for rob developing
-        if platform.node() == 'rbaynes.local':
-            return True
-
         try:
             # command and list of args as list of string
             cmd = ["cat", "/etc/dogtag"]
@@ -40,19 +40,42 @@ class ConnectUtils:
     # Return the list of local wifis.
     @staticmethod
     def get_wifis():
-        wifis = ['']
+        wifis = []
         if not ConnectUtils.is_bbb():
             return wifis
         try:
-            # command and list of args as list of string
+            # command and list of args as list of strings
             cmd = ["scripts/get_wifis.sh"]
             with subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE) as proc1:
                 output = proc1.stdout.read().decode("utf-8")
                 output += proc1.stderr.read().decode("utf-8")
-#debugrob, make a list of the SSID, handle missing ssid and use <hidden SSID>
-                print('debugrob get_wifis={}'.format(output))
+                wifi_list = []
+                lines = output.splitlines()
+                for line in lines:
+                    ssid = ''
+                    service = ''
+                    tokens = line.split()
+                    # wifi_f45eab3f07fb_hidden_managed_psk
+                    # MIT GUEST wifi_f45eab3f07fb_4d4954_managed_none
+                    # *AO TRENDnet711 wifi_f45ea7fb_544373131_managed_psk
+                    for token in tokens:
+                        if token.startswith('wifi_'):
+                            service = token
+                        elif not token.startswith('*'):
+                            if 0 != len(ssid):
+                                ssid += ' '
+                            ssid += token
 
+                    if 0 == len(ssid):
+                        # Our connect_wifi.sh can't handle hidden SSIDs
+                        #ssid = '<hidden SSID>'
+                        continue
+
+                    # Also prevent a BBB from being used
+                    if service.startswith('wifi_') and \
+                            not ssid.startswith('BeagleBone-'):
+                        wifis.append({ 'ssid':ssid, 'service':service })
         except:
             pass
         return wifis
@@ -60,20 +83,37 @@ class ConnectUtils:
     # ------------------------------------------------------------------------
     @staticmethod
     def join_wifi(wifi, password):
-        """
-debugrob, implement this
-        message = ConnectUtils.join_wifi(wifi, password)
-        """
-        return ''
+        message = 'Could not connect to wifi'
+        if not ConnectUtils.is_bbb():
+            return 'This is not a beaglebone!'
+        try:
+            if 0 == len(password):
+                password = ''
+
+            cmd = ["scripts/connect_wifi.sh", wifi, password]
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE) as proc1:
+                output = proc1.stdout.read().decode("utf-8")
+                output += proc1.stderr.read().decode("utf-8")
+                print('debugrob join_wifi output={}'.format(output))
+#debugrob, look for success
+# Connected wifi_f45eab3f07fb_5452454e446e6574373131_managed_psk
+# Error /net/connman/service/wifi_f45eab3f07fb_5452454e446e6574373131_managed_psk: Not registered
+
+# if this returns success, how to refresh the page connect page?  to get all the fields?   OR just send all the fields back in a dict?
+
+                message = 'fix this debugrob'
+        except:
+            pass
+        return message 
+
+#debugrob, delete all wifi connections:
+# sudo rm -fr /var/lib/connman/*.config /var/lib/connman/wifi_*
 
     # ------------------------------------------------------------------------
     # Returns True if this BBB is a wifi model.
     @staticmethod
     def is_wifi_bbb():
-        # Only for rob developing
-        if platform.node() == 'rbaynes.local':
-            return True
-
         if not ConnectUtils.is_bbb():
             return False
         try:

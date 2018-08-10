@@ -460,7 +460,9 @@ class Connect(APIView):
             "device_UI": cv.connect_dict["device_UI"],
 
             "valid_internet_connection":
-                cv.connect_dict["valid_internet_connection"],
+                ConnectUtils.valid_internet_connection(),
+                #cv.connect_dict["valid_internet_connection"],
+
             "wifis": cv.connect_dict["wifis"],
             "IP": cv.connect_dict["IP"],
             "is_registered_with_IoT":
@@ -493,9 +495,7 @@ class ConnectJoinWifi(viewsets.ViewSet):
         password = reqd["password"]
         print('debugrob ConnectJoinWifi wifi={} pass={}'.format(wifi, password))
         message = ConnectUtils.join_wifi(wifi, password)
-        response = {
-            "message": message,
-        }
+        response = { "message": message, }
         return Response(response)
 
 

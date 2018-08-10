@@ -13,6 +13,11 @@ fi
  
 # Get the SSID for this service
 SSID=`connmanctl services $1 | grep "Name =" | cut --delimiter=' ' --fields 5-10`
+SSIDLEN=`echo -n $SSID | wc -m`
+if [ $SSIDLEN -eq 0 ]; then
+    echo "Can't connect to a wifi with a hidden SSID, sorry.  Use connmanctl"
+    exit 1
+fi
  
 echo "Using sudo to configure your networking, please enter your password:"
 sudo touch "/var/lib/connman/$SSID.config"
@@ -25,6 +30,7 @@ Passphrase=$2
 sleep 2
  
 connmanctl connect $1
+sleep 2
 connmanctl config $1 --autoconnect yes
  
 #connmanctl services

@@ -18,14 +18,13 @@ class ConnectManager:
     thread = None
 
     # ------------------------------------------------------------------------
-    def __init__(self, state, ref_iot_manager, ref_resource_manager):
+    def __init__(self, state, ref_iot_manager):
         """ Class constructor """
         # Initialize our state
         self.state = state
         self.error = None
         self.status = 'Initializing...'
         self.ref_iot_manager = ref_iot_manager
-        self.ref_resource_manager = ref_resource_manager
         self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
 
@@ -81,10 +80,8 @@ class ConnectManager:
         while True:
             if self.stopped():
                 break
-
             self.update()
-
-            if self.ref_resource_manager.connected:
+            if ConnectUtils.valid_internet_connection():
                 time.sleep(300)  # idle for 5 min
             else:
                 time.sleep(5)  # fast idle until we get connected
@@ -93,7 +90,7 @@ class ConnectManager:
     def update(self):
         # these may change, so get new values every loop
         self.state.connect["valid_internet_connection"] = \
-            self.ref_resource_manager.connected
+            ConnectUtils.valid_internet_connection()
         self.state.connect["wifis"] = ConnectUtils.get_wifis()
         self.state.connect["IP"] = ConnectUtils.get_IP()
         self.state.connect["is_registered_with_IoT"] = \
@@ -103,11 +100,7 @@ class ConnectManager:
         self.state.connect["iot_connection"] = \
             self.state.iot["connected"]  # the IoTManager already does this
 
-#debugrob, delete this
-        if platform.node() == 'rbaynes.local':
-            self.state.connect["valid_internet_connection"] = False
-
-        if self.state.connect["valid_internet_connection"]:
+        if ConnectUtils.valid_internet_connection():
             self.status = 'Connected'
         else:
             self.status = 'Not Connected'

@@ -6,7 +6,9 @@
   window.onload = function() {
     var wifis = document.getElementById("wifis").value;
     document.getElementById("status").innerHTML = "{{status}}";
-    console.log("debugrob connect.html onload wifis=" + wifis + " status="+ status);
+
+    //console.log("debugrob connect.html onload wifis=" + wifis);
+    console.log("debugrob connect.html onload status={{status}}");
   }
 
   //--------------------------------------------------------------------------
@@ -18,9 +20,9 @@
     }
     console.log("debugrob, join wifi:"+wifiSel.value);
 
-    var pass = document.getElementById("wifi_password");
+    var pass = document.getElementById("wifi_p");
     if( null == pass ) {
-      console.log("Error: could not get password element")
+      console.log("Error: could not get wifi_p element")
       return
     }
     console.log("debugrob, join pass:"+pass.value);
@@ -94,7 +96,7 @@
   }
 
   function makePasswordVisible() {
-    var pass = document.getElementById("wifi_password");
+    var pass = document.getElementById("wifi_p");
     if (pass.type === "password") {
         pass.type = "text";
     } else {
@@ -120,11 +122,11 @@
         <b>Wifi</b>
         <select id="wifiList" class="selectpicker" style="width:200px">
           {% for wifi in wifis %}
-          <option value={{wifi}}>{{wifi}}</option>
+          <option value={{wifi.service}}>{{wifi.ssid}}</option>
           {% endfor %}
         </select>
         <p>
-          <input type="password" id="wifi_password" name="wifi_password"
+          <input type="password" id="wifi_p" name="wifi_p"
            placeholder='Wifi Password' style="width:200px">
           <input type="checkbox" onclick="makePasswordVisible()"> Show Password
         </p>
