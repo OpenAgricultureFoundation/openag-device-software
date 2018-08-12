@@ -122,7 +122,7 @@ class IoTPubSub:
 
     # --------------------------------------------------------------------------
     # Used by the phao callbacks if we need to recreate ourselves.
-    def raiseException(msg):
+    def raiseException(self, msg):
         raise Exception(msg)
 
     # --------------------------------------------------------------------------

@@ -281,7 +281,10 @@ class IoTManager:
                 break
 
             # send and receive messages over IoT
-            self.iot.process_network_events()
+            try:
+                self.iot.process_network_events()
+            except:
+                pass
 
             # check for images to publish
             try:

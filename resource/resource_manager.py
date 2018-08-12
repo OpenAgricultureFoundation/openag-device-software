@@ -240,12 +240,11 @@ class ResourceManager:
 
         fd_val = free_disk[0:-1]
         fm_val = free_memory[0:-1]
-        self.logger.debug("free disk {} {} {}".format(free_disk, fd_units, fd_val))
-        self.logger.debug("free memory {} {} {}".format(free_memory, fm_units, fm_val))
-        self.logger.debug("DB size {}".format(database_size))
-        self.logger.debug(
-            "internet connection {}".format(self.state.resource["internet_connection"])
-        )
+        self.logger.debug('\n{}, {}, {}, {}'.format( \
+            "free disk={}".format(free_disk), \
+            "free memory={}".format(free_memory), \
+            "DB size={}".format(database_size), \
+            "internet connection={}".format(self.connected)))
 
         # detect low memory and disk space
         low_resources = False
