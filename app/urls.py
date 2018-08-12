@@ -25,6 +25,8 @@ from django.conf.urls.static import static
 from app import views
 from app.router import Router
 
+from connect.connect_utils import ConnectUtils
+
 
 # Setup REST framework routes
 router = Router()
@@ -49,18 +51,32 @@ router.register(r"variables/sensor",
 router.register(r"variables/actuator",
                 views.ActuatorVariableViewSet,
                 base_name="api-actuator-variables")
-#debugrob, delete later if not used
-router.register(r"connect/wifis",
-                views.ConnectGetWifis,
-                base_name="api-connect-wifis")
+router.register(r"connect/status",
+                views.ConnectGetStatus,
+                base_name="api-connect-status")
 router.register(r"connect/joinwifi",
                 views.ConnectJoinWifi,
                 base_name="api-join-wifi")
+router.register(r"connect/deletewifis",
+                views.ConnectDeleteWifis,
+                base_name="api-connect-deletewifis")
+router.register(r"connect/registeriot",
+                views.ConnectRegisterIoT,
+                base_name="api-connect-registeriot")
+router.register(r"connect/deleteiotreg",
+                views.ConnectDeleteIoTreg,
+                base_name="api-connect-deleteiotreg")
 
 
 # Setup dashboard redirect
 def redirect_to_dashboard(request):
-    return HttpResponseRedirect(reverse("dashboard"))
+
+    # if we have a valid internet connection, go to the dashboard
+    if ConnectUtils.valid_internet_connection():
+        return HttpResponseRedirect(reverse("dashboard"))
+    else:
+        # otherwise, let the user set up their wifi connection
+        return HttpResponseRedirect(reverse("connect"))
 
 
 # Setup url patterns

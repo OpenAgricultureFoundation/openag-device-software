@@ -4,97 +4,265 @@
 <script>
   //--------------------------------------------------------------------------
   window.onload = function() {
-    var wifis = document.getElementById("wifis").value;
-    document.getElementById("status").innerHTML = "{{status}}";
 
-    //console.log("debugrob connect.html onload wifis=" + wifis);
-    console.log("debugrob connect.html onload status={{status}}");
+    document.getElementById("status").innerHTML = "{{status}}";
+    document.getElementById("device_IP").innerHTML = "{{IP}}";
+    document.getElementById("device_UI").innerHTML = "{{device_UI}}";
+    document.getElementById("device_UI").href = "{{device_UI}}";
+    document.getElementById("device_id").innerHTML = "{{device_id}}";
+    document.getElementById("iot_connection").innerHTML = "{{iot_connection}}";
+
+    {% if is_bbb %}
+      $('#is_bbb').collapse('show');
+    {% endif %}
+
+    {% if is_wifi_bbb and not valid_internet_connection %}
+      $('#show_wifi').collapse('show');
+      $('#show_dev_UI').collapse('hide');
+    {% else %}
+      $('#show_dev_UI').collapse('show');
+    {% endif %}
+
+    {% if is_registered_with_IoT %}
+      $('#register_iot_but').collapse('hide');
+    {% else %}
+      $('#register_iot_but').collapse('show');
+    {% endif %}
   }
 
   //--------------------------------------------------------------------------
   function joinWifi() {
+    document.getElementById("status").innerHTML = 'Connecting, this will take a minute...'
     var wifiSel = document.getElementById("wifiList");
     if( null == wifiSel ) {
       console.log("Error: could not get wifiList element")
       return
     }
-    console.log("debugrob, join wifi:"+wifiSel.value);
 
-    var pass = document.getElementById("wifi_p");
-    if( null == pass ) {
+    var passwd = document.getElementById("wifi_p");
+    if( null == passwd ) {
       console.log("Error: could not get wifi_p element")
       return
     }
-    console.log("debugrob, join pass:"+pass.value);
 
-    // debugrob, do POST with selected wifi to API to connect.
-    $.ajax({
-      url: "/api/connect/joinwifi/",
-      type: "POST",
-      data: {
-        "csrfmiddlewaretoken": "{{ csrf_token }}",
-        "wifi": wifiSel.value,
-        "password": pass.value
-      },
-      dataType: 'json',
-      success: function(data) {
-        // Get response message
-        message = data.message
-        console.log("connect_wifi succeeded: "+message)
-        document.getElementById("status").innerHTML = message;
-      },
-      error: function(data) {
-        response_dict = JSON.parse(data.responseText)
-        message = response_dict["message"]
-        console.log("Join wifi failed: "+message)
-        document.getElementById("status").innerHTML = message;
-      },
-      complete: function(data) {
-      }
-     });
+    joinWifiPromise(wifiSel.value, passwd.value)
+      .then(function(joinWifiSuccess) {
+        document.getElementById("status").innerHTML = 'Initializing...';
+        return getStatusPromise();
+      })
+      .then(function(statusDict) {
+        // success!  nothing to do here.
+      })
+      .catch(function(error) {
+        console.log('joinWifi Error: '+error);
+      })
   }
 
   //--------------------------------------------------------------------------
-  function registerIoT() {
-    console.log("debugrob, registerIoT");
-    // debugrob, do POST
-  }
-
-  //--------------------------------------------------------------------------
-  function deleteWifis() {
-    console.log("debugrob, deleteWifis");
-    // debugrob, do POST
-  }
-
-  //--------------------------------------------------------------------------
-  function deleteIoTreg() {
-    console.log("debugrob, deleteIoTreg");
-    // debugrob, do POST
-  }
-
-  //--------------------------------------------------------------------------
-//debugrob, example of GET that returns data, delete later if not used
-  function getWifi() {
+  function joinWifiPromise(wifi, passwd) {
     return new Promise(function (resolve, reject) {
-      console.log("Calling /api/connect/wifis")
+      // Do POST with selected wifi to API to connect.
       $.ajax({
-        url: "/api/connect/wifis/",
+        url: "/api/connect/joinwifi/",
+        type: "POST",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}",
+          "wifi": wifi,
+          "password": passwd
+        },
+        dataType: 'json',
+        success: function(data) {
+          // Get response message
+          var joinWifiSuccess = data.success;
+          console.log("joinWifiPromise succeeded: "+joinWifiSuccess);
+          resolve(joinWifiSuccess);
+        },
+        error: function(data) {
+          console.log("joinWifiPromise failed");
+          reject(data);
+        }
+       });
+     })
+     console.log("joinWifi func done.")
+  }
+
+  //--------------------------------------------------------------------------
+  function getStatusPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/connect/status/",
         type: "GET",
         data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
         dataType: "json",
-        success: function(data) {;
-          console.log("got wifi data: " + data['wifis'])
-          var wifis = data;
-          resolve(wifis);
+        success: function(data) {
+          document.getElementById("status").innerHTML = data['status'];
+          document.getElementById("device_IP").innerHTML = data['IP'];
+          document.getElementById("device_UI").innerHTML = data['device_UI'];
+          document.getElementById("device_id").innerHTML = data['device_id'];
+          document.getElementById("iot_connection").innerHTML = data['iot_connection'];
+
+          // if we have a valid iot connection, hide verification code
+          if( 'No' != data['iot_connection']) {
+            document.getElementById("verification_code").innerHTML = ''
+          }
+
+          // update the page to match the status
+          if(data['is_bbb']) {
+            $('#is_bbb').collapse('show');
+          }
+          if(data['is_wifi_bbb'] && ! data['valid_internet_connection']) {
+            $('#show_wifi').collapse('show');
+            $('#show_dev_UI').collapse('hide');
+          } else {
+            $('#show_wifi').collapse('hide');
+            $('#show_dev_UI').collapse('show');
+          }
+          document.getElementById("delete_wifis_status").innerHTML = '';
+
+          // clean out the existing wifis
+          var wifiSel = document.getElementById("wifiList");
+          for( i=wifiSel.length - 1; i >= 0; i-- ) { // must do in reverse
+            wifiSel.remove(i);
+          }
+          // add new wifis we just received
+          wifiList = data['wifis'];
+          for( i=0; i < wifiList.length; i++ ) {
+            wifi = wifiList[i];
+            var option = document.createElement("option");
+            option.text = wifi.ssid;
+            option.value = wifi.service;
+            wifiSel.add(option);
+          }
+
+          if(data['is_registered_with_IoT']) {
+            $('#register_iot_but').collapse('hide');
+          } else {
+            $('#register_iot_but').collapse('show');
+          }
+          document.getElementById("delete_iot_reg_status").innerHTML = '';
+
+          var statusDict = data;
+          resolve(statusDict);
         },
         error: function(data) {
-          console.log("get wifi data failed");
+          console.log("Promise Error: getStatus failed");
+          document.getElementById("status").innerHTML = 'Could not get status.';
           reject(data);
         }
       });
     })
   }
 
+  //--------------------------------------------------------------------------
+  function registerIoT() {
+    document.getElementById("reg_iot_status").innerHTML = 'Registering...';
+    registerIoTPromise()
+      .then(function(registerIoTSuccess) {
+        document.getElementById("reg_iot_status").innerHTML = 'Verifying...';
+        document.getElementById("verification_code").innerHTML = registerIoTSuccess
+        return getStatusPromise();
+      })
+      .then(function(statusDict) {
+        document.getElementById("reg_iot_status").innerHTML = 'Success!';
+      })
+      .catch(function(error) {
+        document.getElementById("reg_iot_status").innerHTML = 'Failed.';
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function registerIoTPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/connect/registeriot/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var registerIoTSuccess = data;
+          resolve(registerIoTSuccess)
+        },
+        error: function(data) {
+          console.log("registerIoT failed")
+          reject(data)
+        }
+      });
+    })
+  }
+
+  //--------------------------------------------------------------------------
+  function deleteWifis() {
+    document.getElementById("delete_wifis_status").innerHTML = 'Deleting...';
+    deleteWifisPromise()
+      .then(function(deleteWifiSuccess) {
+        return getStatusPromise();
+      })
+      .then(function(statusDict) {
+        document.getElementById("delete_wifis_status").innerHTML = 'Success!';
+      })
+      .catch(function(error) {
+        document.getElementById("delete_wifis_status").innerHTML = error;
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function deleteWifisPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/connect/deletewifis/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          document.getElementById("delete_wifis_status").innerHTML = 'Verifying...';
+          var deleteWifiSuccess = data;
+          resolve(deleteWifiSuccess)
+        },
+        error: function(data) {
+          console.log("deleteWifis failed")
+          reject(data)
+        }
+      });
+    })
+  }
+
+  //--------------------------------------------------------------------------
+  function deleteIoTreg() {
+    document.getElementById("delete_iot_reg_status").innerHTML = 'Deleting...';
+    deleteIoTregPromise()
+      .then(function(deleteIoTregSuccess) {
+        return getStatusPromise();
+      })
+      .then(function(statusDict) {
+        document.getElementById("delete_iot_reg_status").innerHTML = 'Success!';
+      })
+      .catch(function(error) {
+        document.getElementById("delete_iot_reg_status").innerHTML = error;
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function deleteIoTregPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/connect/deleteiotreg/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          document.getElementById("delete_iot_reg_status").innerHTML = 'Verifying...';
+          var deleteIoTregSuccess = data;
+          resolve(deleteIoTregSuccess)
+        },
+        error: function(data) {
+          console.log("deleteIoTreg failed")
+          reject(data)
+        }
+      });
+    })
+  }
+
+  //--------------------------------------------------------------------------
   function makePasswordVisible() {
     var pass = document.getElementById("wifi_p");
     if (pass.type === "password") {
@@ -116,63 +284,68 @@
 <body>
 <div class="connect">
   <div class="card" id="inet-card">
-    {% if is_bbb %}
+    <b>Networking</b><br/>
 
-      {% if is_wifi_bbb and not valid_internet_connection %}
-        <b>Wifi</b>
+    <div class="collapse" id="is_bbb">
+
+      <div class="collapse" id="show_wifi">
         <select id="wifiList" class="selectpicker" style="width:200px">
           {% for wifi in wifis %}
           <option value={{wifi.service}}>{{wifi.ssid}}</option>
           {% endfor %}
         </select>
         <p>
-          <input type="password" id="wifi_p" name="wifi_p"
+          <input type="password" id="wifi_p" 
+           onkeydown="if (event.keyCode==13) document.getElementById('butJoin').click()"
            placeholder='Wifi Password' style="width:200px">
           <input type="checkbox" onclick="makePasswordVisible()"> Show Password
         </p>
-        <a class="badge badge-secondary" data-toggle="collapse"
+        <a class="badge badge-secondary" data-toggle="collapse" id="butJoin"
           style="width:200px" href="" role="button" onclick="joinWifi();">
           Join Wifi</a>
         </br>
+      </div>
 
-      {% else %}
-        <b>Ethernet</b>
-      {% endif %}
-    {% endif %}
+    </div>
 
-    <ul>
-      <li><b>Status:</b> <span id="status"></span>
-      <li><b>Device IP:</b> {{ IP }}
-      <li><b>Device UI:</b> <a href="{{ device_UI }}" target="_blank">{{ device_UI }}</a>
-
-      {% if error != None %}
-      <li><b>Error:</b> {{ error }}
-      {% endif %}
-    </ul>
+    <p>
+      <b>Status:</b> <span id="status"></span>
+    </p>
+    <div class="collapse" id="show_dev_UI">
+      <ul>
+        <li><b>Device IP:</b> <span id="device_IP"></span>
+        <li><b>Device UI:</b> <a id="device_UI" href="" target="_blank"></a>
+        <li><a id="openag_UI" href="https://openag-v1.appspot.com" target="_blank">OpenAg User UI</a> <span id="verification_code"></span>
+        {% if error != None %}
+        <li><b>Error:</b> {{ error }}
+        {% endif %}
+      </ul>
+    </div>
   </div>
 
   <div class="card" id="iot-card">
     <b>IoT Registration</b><br/>
-    {% if is_registered_with_IoT %}
     <ul>
-      <li><b>Device ID:</b> {{ device_id }}
-      <li><b>IoT Connection:</b> {{ iot_connection }}
+      <li><b>Device ID:</b> <span id="device_id"></span>
+      <li><b>IoT Connection:</b> <span id="iot_connection"></span>
     </ul>
-    {% else %}
-    <a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="registerIoT();">
-      Register this IoT device</a><br/>
-    {% endif %}
+    <div class="collapse" id="register_iot_but">
+      <a class="badge badge-secondary" data-toggle="collapse"
+         style="width:200px" href="" role="button" onclick="registerIoT();">
+        Register this IoT device</a> <span id="reg_iot_status"></span>
+    </div>
   </div>
 
   <div class="card" id="adv-card">
     <b>Danger Zone</b><br/>
-    <a class="badge badge-secondary" data-toggle="collapse"
+    <ul>
+      <li><a class="badge badge-secondary" data-toggle="collapse"
        style="width:200px" href="" role="button" onclick="deleteWifis();">
-      Delete all wifi connections</a><br/>
-    <a class="badge badge-secondary" data-toggle="collapse"
+       Delete all wifi connections</a> <span id="delete_wifis_status"></span>
+      <li><a class="badge badge-secondary" data-toggle="collapse"
        style="width:200px" href="" role="button" onclick="deleteIoTreg();">
-      Delete IoT registration</a>
+       Delete IoT registration</a> <span id="delete_iot_reg_status"></span>
+    </ul>
   </div>
 
 </div>

@@ -15,6 +15,7 @@ import socket
 
 # Import the IoT communications class
 from iot.iot_pubsub import IoTPubSub
+from connect.connect_utils import ConnectUtils
 
 
 class IoTManager:
@@ -201,8 +202,19 @@ class IoTManager:
     def thread_proc(self):
         while True:
 
+            # Make sure we have a valid registration + device id
+            # export DEVICE_ID=EDU-BD9BC8B7-f4-5e-ab-3f-07-fd
+            device_id = ConnectUtils.get_device_id_from_file()
+            if device_id is None:
+                time.sleep(15)
+                self.logger.error("Missing device id file.")
+                continue
+            os.environ['DEVICE_ID'] = device_id
+
+            # Re-connect to IoT if we lose it (or never had it to begin with)
             if self.iot is None:
-                time.sleep(5)
+                time.sleep(15)
+                self.reset()
                 continue
 
             # Publish about.json for a record of versions on this machine.

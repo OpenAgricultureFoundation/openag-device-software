@@ -93,8 +93,10 @@ class IoTPubSub:
 
         # validate our deviceId
         if self.deviceId is None or 0 == len(self.deviceId):
-            self.logger.error("Invalid or missing DEVICE_ID env. var.")
-            exit(1)
+            msg = "Invalid or missing DEVICE_ID env. var."
+            self.logger.error(msg)
+            raise Exception(msg)
+
         self.logger.debug("Using device_id={}".format(self.deviceId))
 
         # the MQTT events topic we publish messages to
@@ -117,6 +119,11 @@ class IoTPubSub:
             self.args.mqtt_bridge_hostname,
             self.args.mqtt_bridge_port,
         )
+
+    # --------------------------------------------------------------------------
+    # Used by the phao callbacks if we need to recreate ourselves.
+    def raiseException(msg):
+        raise Exception(msg)
 
     # --------------------------------------------------------------------------
     def publishEnvVar(self, varName, valuesDict, messageType="EnvVar"):
@@ -410,60 +417,43 @@ class IoTPubSub:
         Set our self.logger level.
         Return an IoTArgs.
         """
-        try:
-            args = self.IoTArgs()
+        args = self.IoTArgs()
 
-            args.project_id = os.environ.get("GCLOUD_PROJECT")
-            if args.project_id is None:
-                self.logger.critical(
-                    "iot_pubsub: get_env_vars: "
-                    "Missing GCLOUD_PROJECT environment variable."
-                )
-                exit(1)
+        args.project_id = os.environ.get("GCLOUD_PROJECT")
+        if args.project_id is None:
+            msg = "iot_pubsub: get_env_vars: "\
+                "Missing GCLOUD_PROJECT environment variable."
+            raise Exception(msg)
 
-            args.cloud_region = os.environ.get("GCLOUD_REGION")
-            if args.cloud_region is None:
-                self.logger.critical(
-                    "iot_pubsub: get_env_vars: "
-                    "Missing GCLOUD_REGION environment variable."
-                )
-                exit(1)
+        args.cloud_region = os.environ.get("GCLOUD_REGION")
+        if args.cloud_region is None:
+            msg = "iot_pubsub: get_env_vars: "\
+                "Missing GCLOUD_REGION environment variable."
+            raise Exception(msg)
 
-            args.registry_id = os.environ.get("GCLOUD_DEV_REG")
-            if args.registry_id is None:
-                self.logger.critical(
-                    "iot_pubsub: get_env_vars: "
-                    "Missing GCLOUD_DEV_REG environment variable."
-                )
-                exit(1)
+        args.registry_id = os.environ.get("GCLOUD_DEV_REG")
+        if args.registry_id is None:
+            msg = "iot_pubsub: get_env_vars: "\
+                "Missing GCLOUD_DEV_REG environment variable."
+            raise Exception(msg)
 
-            args.device_id = os.environ.get("DEVICE_ID")
-            if args.device_id is None:
-                self.logger.critical(
-                    "iot_pubsub: get_env_vars: "
-                    "Missing DEVICE_ID environment variable."
-                )
-                exit(1)
+        args.device_id = os.environ.get("DEVICE_ID")
+        if args.device_id is None:
+            msg = "iot_pubsub: get_env_vars: "\
+                "Missing DEVICE_ID environment variable."
+            raise Exception(msg)
 
-            args.private_key_file = os.environ.get("IOT_PRIVATE_KEY")
-            if args.private_key_file is None:
-                self.logger.critical(
-                    "iot_pubsub: get_env_vars: "
-                    "Missing IOT_PRIVATE_KEY environment variable."
-                )
-                exit(1)
+        args.private_key_file = os.environ.get("IOT_PRIVATE_KEY")
+        if args.private_key_file is None:
+            msg = "iot_pubsub: get_env_vars: "\
+                "Missing IOT_PRIVATE_KEY environment variable."
+            raise Exception(msg)
 
-            args.ca_certs = os.environ.get("CA_CERTS")
-            if args.ca_certs is None:
-                self.logger.critical(
-                    "iot_pubsub: get_env_vars: "
-                    "Missing CA_CERTS environment variable."
-                )
-                exit(1)
-
-        except Exception as e:
-            self.logger.critical("iot_pubsub: get_env_vars: {}".format(e))
-            exit(1)
+        args.ca_certs = os.environ.get("CA_CERTS")
+        if args.ca_certs is None:
+            msg = "iot_pubsub: get_env_vars: "\
+                "Missing CA_CERTS environment variable."
+            raise Exception(msg)
 
         return args
 
@@ -608,6 +598,7 @@ def on_disconnect(unused_client, ref_self, rc):
     ref_self.connected = False
     ref_self.logger.debug("on_disconnect: {}".format(error_str(rc)))
     ref_self.state_dict["error"] = error_str(rc)
+    ref_self.raiseException('IoT disconnected')
 
 
 # ------------------------------------------------------------------------------

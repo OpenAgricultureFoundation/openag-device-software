@@ -58,7 +58,6 @@ from app.viewers import CultivarsViewer
 from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
-from app.viewers import ConnectViewer
 
 from connect.connect_utils import ConnectUtils
 
@@ -420,6 +419,7 @@ class IoT(APIView):
         return Response(response)
 
 
+# ----------------------------------------------------------------------------
 class Resource(APIView):
     """ UI page for ResourceManager. """
 
@@ -444,32 +444,34 @@ class Resource(APIView):
 
 # ----------------------------------------------------------------------------
 class Connect(APIView):
-    """ UI page for ConnectManager. """
+    """ UI page fields for ConnectManager. """
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "connect.html"
 
     def get(self, request):
-        cv = ConnectViewer()
-        response = {
-            "status": cv.connect_dict["status"],
-            "error": cv.connect_dict["error"],
+        extra = {"console_name": "views.Connect"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
 
-            "is_bbb": cv.connect_dict["is_bbb"],
-            "is_wifi_bbb": cv.connect_dict["is_wifi_bbb"],
-            "device_UI": cv.connect_dict["device_UI"],
+        response = ConnectUtils.get_status()
+        logger.info('Connect response={}'.format(response))
+        return Response(response)
 
-            "valid_internet_connection":
-                ConnectUtils.valid_internet_connection(),
-                #cv.connect_dict["valid_internet_connection"],
 
-            "wifis": cv.connect_dict["wifis"],
-            "IP": cv.connect_dict["IP"],
-            "is_registered_with_IoT":
-                cv.connect_dict["is_registered_with_IoT"],
-            "device_id": cv.connect_dict["device_id"],
-            "iot_connection": cv.connect_dict["iot_connection"],
-        }
+# ----------------------------------------------------------------------------
+class ConnectGetStatus(viewsets.ViewSet):
+    """ REST API to get all connect status fields shown.
+        This class extends the ViewSet (not ModelViewSet) because it
+        dynamically gets its data and the Model gets data from the DB.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectGetStatus"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.get_status()
+        logger.info('ConnectGetStatus response={}'.format(response))
         return Response(response)
 
 
@@ -482,6 +484,10 @@ class ConnectJoinWifi(viewsets.ViewSet):
     """
     @permission_classes((IsAuthenticated, IsAdminUser))
     def create(self, request):
+        extra = {"console_name": "views.ConnectJoinWifi"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
         # Get req parameters
         try:
             reqd = request.data.dict()
@@ -493,36 +499,58 @@ class ConnectJoinWifi(viewsets.ViewSet):
 
         wifi = reqd["wifi"]
         password = reqd["password"]
-        print('debugrob ConnectJoinWifi wifi={} pass={}'.format(wifi, password))
-        message = ConnectUtils.join_wifi(wifi, password)
-        response = { "message": message, }
+
+        logger.info('ConnectJoinWifi wifi={} pass={}'.format(wifi, password))
+        success = ConnectUtils.join_wifi(wifi, password)
+        response = { "success": success, }
+        logger.info('ConnectJoinWifi response={}'.format(response))
         return Response(response)
 
 
 # ----------------------------------------------------------------------------
-#debugrob, new below
-class ConnectGetWifis(viewsets.ViewSet):
-    """ REST API to get list of available wifis.
-        This class extends the ViewSet (not ModelViewSet) because it
-        dynamically gets its data and the Model gets data from the DB.
+class ConnectDeleteWifis(viewsets.ViewSet):
+    """ REST API to disconnect any active network connections and delete all
+        wifi configurations made by the user.
+        Called with GET.
     """
     def list(self, request):
-        response = {
-            "wifis": ConnectUtils.get_wifis(),
-        }
+        extra = {"console_name": "views.ConnectDeleteWifis"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.delete_wifi_connections()
+        logger.info('ConnectDeleteWifis response={}'.format(response))
         return Response(response)
 
-"""
-#debugrob, not used yet
-    # @permission_classes((IsAuthenticated, IsAdminUser,))
-    @detail_route(methods=["post"],
-                  permission_classes=[IsAuthenticated, IsAdminUser])
-    def get_something(self, request):
-        cv = ConnectViewer()
-        response, status = cv.get_wifis()
-        return Response(response, status)
 
-"""
+# ----------------------------------------------------------------------------
+class ConnectRegisterIoT(viewsets.ViewSet):
+    """ REST API to register this machine with the IoT backend.
+        Called with GET.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectRegisterIoT"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.register_iot()
+        logger.info('ConnectRegisterIoT response={}'.format(response))
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class ConnectDeleteIoTreg(viewsets.ViewSet):
+    """ REST API to delete the current IoT registration (directory).
+        Called with GET.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectDeleteIoTreg"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.delete_iot_registration()
+        logger.info('ConnectDeleteIoTreg response={}'.format(response))
+        return Response(response)
 
 
 class Manual(APIView):

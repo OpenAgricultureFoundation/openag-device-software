@@ -12,12 +12,7 @@ if [ $# -eq 1 ]; then
 fi
  
 # Get the SSID for this service
-SSID=`connmanctl services $1 | grep "Name =" | cut --delimiter=' ' --fields 5-10`
-SSIDLEN=`echo -n $SSID | wc -m`
-if [ $SSIDLEN -eq 0 ]; then
-    echo "Can't connect to a wifi with a hidden SSID, sorry.  Use connmanctl"
-    exit 1
-fi
+SSID="spanky"
  
 echo "Using sudo to configure your networking, please enter your password:"
 sudo touch "/var/lib/connman/$SSID.config"
@@ -25,18 +20,20 @@ sudo chmod 777 "/var/lib/connman/$SSID.config"
 echo "[service_$1]
 Type=wifi
 Name=$SSID
+SSID=7370616e6b79
+Hidden=true
 Passphrase=$2
 "> "/var/lib/connman/$SSID.config"
 sleep 2
  
 connmanctl connect $1
-sleep 2
+sleep 1
 connmanctl config $1 --autoconnect yes > /dev/null 2>&1
 connmanctl disable wifi > /dev/null 2>&1
 sleep 1
 connmanctl enable wifi > /dev/null 2>&1
-
-# We must restart autossh, otherwise serveo.net won't let us back in.
+ 
+# Restart autossh
 sleep 4
 sudo killall -s 9 autossh > /dev/null 2>&1
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
