@@ -72,10 +72,11 @@ class IoTPubSub:
     args = None  # Class configuration
 
     # --------------------------------------------------------------------------
-    def __init__(self, command_received_callback, state_dict):
+    def __init__(self, ref_iot_manager, command_received_callback, state_dict):
         """ 
         Class constructor 
         """
+        self.ref_iot_manager = ref_iot_manager
         self.command_received_callback = command_received_callback
         self.state_dict = state_dict  # items that are shown in the UI
         self.args = self.get_env_vars()  # get our settings from env. vars.
@@ -94,8 +95,7 @@ class IoTPubSub:
         # validate our deviceId
         if self.deviceId is None or 0 == len(self.deviceId):
             msg = "Invalid or missing DEVICE_ID env. var."
-            self.logger.error(msg)
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         self.logger.debug("Using device_id={}".format(self.deviceId))
 
@@ -121,9 +121,10 @@ class IoTPubSub:
         )
 
     # --------------------------------------------------------------------------
-    # Used by the phao callbacks if we need to recreate ourselves.
-    def raiseException(self, msg):
-        raise Exception(msg)
+    # Used by the phao callbacks if we need to tell the manager to recreate us.
+    def killOurselves(self, msg):
+        self.state_dict["connected"] = "No"
+        self.ref_iot_manager.killIoTPubSub(msg)
 
     # --------------------------------------------------------------------------
     def publishEnvVar(self, varName, valuesDict, messageType="EnvVar"):
@@ -364,9 +365,8 @@ class IoTPubSub:
     def connected(self, value):
         self._connected = value
         if value:
-            self.state_dict[
-                "connected"
-            ] = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
+            self.state_dict[ "connected"
+                ] = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
         else:
             self.state_dict["connected"] = "No"
 
@@ -423,37 +423,37 @@ class IoTPubSub:
         if args.project_id is None:
             msg = "iot_pubsub: get_env_vars: "\
                 "Missing GCLOUD_PROJECT environment variable."
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         args.cloud_region = os.environ.get("GCLOUD_REGION")
         if args.cloud_region is None:
             msg = "iot_pubsub: get_env_vars: "\
                 "Missing GCLOUD_REGION environment variable."
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         args.registry_id = os.environ.get("GCLOUD_DEV_REG")
         if args.registry_id is None:
             msg = "iot_pubsub: get_env_vars: "\
                 "Missing GCLOUD_DEV_REG environment variable."
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         args.device_id = os.environ.get("DEVICE_ID")
         if args.device_id is None:
             msg = "iot_pubsub: get_env_vars: "\
                 "Missing DEVICE_ID environment variable."
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         args.private_key_file = os.environ.get("IOT_PRIVATE_KEY")
         if args.private_key_file is None:
             msg = "iot_pubsub: get_env_vars: "\
                 "Missing IOT_PRIVATE_KEY environment variable."
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         args.ca_certs = os.environ.get("CA_CERTS")
         if args.ca_certs is None:
             msg = "iot_pubsub: get_env_vars: "\
                 "Missing CA_CERTS environment variable."
-            raise Exception(msg)
+            self.killOurselves(msg)
 
         return args
 
@@ -598,7 +598,7 @@ def on_disconnect(unused_client, ref_self, rc):
     ref_self.connected = False
     ref_self.logger.debug("on_disconnect: {}".format(error_str(rc)))
     ref_self.state_dict["error"] = error_str(rc)
-    ref_self.raiseException('IoT disconnected')
+    ref_self.killOurselves('IoT disconnected')
 
 
 # ------------------------------------------------------------------------------

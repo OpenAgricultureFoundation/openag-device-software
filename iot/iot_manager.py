@@ -58,13 +58,19 @@ class IoTManager:
     def reset(self):
         try:
             # pass in the callback that receives commands
-            self.iot = IoTPubSub(self.command_received, self.state.iot)
+            self.iot = IoTPubSub(self, self.command_received, self.state.iot)
         except (Exception) as e:
             self.iot = None
             self.error = str(e)
             # exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logger.error("Couldn't create IoT connection: {}".format(e))
             # traceback.print_tb( exc_traceback, file=sys.stdout )
+
+    # ------------------------------------------------------------------------
+    def killIoTPubSub(self, msg):
+        self.iot = None
+        self.error = msg
+        self.logger.error("Killing IoTPubSub: {}".format(msg))
 
     # ------------------------------------------------------------------------
     def command_received(self, command, arg0, arg1):
