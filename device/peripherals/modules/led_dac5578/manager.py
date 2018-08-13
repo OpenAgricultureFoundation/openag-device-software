@@ -166,7 +166,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
                 self.channel_outputs_name
             )
         else:
-            return self.state.get_peripheral_desired_actuator_value(
+            return seactlf.state.get_peripheral_desired_actuator_value(
                 self.name, self.channel_outputs_name
             )
 

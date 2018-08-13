@@ -25,12 +25,12 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP14", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5},
-                        {"name": "LP15", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
-                        {"name": "LP24", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7},
-                        {"name": "LP32", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1},
-                        {"name": "LP45", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6},
-                        {"name": "LP55", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
+                        {"name": "LP14", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5, "active_low": true},
+                        {"name": "LP15", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "active_low": true},
+                        {"name": "LP24", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7, "active_low": true},
+                        {"name": "LP32", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1, "active_low": true},
+                        {"name": "LP45", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6, "active_low": true},
+                        {"name": "LP55", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2, "active_low": true}
                     ]
                 }
             }

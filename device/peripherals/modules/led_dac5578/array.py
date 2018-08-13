@@ -50,6 +50,7 @@ class LEDDAC5578Array(object):
                     mux=int(panel_config["mux"], 16),
                     channel=int(panel_config["channel"]),
                     simulate=simulate,
+                    active_low=panel_config["active_low"],
                 )
             )
 
@@ -105,8 +106,6 @@ class LEDDAC5578Array(object):
 
     def shutdown(self):
         """ Shutsdown all panels in array. """
-        # for panel in self.panels:
-        #     panel.shutdown()
         self.is_shutdown = True
 
     def reset(self):

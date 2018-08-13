@@ -43,6 +43,7 @@ def test_init():
         mux=0x77,
         channel=0,
         simulate=True,
+        active_low=False,
     )
 
 

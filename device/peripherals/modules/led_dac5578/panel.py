@@ -15,7 +15,7 @@ from device.peripherals.common.dac5578.driver import DAC5578
 
 
 class LEDDAC5578Panel:
-    """ An led panel controlled by a DAC5578. """
+    """An led panel controlled by a DAC5578."""
 
     # Initialize shutdown state
     _is_shutdown: bool = False
@@ -29,15 +29,17 @@ class LEDDAC5578Panel:
         mux=None,
         channel=None,
         simulate=False,
+        active_low=False,
     ):
-        """ Instantiates panel. """
+        """Instantiates panel."""
 
         # Initialize logger
         self.logger = Logger(name="Panel({})".format(name), dunder_name=__name__)
 
-        # Initialize name and channel configs
+        # Initialize parameters
         self.name = name
         self.channel_configs = channel_configs
+        self.active_low = active_low
 
         # Initialize driver
         self.dac5578 = DAC5578(
@@ -120,6 +122,10 @@ class LEDDAC5578Panel:
         # Write to DAC until successful or too unhealthy
         while self.healthy:
 
+            # Check if device is active low
+            if self.active_low:
+                percent = 100 - percent
+
             # Set output on DAC
             error = self.dac5578.write_output(channel_number, percent)
 
@@ -160,6 +166,10 @@ class LEDDAC5578Panel:
                 error.report("Panel unable to set outputs")
                 self.logger.debug(error.trace)
                 return error
+
+            # Check for active low
+            if self.active_low:
+                percent = 100 - percent
 
             # Append to converted outputs
             converted_outputs[number] = percent

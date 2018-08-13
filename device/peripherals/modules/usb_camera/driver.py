@@ -10,6 +10,9 @@ from device.utilities.logger import Logger
 from device.utilities.error import Error
 from device.utilities.accessors import usb_device_matches
 
+# Import peripheral modules
+from device.peripherals.common.dac5578.driver import DAC5578
+
 
 class USBCameraDriver:
     """Driver for a usb camera."""

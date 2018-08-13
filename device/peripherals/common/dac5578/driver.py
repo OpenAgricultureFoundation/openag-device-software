@@ -12,7 +12,7 @@ from device.utilities import bitwise
 
 
 class DAC5578:
-    """ Driver for DAC5578 digital to analog converter. """
+    """Driver for DAC5578 digital to analog converter."""
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class DAC5578:
         channel: Optional[int] = None,
         simulate: bool = False,
     ) -> None:
-        """ Initializes DAC5578. """
+        """Initializes DAC5578."""
 
         # Initialize parameters
         self.simulate = simulate
@@ -41,10 +41,21 @@ class DAC5578:
             simulate=simulate,
         )
 
+    def probe(self) -> Error:
+        """Probes dac5578 by trying to read the power register."""
+        self.logger.debug("Probing")
+        powered, error = self.read_power_register()
+        if error.exists():
+            error.report("DAC probe failed")
+            self.logger.error(error.latest())
+            return error
+        else:
+            return Error(None)
+
     def write_output(
         self, channel: int, percent: int, disable_mux: bool = False
     ) -> Error:
-        """ Sets output value to channel. """
+        """Sets output value to channel."""
         self.logger.debug(
             "Writing output on channel {} to: {}%".format(channel, percent)
         )
@@ -58,7 +69,7 @@ class DAC5578:
             raise ValueError("Output percent out of range, must be within 0-100")
 
         # Convert output percent to byte
-        byte = 255 - int(percent * 2.55)  # 255 is off, 0 is on
+        byte = int(percent * 2.55)
 
         # Send set output command to dac
         self.logger.debug("Writing to dac: ch={}, byte={}".format(channel, byte))
@@ -75,8 +86,8 @@ class DAC5578:
         return Error(None)
 
     def write_outputs(self, outputs: dict, retries=1) -> Error:
-        """ Sets output channels to output percents. Only sets mux once. 
-            Keeps thread locked since relies on mux not changing. """
+        """Sets output channels to output percents. Only sets mux once. 
+        Keeps thread locked since relies on mux not changing."""
         self.logger.debug("Writing outputs: {}".format(outputs))
 
         # Run through each output
@@ -118,7 +129,7 @@ class DAC5578:
         return Error(None)
 
     def read_power_register(self) -> Tuple[Optional[dict], Error]:
-        """ Reads power register. """
+        """Reads power register."""
         self.logger.debug("Reading power register")
 
         # Send start read command
@@ -157,52 +168,41 @@ class DAC5578:
         )
         return powered, Error(None)
 
-    def probe(self) -> Error:
-        """ Probes dac5578 by trying to read the power register. """
-        self.logger.debug("Probing")
-        powered, error = self.read_power_register()
-        if error.exists():
-            error.report("DAC probe failed")
-            self.logger.error(error.latest())
-            return error
-        else:
-            return Error(None)
-
-    def turn_on(self, channel: Optional[int] = None) -> Error:
-        """ Turns on all channels if no channel is specified. """
+    def set_high(self, channel: Optional[int] = None) -> Error:
+        """Sets channel high, sets all channels high if no channel is specified."""
 
         # Set channel or channels
         if channel != None:
-            self.logger.debug("Turning on channel {}".format(channel))
-            error = self.write_output(channel, 100, retries=5)
+            self.logger.debug("Setting channel {} high".format(channel))
+            error = self.write_output(channel, 100)
         else:
-            self.logger.debug("Turning on all channels")
+            self.logger.debug("Setting all channels high")
             outputs = {0: 100, 1: 100, 2: 100, 3: 100, 4: 100, 5: 100, 6: 100, 7: 100}
             error = self.write_outputs(outputs, retries=5)
 
         # Check for errors
         if error.exists():
-            error.report("DAC unable to turn on")
+            error.report("DAC unable to set high")
             self.logger.error(error.latest())
             return error
         else:
             return Error(None)
 
-    def turn_off(self, channel: Optional[int] = None) -> Error:
-        """ Turns on all channels if no channel is specified. """
+    def set_low(self, channel: Optional[int] = None) -> Error:
+        """Sets channel low, sets all channels low if no channel is specified."""
 
         # Set channel or channels
         if channel != None:
-            self.logger.debug("Turning off channel {}".format(channel))
-            error = self.write_output(channel, 0, retries=5)
+            self.logger.debug("Setting channel {} low".format(channel))
+            error = self.write_output(channel, 0)
         else:
-            self.logger.debug("Turning off all channels")
+            self.logger.debug("Setting all channels low")
             outputs = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
             error = self.write_outputs(outputs, retries=5)
 
         # Check for errors
         if error.exists():
-            error.report("DAC unable to turn off")
+            error.report("DAC unable to set low")
             self.logger.error(error.latest())
             return error
         else:

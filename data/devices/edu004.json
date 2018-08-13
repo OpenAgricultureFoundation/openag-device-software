@@ -1,6 +1,7 @@
 {   
     "format": "openag-standard-v1",
     "name": "PFC EDU 004",
+    "description": "For EDU hardware v0.3.0",
     "uuid": "846ab69e-56f8-4283-80a5-52f47e37e7d9",
     "peripherals": [
         {
@@ -24,7 +25,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
+                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": false}
                     ]
                 }
             }

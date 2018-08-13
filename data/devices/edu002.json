@@ -1,6 +1,7 @@
 {   
     "format": "openag-standard-v1",
     "name": "PFC EDU 002",
+    "description": "For EDU hardware v0.2.0 using T6713 for CO2 sensing",
     "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
     "peripherals": [
         {
@@ -24,7 +25,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "x": 0, "y": 0}
+                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
                     ]
                 }
             }

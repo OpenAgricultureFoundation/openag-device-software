@@ -17,38 +17,41 @@ else:
 
 from device.peripherals.common.dac5578.driver import DAC5578
 
-
 # Import device utilities
 from device.utilities.logger import Logger
+from device.utilities.accessors import get_peripheral_config
 
-# Setup parser
-parser = argparse.ArgumentParser(description="Test and debug DAC5578 hardware")
-parser.add_argument("--edu1", action="store_true", help="specifies edu config")
-parser.add_argument("--debug", action="store_true", help="sets logger in debug mode")
-parser.add_argument("--info", action="store_true", help="sets logger in info mode")
-parser.add_argument("--probe", action="store_true", help="probes DAC")
-parser.add_argument("-c", "--channel", type=int, help="specifies channel (0-7)")
-parser.add_argument("-v", "--value", type=int, help="specifies output value (0-100)")
-parser.add_argument(
-    "--on", action="store_true", help="turns on LEDs, can specify channel"
-)
-parser.add_argument(
-    "--off", action="store_true", help="turns off LEDs, can specify channel"
-)
-parser.add_argument(
-    "--fade", action="store_true", help="fades LEDs, can specify channel"
-)
-parser.add_argument("--reset", action="store_true", help="resets DAC5578")
-parser.add_argument("--shutdown", action="store_true", help="shutsdown DAC5578")
-parser.add_argument("--loop", action="store_true", help="loops command prompt")
+# Set directory for loading files
+if cwd.endswith("dac5578"):
+    os.chdir("../../../../")
 
+# Setup parser basics
+parser = argparse.ArgumentParser(description="Test and debug driver")
+parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
+parser.add_argument("--info", action="store_true", help="set logger in info mode")
+parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
+# Setup parser configs
+parser.add_argument("--device", type=str, help="specifies device config file name")
+parser.add_argument("--name", type=str, help="specifies peripheral name in config")
+parser.add_argument("--panel-name", type=str, help="specifies panel name in config")
+
+# Setup parser functions
+parser.add_argument("--probe", action="store_true", help="probes device")
+parser.add_argument("-c", "--channel", type=int, help="sets channel (0-7)")
+parser.add_argument("-p", "--percent", type=int, help="sets output percent (0-100)")
+parser.add_argument("--high", action="store_true", help="outputs high voltage")
+parser.add_argument("--low", action="store_true", help="outputs low voltage")
+parser.add_argument("--fade", action="store_true", help="fades voltage x10 times")
+parser.add_argument("--reset", action="store_true", help="resets device")
+
+# Run main
 if __name__ == "__main__":
 
     # Read in arguments
     args = parser.parse_args()
 
-    # Check for logger
+    # Initialize logger
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     elif args.info:
@@ -56,13 +59,60 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARNING)
 
-    # Initialize core
-    if args.edu1:
-        print("Configuring for pfc-edu v1.0")
-        dac5578 = DAC5578("Test", 2, 0x47, mux=0x77, channel=3)
-    else:
+    # Check for device config
+    if args.device == None:
         print("Please specify a device configuraion")
         sys.exit(0)
+
+    # Check for peripheral name
+    if args.name == None:
+        print("Please specify a peripheral name")
+        sys.exit(0)
+
+    # Set device config
+    print("Using device config: {}".format(args.device))
+    device_config = json.load(open("data/devices/{}.json".format(args.device)))
+    peripheral_config = get_peripheral_config(device_config["peripherals"], args.name)
+    communication = peripheral_config["parameters"]["communication"]
+
+    # Check is dac is used in led panel
+    if "panels" in communication:
+
+        # Default to using first panel in communication list
+        communication = communication["panels"][0]
+
+        # Check if panel name is specified
+        if args.panel_name != None:
+
+            # Check if panel name exists in list
+            name = None
+            for entry in communication["panels"]:
+                if entry["name"] == args.panel_name:
+                    communication = entry
+                    name = entry["name"]
+                    break
+
+            # Check if panel name was found
+            if name == None:
+                print(
+                    "Unable to find panel named `{}`, using first entry instead".format(
+                        args.panel_name
+                    )
+                )
+
+    # Initialize driver optional mux parameter
+    mux = communication.get("mux", None)
+    if mux != None:
+        mux = int(mux, 16)
+
+    # Initialize driver
+    driver = DAC5578(
+        name=args.name,
+        bus=communication["bus"],
+        address=int(communication["address"], 16),
+        mux=mux,
+        channel=communication.get("channel", None),
+    )
 
     # Check for loop
     if args.loop:
@@ -70,77 +120,60 @@ if __name__ == "__main__":
     else:
         loop = False
 
-    first = True
+    # Loop forever
     while True:
 
-        # Check if new command
-        if not first:
-            args = parser.parse_args(shlex.split(new_command))
-        first = False
-
-        # Check if resetting
-        if args.reset:
-            print("Resetting")
-            dac5578.reset()
-            print("Reset successful")
-
-        # Check if shutting down
-        elif args.shutdown:
-            print("Shutting down")
-            dac5578.shutdown()
-            print("Shutdown successful")
-
         # Check if probing
-        elif args.probe:
+        if args.probe:
             print("Probing")
-            error = dac5578.probe()
+            error = driver.probe()
             if error.exists():
                 print("error = {}".format(error.trace))
             else:
                 print("Probe successful")
 
         # Check if setting a channel to a value
-        elif args.channel != None and args.value != None:
-            print("Setting channel {} to {}%".format(args.channel, args.value))
-            error = dac5578.write_output(args.channel, args.value)
+        elif args.channel != None and args.percent != None:
+            print("Setting channel {} to {}%".format(args.channel, args.percent))
+            error = driver.write_output(args.channel, args.percent)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
         # Check if setting all channels to a value
-        elif args.value != None:
-            print("Setting all channels to {}%".format(args.value))
+        elif args.channel == None and args.percent != None:
+            print("Setting all channels to {}%".format(args.percent))
 
             outputs = {}
             for i in range(8):
-                outputs[i] = args.value
+                outputs[i] = args.percent
 
-            error = dac5578.write_outputs(outputs)
+            error = driver.write_outputs(outputs)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
-        # Check if turning device on
-        elif args.on:
+        # Check if setting a channel or all channels high
+        elif args.high:
             print(
-                "Turning on {channel}".format(
+                "Setting {channel} high".format(
                     channel="all channels"
                     if args.channel == None
                     else "channel: " + str(args.channel)
                 )
             )
-            error = dac5578.turn_on(channel=args.channel)
+            error = driver.set_high(channel=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
-        # Check if turning device off
-        elif args.off:
+        # Check if setting a channel or all channels low
+        elif args.low:
             print(
-                "Turning off {channel}".format(
+                "Setting {channel} low".format(
                     channel="all channels"
                     if args.channel == None
                     else "channel: " + str(args.channel)
                 )
             )
-            error = dac5578.turn_off(channel=args.channel)
+            error = driver.set_low(channel=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
 
@@ -153,12 +186,19 @@ if __name__ == "__main__":
                     else "channel: " + str(args.channel)
                 )
             )
-            error = dac5578.fade(cycles=10, channel=args.channel)
+            error = driver.fade(cycles=10, channel=args.channel)
             if error.exists():
                 print("Error: {}".format(error.trace))
+
+        # Check if resetting
+        elif args.reset:
+            print("Resetting")
+            driver.reset()
+            print("Reset successful")
 
         # Check for new command if loop enabled
         if loop:
             new_command = input("New command: ")
+            args = parser.parse_args(shlex.split(new_command))
         else:
             break

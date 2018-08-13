@@ -21,9 +21,9 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "Test-1", "bus": 2, "mux": "0x77", "channel": 0, "address": "0x47", "x": 0, "y": 0},
-                        {"name": "Test-2", "bus": 2, "mux": "0x77", "channel": 1, "address": "0x47", "x": 1, "y": 0},
-                        {"name": "Test-3", "bus": 2, "mux": "0x77", "channel": 2, "address": "0x47", "x": 2, "y": 0}
+                        {"name": "Test-1", "bus": 2, "mux": "0x77", "channel": 0, "address": "0x47", "active_low": false},
+                        {"name": "Test-2", "bus": 2, "mux": "0x77", "channel": 1, "address": "0x47", "active_low": false},
+                        {"name": "Test-3", "bus": 2, "mux": "0x77", "channel": 2, "address": "0x47", "active_low": false}
                     ]
                 }
             }
