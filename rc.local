@@ -1,4 +1,5 @@
 #!/bin/sh
 chdir /home/debian/openag-device-software
 /home/debian/openag-device-software/run.sh &
+sleep 15
 /home/debian/openag-device-software/forward_ports.sh &
