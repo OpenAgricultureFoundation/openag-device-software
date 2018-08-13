@@ -1,0 +1,261 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-08-13T16:45:41Z",
+	"name": "Small Hazelnut Viability Test Grow Sped Up x20",
+	"uuid": "98576b8f-6a65-40ed-80af-6a227850675f",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Test grow running for 5 weeks with 600 PAR white light cultivating 2.5 year old hazelnut trees. Running at x20 speed.",
+		"verbose": "Fixed spectrum approximating sunlight. Ramps intensity from 0-600 PAR over 4 hours, holds at 600 for 8 hours, ramps down from 600-0 over 4 hours. Then off for 8 hours."
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		},
+		{
+			"name": "Dan Poitrast",
+			"email": "poitrast@mit.edu",
+			"uuid": "117a72aa-6288-46bc-87f9-5b37630fd944"
+		},
+		{
+			"name": "Zander Auerbach",
+			"email": "zandera@mit.edu",
+			"uuid": "0935948e-e2c9-4db7-902e-6db5922ff0a3"
+		}
+
+	],
+	"cultivars": [
+		{
+			"name": "2.5 Year Old Hazelnut Tree",
+			"uuid": "4b348702-6e23-40ac-aa89-597f06d64a26"
+		}
+	],
+	"cultivation_methods": [
+		{
+			"name": "Soil",
+			"uuid": "dc919f3d-f110-4371-965c-3e89041cecfe"
+		}
+	],
+	"environments": {
+		"light_0": {
+			"name": "Light 0",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 0
+		},
+		"light_50": {
+			"name": "Light 50",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 50
+		},
+		"light_100": {
+			"name": "Light 100",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 100
+		},
+		"light_150": {
+			"name": "Light 150",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 150
+		},
+		"light_200": {
+			"name": "Light 200",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 200
+		},
+		"light_250": {
+			"name": "Light 250",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 250
+		},
+		"light_300": {
+			"name": "Light 300",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 300
+		},
+		"light_350": {
+			"name": "Light 350",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 350
+		},
+		"light_400": {
+			"name": "Light 400",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 400
+		},
+		"light_450": {
+			"name": "Light 450",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 450
+		},
+		"light_500": {
+			"name": "Light 500",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 500
+		},
+		"light_550": {
+			"name": "Light 550",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 550
+		},
+		"light_600": {
+			"name": "Light 600",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 600
+		}
+	},
+	"phases": [
+		{
+			"name": "5 Week Viability Test",
+			"repeat": 35,
+			"cycles": [
+				{
+					"name": "Morning 1/12",
+					"environment": "light_50",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 2/12",
+					"environment": "light_100",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 3/12",
+					"environment": "light_150",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 4/12",
+					"environment": "light_200",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 5/12",
+					"environment": "light_250",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 6/12",
+					"environment": "light_300",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 7/12",
+					"environment": "light_350",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 8/12",
+					"environment": "light_400",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 9/12",
+					"environment": "light_450",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 10/12",
+					"environment": "light_500",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 11/12",
+					"environment": "light_550",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 12/12",
+					"environment": "light_600",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Afternoon",
+					"environment": "light_600",
+					"duration_minutes": 480
+				},
+				{
+					"name": "Evening 1/12",
+					"environment": "light_550",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 2/12",
+					"environment": "light_500",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 3/12",
+					"environment": "light_450",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 4/12",
+					"environment": "light_400",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 5/12",
+					"environment": "light_350",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 6/12",
+					"environment": "light_300",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 7/12",
+					"environment": "light_250",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 8/12",
+					"environment": "light_200",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 9/12",
+					"environment": "light_150",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 10/12",
+					"environment": "light_100",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 11/12",
+					"environment": "light_50",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 12/12",
+					"environment": "light_0",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Night",
+					"environment": "light_0",
+					"duration_minutes": 24
+				}
+			]
+		}
+	]
+}
