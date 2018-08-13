@@ -30,7 +30,6 @@ class ConnectManager:
 
         # these values never change, so only get them once
         self.state.connect["is_bbb"] = ConnectUtils.is_bbb()
-        self.state.connect["is_wifi_bbb"] = ConnectUtils.is_wifi_bbb()
         self.state.connect["device_UI"] = ConnectUtils.get_remote_UI_URL()
 
     # ------------------------------------------------------------------------
@@ -91,6 +90,7 @@ class ConnectManager:
         # these may change, so get new values every loop
         self.state.connect["valid_internet_connection"] = \
             ConnectUtils.valid_internet_connection()
+        self.state.connect['is_wifi_bbb'] = ConnectUtils.is_wifi_bbb()
         self.state.connect["wifis"] = ConnectUtils.get_wifis()
         self.state.connect["IP"] = ConnectUtils.get_IP()
         self.state.connect["is_registered_with_IoT"] = \
