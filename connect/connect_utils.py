@@ -108,9 +108,6 @@ class ConnectUtils:
                 password = ''
 
             cmd = ["scripts/connect_wifi.sh", wifi, password]
-            # just for rob debugging at home (with his hidden SSID)
-            if wifi == 'wifi_f45eab3f07fb_hidden_managed_psk':
-                cmd = ["scripts/spanky.sh", wifi, password]
             with subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE) as proc1:
                 output = proc1.stdout.read().decode("utf-8")
@@ -256,10 +253,6 @@ class ConnectUtils:
                             if 0 != len(ssid):
                                 ssid += ' '
                             ssid += token
-
-                    # just for rob debugging at home (with his hidden SSID)
-                    if service == 'wifi_f45eab3f07fb_hidden_managed_psk':
-                        ssid = 'spanky'
 
                     if 0 == len(ssid):
                         # this is a hidden SSID 
