@@ -1,11 +1,17 @@
 # Import python modules
-import logging, time, threading, os, sys, datetime, json, sys, traceback
-import subprocess, glob, urllib.request
-
-from app.models import EventModel
-from app.models import EnvironmentModel
+import glob
+import logging
+import os
+import subprocess
+import sys
+import threading
+import time
+import urllib.request
 
 from django.db import connection  # so we can do raw sql queries
+
+from app.models import EnvironmentModel
+from app.models import EventModel
 
 
 class ResourceManager:
@@ -154,17 +160,23 @@ class ResourceManager:
         return free_memory
 
     # --------------------------------------------------------------------------
-    def clean_up_disk(self):
-        """
-        Delete image files.
-        """
+    # private
+    def _delete_files(self, path):
         try:
-            imageFileList = glob.glob("images/*.png")
+            imageFileList = glob.glob(path)
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
                 self.logger.debug("Deleted {}".format(imageFile))
         except Exception as e:
             self.logger.error(e)
+
+    # --------------------------------------------------------------------------
+    def clean_up_disk(self):
+        """
+        Delete image files.
+        """
+        self._delete_files('images/*.png')
+        self._delete_files('images/stored/*.png')
 
     # --------------------------------------------------------------------------
     def clean_up_database(self):
@@ -228,12 +240,11 @@ class ResourceManager:
 
         fd_val = free_disk[0:-1]
         fm_val = free_memory[0:-1]
-        self.logger.debug("free disk {} {} {}".format(free_disk, fd_units, fd_val))
-        self.logger.debug("free memory {} {} {}".format(free_memory, fm_units, fm_val))
-        self.logger.debug("DB size {}".format(database_size))
-        self.logger.debug(
-            "internet connection {}".format(self.state.resource["internet_connection"])
-        )
+        self.logger.debug('\n{}, {}, {}, {}'.format( \
+            "free disk={}".format(free_disk), \
+            "free memory={}".format(free_memory), \
+            "DB size={}".format(database_size), \
+            "internet connection={}".format(self.connected)))
 
         # detect low memory and disk space
         low_resources = False
@@ -254,7 +265,9 @@ class ResourceManager:
             self.error = None
 
         if low_resources:
-            self.logger.error("Handling low resources")
+            self.status = "Warning: low resources"
+            self.error = "Low resources"
+            self.logger.error(self.error)
             if self.connected:
                 self.ref_iot_manager.publishMessage("alert", self.status)
 
@@ -264,13 +277,11 @@ class ResourceManager:
 
     # --------------------------------------------------------------------------
     def valid_internet_connection(self):
-        ret = False
         try:
             urllib.request.urlopen("http://google.com")
-            ret = True
+            return True
         except:
-            ret = False
-        return ret
+            return False
 
     # --------------------------------------------------------------------------
     def thread_proc(self):
@@ -293,4 +304,4 @@ class ResourceManager:
             if self.connected:
                 time.sleep(300)  # idle for 5 min
             else:
-                time.sleep(1)  # fast idle until we get connected
+                time.sleep(5)  # fast idle until we get connected

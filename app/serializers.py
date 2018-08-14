@@ -13,6 +13,7 @@ from app.models import CultivarModel
 from app.models import CultivationMethodModel
 from app.models import SensorVariableModel
 from app.models import ActuatorVariableModel
+from app.models import ConnectModel
 
 
 class StateSerializer(serializers.HyperlinkedModelSerializer):
@@ -26,6 +27,7 @@ class StateSerializer(serializers.HyperlinkedModelSerializer):
             "controllers",
             "iot",
             "resource",
+            "connect",
         )
 
 
@@ -87,3 +89,11 @@ class ActuatorVariableSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ActuatorVariableModel
         fields = ("key", "json")
+
+
+class ConnectSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = ConnectModel
+        fields = "__all__"
+
+

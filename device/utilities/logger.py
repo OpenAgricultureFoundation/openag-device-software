@@ -88,7 +88,7 @@ class PeripheralFileHandler(logging.Handler):
 
         # Clear out old peripheral logs
         for file in os.listdir("logs/peripherals/"):
-            if file.endswith(".log"):
+            if file.endswith(".log") or file.endswith(".log.1"):
                 os.remove("logs/peripherals/" + file)
 
         # Initialize peripheral file handlers

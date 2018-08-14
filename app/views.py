@@ -1,5 +1,6 @@
 # Import standard python modules
 import json
+import logging
 
 # Import django modules
 from django.shortcuts import render
@@ -47,7 +48,6 @@ from app.serializers import PeripheralSetupSerializer
 from app.serializers import SensorVariableSerializer
 from app.serializers import ActuatorVariableSerializer
 
-
 # Import app viewers
 from app.viewers import DeviceViewer
 from app.viewers import EventViewer
@@ -59,6 +59,7 @@ from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
+from connect.connect_utils import ConnectUtils
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
@@ -418,6 +419,7 @@ class IoT(APIView):
         return Response(response)
 
 
+# ----------------------------------------------------------------------------
 class Resource(APIView):
     """ UI page for ResourceManager. """
 
@@ -437,6 +439,117 @@ class Resource(APIView):
             "database_size": rv.resource_dict["database_size"],
             "internet_connection": rv.resource_dict["internet_connection"],
         }
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class Connect(APIView):
+    """ UI page fields for ConnectManager. """
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "connect.html"
+
+    def get(self, request):
+        extra = {"console_name": "views.Connect"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.get_status()
+        logger.info('Connect response={}'.format(response))
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class ConnectGetStatus(viewsets.ViewSet):
+    """ REST API to get all connect status fields shown.
+        This class extends the ViewSet (not ModelViewSet) because it
+        dynamically gets its data and the Model gets data from the DB.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectGetStatus"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.get_status()
+        logger.info('ConnectGetStatus response={}'.format(response))
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class ConnectJoinWifi(viewsets.ViewSet):
+    """ REST API to join a wifi.
+        Request is POSTed with wifi and pass.
+        This class extends the ViewSet (not ModelViewSet) because it
+        dynamically gets its data and the Model gets data from the DB.
+    """
+    @permission_classes((IsAuthenticated, IsAdminUser))
+    def create(self, request):
+        extra = {"console_name": "views.ConnectJoinWifi"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        # Get req parameters
+        try:
+            reqd = request.data.dict()
+        except Exception as e:
+            response = {
+                "message": "Internal error: {}".format(e)
+            }
+            return Response(response, 400)
+
+        wifi = reqd["wifi"]
+        password = reqd["password"]
+
+        logger.info('ConnectJoinWifi wifi={} pass={}'.format(wifi, password))
+        success = ConnectUtils.join_wifi(wifi, password)
+        response = { "success": success, }
+        logger.info('ConnectJoinWifi response={}'.format(response))
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class ConnectDeleteWifis(viewsets.ViewSet):
+    """ REST API to disconnect any active network connections and delete all
+        wifi configurations made by the user.
+        Called with GET.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectDeleteWifis"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.delete_wifi_connections()
+        logger.info('ConnectDeleteWifis response={}'.format(response))
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class ConnectRegisterIoT(viewsets.ViewSet):
+    """ REST API to register this machine with the IoT backend.
+        Called with GET.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectRegisterIoT"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.register_iot()
+        logger.info('ConnectRegisterIoT response={}'.format(response))
+        return Response(response)
+
+
+# ----------------------------------------------------------------------------
+class ConnectDeleteIoTreg(viewsets.ViewSet):
+    """ REST API to delete the current IoT registration (directory).
+        Called with GET.
+    """
+    def list(self, request):
+        extra = {"console_name": "views.ConnectDeleteIoTreg"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtils.delete_iot_registration()
+        logger.info('ConnectDeleteIoTreg response={}'.format(response))
         return Response(response)
 
 

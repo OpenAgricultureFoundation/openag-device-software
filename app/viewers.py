@@ -1,17 +1,16 @@
 # Import standard python modules
-import threading, logging, time
 import json as json_
-
-# Import device utilities
-from device.utilities.events import EventRequests
+import logging
+import time
 
 # Import common app funcitons
 from app.common import Common
-
-# Import app models
-from app.models import EventModel
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+# Import app models
+from app.models import EventModel
+# Import device utilities
+from device.utilities.events import EventRequests
 
 
 class EventViewer:
@@ -97,7 +96,7 @@ class RecipeViewer:
         return Common.manage_event(event_request)
 
     def start(self, request_dict, pk):
-        """ Start a recipe. Sends start recipe command to event thread, waits 
+        """ Start a recipe. Sends start recipe command to event thread, waits
         for recipe to start, then returns response. """
         self.logger.info("Received stop recipe request")
 
@@ -277,8 +276,23 @@ class IoTViewer:
         self.iot_dict = Common.get_iot_dict()
 
 
+# ----------------------------------------------------------------------------
 class ResourceViewer:
     resource_dict = {}
 
     def __init__(self):
         self.resource_dict = Common.get_resource_dict()
+
+
+# ----------------------------------------------------------------------------
+class ConnectViewer:
+    connect_dict = {}
+
+    def __init__(self):
+        self.connect_dict = Common.get_connect_dict()
+
+
+
+
+
+

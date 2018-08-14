@@ -16,10 +16,11 @@ class StateModel(models.Model):
     controllers = JSONField()
     iot = JSONField()
     resource = JSONField()
+    connect = JSONField()
 
     class Meta:
         verbose_name = "State"
-        verbose_name_plural = "State"
+        verbose_name_plural = "States"
 
 
 class EventModel(models.Model):
@@ -181,3 +182,12 @@ class IoTConfigModel(models.Model):
         verbose_name = "IoTConfig"
         verbose_name_plural = "IoTConfigs"
         get_latest_by = "last_config_version"
+
+
+class ConnectModel(models.Model):
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Connect"
+        verbose_name_plural = "Connects"
+

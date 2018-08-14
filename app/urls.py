@@ -25,41 +25,58 @@ from django.conf.urls.static import static
 from app import views
 from app.router import Router
 
+from connect.connect_utils import ConnectUtils
 
-# Setup rest framework routes
+
+# Setup REST framework routes
 router = Router()
 router.register(r"state", views.StateViewSet, base_name="api-state")
 router.register(r"event", views.EventViewSet, base_name="api-event")
 router.register(r"recipe", views.RecipeViewSet, base_name="api-recipe")
-router.register(
-    r"recipe/transitions",
-    views.RecipeTransitionViewSet,
-    base_name="api-recipe-transition",
-)
-router.register(r"cultivars", views.CultivarViewSet, base_name="api-cultivars")
-router.register(
-    r"cultivation-methods",
-    views.CultivationMethodViewSet,
-    base_name="api-cultivation-methods",
-)
-router.register(
-    r"peripheral/setups",
-    views.PeripheralSetupViewSet,
-    base_name="api-peripheral-setups",
-)
-router.register(
-    r"variables/sensor", views.SensorVariableViewSet, base_name="api-sensor-variables"
-)
-router.register(
-    r"variables/actuator",
-    views.ActuatorVariableViewSet,
-    base_name="api-actuator-variables",
-)
+router.register(r"recipe/transitions",
+                views.RecipeTransitionViewSet,
+                base_name="api-recipe-transition")
+router.register(r"cultivars",
+                views.CultivarViewSet,
+                base_name="api-cultivars")
+router.register(r"cultivation-methods",
+                views.CultivationMethodViewSet,
+                base_name="api-cultivation-methods")
+router.register(r"peripheral/setups",
+                views.PeripheralSetupViewSet,
+                base_name="api-peripheral-setups")
+router.register(r"variables/sensor",
+                views.SensorVariableViewSet,
+                base_name="api-sensor-variables")
+router.register(r"variables/actuator",
+                views.ActuatorVariableViewSet,
+                base_name="api-actuator-variables")
+router.register(r"connect/status",
+                views.ConnectGetStatus,
+                base_name="api-connect-status")
+router.register(r"connect/joinwifi",
+                views.ConnectJoinWifi,
+                base_name="api-join-wifi")
+router.register(r"connect/deletewifis",
+                views.ConnectDeleteWifis,
+                base_name="api-connect-deletewifis")
+router.register(r"connect/registeriot",
+                views.ConnectRegisterIoT,
+                base_name="api-connect-registeriot")
+router.register(r"connect/deleteiotreg",
+                views.ConnectDeleteIoTreg,
+                base_name="api-connect-deleteiotreg")
 
 
 # Setup dashboard redirect
 def redirect_to_dashboard(request):
-    return HttpResponseRedirect(reverse("dashboard"))
+
+    # if we have a valid internet connection, go to the dashboard
+    if ConnectUtils.valid_internet_connection():
+        return HttpResponseRedirect(reverse("dashboard"))
+    else:
+        # otherwise, let the user set up their wifi connection
+        return HttpResponseRedirect(reverse("connect"))
 
 
 # Setup url patterns
@@ -82,6 +99,7 @@ urlpatterns = [
     url(r"^environments/$", views.Environments.as_view(), name="environments"),
     url(r"^iot/$", views.IoT.as_view(), name="iot"),
     url(r"^resource/$", views.Resource.as_view(), name="resource"),
+    url(r"^connect/$", views.Connect.as_view(), name="connect"),
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),

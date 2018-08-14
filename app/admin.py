@@ -25,6 +25,7 @@ class StateAdmin(admin.ModelAdmin):
         "controllers",
         "iot",
         "resource",
+        "connect",
     )
 
 

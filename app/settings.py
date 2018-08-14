@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "device",
     "iot",
     "resource",
+    "connect",
 ]
 
 MIDDLEWARE = [
@@ -171,6 +172,19 @@ LOGGING = {
             "maxBytes": 5 * 1024 * 1024,
             "backupCount": 1,
         },
+        "connect_console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "device_console",
+        },
+        "connect_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.dirname(BASE_DIR) + "/logs/connect.log",
+            "formatter": "device_file",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 1,
+        },
     },
     "loggers": {
         "app": {"handlers": ["app_console", "app_file"], "level": "DEBUG"},
@@ -181,6 +195,10 @@ LOGGING = {
         "iot": {"handlers": ["iot_console", "iot_file"], "level": "DEBUG"},
         "resource": {
             "handlers": ["resource_console", "resource_file"],
+            "level": "DEBUG",
+        },
+        "connect": {
+            "handlers": ["connect_console", "connect_file"],
             "level": "DEBUG",
         },
     },

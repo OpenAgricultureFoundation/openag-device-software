@@ -28,6 +28,9 @@ from device.comms.i2c2.mux_simulator import MuxSimulator
 # Import resource manager
 from resource.resource_manager import ResourceManager
 
+# Import connect manager
+from connect.connect_manager import ConnectManager
+
 # Import database models
 from app.models import StateModel
 from app.models import EventModel
@@ -72,7 +75,9 @@ class DeviceManager:
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
+        "recipe_uuid": None,
+        "start_timestamp_minutes": None,
+        "last_update_minute": None
     }
 
     # Initialize recipe object
@@ -97,8 +102,9 @@ class DeviceManager:
         self.iot = IoTManager(self.state, self)
         self.latest_publish_timestamp = 0
 
-        # Initialize the resourcd manager object.
+        # Initialize other managers.
         self.resource = ResourceManager(self.state, self, self.iot)
+        self.connect = ConnectManager(self.state, self.iot)
 
     @property
     def mode(self):
@@ -293,6 +299,7 @@ class DeviceManager:
         self.event.spawn()
         self.iot.spawn()
         self.resource.spawn()
+        self.connect.spawn()
 
         # Create peripheral managers and spawn threads
         self.create_peripheral_managers()
@@ -405,6 +412,7 @@ class DeviceManager:
                 controllers=json.dumps(self.state.controllers),
                 iot=json.dumps(self.state.iot),
                 resource=json.dumps(self.state.resource),
+                connect=json.dumps(self.state.connect),
             )
         else:
             StateModel.objects.filter(pk=1).update(
@@ -415,6 +423,7 @@ class DeviceManager:
                 controllers=json.dumps(self.state.controllers),
                 iot=json.dumps(self.state.iot),
                 resource=json.dumps(self.state.resource),
+                connect=json.dumps(self.state.connect),
             )
 
     def load_local_data_files(self):
