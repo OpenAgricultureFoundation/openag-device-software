@@ -26,7 +26,7 @@ from device.utilities.accessors import get_peripheral_config
 os.chdir("../../../../")
 
 # Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
+parser = argparse.ArgumentParser(description="Test and debug hardware")
 parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
 parser.add_argument("--info", action="store_true", help="set logger in info mode")
 parser.add_argument("--loop", action="store_true", help="loop command prompt")
