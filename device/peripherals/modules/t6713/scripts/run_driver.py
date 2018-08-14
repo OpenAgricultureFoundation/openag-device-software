@@ -1,5 +1,5 @@
 # Import standard python libraries
-import sys, os, json, argparse, logging, time, shlex
+import os, sys
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
@@ -49,34 +49,34 @@ class DriverRunner(PeripheralRunner):
         # Check if reading status
         if self.args.status:
             print("Reading status")
-            status = driver.read_status(retry=True)
+            status = self.driver.read_status(retry=True)
             print("Status: {}".format(status))
 
         # Check if setting up sensor
         if self.args.setup:
             print("Setting up sensor")
-            driver.setup(retry=True)
+            self.driver.setup(retry=True)
 
         # Check if reading carbon dioxide
         elif self.args.co2:
             print("Reading co2")
-            co2 = driver.read_co2(retry=True)
+            co2 = self.driver.read_co2(retry=True)
             print("Co2: {} ppm".format(co2))
 
         # Check if resetting sensor
         elif self.args.reset:
             print("Resetting")
-            driver.reset(retry=True)
+            self.driver.reset(retry=True)
 
         # Check if enabling abc logic
         elif self.args.enable_abc:
             print("Enabling abc logic")
-            driver.enable_abc_logic(retry=True)
+            self.driver.enable_abc_logic(retry=True)
 
         # Check if disabling abc logic
         elif self.args.disable_abc:
             print("Disabling abc logic")
-            driver.disable_abc_logic(retry=True)
+            self.driver.disable_abc_logic(retry=True)
 
 
 # Run main
