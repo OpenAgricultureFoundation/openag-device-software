@@ -102,6 +102,7 @@ class USBCameraDriver:
         with threading.Lock():
 
             # Turn on usb mux channel if enable
+
             if self.usb_mux != None:
                 error = self.usb_mux.set_high(channel=self.usb_mux_channel)
 
@@ -109,7 +110,10 @@ class USBCameraDriver:
                 if error.exists():
                     return error
 
-            # Take picutre
+                # Wait for camera to power up
+                time.sleep(1)
+
+            # Take image
             error = self.capture_image()
 
             # Check for error
@@ -117,8 +121,17 @@ class USBCameraDriver:
                 return error
 
             # Turn off usb mux channel
+            self.logger.info("Turning off camera")
             if self.usb_mux != None:
                 error = self.usb_mux.set_low(channel=self.usb_mux_channel)
+
+                # Check for error
+                if error.exists():
+                    return error
+
+            # Take dummy image to 'hide' disabled camera from os
+            if self.usb_mux != None:
+                error = self.capture_dummy_image()
 
                 # Check for error
                 if error.exists():
@@ -190,12 +203,12 @@ class USBCameraDriver:
 
         # Check for errors
         if error.exists():
-            error.report("Driver unable to take dummpy picture")
+            error.report("Driver unable to take dummy image")
             self.logger.error(error.summary())
             return error
 
         # Capture image
-        self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
+        self.logger.info("Capturing dummy image")
         try:
 
             command = "fswebcam -d {} -r {} --background --png 9".format(
@@ -210,4 +223,5 @@ class USBCameraDriver:
             )
 
         # Successfully captured dummy image
+        self.logger.debug("Successfully captured dummy image")
         return Error(None)
