@@ -160,13 +160,6 @@ class CCS811Manager(PeripheralManager, CCS811Events):
         # Clear reported values
         self.clear_reported_values()
 
-        # Reset driver if not in error mode
-        try:
-            if self.mode != Modes.ERROR:
-                self.driver.reset()
-        except DriverError:
-            self.logger.exception("Unable to reset driver")
-
         # Sucessfully reset!
         self.logger.debug("Successfully reset!")
 
