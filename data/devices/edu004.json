@@ -144,7 +144,7 @@
                     "bus": 2, 
                     "address": "0x64",
                     "mux": "0x77", 
-                    "channel": 4
+                    "channel": 6
                 }
             }
         },
@@ -169,7 +169,7 @@
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77", 
-                    "channel": 4, 
+                    "channel": 6, 
                     "address": "0x63"
                 }
             }

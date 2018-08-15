@@ -46,18 +46,20 @@ class USBCameraDriver:
             os.makedirs(directory)
 
         # Check is using usb mux
-        if usb_mux_comms != None and usb_mux_channel != None:
-            self.usb_mux = DAC5578(
-                name=name,
-                bus=usb_mux_comms.get("bus", None),
-                address=int(usb_mux_comms.get("address", None), 16),
-                mux=int(usb_mux_comms.get("mux", None), 16),
-                channel=usb_mux_comms.get("channel", None),
-                simulate=simulate,
-            )
-            self.usb_mux_channel = usb_mux_channel
-        else:
-            self.usb_mux = None
+        if usb_mux_comms == None or usb_mux_channel == None:
+            self.dac5578 = None
+            return
+
+        # Using usb mux, initialize driver
+        self.dac5578 = DAC5578(
+            name=name,
+            bus=usb_mux_comms.get("bus", None),
+            address=int(usb_mux_comms.get("address", None), 16),
+            mux=int(usb_mux_comms.get("mux", None), 16),
+            channel=usb_mux_comms.get("channel", None),
+            simulate=simulate,
+        )
+        self.usb_mux_channel = usb_mux_channel
 
     def list_cameras(self, vendor_id: int = None, product_id: int = None):
         """ Returns list of cameras that match the provided vendor id and 
@@ -79,8 +81,7 @@ class USBCameraDriver:
         return matches
 
     def get_camera(self) -> Tuple[Optional[str], Error]:
-        """Gets camera paths."""
-        self.logger.debug("Getting camera")
+        """Gets camera path."""
 
         # Get camera paths that match vendor and product ID
         cameras = self.list_cameras(self.vendor_id, self.product_id)
@@ -94,48 +95,93 @@ class USBCameraDriver:
         # Successfuly got camera!
         return cameras[0], Error(None)
 
+    def enable_camera(self) -> Error:
+        """Enables camera by setting dac output high."""
+        self.logger.debug("Enabling camera")
+
+        # Turn on usb mux channel
+        error = self.dac5578.set_high(channel=self.usb_mux_channel)
+
+        # Check for error
+        if error.exists():
+            return error
+
+        # Wait for camera to initialize
+        time.sleep(5)
+
+        # Successfully enabled camera
+        return Error(None)
+
+    def disable_camera(self) -> Error:
+        """Disables camera by setting dac output low."""
+        self.logger.debug("Disabling camera")
+
+        # Turn off usb mux channel
+        error = self.dac5578.set_low(channel=self.usb_mux_channel)
+
+        # Check for error
+        if error.exists():
+            return error
+
+        # Wait for camera to power down
+        start_time = time.time()
+        while True:  # 5 second timeout
+
+            # Look for camera
+            try:
+                camera, error = self.get_camera()
+
+                # Check if camera powered down
+                if camera == None:
+                    self.logger.debug("Camera powered down")
+                    return Error(None)
+
+            # TODO: Handle specific exceptions
+            except:
+                self.logger.debug("Camera powered down")
+                return Error(None)
+
+            # Check for timeout
+            if time.time() - start_time > 5:  # 5 second timeout
+                return Error("Unable to disable camera, timed out")
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+        # Successfully disabled camera
+        return Error(None)
+
     def capture(self) -> Error:
         """Manages usb mux and captures an image."""
 
+        # Check for usb mux
+        if self.dac5578 == None:
+            return self.capture_image()
+
+        # Using usb mux
         # Keep thread locked while capturing image / managing usb mux
         # TODO: Is there a better way to do this?
         with threading.Lock():
-
-            # Turn on usb mux channel if enable
-
-            if self.usb_mux != None:
-                error = self.usb_mux.set_high(channel=self.usb_mux_channel)
+            try:
+                # Enable camera
+                error = self.enable_camera()
 
                 # Check for error
                 if error.exists():
                     return error
 
-                # Wait for camera to power up
-                time.sleep(1)
-
-            # Take image
-            error = self.capture_image()
-
-            # Check for error
-            if error.exists():
-                return error
-
-            # Turn off usb mux channel
-            self.logger.info("Turning off camera")
-            if self.usb_mux != None:
-                error = self.usb_mux.set_low(channel=self.usb_mux_channel)
+                # Take image
+                error = self.capture_image()
 
                 # Check for error
                 if error.exists():
                     return error
+            except:
+                ...
+            finally:
 
-            # Take dummy image to 'hide' disabled camera from os
-            if self.usb_mux != None:
-                error = self.capture_dummy_image()
-
-                # Check for error
-                if error.exists():
-                    return error
+                # Disable camera
+                return self.disable_camera()
 
         # Successfully captured image
         return Error(None)
@@ -160,7 +206,6 @@ class USBCameraDriver:
             return Error(None)
 
         # Camera not simulated!
-
         camera, error = self.get_camera()
 
         # Check for errors
@@ -189,39 +234,4 @@ class USBCameraDriver:
         #  - all black? all white?
 
         # Successfully captured image
-        return Error(None)
-
-    def capture_dummy_image(self) -> Error:
-        """Captures a dummy image."""
-
-        # Check if simulated
-        if self.simulate:
-            return Error(None)
-
-        # Camera not simulated!
-        camera, error = self.get_camera()
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take dummy image")
-            self.logger.error(error.summary())
-            return error
-
-        # Capture image
-        self.logger.info("Capturing dummy image")
-        try:
-
-            command = "fswebcam -d {} -r {} --background --png 9".format(
-                camera, self.resolution
-            )
-            self.logger.debug("command = {}".format(command))
-            os.system(command)
-
-        except Exception as e:
-            return Error(
-                "Driver unable to capture image, unexpected exception: {}".format(e)
-            )
-
-        # Successfully captured dummy image
-        self.logger.debug("Successfully captured dummy image")
         return Error(None)

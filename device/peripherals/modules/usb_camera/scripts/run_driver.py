@@ -37,7 +37,8 @@ class DriverRunner(PeripheralRunner):
         super().run(*args, **kwargs)
 
         # Initialize directory
-        directory = "device/peripherals/modules/usb_camera/scripts/images/"
+        root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+        directory = root_dir + "/device/peripherals/modules/usb_camera/scripts/images/"
 
         # Initialize driver
         self.driver = USBCameraDriver(
