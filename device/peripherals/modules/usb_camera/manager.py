@@ -49,9 +49,8 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         )
 
         # Initialize sampling parameters
-        self._min_sampling_interval_seconds = (
-            120
-        )  # should never take more than 2 minutes to capture an image
+        # Should never take more than 2 minutes to capture an image
+        self._min_sampling_interval_seconds = (120)
         self._default_sampling_interval_seconds = 3600  # every hour
 
     def initialize(self) -> None:
@@ -61,15 +60,17 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):
         # Initialize health
         self.health = 100
 
-        # Initialize camera
-        error = self.sensor.probe()
+        # TODO: Uncomment this or make equivalent
 
-        # Check for errors
-        if error.exists():
-            error.report("Manager unable to initialize")
-            self.logger.error(error.summary())
-            self.mode = Modes.ERROR
-            return
+        # # Initialize camera
+        # error = self.sensor.probe()
+
+        # # Check for errors
+        # if error.exists():
+        #     error.report("Manager unable to initialize")
+        #     self.logger.error(error.summary())
+        #     self.mode = Modes.ERROR
+        #     return
 
         # Successful initialization!
         self.logger.info("Initialized successfully")

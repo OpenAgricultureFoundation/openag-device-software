@@ -61,6 +61,12 @@ class USBCameraDriver:
         )
         self.usb_mux_channel = usb_mux_channel
 
+    def probe(self):
+        """Probe camera."""
+
+        # Do we want this?
+        ...
+
     def list_cameras(self, vendor_id: int = None, product_id: int = None):
         """ Returns list of cameras that match the provided vendor id and 
             product id. """
