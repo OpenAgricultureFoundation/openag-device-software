@@ -181,7 +181,7 @@ class USBCameraDriver:
             finally:
 
                 # Disable camera
-                return self.disable_camera()
+                self.disable_camera()
 
         # Successfully captured image
         return Error(None)
@@ -218,7 +218,7 @@ class USBCameraDriver:
         self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
 
-            command = "fswebcam -d {} -r {} --background --png 9 --no-banner --save {}".format(
+            command = "fswebcam -d {} -r {} --png 9 --no-banner --save {}".format(
                 camera, self.resolution, filepath
             )
             self.logger.debug("command = {}".format(command))
