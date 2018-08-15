@@ -50,8 +50,8 @@ class USBCameraDriver:
             self.usb_mux = DAC5578(
                 name=name,
                 bus=usb_mux_comms.get("bus", None),
-                address=usb_mux_comms.get("address", None),
-                mux=usb_mux_comms.get("mux", None),
+                address=int(usb_mux_comms.get("address", None), 16),
+                mux=int(usb_mux_comms.get("mux", None), 16),
                 channel=usb_mux_comms.get("channel", None),
                 simulate=simulate,
             )
@@ -103,13 +103,13 @@ class USBCameraDriver:
 
             # Turn on usb mux channel if enable
             if self.usb_mux != None:
-                error = self.usb_mux.write_output(self.usb_mux_channel, 100)
+                error = self.usb_mux.set_high(channel=self.usb_mux_channel)
 
                 # Check for error
                 if error.exists():
                     return error
 
-            # Capture image
+            # Take picutre
             error = self.capture_image()
 
             # Check for error
@@ -118,7 +118,7 @@ class USBCameraDriver:
 
             # Turn off usb mux channel
             if self.usb_mux != None:
-                error = self.usb_mux.write_output(self.usb_mux_channel, 0)
+                error = self.usb_mux.set_low(channel=self.usb_mux_channel)
 
                 # Check for error
                 if error.exists():
@@ -147,6 +147,7 @@ class USBCameraDriver:
             return Error(None)
 
         # Camera not simulated!
+
         camera, error = self.get_camera()
 
         # Check for errors
@@ -158,8 +159,6 @@ class USBCameraDriver:
         # Capture image
         self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
-
-            # TODO: Can we increase resolution? Spec says 2592x1944 but fswebcam returns garbled image...
 
             command = "fswebcam -d {} -r {} --background --png 9 --no-banner --save {}".format(
                 camera, self.resolution, filepath
@@ -177,4 +176,38 @@ class USBCameraDriver:
         #  - all black? all white?
 
         # Successfully captured image
+        return Error(None)
+
+    def capture_dummy_image(self) -> Error:
+        """Captures a dummy image."""
+
+        # Check if simulated
+        if self.simulate:
+            return Error(None)
+
+        # Camera not simulated!
+        camera, error = self.get_camera()
+
+        # Check for errors
+        if error.exists():
+            error.report("Driver unable to take dummpy picture")
+            self.logger.error(error.summary())
+            return error
+
+        # Capture image
+        self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
+        try:
+
+            command = "fswebcam -d {} -r {} --background --png 9".format(
+                camera, self.resolution
+            )
+            self.logger.debug("command = {}".format(command))
+            os.system(command)
+
+        except Exception as e:
+            return Error(
+                "Driver unable to capture image, unexpected exception: {}".format(e)
+            )
+
+        # Successfully captured dummy image
         return Error(None)

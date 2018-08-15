@@ -108,7 +108,15 @@ class PeripheralRunner:
         self.peripheral_config = get_peripheral_config(
             self.device_config["peripherals"], self.args.name
         )
+
+        # Initialize peripheral communication
         self.communication = self.peripheral_config["parameters"]["communication"]
+
+        # Initialize peripheral setup
+        setup_name = self.peripheral_config["parameters"]["setup"]["file_name"]
+        self.peripheral_setup = json.load(
+            open("device/peripherals/modules/" + setup_name + ".json")
+        )
 
 
 if __name__ == "__main__":
