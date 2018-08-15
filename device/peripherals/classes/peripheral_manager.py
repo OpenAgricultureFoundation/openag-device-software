@@ -116,8 +116,9 @@ class PeripheralManager:
         if (
             self.name in self.state.peripherals
             and "stored" in self.state.peripherals[self.name]
-            and "sampling_interval_seconds"
-            in self.state.peripherals[self.name]["stored"]
+            and "sampling_interval_seconds" in self.state.peripherals[self.name][
+                "stored"
+            ]
         ):
             return self.state.peripherals[self.name]["stored"][
                 "sampling_interval_seconds"
@@ -256,11 +257,7 @@ class PeripheralManager:
 
             # Check for state transition
             transition_modes = [
-                Modes.CALIBRATE,
-                Modes.MANUAL,
-                Modes.RESET,
-                Modes.SHUTDOWN,
-                Modes.ERROR,
+                Modes.CALIBRATE, Modes.MANUAL, Modes.RESET, Modes.SHUTDOWN, Modes.ERROR
             ]
             if self.mode in transition_modes:
                 break
@@ -333,10 +330,12 @@ class PeripheralManager:
         self.clear_reported_values()
 
         # Wait for command from device manager or user
+        # Reset device every hour incase error was anomalous
+        start_time = time.time()
         while self.thread_is_active:
 
-            # Check for reset mode command from device manager
-            if self.commanded_mode == Modes.RESET:
+            # Check for reset mode command from device manager and for hourly reset event
+            if self.commanded_mode == Modes.RESET or time.time() - start_time > 3600:
                 self.mode == self.commanded_mode
                 self.commanded_mode = None
                 break
