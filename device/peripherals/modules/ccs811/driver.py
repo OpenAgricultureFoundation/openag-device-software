@@ -231,7 +231,7 @@ class CCS811Driver:
             self.i2c.write(bytes([0x01, write_byte]), retry=retry)
         except I2CError as e:
             message = "Unable to write measurement mode"
-            raise WriteMeasurementModeError(messsage, logger=self.logger) from e
+            raise WriteMeasurementModeError(message, logger=self.logger) from e
 
     def write_environment_data(
         self, temperature=None, humidity=None, retry: bool = False
@@ -329,4 +329,4 @@ class CCS811Driver:
             self.i2c.write(bytes(bytes_), retry=retry)
         except I2CError as e:
             message = "Unable to reset sensor"
-            raise ResetError(messsage, logger=self.logger) from e
+            raise ResetError(message, logger=self.logger) from e

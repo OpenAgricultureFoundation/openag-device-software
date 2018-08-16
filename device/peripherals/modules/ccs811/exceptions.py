@@ -49,3 +49,8 @@ class WriteRegisterError(DriverError):
 class WriteMeasurementModeError(DriverError):
     """Exception raised for write measurement mode errors."""
     ...
+
+
+class ResetError(DriverError):
+    """Exception raised for reset errors."""
+    ...
