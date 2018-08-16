@@ -1,8 +1,0 @@
-This is version v0.1.2 of the OpenAg Food Computer device control application.
-
-The source code is available here:
-https://github.com/OpenAgInitiative/openag-device-software
-
-The Debian 9.3 operating system image and configuration in the .iso file
-we provide were built using these steps:
-/openag-device-software/docs/prepare_sd
