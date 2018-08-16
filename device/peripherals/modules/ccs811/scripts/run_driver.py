@@ -42,13 +42,18 @@ class DriverRunner(PeripheralRunner):
         """Runs driver."""
         super().run(*args, **kwargs)
 
+        # Initialize driver optional parameters
+        mux = self.communication.get("mux", None)
+        if mux != None:
+            mux = int(mux, 16)
+
         # Initialize driver
         self.driver = CCS811Driver(
             name=self.args.name,
             bus=self.communication["bus"],
             address=int(self.communication["address"], 16),
-            mux=int(self.communication["mux"], 16),
-            channel=self.communication["channel"],
+            mux=mux,
+            channel=self.communication.get("channel", None),
         )
 
         # Check if setting up sensor
