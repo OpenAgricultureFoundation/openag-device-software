@@ -1,8 +1,8 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC EDU 004",
-    "description": "For EDU hardware v0.3.0",
-    "uuid": "846ab69e-56f8-4283-80a5-52f47e37e7d9",
+    "name": "PFC EDU 003A",
+    "description": "For EDU hardware v0.2.0 using CCS811 for CO2 sensing, A variant uses CCS811 comm at addr 0x5b instead of standard 0x5a.",
+    "uuid": "1a059cc8-50bb-44bc-9b2b-991cee6b25cf",
     "peripherals": [
         {
             "name": "LEDPanel-Top",
@@ -25,7 +25,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": false}
+                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
                     ]
                 }
             }
@@ -43,30 +43,7 @@
                     "sensor": null,
                     "actuator": null
                 },
-                "communication": {
-                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
-                    "usb_mux_channel": 1
-                },
-                "directory": "images/"
-            }
-        },
-        {
-            "name": "Camera-Side",
-            "type": "USBCamera",
-            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
-            "parameters": {
-                "setup": {
-                    "name": "ELP USB500W02M-L21 Camera ",
-                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
-                },
-                "variables": {
-                    "sensor": null,
-                    "actuator": null
-                },
-                "communication": {
-                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
-                    "usb_mux_channel": 3
-                },
+                "communication": null,
                 "directory": "images/"
             }
         },
@@ -118,59 +95,7 @@
                     "bus": 2, 
                     "mux": "0x77", 
                     "channel": 2, 
-                    "address": "0x5a"
-                }
-            }
-        },
-        {
-            "name": "AtlasEC-Reservoir",
-            "type": "AtlasEC",
-            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
-            "parameters": {
-                "setup": {
-                    "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
-                    "file_name": "atlas_ec/setups/default_k1_0"
-                },
-                "variables": {
-                    "sensor": {
-                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm"
-                    },
-                    "actuator": null,
-                    "compensation": {
-                        "temperature_celcius": null
-                    }
-                },
-                "communication": {
-                    "bus": 2, 
-                    "address": "0x64",
-                    "mux": "0x77", 
-                    "channel": 6
-                }
-            }
-        },
-        {
-            "name": "AtlasPH-Reservoir",
-            "type": "AtlasPH",
-            "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
-            "parameters": {
-                "setup": {
-                    "name": "Atlas Potential Hydrogen Sensor Default",
-                    "file_name": "atlas_ph/setups/default"
-                },
-                "variables": {
-                    "sensor": {
-                        "potential_hydrogen": "water_potential_hydrogen"
-                    },
-                    "actuator": null,
-                    "compensation": {
-                        "temperature_celcius": "water_temperature_celcius"
-                    }
-                },
-                "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
-                    "channel": 6, 
-                    "address": "0x63"
+                    "address": "0x5b"
                 }
             }
         }

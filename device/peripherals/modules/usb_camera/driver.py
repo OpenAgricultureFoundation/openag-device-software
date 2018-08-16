@@ -46,18 +46,26 @@ class USBCameraDriver:
             os.makedirs(directory)
 
         # Check is using usb mux
-        if usb_mux_comms != None and usb_mux_channel != None:
-            self.usb_mux = DAC5578(
-                name=name,
-                bus=usb_mux_comms.get("bus", None),
-                address=usb_mux_comms.get("address", None),
-                mux=usb_mux_comms.get("mux", None),
-                channel=usb_mux_comms.get("channel", None),
-                simulate=simulate,
-            )
-            self.usb_mux_channel = usb_mux_channel
-        else:
-            self.usb_mux = None
+        if usb_mux_comms == None or usb_mux_channel == None:
+            self.dac5578 = None
+            return
+
+        # Using usb mux, initialize driver
+        self.dac5578 = DAC5578(
+            name=name,
+            bus=usb_mux_comms.get("bus", None),
+            address=int(usb_mux_comms.get("address", None), 16),
+            mux=int(usb_mux_comms.get("mux", None), 16),
+            channel=usb_mux_comms.get("channel", None),
+            simulate=simulate,
+        )
+        self.usb_mux_channel = usb_mux_channel
+
+    def probe(self):
+        """Probe camera."""
+
+        # Do we want this?
+        ...
 
     def list_cameras(self, vendor_id: int = None, product_id: int = None):
         """ Returns list of cameras that match the provided vendor id and 
@@ -79,8 +87,7 @@ class USBCameraDriver:
         return matches
 
     def get_camera(self) -> Tuple[Optional[str], Error]:
-        """Gets camera paths."""
-        self.logger.debug("Getting camera")
+        """Gets camera path."""
 
         # Get camera paths that match vendor and product ID
         cameras = self.list_cameras(self.vendor_id, self.product_id)
@@ -94,35 +101,93 @@ class USBCameraDriver:
         # Successfuly got camera!
         return cameras[0], Error(None)
 
+    def enable_camera(self) -> Error:
+        """Enables camera by setting dac output high."""
+        self.logger.debug("Enabling camera")
+
+        # Turn on usb mux channel
+        error = self.dac5578.set_high(channel=self.usb_mux_channel)
+
+        # Check for error
+        if error.exists():
+            return error
+
+        # Wait for camera to initialize
+        time.sleep(5)
+
+        # Successfully enabled camera
+        return Error(None)
+
+    def disable_camera(self) -> Error:
+        """Disables camera by setting dac output low."""
+        self.logger.debug("Disabling camera")
+
+        # Turn off usb mux channel
+        error = self.dac5578.set_low(channel=self.usb_mux_channel)
+
+        # Check for error
+        if error.exists():
+            return error
+
+        # Wait for camera to power down
+        start_time = time.time()
+        while True:  # 5 second timeout
+
+            # Look for camera
+            try:
+                camera, error = self.get_camera()
+
+                # Check if camera powered down
+                if camera == None:
+                    self.logger.debug("Camera powered down")
+                    return Error(None)
+
+            # TODO: Handle specific exceptions
+            except:
+                self.logger.debug("Camera powered down")
+                return Error(None)
+
+            # Check for timeout
+            if time.time() - start_time > 5:  # 5 second timeout
+                return Error("Unable to disable camera, timed out")
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+        # Successfully disabled camera
+        return Error(None)
+
     def capture(self) -> Error:
         """Manages usb mux and captures an image."""
 
+        # Check for usb mux
+        if self.dac5578 == None:
+            return self.capture_image()
+
+        # Using usb mux
         # Keep thread locked while capturing image / managing usb mux
         # TODO: Is there a better way to do this?
         with threading.Lock():
-
-            # Turn on usb mux channel if enable
-            if self.usb_mux != None:
-                error = self.usb_mux.write_output(self.usb_mux_channel, 100)
-
-                # Check for error
-                if error.exists():
-                    return error
-
-            # Capture image
-            error = self.capture_image()
-
-            # Check for error
-            if error.exists():
-                return error
-
-            # Turn off usb mux channel
-            if self.usb_mux != None:
-                error = self.usb_mux.write_output(self.usb_mux_channel, 0)
+            try:
+                # Enable camera
+                error = self.enable_camera()
 
                 # Check for error
                 if error.exists():
                     return error
+
+                # Take image
+                error = self.capture_image()
+
+                # Check for error
+                if error.exists():
+                    return error
+            except:
+                ...
+            finally:
+
+                # Disable camera
+                self.disable_camera()
 
         # Successfully captured image
         return Error(None)
@@ -159,9 +224,7 @@ class USBCameraDriver:
         self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
 
-            # TODO: Can we increase resolution? Spec says 2592x1944 but fswebcam returns garbled image...
-
-            command = "fswebcam -d {} -r {} --background --png 9 --no-banner --save {}".format(
+            command = "fswebcam -d {} -r {} --png 9 --no-banner --save {}".format(
                 camera, self.resolution, filepath
             )
             self.logger.debug("command = {}".format(command))

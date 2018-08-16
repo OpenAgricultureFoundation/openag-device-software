@@ -48,7 +48,6 @@ fi
 # Save this devices ID to a file that the brain startup script will read.
 echo "export DEVICE_ID=EDU-$CKSUM-$MAC" >> device_id.bash
 
-echo "Please enter this verification code into the UI:
-$CKSUM" >> verification_code.txt
+echo "$CKSUM" >> verification_code.txt
 
 

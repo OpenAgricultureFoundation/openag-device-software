@@ -25,6 +25,7 @@
 
     {% if is_registered_with_IoT %}
       $('#register_iot_but').collapse('hide');
+      $('#verification_code').collapse('show');
     {% elif valid_internet_connection %}
       $('#register_iot_but').collapse('show');
     {% endif %}
@@ -136,6 +137,7 @@
 
           if(data['is_registered_with_IoT']) {
             $('#register_iot_but').collapse('hide');
+            $('#verification_code').collapse('show');
           } else if( data['valid_internet_connection']) {
             $('#register_iot_but').collapse('show');
           }
@@ -159,7 +161,10 @@
     registerIoTPromise()
       .then(function(registerIoTSuccess) {
         document.getElementById("reg_iot_status").innerHTML = 'Verifying...';
-        document.getElementById("verification_code").innerHTML = registerIoTSuccess
+
+        document.getElementById("verification_code").innerHTML = 'Please click here to add this device to your OpenAg cloud user account';
+        document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + registerIoTSuccess;
+      
         return getStatusPromise();
       })
       .then(function(statusDict) {
@@ -314,8 +319,7 @@
     <div class="collapse" id="show_dev_UI">
       <ul>
         <li><b>Device IP:</b> <span id="device_IP"></span>
-        <li><b>Device UI:</b> <a id="device_UI" href="" target="_blank"></a>
-        <li><a id="openag_UI" href="https://openag-v1.appspot.com" target="_blank">OpenAg User UI</a> <span id="verification_code"></span>
+        <li><b>Remotely accessible Device UI:</b> <a id="device_UI" href="" target="_blank"></a>
         {% if error != None %}
         <li><b>Error:</b> {{ error }}
         {% endif %}
@@ -324,10 +328,11 @@
   </div>
 
   <div class="card" id="iot-card">
-    <b>IoT Registration</b><br/>
+    <b>Cloud Registration</b><br/>
     <ul>
       <li><b>Device ID:</b> <span id="device_id"></span>
-      <li><b>IoT Connection:</b> <span id="iot_connection"></span>
+      <li><b>Cloud Connection:</b> <span id="iot_connection"></span>
+      <li> <a id="verification_code" class="collapse" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg cloud UI</a> 
     </ul>
     <div class="collapse" id="register_iot_but">
       <a class="badge badge-secondary" data-toggle="collapse"
