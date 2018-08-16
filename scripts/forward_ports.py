@@ -12,5 +12,5 @@ command = "autossh -M 0 -R {subdomain}.serveo.net:80:localhost:80 serveo.net -R 
 )
 
 # Run bash command
-print("Forwarding ports to {}".format(subdomain))
+print("Forwarding ports to {}.serveo.net".format(subdomain))
 os.system(command)

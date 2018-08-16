@@ -46,3 +46,7 @@ cwd=`pwd`
 if ! grep "OPENAG_BRAIN_ROOT" $cwd/venv/bin/activate > /dev/null; then
    echo "export OPENAG_BRAIN_ROOT=$cwd" >> $cwd/venv/bin/activate
 fi
+
+# Remove rc.local and sym link to openag-device-software/config/rc.local
+sudo rm -f /etc/rc.local
+sudo ln -s $cwd/config/rc.local /etc/rc.local

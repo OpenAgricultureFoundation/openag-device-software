@@ -42,7 +42,7 @@
                 },
                 "directory": "images/"
             }
-        },
+        }
     ],
     "controllers": null
 }
