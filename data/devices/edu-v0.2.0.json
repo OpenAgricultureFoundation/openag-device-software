@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "EDU v0.2.0 Standard",
+    "name": "Education v0.2.0",
     "uuid": "9a72d7d3-5f85-4276-9f49-e3319d187c9f",
     "peripherals": [
         {

@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 
-
 {% block javascript %}
 <script>
 
@@ -55,20 +54,27 @@
 
 {% block content %}
 <html>
-
   <body>
-    <select id="config_uuid">
-      {% for config in configs %}
-        {% if config.uuid == selected_config.uuid %}
-          <option value="{{config.uuid}}" selected="selected"> Recipe: {{config.name}} </option>
-        {% else %}
-          <option value="{{config.uuid}}"> Config: {{config.name}} </option>
-        {% endif %}
-      {% endfor %}
-    </select>
+    <div class="config">
+      <h2>Device Configuration</h2>
+      <div class="card" style="width: 33%;">
+        <p>
+        <b>Current Config:</b> {{current_config}}
+        </p>
+        <b> Set New: </b>
+        <select id="config_uuid">
+          {% for config in configs %}
+            {% if config.uuid == selected_config.uuid %}
+              <option value="{{config.uuid}}" selected="selected"> Recipe: {{config.name}} </option>
+            {% else %}
+              <option value="{{config.uuid}}"> Config: {{config.name}} </option>
+            {% endif %}
+          {% endfor %}
+        </select>
 
-    <button class="btn" type="button" onClick="loadConfig()"><i class="icon-share"></i> Load Config </button>
-
+        <button class="btn" type="button" onClick="loadConfig()"><i class="icon-share"></i> Load Config </button>
+      </div>
+    </div>
   </body>
 </html>
   

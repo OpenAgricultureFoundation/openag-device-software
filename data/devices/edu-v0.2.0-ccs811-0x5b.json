@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "EDU v0.2.0 w/CCS811 at 0x5b, not 0x5a",
+    "name": "Education v0.2.0 - CCS811 0x5b",
     "uuid": "1a059cc8-50bb-44bc-9b2b-991cee6b25cf",
     "peripherals": [
         {

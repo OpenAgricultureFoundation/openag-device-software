@@ -1,7 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC EDU 001",
-    "description": "For EDU hardware v0.1.0",
+    "name": "Education v0.1.0",
     "uuid": "4cffeb04-22db-44f6-9cf4-07b595b420f0",
     "peripherals": [
         {

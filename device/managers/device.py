@@ -182,6 +182,7 @@ class DeviceManager:
     def config_uuid(self, value):
         """ Safely updates config uuid in state. """
         with threading.Lock():
+            self.logger.info("Setting config uuid in state...")
             self.state.device["config_uuid"] = value
 
     @property
@@ -274,15 +275,19 @@ class DeviceManager:
                 self.logger.info("config_name = {}".format(config_name))
         except:
             self.error = "Unable to load device config specifier file, device unable to be configured"
-            self.logger.critical(self.error)
+            self.logger.exception(self.error)
             self.mode = Modes.ERROR
             return
 
         # Load device config
+        self.logger.debug("Loading device config file: {}".format(config_name))
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
-        # Load config uuid
-        self.config_uuid = device_config["uuid"]
+        # Check if config uuid changed, if so clear peripheral state and update
+        # config uuid device state
+        if self.config_uuid != device_config["uuid"]:
+            self.state.peripherals = {}
+            self.config_uuid = device_config["uuid"]
 
         # Transition to SETUP
         self.mode = Modes.SETUP
@@ -292,6 +297,9 @@ class DeviceManager:
             controller threads, waits for all threads to initialize then 
             transitions to NORMAL. """
         self.logger.info("Entered SETUP")
+        self.logger.debug(
+            "state.device.config_uuid = {}".format(self.state.device["config_uuid"])
+        )
 
         # Spawn the threads this object controls
         self.recipe.spawn()
@@ -343,6 +351,11 @@ class DeviceManager:
             # Check for system error
             if self.mode == Modes.ERROR:
                 self.logger.error("System received ERROR")
+                break
+
+            # Check for new configuration
+            if self.mode == Modes.CONFIG:
+                self.logger.info("Transitioning to CONFIG")
                 break
 
             # Update every 100ms
@@ -1020,5 +1033,28 @@ class DeviceManager:
         config_uuid = request.get("uuid", None)
         self.logger.debug("Received config_uuid: {}".format(config_uuid))
 
-        # Verify
-        self.response = {"status": 200, "message": "Pretended to load config"}
+        # TODO: This flow is a bit wonky...clean up idea on uuid vs. filename
+
+        # Get filename of corresponding uuid
+        config_filename = None
+        for filepath in glob.glob("data/devices/*.json"):
+            device_config = json.load(open(filepath))
+            if device_config["uuid"] == config_uuid:
+                config_filename = filepath.split("/")[-1].replace(".json", "")
+
+        # Verify valid config uuid
+        if config_filename == None:
+            message = "Invalid config uuid, corresponding filepath not found"
+            self.response = {"status": 400, "message": message}
+            return
+
+        # Write config filename to to config/device
+        with open("config/device.txt", "w") as f:
+            f.write(config_filename + "\n")
+
+        # Transition to config mode
+        self.mode = Modes.CONFIG
+
+        # Return success response
+        message = "Loading config: {}".format(config_filename)
+        self.response = {"status": 200, "message": message}

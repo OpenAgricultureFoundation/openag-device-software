@@ -1,7 +1,6 @@
 # Import standard python modules
 import json as json_
-import logging
-import time
+import time, logging
 
 # Import common app funcitons
 from app.common import Common
@@ -267,10 +266,12 @@ class DeviceViewer:
         if peripheral_dict != None:
             for peripheral_name in peripheral_dict:
                 individual_peripheral_dict = peripheral_dict[peripheral_name]
-                modes[peripheral_name] = individual_peripheral_dict["mode"]
+                modes[peripheral_name] = individual_peripheral_dict.get("mode", None)
 
                 # TODO: re-instate this
-                healths[peripheral_name] = individual_peripheral_dict["health"]
+                healths[peripheral_name] = individual_peripheral_dict.get(
+                    "health", None
+                )
 
         # Return thread modes
         return modes, healths
@@ -283,7 +284,6 @@ class IoTViewer:
         self.iot_dict = Common.get_iot_dict()
 
 
-# ----------------------------------------------------------------------------
 class ResourceViewer:
     resource_dict = {}
 
@@ -291,7 +291,6 @@ class ResourceViewer:
         self.resource_dict = Common.get_resource_dict()
 
 
-# ----------------------------------------------------------------------------
 class ConnectViewer:
     connect_dict = {}
 

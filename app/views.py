@@ -1,6 +1,6 @@
 # Import standard python modules
-import json
-import logging
+import json, logging
+from operator import itemgetter
 
 # Import django modules
 from django.shortcuts import render
@@ -22,6 +22,9 @@ from rest_framework.views import APIView
 from rest_framework.decorators import list_route
 from rest_framework.decorators import detail_route
 from rest_framework.renderers import JSONRenderer
+
+# Import app common
+from app.common import Common
 
 # Import app models
 from app.models import StateModel
@@ -251,10 +254,21 @@ class DeviceConfig(APIView):
         for config_object in config_objects:
             configs.append(DeviceConfigViewer(config_object))
 
-        # configs.sort()
+        # Sort configs by name
+        configs.sort(key=lambda x: x.name)
+
+        # Get current config
+        current_config = Common.get_device_state_value("config_uuid")
+
+        # Convert current config uuid to name
+        if current_config != None:
+            for config in configs:
+                if config.uuid == current_config:
+                    current_config = config.name
+                    break
 
         # Build and return response
-        response = {"configs": configs}
+        response = {"configs": configs, "current_config": current_config}
         return Response(response)
 
 

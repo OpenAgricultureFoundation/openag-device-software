@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "BBB with x2 cameras with usb mux",
+    "name": "BBB - x2 Cameras via Mux",
     "uuid": "1d19734d-730f-40aa-9d4f-47175168e1f5",
     "peripherals": [
         {
