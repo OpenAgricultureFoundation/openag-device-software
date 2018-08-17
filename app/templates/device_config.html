@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+
+{% block javascript %}
+<script>
+
+  function loadConfig() {
+     /* Loads a device config. */
+     console.log("Loading config")
+     var uuid = $("#config_uuid").val()
+     console.log(uuid)
+     
+     // Create recipient and request dicts
+     recipient =  {
+         "type": "Device",
+         "name": null};
+     request = {
+         "type": "Load Config",
+         "uuid": uuid,
+       };
+
+      console.log(request)
+
+     // Send create event request to endpoint
+     $.ajax({
+         url: "/api/event/",
+         type: "POST",
+         data: {
+           "csrfmiddlewaretoken": "{{ csrf_token }}",
+           "recipient": JSON.stringify(recipient),
+           "request": JSON.stringify(request)
+         },
+         dataType: 'json',
+         success: function(data) {
+           console.log("Event request succeeded")
+
+           // Get response message
+           message = data.message
+           alert(message);
+           location.reload();
+         },
+         error: function(data) {
+           console.log("Event request failed")
+
+           // Get response message
+           response_dict = JSON.parse(data.responseText)
+           message = response_dict["message"]
+           alert(message);
+         }
+     }); 
+  }
+
+</script>
+{% endblock %}
+
+{% block content %}
+<html>
+
+  <body>
+    <select id="config_uuid">
+      {% for config in configs %}
+        {% if config.uuid == selected_config.uuid %}
+          <option value="{{config.uuid}}" selected="selected"> Recipe: {{config.name}} </option>
+        {% else %}
+          <option value="{{config.uuid}}"> Config: {{config.name}} </option>
+        {% endif %}
+      {% endfor %}
+    </select>
+
+    <button class="btn" type="button" onClick="loadConfig()"><i class="icon-share"></i> Load Config </button>
+
+  </body>
+</html>
+  
+{% endblock %}

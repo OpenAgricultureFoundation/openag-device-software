@@ -669,9 +669,6 @@ class DeviceManager:
         # Load device state
         stored_device_state = json.loads(stored_state.device)
 
-        # Commented this out b/c config uuid loaded from about.json now
-        # self.config_uuid = stored_device_state["config_uuid"]
-
         # Load recipe state
         stored_recipe_state = json.loads(stored_state.recipe)
         self.recipe.recipe_uuid = stored_recipe_state["recipe_uuid"]
@@ -688,26 +685,16 @@ class DeviceManager:
         for peripheral_name in stored_peripherals_state:
             self.state.peripherals[peripheral_name] = {}
             if "stored" in stored_peripherals_state[peripheral_name]:
-                self.state.peripherals[peripheral_name][
-                    "stored"
-                ] = stored_peripherals_state[
-                    peripheral_name
-                ][
-                    "stored"
-                ]
+                stored = stored_peripherals_state[peripheral_name]["stored"]
+                self.state.peripherals[peripheral_name]["stored"] = stored
 
         # Load controllers state
         stored_controllers_state = json.loads(stored_state.controllers)
         for controller_name in stored_controllers_state:
             self.state.controllers[controller_name] = {}
             if "stored" in stored_controllers_state[controller_name]:
-                self.state.controllers[controller_name][
-                    "stored"
-                ] = stored_controllers_state[
-                    controller_name
-                ][
-                    "stored"
-                ]
+                stored = stored_controllers_state[controller_name]["stored"]
+                self.state.controllers[controller_name]["stored"] = stored
 
     def store_environment(self):
         """ Stores current environment state in environment table. """
@@ -926,8 +913,8 @@ class DeviceManager:
             self.process_stop_recipe_event()
         elif request_type == "Reset":
             self.process_reset_event()
-        elif request_type == "Configure":
-            self.process_configure_event()
+        elif request_type == "Load Config":
+            self.process_load_config_event(request)
         else:
             self.logger.info(
                 "Received invalid event request type: {}".format(request_type)
@@ -947,7 +934,7 @@ class DeviceManager:
 
         # TODO: Check for valid mode transition
 
-        # For backwards compatibility with v0.1.0
+        # For backwards compatibility with SW v0.1.0
         if type(request) == str:
             request_uuid = request
             request_timestamp = None
@@ -1025,7 +1012,13 @@ class DeviceManager:
         self.logger.debug("Processing reset event")
         self.response = {"status": 200, "message": "Pretended to reset device"}
 
-    def process_configure_event(self):
-        """ Processes configure event. """
-        self.logger.debug("Processing configure event")
-        self.response = {"status": 200, "message": "Pretended to configure device"}
+    def process_load_config_event(self, request):
+        """ Processes load config event. """
+        self.logger.debug("Processing load config event")
+
+        # Get request parameters
+        config_uuid = request.get("uuid", None)
+        self.logger.debug("Received config_uuid: {}".format(config_uuid))
+
+        # Verify
+        self.response = {"status": 200, "message": "Pretended to load config"}

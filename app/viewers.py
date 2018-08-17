@@ -7,13 +7,16 @@ import time
 from app.common import Common
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+
 # Import app models
 from app.models import EventModel
+
 # Import device utilities
 from device.utilities.events import EventRequests
 
 
 class EventViewer:
+
     def create(self, request):
 
         # Get request parameters
@@ -123,20 +126,23 @@ class RecipeViewer:
 
 
 class SimpleRecipeViewer:
+
     def __init__(self, recipe_object):
         self.recipe_dict = json_.loads(recipe_object.json)
         self.uuid = self.recipe_dict["uuid"]
         self.name = self.recipe_dict["name"]
 
 
-class DeviceConfigurationViewer:
-    def __init__(self, device_configuration_object):
-        self.dict = json_.loads(device_configuration_object.json)
+class DeviceConfigViewer:
+
+    def __init__(self, device_config_object):
+        self.dict = json_.loads(device_config_object.json)
         self.uuid = self.dict["uuid"]
         self.name = self.dict["name"]
 
 
 class CultivarsViewer:
+
     def __init__(self):
         cultivars = CultivarModel.objects.all()
         cultivar_dict = []
@@ -146,6 +152,7 @@ class CultivarsViewer:
 
 
 class CultivationMethodsViewer:
+
     def __init__(self):
         cultivation_methods = CultivationMethodModel.objects.all()
         cultivation_methods_dict = []
@@ -290,9 +297,3 @@ class ConnectViewer:
 
     def __init__(self):
         self.connect_dict = Common.get_connect_dict()
-
-
-
-
-
-

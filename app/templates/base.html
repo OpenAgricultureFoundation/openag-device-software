@@ -61,6 +61,12 @@
             <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="/api">API</a>
             </li>
+            <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
+            </li>
+            <li {% if 'config' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'device-config' %}">Config</a>
+            </li>
             {% if not user.is_authenticated %}
             <li {% if 'login' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'login' %}">Login</a>
@@ -70,9 +76,7 @@
               <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
             {% endif %}
-            <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
-            </li>
+           
           </ul>
         </div>
       </nav>
