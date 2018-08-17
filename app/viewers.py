@@ -1,19 +1,21 @@
 # Import standard python modules
 import json as json_
-import logging
-import time
+import time, logging
 
 # Import common app funcitons
 from app.common import Common
 from app.models import CultivarModel
 from app.models import CultivationMethodModel
+
 # Import app models
 from app.models import EventModel
+
 # Import device utilities
 from device.utilities.events import EventRequests
 
 
 class EventViewer:
+
     def create(self, request):
 
         # Get request parameters
@@ -123,20 +125,23 @@ class RecipeViewer:
 
 
 class SimpleRecipeViewer:
+
     def __init__(self, recipe_object):
         self.recipe_dict = json_.loads(recipe_object.json)
         self.uuid = self.recipe_dict["uuid"]
         self.name = self.recipe_dict["name"]
 
 
-class DeviceConfigurationViewer:
-    def __init__(self, device_configuration_object):
-        self.dict = json_.loads(device_configuration_object.json)
+class DeviceConfigViewer:
+
+    def __init__(self, device_config_object):
+        self.dict = json_.loads(device_config_object.json)
         self.uuid = self.dict["uuid"]
         self.name = self.dict["name"]
 
 
 class CultivarsViewer:
+
     def __init__(self):
         cultivars = CultivarModel.objects.all()
         cultivar_dict = []
@@ -146,6 +151,7 @@ class CultivarsViewer:
 
 
 class CultivationMethodsViewer:
+
     def __init__(self):
         cultivation_methods = CultivationMethodModel.objects.all()
         cultivation_methods_dict = []
@@ -260,10 +266,12 @@ class DeviceViewer:
         if peripheral_dict != None:
             for peripheral_name in peripheral_dict:
                 individual_peripheral_dict = peripheral_dict[peripheral_name]
-                modes[peripheral_name] = individual_peripheral_dict["mode"]
+                modes[peripheral_name] = individual_peripheral_dict.get("mode", None)
 
                 # TODO: re-instate this
-                healths[peripheral_name] = individual_peripheral_dict["health"]
+                healths[peripheral_name] = individual_peripheral_dict.get(
+                    "health", None
+                )
 
         # Return thread modes
         return modes, healths
@@ -276,7 +284,6 @@ class IoTViewer:
         self.iot_dict = Common.get_iot_dict()
 
 
-# ----------------------------------------------------------------------------
 class ResourceViewer:
     resource_dict = {}
 
@@ -284,15 +291,8 @@ class ResourceViewer:
         self.resource_dict = Common.get_resource_dict()
 
 
-# ----------------------------------------------------------------------------
 class ConnectViewer:
     connect_dict = {}
 
     def __init__(self):
         self.connect_dict = Common.get_connect_dict()
-
-
-
-
-
-

@@ -75,9 +75,7 @@ class DeviceManager:
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None,
-        "start_timestamp_minutes": None,
-        "last_update_minute": None
+        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
     }
 
     # Initialize recipe object
@@ -184,6 +182,7 @@ class DeviceManager:
     def config_uuid(self, value):
         """ Safely updates config uuid in state. """
         with threading.Lock():
+            self.logger.info("Setting config uuid in state...")
             self.state.device["config_uuid"] = value
 
     @property
@@ -269,21 +268,26 @@ class DeviceManager:
             config command then transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
-        # Check about file exists in repo
+        # Check device config specifier file exists in repo
         try:
-            about = json.load(open("about.json"))
+            with open("config/device.txt") as f:
+                config_name = f.readline().strip()
+                self.logger.info("config_name = {}".format(config_name))
         except:
-            self.error = "Unable to load about file, device unable to be configured"
-            self.logger.critical(self.error)
+            self.error = "Unable to load device config specifier file, device unable to be configured"
+            self.logger.exception(self.error)
             self.mode = Modes.ERROR
             return
 
         # Load device config
-        config_name = about["device_config"]
+        self.logger.debug("Loading device config file: {}".format(config_name))
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
-        # Load config uuid
-        self.config_uuid = device_config["uuid"]
+        # Check if config uuid changed, if so clear peripheral state and update
+        # config uuid device state
+        if self.config_uuid != device_config["uuid"]:
+            self.state.peripherals = {}
+            self.config_uuid = device_config["uuid"]
 
         # Transition to SETUP
         self.mode = Modes.SETUP
@@ -293,6 +297,9 @@ class DeviceManager:
             controller threads, waits for all threads to initialize then 
             transitions to NORMAL. """
         self.logger.info("Entered SETUP")
+        self.logger.debug(
+            "state.device.config_uuid = {}".format(self.state.device["config_uuid"])
+        )
 
         # Spawn the threads this object controls
         self.recipe.spawn()
@@ -344,6 +351,11 @@ class DeviceManager:
             # Check for system error
             if self.mode == Modes.ERROR:
                 self.logger.error("System received ERROR")
+                break
+
+            # Check for new configuration
+            if self.mode == Modes.CONFIG:
+                self.logger.info("Transitioning to CONFIG")
                 break
 
             # Update every 100ms
@@ -670,9 +682,6 @@ class DeviceManager:
         # Load device state
         stored_device_state = json.loads(stored_state.device)
 
-        # Commented this out b/c config uuid loaded from about.json now
-        # self.config_uuid = stored_device_state["config_uuid"]
-
         # Load recipe state
         stored_recipe_state = json.loads(stored_state.recipe)
         self.recipe.recipe_uuid = stored_recipe_state["recipe_uuid"]
@@ -689,26 +698,16 @@ class DeviceManager:
         for peripheral_name in stored_peripherals_state:
             self.state.peripherals[peripheral_name] = {}
             if "stored" in stored_peripherals_state[peripheral_name]:
-                self.state.peripherals[peripheral_name][
-                    "stored"
-                ] = stored_peripherals_state[
-                    peripheral_name
-                ][
-                    "stored"
-                ]
+                stored = stored_peripherals_state[peripheral_name]["stored"]
+                self.state.peripherals[peripheral_name]["stored"] = stored
 
         # Load controllers state
         stored_controllers_state = json.loads(stored_state.controllers)
         for controller_name in stored_controllers_state:
             self.state.controllers[controller_name] = {}
             if "stored" in stored_controllers_state[controller_name]:
-                self.state.controllers[controller_name][
-                    "stored"
-                ] = stored_controllers_state[
-                    controller_name
-                ][
-                    "stored"
-                ]
+                stored = stored_controllers_state[controller_name]["stored"]
+                self.state.controllers[controller_name]["stored"] = stored
 
     def store_environment(self):
         """ Stores current environment state in environment table. """
@@ -927,8 +926,8 @@ class DeviceManager:
             self.process_stop_recipe_event()
         elif request_type == "Reset":
             self.process_reset_event()
-        elif request_type == "Configure":
-            self.process_configure_event()
+        elif request_type == "Load Config":
+            self.process_load_config_event(request)
         else:
             self.logger.info(
                 "Received invalid event request type: {}".format(request_type)
@@ -948,7 +947,7 @@ class DeviceManager:
 
         # TODO: Check for valid mode transition
 
-        # For backwards compatibility with v0.1.0
+        # For backwards compatibility with SW v0.1.0
         if type(request) == str:
             request_uuid = request
             request_timestamp = None
@@ -991,26 +990,6 @@ class DeviceManager:
             ),
         }
 
-        # # Wait for recipe to be picked up by recipe thread or timeout event
-        # start_time_seconds = time.time()
-        # timeout_seconds = 10
-        # while True:
-        #     # Exit when recipe thread picks up new recipe
-        #     if self.recipe.commanded_mode == None:
-
-        #         break
-
-        #     # Exit on timeout
-        #     if time.time() - start_time_seconds > timeout_seconds:
-        #         self.logger.critical(
-        #             "Unable to start recipe within 10 seconds. Something is wrong with code."
-        #         )
-        #         self.response = {
-        #             "status": 500,
-        #             "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
-        #         }
-        #         break
-
     # Also called from the IoTManager command receiver.
     def process_stop_recipe_event(self):
         """ Processes load recipe event. """
@@ -1046,7 +1025,36 @@ class DeviceManager:
         self.logger.debug("Processing reset event")
         self.response = {"status": 200, "message": "Pretended to reset device"}
 
-    def process_configure_event(self):
-        """ Processes configure event. """
-        self.logger.debug("Processing configure event")
-        self.response = {"status": 200, "message": "Pretended to configure device"}
+    def process_load_config_event(self, request):
+        """ Processes load config event. """
+        self.logger.debug("Processing load config event")
+
+        # Get request parameters
+        config_uuid = request.get("uuid", None)
+        self.logger.debug("Received config_uuid: {}".format(config_uuid))
+
+        # TODO: This flow is a bit wonky...clean up idea on uuid vs. filename
+
+        # Get filename of corresponding uuid
+        config_filename = None
+        for filepath in glob.glob("data/devices/*.json"):
+            device_config = json.load(open(filepath))
+            if device_config["uuid"] == config_uuid:
+                config_filename = filepath.split("/")[-1].replace(".json", "")
+
+        # Verify valid config uuid
+        if config_filename == None:
+            message = "Invalid config uuid, corresponding filepath not found"
+            self.response = {"status": 400, "message": message}
+            return
+
+        # Write config filename to to config/device
+        with open("config/device.txt", "w") as f:
+            f.write(config_filename + "\n")
+
+        # Transition to config mode
+        self.mode = Modes.CONFIG
+
+        # Return success response
+        message = "Loading config: {}".format(config_filename)
+        self.response = {"status": 200, "message": message}

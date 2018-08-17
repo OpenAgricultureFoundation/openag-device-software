@@ -1,8 +1,7 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC EDU 003A",
-    "description": "For EDU hardware v0.2.0 using CCS811 for CO2 sensing, A variant uses CCS811 comm at addr 0x5b instead of standard 0x5a.",
-    "uuid": "1a059cc8-50bb-44bc-9b2b-991cee6b25cf",
+    "name": "Education v0.2.0",
+    "uuid": "9a72d7d3-5f85-4276-9f49-e3319d187c9f",
     "peripherals": [
         {
             "name": "LEDPanel-Top",
@@ -95,7 +94,7 @@
                     "bus": 2, 
                     "mux": "0x77", 
                     "channel": 2, 
-                    "address": "0x5b"
+                    "address": "0x5a"
                 }
             }
         }

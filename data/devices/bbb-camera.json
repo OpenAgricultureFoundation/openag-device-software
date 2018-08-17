@@ -1,7 +1,7 @@
 {   
     "format": "openag-standard-v1",
-    "name": "bare BBB with webcam",
-    "uuid": "12341234-1234-1234-1234-123412341234",
+    "name": "BBB - Camera",
+    "uuid": "c4ac3728-199a-4fd6-8ea7-2e34cced4daa",
     "peripherals": [
         {
             "name": "Camera-Top",

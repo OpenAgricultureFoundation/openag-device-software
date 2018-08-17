@@ -1,6 +1,6 @@
 # Import standard python modules
-import json
-import logging
+import json, logging
+from operator import itemgetter
 
 # Import django modules
 from django.shortcuts import render
@@ -22,6 +22,9 @@ from rest_framework.views import APIView
 from rest_framework.decorators import list_route
 from rest_framework.decorators import detail_route
 from rest_framework.renderers import JSONRenderer
+
+# Import app common
+from app.common import Common
 
 # Import app models
 from app.models import StateModel
@@ -53,6 +56,7 @@ from app.viewers import DeviceViewer
 from app.viewers import EventViewer
 from app.viewers import RecipeViewer
 from app.viewers import SimpleRecipeViewer
+from app.viewers import DeviceConfigViewer
 from app.viewers import EnvironmentViewer
 from app.viewers import CultivarsViewer
 from app.viewers import CultivationMethodsViewer
@@ -204,7 +208,7 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class Dashboard(APIView):
-    """ UI page for dashboard. """
+    """UI page for dashboard."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "dashboard.html"
@@ -233,6 +237,38 @@ class Dashboard(APIView):
             "current_recipe": current_recipe,
             "recipes": recipes,
         }
+        return Response(response)
+
+
+class DeviceConfig(APIView):
+    """UI page for managing device config."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "device_config.html"
+
+    def get(self, request):
+
+        # Get stored device config objects
+        config_objects = DeviceConfigModel.objects.all()
+        configs = []
+        for config_object in config_objects:
+            configs.append(DeviceConfigViewer(config_object))
+
+        # Sort configs by name
+        configs.sort(key=lambda x: x.name)
+
+        # Get current config
+        current_config = Common.get_device_state_value("config_uuid")
+
+        # Convert current config uuid to name
+        if current_config != None:
+            for config in configs:
+                if config.uuid == current_config:
+                    current_config = config.name
+                    break
+
+        # Build and return response
+        response = {"configs": configs, "current_config": current_config}
         return Response(response)
 
 
@@ -374,7 +410,7 @@ class DeviceConfigList(APIView):
 
 
 class Recipes(APIView):
-    """ UI page for recipes. """
+    """UI page for recipes."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "recipes.html"
@@ -389,7 +425,7 @@ class Recipes(APIView):
 
 
 class Environments(APIView):
-    """ UI page for environments. """
+    """UI page for environments."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "environments.html"
@@ -400,7 +436,7 @@ class Environments(APIView):
 
 
 class IoT(APIView):
-    """ UI page for IoT. """
+    """UI page for IoT."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "iot.html"
@@ -419,9 +455,8 @@ class IoT(APIView):
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class Resource(APIView):
-    """ UI page for ResourceManager. """
+    """UI page for ResourceManager."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "resource.html"
@@ -442,9 +477,8 @@ class Resource(APIView):
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class Connect(APIView):
-    """ UI page fields for ConnectManager. """
+    """UI page fields for ConnectManager."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "connect.html"
@@ -455,33 +489,30 @@ class Connect(APIView):
         logger = logging.LoggerAdapter(logger, extra)
 
         response = ConnectUtils.get_status()
-        logger.info('Connect response={}'.format(response))
+        logger.info("Connect response={}".format(response))
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class ConnectGetStatus(viewsets.ViewSet):
-    """ REST API to get all connect status fields shown.
-        This class extends the ViewSet (not ModelViewSet) because it
-        dynamically gets its data and the Model gets data from the DB.
-    """
+    """REST API to get all connect status fields shown.
+    This class extends the ViewSet (not ModelViewSet) because it
+    dynamically gets its data and the Model gets data from the DB."""
+
     def list(self, request):
         extra = {"console_name": "views.ConnectGetStatus"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
         response = ConnectUtils.get_status()
-        logger.info('ConnectGetStatus response={}'.format(response))
+        logger.info("ConnectGetStatus response={}".format(response))
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class ConnectJoinWifi(viewsets.ViewSet):
-    """ REST API to join a wifi.
-        Request is POSTed with wifi and pass.
-        This class extends the ViewSet (not ModelViewSet) because it
-        dynamically gets its data and the Model gets data from the DB.
-    """
+    """REST API to join a wifi. Request is POSTed with wifi and pass.
+    This class extends the ViewSet (not ModelViewSet) because it
+    dynamically gets its data and the Model gets data from the DB."""
+
     @permission_classes((IsAuthenticated, IsAdminUser))
     def create(self, request):
         extra = {"console_name": "views.ConnectJoinWifi"}
@@ -492,69 +523,63 @@ class ConnectJoinWifi(viewsets.ViewSet):
         try:
             reqd = request.data.dict()
         except Exception as e:
-            response = {
-                "message": "Internal error: {}".format(e)
-            }
+            response = {"message": "Internal error: {}".format(e)}
             return Response(response, 400)
 
         wifi = reqd["wifi"]
         password = reqd["password"]
 
-        logger.info('ConnectJoinWifi wifi={} pass={}'.format(wifi, password))
+        logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
         success = ConnectUtils.join_wifi(wifi, password)
-        response = { "success": success, }
-        logger.info('ConnectJoinWifi response={}'.format(response))
+        response = {"success": success}
+        logger.info("ConnectJoinWifi response={}".format(response))
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class ConnectDeleteWifis(viewsets.ViewSet):
-    """ REST API to disconnect any active network connections and delete all
-        wifi configurations made by the user.
-        Called with GET.
-    """
+    """REST API to disconnect any active network connections and delete all
+    wifi configurations made by the user. Called with GET."""
+
     def list(self, request):
         extra = {"console_name": "views.ConnectDeleteWifis"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
         response = ConnectUtils.delete_wifi_connections()
-        logger.info('ConnectDeleteWifis response={}'.format(response))
+        logger.info("ConnectDeleteWifis response={}".format(response))
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class ConnectRegisterIoT(viewsets.ViewSet):
-    """ REST API to register this machine with the IoT backend.
-        Called with GET.
-    """
+    """REST API to register this machine with the IoT backend.
+    Called with GET."""
+
     def list(self, request):
         extra = {"console_name": "views.ConnectRegisterIoT"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
         response = ConnectUtils.register_iot()
-        logger.info('ConnectRegisterIoT response={}'.format(response))
+        logger.info("ConnectRegisterIoT response={}".format(response))
         return Response(response)
 
 
-# ----------------------------------------------------------------------------
 class ConnectDeleteIoTreg(viewsets.ViewSet):
-    """ REST API to delete the current IoT registration (directory).
-        Called with GET.
-    """
+    """REST API to delete the current IoT registration (directory).
+    Called with GET."""
+
     def list(self, request):
         extra = {"console_name": "views.ConnectDeleteIoTreg"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
         response = ConnectUtils.delete_iot_registration()
-        logger.info('ConnectDeleteIoTreg response={}'.format(response))
+        logger.info("ConnectDeleteIoTreg response={}".format(response))
         return Response(response)
 
 
 class Manual(APIView):
-    """ UI page for manual controls. """
+    """UI page for manual controls."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "manual.html"
@@ -564,7 +589,7 @@ class Manual(APIView):
 
 
 class Entry(APIView):
-    """ UI page for data entry. """
+    """UI page for data entry."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "entry.html"
@@ -574,7 +599,7 @@ class Entry(APIView):
 
 
 class Scratchpad(APIView):
-    """ UI page for scratchpad. """
+    """UI page for scratchpad."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "scratchpad.html"

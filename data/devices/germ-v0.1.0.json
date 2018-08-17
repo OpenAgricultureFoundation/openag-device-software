@@ -1,54 +1,10 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC EDU 001",
-    "description": "For EDU hardware v0.1.0",
-    "uuid": "4cffeb04-22db-44f6-9cf4-07b595b420f0",
+    "name": "Germinator v0.1.0",
+    "uuid": "ca9097eb-b51c-4735-8f83-d24aaed01e67",
     "peripherals": [
         {
-            "name": "LEDPanel-Top",
-            "type": "LEDDAC5578",
-            "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
-            "parameters": {
-               "setup": {
-                    "name": "LED Panel Taurus Actuator",
-                    "file_name": "led_dac5578/setups/taurus"
-                },
-                "variables": {
-                    "sensor": {
-                        "ppfd_umol_m2_s": "light_ppfd_umol_m2_s",
-                        "spectrum_nm_percent": "light_spectrum_nm_percent",
-                        "illumination_distance_cm": "light_illumination_distance_cm"
-                    },
-                    "actuator": {
-                        "channel_output_percents": "light_channel_output_percents"
-                    }
-                },
-                "communication": {
-                    "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
-                    ]
-                }
-            }
-        },
-        {
-            "name": "Camera-Top",
-            "type": "USBCamera",
-            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
-            "parameters": {
-                "setup": {
-                    "name": "ELP USB500W02M-L21 Camera ",
-                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
-                },
-                "variables": {
-                    "sensor": null,
-                    "actuator": null
-                },
-                "communication": null,
-                "directory": "images/"
-            }
-        },
-        {
-            "name": "SHT25-Top",
+            "name": "SHT25-Left",
             "type": "SHT25",
             "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
             "parameters": {
@@ -66,13 +22,13 @@
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77", 
-                    "channel": 2, 
+                    "channel": 0, 
                     "address": "0x40"
                 }
             }
         },
         {
-            "name": "T6713-Top",
+            "name": "T6713-Left",
             "type": "T6713",
             "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
             "parameters": {
@@ -89,7 +45,7 @@
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77", 
-                    "channel": 2, 
+                    "channel": 0, 
                     "address": "0x15"
                 }
             }
@@ -144,6 +100,23 @@
                     "channel": 4, 
                     "address": "0x63"
                 }
+            }
+        },
+        {
+            "name": "Camera-Top",
+            "type": "USBCamera",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera ",
+                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "communication": null,
+                "directory": "images/"
             }
         }
     ],
