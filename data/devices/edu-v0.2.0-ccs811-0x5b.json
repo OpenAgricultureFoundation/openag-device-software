@@ -1,8 +1,7 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC EDU 002",
-    "description": "For EDU hardware v0.2.0 using T6713 for CO2 sensing",
-    "uuid": "64d72849-2e30-4a4c-8d8c-71b6b3384126",
+    "name": "EDU v0.2.0 w/CCS811 at 0x5b, not 0x5a",
+    "uuid": "1a059cc8-50bb-44bc-9b2b-991cee6b25cf",
     "peripherals": [
         {
             "name": "LEDPanel-Top",
@@ -72,17 +71,22 @@
             }
         },
         {
-            "name": "T6713-Top",
-            "type": "T6713",
-            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "name": "CCS811-Top",
+            "type": "CCS811",
+            "uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
             "parameters": {
                 "setup": {
-                    "name": "T6713 CO2 Sensor",
-                    "file_name": "t6713/setups/default"
+                    "name": "CCS811 Carbon Dioxide Sensor",
+                    "file_name": "ccs811/setups/default"
                 },
                 "variables": {
                     "sensor": {
-                        "carbon_dioxide_ppm": "air_carbon_dioxide_ppm"
+                        "co2_ppm": "air_carbon_dioxide_ppm",
+                        "tvoc_ppb": "air_total_volatile_organic_compounds_ppb"
+                    },
+                    "compensation": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"
                     },
                     "actuator": null
                 },
@@ -90,7 +94,7 @@
                     "bus": 2, 
                     "mux": "0x77", 
                     "channel": 2, 
-                    "address": "0x15"
+                    "address": "0x5b"
                 }
             }
         }

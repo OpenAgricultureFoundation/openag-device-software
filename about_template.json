@@ -1,7 +1,0 @@
-{
-	"serial_number": "<DEVICE>-<VERSION>-<ID>",
-	"hardware_version": "<MAJOR>.<MINOR>.<PATCH>",
-	"software_version": "<MAJOR>.<MINOR>.<PATCH>",
-	"device_config": "template",
-	"notes": ""
-}

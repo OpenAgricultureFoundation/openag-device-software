@@ -1,1 +1,1 @@
-edu-v0.2.0-standard
+edu-v0.2.0

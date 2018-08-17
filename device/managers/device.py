@@ -75,9 +75,7 @@ class DeviceManager:
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None,
-        "start_timestamp_minutes": None,
-        "last_update_minute": None
+        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
     }
 
     # Initialize recipe object
@@ -269,17 +267,18 @@ class DeviceManager:
             config command then transitions to SETUP. """
         self.logger.info("Entered CONFIG")
 
-        # Check about file exists in repo
+        # Check device config specifier file exists in repo
         try:
-            about = json.load(open("about.json"))
+            with open("config/device.txt") as f:
+                config_name = f.readline().strip()
+                self.logger.info("config_name = {}".format(config_name))
         except:
-            self.error = "Unable to load about file, device unable to be configured"
+            self.error = "Unable to load device config specifier file, device unable to be configured"
             self.logger.critical(self.error)
             self.mode = Modes.ERROR
             return
 
         # Load device config
-        config_name = about["device_config"]
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
         # Load config uuid
@@ -990,26 +989,6 @@ class DeviceManager:
                 request_uuid
             ),
         }
-
-        # # Wait for recipe to be picked up by recipe thread or timeout event
-        # start_time_seconds = time.time()
-        # timeout_seconds = 10
-        # while True:
-        #     # Exit when recipe thread picks up new recipe
-        #     if self.recipe.commanded_mode == None:
-
-        #         break
-
-        #     # Exit on timeout
-        #     if time.time() - start_time_seconds > timeout_seconds:
-        #         self.logger.critical(
-        #             "Unable to start recipe within 10 seconds. Something is wrong with code."
-        #         )
-        #         self.response = {
-        #             "status": 500,
-        #             "message": "Unable to start recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
-        #         }
-        #         break
 
     # Also called from the IoTManager command receiver.
     def process_stop_recipe_event(self):
