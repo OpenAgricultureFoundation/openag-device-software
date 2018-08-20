@@ -184,7 +184,6 @@ class DeviceManager:
     def config_uuid(self, value):
         """ Safely updates config uuid in state. """
         with threading.Lock():
-            self.logger.info("Setting config uuid in state...")
             self.state.device["config_uuid"] = value
 
     @property
@@ -274,7 +273,6 @@ class DeviceManager:
         try:
             with open("config/device.txt") as f:
                 config_name = f.readline().strip()
-                self.logger.info("config_name = {}".format(config_name))
         except:
             message = "Unable to read config/device.txt, using unspecified config"
             self.logger.warning(message)

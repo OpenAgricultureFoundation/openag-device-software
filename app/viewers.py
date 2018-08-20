@@ -29,7 +29,7 @@ class EventViewer:
             message = "Unable to get request parameters, invalid key: {}".format(e)
             return message, 400
 
-        # Create event in datbase
+        # Create event in database
         try:
             event = EventModel.objects.create(recipient=recipient, request=request_)
         except Exception as e:
@@ -37,10 +37,20 @@ class EventViewer:
             return message, 500
 
         # Wait for response
+        start_time = time.time()
         while True:
+
             # Check response status
             event = EventModel.objects.get(id=event.id)
             if event.response != None:
+                break
+
+            # Check for timeout
+            if time.time() - start_time > 10:  # 10 second timeout:
+                event.response = {
+                    "message": "Critical error, response timed out", "status": 500
+                }
+                event.save()
                 break
 
             # Update every 100ms
