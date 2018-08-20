@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "flnh=1!tsz^4&grtw&0$2&6#n*@aybhg-vdpa-i1rc&pyv$+9c"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -194,13 +194,9 @@ LOGGING = {
         },
         "iot": {"handlers": ["iot_console", "iot_file"], "level": "DEBUG"},
         "resource": {
-            "handlers": ["resource_console", "resource_file"],
-            "level": "DEBUG",
+            "handlers": ["resource_console", "resource_file"], "level": "DEBUG"
         },
-        "connect": {
-            "handlers": ["connect_console", "connect_file"],
-            "level": "DEBUG",
-        },
+        "connect": {"handlers": ["connect_console", "connect_file"], "level": "DEBUG"},
     },
 }
 
