@@ -22,11 +22,16 @@ Back to [Part 4: Provision BBB](provision_bbb.md)...or...Forward to [README](../
 	```
 	192.168.8.1 # TODO: can we make this a more human readable name (e.g. device.ui?)
 	```
-
+## Initial Device UI Setup:
+1. Login to device with:
+```
+Username: openag
+Password: openag
+```
+2. Change password by going to `password` tab
 
 ## Connect Device to Internet
 1. Got to `connect tab`, follow instructions to connect bot to your wifi
-
 
 ## Load Device Config:
 1. Look at label on the Brain PCB for "CONFIG", should look like
