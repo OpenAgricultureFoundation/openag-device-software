@@ -94,6 +94,7 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = StateSerializer
 
+    @method_decorator(login_required)
     def get_queryset(self):
         queryset = StateModel.objects.all()
         return queryset
@@ -104,10 +105,12 @@ class EventViewSet(viewsets.ModelViewSet):
 
     serializer_class = EventSerializer
 
+    @method_decorator(login_required)
     def get_queryset(self):
         queryset = EventModel.objects.all()
         return queryset
 
+    @method_decorator(login_required)
     def create(self, request):
         """ API endpoint to create an event. """
 
@@ -130,6 +133,7 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = EnvironmentSerializer
 
+    @method_decorator(login_required)
     def get_queryset(self):
         queryset = EnvironmentModel.objects.all()
         return queryset
@@ -140,11 +144,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     serializer_class = RecipeSerializer
 
+    @method_decorator(login_required)
     def get_queryset(self):
         queryset = RecipeModel.objects.all()
         return queryset
 
-    # @permission_classes((IsAuthenticated, IsAdminUser,))
+    @method_decorator(login_required)
     def create(self, request):
         """ API endpoint to create a recipe. """
         permission_classes = [IsAuthenticated, IsAdminUser]
@@ -152,7 +157,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response, status = recipe_viewer.create(request.data.dict())
         return Response(response, status)
 
-    # @permission_classes((IsAuthenticated, IsAdminUser,))
+    @method_decorator(login_required)
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def start(self, request, pk=None):
         """ API endpoint to start a recipe. """
@@ -161,6 +166,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response, status = recipe_viewer.start(request.data.dict(), pk)
         return Response(response, status)
 
+    @method_decorator(login_required)
     @list_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def stop(self, request):
         """ API endpoint to stop a recipe. """
@@ -174,6 +180,7 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = RecipeTransitionSerializer
 
+    @method_decorator(login_required)
     def get_queryset(self):
         queryset = RecipeTransitionModel.objects.all()
         return queryset
@@ -234,7 +241,6 @@ class Dashboard(APIView):
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "dashboard.html"
-    # permission_classes = [IsAuthenticated]
 
     @method_decorator(login_required)
     def get(self, request):
@@ -303,6 +309,7 @@ class RecipeBuilder(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "recipe_builder.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         # Get recipes
         recipe_objects = RecipeModel.objects.all()
@@ -333,6 +340,7 @@ class Events(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "events.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         events = EventModel.objects.all().order_by("-timestamp")
         return Response({"events": events})
@@ -344,6 +352,7 @@ class Logs(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "logs.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         logs = [
             {"name": "SHT25-Top", "entries": ["log line 1", "log line 2"]},
@@ -426,6 +435,7 @@ class DeviceConfigList(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "device_config_list.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         device_config_objects = DeviceConfignModel.objects.all()
         device_config_viewers = []
@@ -441,6 +451,7 @@ class Recipes(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "recipes.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         recipe_objects = RecipeModel.objects.all()
         recipes = []
@@ -456,6 +467,7 @@ class Environments(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "environments.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         environments = EnvironmentModel.objects.all().order_by("-timestamp")
         return Response({"environments": environments})
@@ -467,6 +479,7 @@ class IoT(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "iot.html"
 
+    @method_decorator(login_required)
     def get(self, request):
 
         iotv = IoTViewer()
@@ -487,6 +500,7 @@ class Resource(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "resource.html"
 
+    @method_decorator(login_required)
     def get(self, request):
 
         rv = ResourceViewer()
@@ -525,6 +539,7 @@ class ConnectGetStatus(viewsets.ViewSet):
     This class extends the ViewSet (not ModelViewSet) because it
     dynamically gets its data and the Model gets data from the DB."""
 
+    @method_decorator(login_required)
     def list(self, request):
         extra = {"console_name": "views.ConnectGetStatus"}
         logger = logging.getLogger(__name__)
@@ -540,7 +555,8 @@ class ConnectJoinWifi(viewsets.ViewSet):
     This class extends the ViewSet (not ModelViewSet) because it
     dynamically gets its data and the Model gets data from the DB."""
 
-    @permission_classes((IsAuthenticated, IsAdminUser))
+    # @permission_classes((IsAuthenticated, IsAdminUser))
+    @method_decorator(login_required)
     def create(self, request):
         extra = {"console_name": "views.ConnectJoinWifi"}
         logger = logging.getLogger(__name__)
@@ -567,6 +583,7 @@ class ConnectDeleteWifis(viewsets.ViewSet):
     """REST API to disconnect any active network connections and delete all
     wifi configurations made by the user. Called with GET."""
 
+    @method_decorator(login_required)
     def list(self, request):
         extra = {"console_name": "views.ConnectDeleteWifis"}
         logger = logging.getLogger(__name__)
@@ -581,6 +598,7 @@ class ConnectRegisterIoT(viewsets.ViewSet):
     """REST API to register this machine with the IoT backend.
     Called with GET."""
 
+    @method_decorator(login_required)
     def list(self, request):
         extra = {"console_name": "views.ConnectRegisterIoT"}
         logger = logging.getLogger(__name__)
@@ -595,6 +613,7 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
     """REST API to delete the current IoT registration (directory).
     Called with GET."""
 
+    @method_decorator(login_required)
     def list(self, request):
         extra = {"console_name": "views.ConnectDeleteIoTreg"}
         logger = logging.getLogger(__name__)
@@ -611,6 +630,7 @@ class Manual(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "manual.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         return Response({"manual": "data"})
 
@@ -621,6 +641,7 @@ class Entry(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "entry.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         return Response({"entry": "data"})
 
@@ -631,5 +652,6 @@ class Scratchpad(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "scratchpad.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         return Response()
