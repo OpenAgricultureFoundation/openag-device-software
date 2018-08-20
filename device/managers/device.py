@@ -43,6 +43,8 @@ from app.models import RecipeModel
 from app.models import PeripheralSetupModel
 from app.models import DeviceConfigModel
 
+# Set file paths
+
 
 class DeviceManager:
     """ Manages device state machine thread that spawns child threads to run 
@@ -274,10 +276,13 @@ class DeviceManager:
                 config_name = f.readline().strip()
                 self.logger.info("config_name = {}".format(config_name))
         except:
-            self.error = "Unable to load device config specifier file, device unable to be configured"
-            self.logger.exception(self.error)
-            self.mode = Modes.ERROR
-            return
+            message = "Unable to read config/device.txt, using unspecified config"
+            self.logger.warning(message)
+            config_name = "unspecified"
+
+            # Write `unspecified` to device.txt
+            with open("config/device.txt", "w") as f:
+                f.write("{}\n".format(config_name))
 
         # Load device config
         self.logger.debug("Loading device config file: {}".format(config_name))
