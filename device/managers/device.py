@@ -8,6 +8,7 @@ from django.dispatch import receiver
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
+from device.utilities.accessors import set_nested_dict_safely
 
 # Import json validators
 from jsonschema import validate
@@ -42,8 +43,6 @@ from app.models import CultivationMethodModel
 from app.models import RecipeModel
 from app.models import PeripheralSetupModel
 from app.models import DeviceConfigModel
-
-# Set file paths
 
 
 class DeviceManager:
@@ -196,13 +195,13 @@ class DeviceManager:
 
     @commanded_config_uuid.setter
     def commanded_config_uuid(self, value):
-        """ Safely updates commanded config uuid in state. """
+        """Safely updates commanded config uuid in state."""
         with threading.Lock():
             self.state.device["commanded_config_uuid"] = value
 
     @property
     def config_dict(self):
-        """ Gets config dict for config uuid in device config table. """
+        """Gets config dict for config uuid in device config table."""
         if self.config_uuid == None:
             return None
         config = DeviceConfigModel.objects.get(uuid=self.config_uuid)
@@ -210,7 +209,7 @@ class DeviceManager:
 
     @property
     def latest_environment_timestamp(self):
-        """ Gets latest environment timestamp from environment table. """
+        """Gets latest environment timestamp from environment table."""
         if not EnvironmentModel.objects.all():
             return 0
         else:
@@ -218,13 +217,13 @@ class DeviceManager:
             return environment.timestamp.timestamp()
 
     def spawn(self, delay=None):
-        """ Spawns device thread. """
+        """Spawns device thread."""
         self.thread = threading.Thread(target=self.run_state_machine, args=(delay,))
         self.thread.daemon = True
         self.thread.start()
 
     def run_state_machine(self, delay=None):
-        """ Runs device state machine. """
+        """Runs device state machine."""
 
         # Wait for optional delay
         if delay != None:
@@ -251,8 +250,8 @@ class DeviceManager:
                 self.run_reset_mode()
 
     def run_init_mode(self):
-        """ Runs initialization mode. Loads stored state from database then 
-            transitions to CONFIG. """
+        """Runs initialization mode. Loads stored state from database then 
+        transitions to CONFIG."""
         self.logger.info("Entered INIT")
 
         # Load local data files
@@ -265,8 +264,8 @@ class DeviceManager:
         self.mode = Modes.CONFIG
 
     def run_config_mode(self):
-        """ Runs configuration mode. If device config is not set, waits for 
-            config command then transitions to SETUP. """
+        """Runs configuration mode. If device config is not set, waits for 
+        config command then transitions to SETUP."""
         self.logger.info("Entered CONFIG")
 
         # Check device config specifier file exists in repo
@@ -286,19 +285,25 @@ class DeviceManager:
         self.logger.debug("Loading device config file: {}".format(config_name))
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
-        # Check if config uuid changed, if so clear peripheral state and update
-        # config uuid device state
+        # Check if config uuid changed, if so, adjust state
         if self.config_uuid != device_config["uuid"]:
-            self.state.peripherals = {}
-            self.config_uuid = device_config["uuid"]
+            with threading.Lock():
+                self.state.peripherals = {}
+                set_nested_dict_safely(
+                    self.state.environment, ["reported_sensor_stats"], {}
+                )
+                set_nested_dict_safely(
+                    self.state.environment, ["sensor", "reported"], {}
+                )
+                self.config_uuid = device_config["uuid"]
 
         # Transition to SETUP
         self.mode = Modes.SETUP
 
     def run_setup_mode(self):
-        """ Runs setup mode. Creates and spawns recipe, peripheral, and 
-            controller threads, waits for all threads to initialize then 
-            transitions to NORMAL. """
+        """Runs setup mode. Creates and spawns recipe, peripheral, and 
+        controller threads, waits for all threads to initialize then 
+        transitions to NORMAL."""
         self.logger.info("Entered SETUP")
         self.logger.debug(
             "state.device.config_uuid = {}".format(self.state.device["config_uuid"])

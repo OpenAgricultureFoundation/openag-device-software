@@ -13,6 +13,10 @@ import traceback
 import ast
 import socket
 
+# Import device utilities
+from device.utilities.accessors import get_nested_dict_safely
+
+
 # Import the IoT communications class
 from iot.iot_pubsub import IoTPubSub
 from connect.connect_utils import ConnectUtils
@@ -163,9 +167,16 @@ class IoTManager:
     def publish(self):
         if self.iot is None:
             return
-        vars_dict = self.state.environment["reported_sensor_stats"]["individual"][
-            "instantaneous"
-        ]
+
+        # Safely get vars dict
+        vars_dict = get_nested_dict_safely(
+            self.state.environment,
+            ["reported_sensor_stats", "individual", "instantaneous"],
+        )
+
+        # Check if vars is empty, if so turn into a dict
+        if vars_dict == None:
+            vars_dict = {}
 
         # Keep a copy of the first set of values (usually None).
         if self.prev_vars is None:
