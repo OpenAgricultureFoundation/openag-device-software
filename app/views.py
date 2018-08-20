@@ -94,7 +94,6 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = StateSerializer
 
-    @method_decorator(login_required)
     def get_queryset(self):
         queryset = StateModel.objects.all()
         return queryset
