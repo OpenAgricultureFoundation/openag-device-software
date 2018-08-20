@@ -13,6 +13,9 @@ from django.contrib.auth import authenticate
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import IsAdminUser
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
 
 # Import standard django rest modules
 from rest_framework import viewsets
@@ -135,6 +138,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def start(self, request, pk=None):
         """ API endpoint to start a recipe. """
+        permission_classes = [IsAuthenticated]
         recipe_viewer = RecipeViewer()
         response, status = recipe_viewer.start(request.data.dict(), pk)
         return Response(response, status)
@@ -212,7 +216,9 @@ class Dashboard(APIView):
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "dashboard.html"
+    # permission_classes = [IsAuthenticated]
 
+    @method_decorator(login_required)
     def get(self, request):
 
         # Get current device state object
@@ -246,6 +252,7 @@ class DeviceConfig(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "device_config.html"
 
+    @method_decorator(login_required)
     def get(self, request):
 
         # Get stored device config objects
@@ -360,6 +367,7 @@ class Peripherals(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "peripherals.html"
 
+    @method_decorator(login_required)
     def get(self, request):
 
         # Get current device state object
@@ -483,6 +491,7 @@ class Connect(APIView):
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "connect.html"
 
+    @method_decorator(login_required)
     def get(self, request):
         extra = {"console_name": "views.Connect"}
         logger = logging.getLogger(__name__)

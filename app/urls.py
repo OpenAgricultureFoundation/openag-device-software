@@ -8,9 +8,10 @@ from django.contrib import admin
 # Import user authentication modules
 from django.contrib.auth import views as auth_views
 
-# Import standard django
+# Import standard django modules
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
 
 # Import rest framework modules
 from rest_framework import routers
@@ -89,6 +90,11 @@ def redirect_to_dashboard(request):
         return HttpResponseRedirect(reverse("connect"))
 
 
+# Setup dashboard redirect
+def redirect_to_login(request):
+    return HttpResponseRedirect(reverse("login"))
+
+
 # Setup url patterns
 urlpatterns = [
     # Admin
@@ -96,7 +102,12 @@ urlpatterns = [
     # Rest API
     url(r"^api/", include(router.urls, namespace="api")),
     # User management
-    url(r"^login/$", auth_views.login, {"template_name": "login.html"}, name="login"),
+    url(
+        r"^accounts/login/$",
+        auth_views.login,
+        {"template_name": "login.html", "redirect_authenticated_user": True},
+        name="login",
+    ),
     url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
     # App specific
     url(r"^$", redirect_to_dashboard, name="home"),
