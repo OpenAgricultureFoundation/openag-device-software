@@ -326,8 +326,8 @@ class Logs(APIView):
         ]
 
         # Load in config info
-        about = json.load(open("about.json"))
-        config_name = about["device_config"]
+        with open("config/device.txt") as f:
+            config_name = f.readline().strip()
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
         # Build logs

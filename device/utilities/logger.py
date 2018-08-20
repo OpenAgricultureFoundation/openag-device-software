@@ -76,11 +76,9 @@ class PeripheralFileHandler(logging.Handler):
         # Inherit functions from handler
         super().__init__(*args, **kwargs)
 
-        # Load about file
-        about = json.load(open("about.json"))
-
-        # Load device config file
-        config_name = about["device_config"]
+        # Load device config
+        with open("config/device.txt") as f:
+            config_name = f.readline().strip()
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
         # Get peripheral configs
