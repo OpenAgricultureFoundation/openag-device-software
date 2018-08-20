@@ -11,7 +11,7 @@
         body {
          background-color: #f1f1f1;
         }
-       .dashboard, .events, .recipes, .environments, .peripherals, .config {
+       .dashboard, .events, .recipes, .environments, .peripherals, .config, .password, .logs, .iot, .resources, .connect {
         padding: 20px;
        }
        .card {
@@ -55,23 +55,26 @@
             <li {% if 'resource' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'resource' %}">Resources</a>
             </li>
-            <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-            </li>
-            <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="/api">API</a>
-            </li>
             <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'connect' %}">Connect</a>
             </li>
             <li {% if 'config' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'device-config' %}">Config</a>
             </li>
+            <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
+            </li>
+            <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="/api">API</a>
+            </li>
             {% if not user.is_authenticated %}
             <li {% if 'login' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'login' %}">Login</a>
             </li>
             {% else %}
+            <li {% if 'password' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'change_password' %}">Password</a>
+            </li>
             <li {% if 'logout' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>

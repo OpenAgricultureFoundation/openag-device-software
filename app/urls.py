@@ -109,6 +109,7 @@ urlpatterns = [
         name="login",
     ),
     url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
+    url(r"^password/$", views.change_password, name="change_password"),
     # App specific
     url(r"^$", redirect_to_dashboard, name="home"),
     url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
