@@ -69,9 +69,9 @@ class AtlasDriver:
     def process_command(
         self,
         command_string: str,
-        processing_seconds: float,
+        process_seconds: float,
         num_bytes: int = 31,
-        read_retry: bool = True,
+        retry: bool = True,
         read_response: bool = True,
     ) -> Optional[str]:
         """Sends command string to device, waits for processing seconds, then
@@ -84,13 +84,11 @@ class AtlasDriver:
         try:
             # Send command to device
             byte_array = bytearray(command_string + "\00", "utf8")
-            self.i2c.write_raw(byte_array)
+            self.i2c.write(bytes(byte_array), retry=retry)
 
             # Check if reading response
             if read_response:
-                return self.read_response(
-                    processing_seconds, num_bytes, retry=read_retry
-                )
+                return self.read_response(process_seconds, num_bytes, retry=retry)
 
             # Otherwise return none
             return None
@@ -100,15 +98,15 @@ class AtlasDriver:
             raise ProcessCommandError(message, logger=self.logger) from e
 
     def read_response(
-        self, processing_seconds: float, num_bytes: int, retry: bool = True
+        self, process_seconds: float, num_bytes: int, retry: bool = True
     ) -> str:
         """Reads response from from device. Waits processing seconds then 
         tries to read num response bytes with optional retry. Returns 
         response string on success or raises exception on error."""
 
         # Give device time to process
-        self.logger.debug("Waiting for {} seconds".format(processing_seconds))
-        time.sleep(processing_seconds)
+        self.logger.debug("Waiting for {} seconds".format(process_seconds))
+        time.sleep(process_seconds)
 
         # Read device data
         try:
@@ -132,7 +130,7 @@ class AtlasDriver:
             # Try to read one more time if retry enabled
             if retry == True:
                 self.logger.info("Sensor still processing, retrying read")
-                return self.read_response(processing_seconds, num_bytes, retry=False)
+                return self.read_response(process_seconds, num_bytes, retry=False)
             else:
                 message = "Unable to read response, insufficient processing time"
                 raise ReadResponseError(message, logger=self.logger)
@@ -143,7 +141,7 @@ class AtlasDriver:
             # Try to read one more time if retry enabled
             if retry == True:
                 self.logger.warning("Sensor reported no data to read, retrying read")
-                return self.read_response(processing_seconds, num_bytes, retry=False)
+                return self.read_response(process_seconds, num_bytes, retry=False)
             else:
                 message = "Unable to read response, insufficient processing time"
                 raise ReadResponseError(message, logger=self.logger)
@@ -158,13 +156,13 @@ class AtlasDriver:
         self.logger.debug("Response:`{}`".format(response_message))
         return response_message
 
-    def read_info(self) -> Info:
+    def read_info(self, retry: bool = True) -> Info:
         """Read sensor info register containing sensor type and firmware version. e.g. EC, 2.0."""
         self.logger.info("Reading sensor info")
 
         # Send command
         try:
-            response = self.process_command("i", processing_seconds=0.3)
+            response = self.process_command("i", process_seconds=0.3, retry=retry)
         except Exception as e:
             message = "Unable to read info"
             raise ReadInfoError(message, logger=self.logger) from e
@@ -182,13 +180,13 @@ class AtlasDriver:
         self.logger.debug(info)
         return info
 
-    def read_status(self) -> Status:
+    def read_status(self, retry: bool = True) -> Status:
         """ Reads status from device. """
         self.logger.info("Reading status")
 
         # Send command
         try:
-            response = self.process_command("Status", processing_seconds=0.3)
+            response = self.process_command("Status", process_seconds=0.3, retry=retry)
         except Exception as e:
             message = "Unable to read status"
             raise ReadStatusError(message, logger=self.logger) from e
@@ -214,63 +212,65 @@ class AtlasDriver:
             self.logger.warning("Device previous restart due to unknown")
 
         # Build status data class
-        status = Status(prev_restart_reason=prev_restart_reason, voltage=voltage)
+        status = Status(prev_restart_reason=prev_restart_reason, voltage=float(voltage))
 
         # Successfully read status
         self.logger.debug(status)
         return status
 
-    def enable_protocol_lock(self) -> None:
+    def enable_protocol_lock(self, retry: bool = True) -> None:
         """Enable protocol lock."""
         self.logger.debug("Enabling protocol lock")
 
         # Send command
         try:
-            self.process_command("Plock,1", processing_seconds=0.6)  # was 0.3
+            self.process_command("Plock,1", process_seconds=0.9, retry=retry)
         except Exception as e:
             message = "Unable to enable protocol lock"
             raise EnableProtocolLockError(message, logger=self.logger) from e
 
-    def disable_protocol_lock(self) -> None:
+    def disable_protocol_lock(self, retry: bool = True) -> None:
         """Disable protocol lock. """
         self.logger.debug("Disabling protocol lock")
 
         # Send command
         try:
-            self.process_command("Plock,0", processing_seconds=0.6)  # was 0.3
+            self.process_command("Plock,0", process_seconds=0.9, retry=retry)
         except Exception as e:
             message = "Unable to disable protocol lock"
             raise DisableProtocolLockError(message, logger=self.logger) from e
 
-    def enable_led(self) -> None:
+    def enable_led(self, retry: bool = True) -> None:
         """Enables led."""
         self.logger.debug("Enabling led")
 
         # Send command
         try:
-            self.process_command("L,1", processing_seconds=0.3)
+            self.process_command("L,1", process_seconds=0.9, retry=retry)
         except Exception as e:
             message = "Unable to enable led"
             raise EnableLEDError(message, logger=self.logger) from e
 
-    def disable_led(self) -> None:
+    def disable_led(self, retry: bool = True) -> None:
         """Disables led."""
         self.logger.debug("Disabling led")
 
         # Send command
         try:
-            self.process_command("L,0", processing_seconds=0.3)
+            self.process_command("L,0", process_seconds=0.9, retry=retry)
         except Exception as e:
             message = "Unable to disable led"
             raise DisableLEDError(message, logger=self.logger) from e
 
-    def enable_sleep_mode(self) -> None:
+    def enable_sleep_mode(self, retry: bool = True) -> None:
         """Enables sleep mode, sensor will wake up by sending any command to it."""
         self.logger.debug("Enabling sleep mode")
 
         # Send command
         try:
-            self.process_command("Sleep", processing_seconds=0.3, read_response=False)
+            self.process_command(
+                "Sleep", process_seconds=0.3, read_response=False, retry=retry
+            )
         except Exception as e:
             message = "Unable to enable sleep mode"
             raise EnableSleepModeError(message, logger=self.logger) from e

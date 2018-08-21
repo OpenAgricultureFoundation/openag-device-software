@@ -22,9 +22,23 @@ class DriverRunner(PeripheralRunner):
         super().__init__(*args, **kwargs)
 
         # Initialize parser
-        self.parser.add_argument("--info", action="store_true", help="read sensor info")
+        self.parser.add_argument("--info", action="store_true", help="read info")
+        self.parser.add_argument("--status", action="store_true", help="read status")
         self.parser.add_argument(
-            "--status", action="store_true", help="read sensor status"
+            "--enable-plock", action="store_true", help="enables protocol lock"
+        )
+        self.parser.add_argument(
+            "--disable-plock", action="store_true", help="disables protocol lock"
+        )
+        self.parser.add_argument(
+            "--enable-led", action="store_true", help="enables led"
+        )
+        self.parser.add_argument(
+            "--disable-led", action="store_true", help="disables led"
+        )
+
+        self.parser.add_argument(
+            "--sleep", action="store_true", help="enable sleep mode"
         )
 
     def run(self, *args, **kwargs):
@@ -56,6 +70,31 @@ class DriverRunner(PeripheralRunner):
             print("Reading status")
             status = self.driver.read_status()
             print(status)
+
+        # Check if enabling protocol lock
+        elif self.args.enable_plock:
+            print("Enabling protocol lock")
+            self.driver.enable_protocol_lock()
+
+        # Check if disabling protocol lock
+        elif self.args.disable_plock:
+            print("Disabling protocol lock")
+            self.driver.disable_protocol_lock()
+
+        # Check if enabling led
+        elif self.args.enable_led:
+            print("Enabling LED")
+            self.driver.enable_led()
+
+        # Check if disabling led
+        elif self.args.disable_led:
+            print("Disabling LED")
+            self.driver.disable_led()
+
+        # Check if reading status
+        elif self.args.sleep:
+            print("Enabling sleep mode")
+            self.driver.enable_sleep_mode()
 
 
 # Run main
