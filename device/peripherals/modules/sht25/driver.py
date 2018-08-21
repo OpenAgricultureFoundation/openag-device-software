@@ -13,13 +13,7 @@ from device.utilities import bitwise
 
 # Import driver elements
 from device.peripherals.modules.sht25.simulator import SHT25Simulator
-from device.peripherals.modules.sht25.exceptions import (
-    InitError,
-    ReadTemperatureError,
-    ReadHumidityError,
-    ReadUserRegisterError,
-    ResetError,
-)
+from device.peripherals.modules.sht25.exceptions import *
 
 
 class UserRegister(NamedTuple):

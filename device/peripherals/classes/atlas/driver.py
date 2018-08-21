@@ -1,0 +1,276 @@
+# Import standard python modules
+import time
+from typing import Optional, Tuple, Dict, NamedTuple
+
+# Import device comms
+from device.comms.i2c2.main import I2C
+from device.comms.i2c2.exceptions import I2CError
+from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
+
+# Import device utilities
+from device.utilities.logger import Logger
+from device.utilities.modes import Modes
+
+
+# Import driver elements
+from device.peripherals.classes.atlas.exceptions import *
+
+
+class Info(NamedTuple):
+    """Data class for parsed info register."""
+    sensor_type: str
+    firmware_version: float
+
+
+class Status(NamedTuple):
+    """Data class for parsed status register."""
+    prev_restart_reason: str
+    voltage: float
+
+
+class AtlasDriver:
+    """ Parent class for atlas drivers. """
+
+    def __init__(
+        self,
+        name: str,
+        bus: int,
+        address: int,
+        mux: Optional[int] = None,
+        channel: Optional[int] = None,
+        simulate: bool = False,
+        mux_simulator: Optional[MuxSimulator] = None,
+        Simulator: Optional[PeripheralSimulator] = None,
+    ) -> None:
+        """ Initializes atlas driver. """
+
+        # Initialize parameters
+        self.simulate = simulate
+
+        # Initialize logger
+        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+
+        # Initialize I2C
+        try:
+            self.i2c = I2C(
+                name=name,
+                bus=bus,
+                address=address,
+                mux=mux,
+                channel=channel,
+                mux_simulator=mux_simulator,
+                PeripheralSimulator=Simulator,
+            )
+        except I2CError as e:
+            message = "Driver unable to initialize"
+            raise InitError(message, logger=self.logger)
+
+    def process_command(
+        self,
+        command_string: str,
+        processing_seconds: float,
+        num_bytes: int = 31,
+        read_retry: bool = True,
+        read_response: bool = True,
+    ) -> Optional[str]:
+        """Sends command string to device, waits for processing seconds, then
+        tries to read num response bytes with optional retry if device
+        returns a `still processing` response code. Read retry is enabled 
+        by default. Returns response string on success or raises exception 
+        on error."""
+        self.logger.debug("Processing command: {}".format(command_string))
+
+        try:
+            # Send command to device
+            byte_array = bytearray(command_string + "\00", "utf8")
+            self.i2c.write_raw(byte_array)
+
+            # Check if reading response
+            if read_response:
+                return self.read_response(
+                    processing_seconds, num_bytes, retry=read_retry
+                )
+
+            # Otherwise return none
+            return None
+
+        except Exception as e:
+            message = "Unable to process command"
+            raise ProcessCommandError(message, logger=self.logger) from e
+
+    def read_response(
+        self, processing_seconds: float, num_bytes: int, retry: bool = True
+    ) -> str:
+        """Reads response from from device. Waits processing seconds then 
+        tries to read num response bytes with optional retry. Returns 
+        response string on success or raises exception on error."""
+
+        # Give device time to process
+        self.logger.debug("Waiting for {} seconds".format(processing_seconds))
+        time.sleep(processing_seconds)
+
+        # Read device data
+        try:
+            self.logger.debug("Reading response")
+            data = self.i2c.read(num_bytes)
+        except Exception as e:
+            message = "Unable to read response"
+            raise ReadResponseError(message, logger=self.logger)
+
+        # Format response code
+        response_code = int(data[0])
+
+        # Check for invalid syntax
+        if response_code == 2:
+            message = "Unable to read response, invalid command string syntax"
+            raise ReadResponseError(message, logger=self.logger)
+
+        # Check if still processing
+        elif response_code == 254:
+
+            # Try to read one more time if retry enabled
+            if retry == True:
+                self.logger.info("Sensor still processing, retrying read")
+                return self.read_response(processing_seconds, num_bytes, retry=False)
+            else:
+                message = "Unable to read response, insufficient processing time"
+                raise ReadResponseError(message, logger=self.logger)
+
+        # Check if device has no data to send
+        elif response_code == 255:
+
+            # Try to read one more time if retry enabled
+            if retry == True:
+                self.logger.warning("Sensor reported no data to read, retrying read")
+                return self.read_response(processing_seconds, num_bytes, retry=False)
+            else:
+                message = "Unable to read response, insufficient processing time"
+                raise ReadResponseError(message, logger=self.logger)
+
+        # Invalid response code
+        elif response_code != 1:
+            message = "Unable to read response, invalid response code"
+            raise ReadResponseError(message, logger=self.logger)
+
+        # Successfully read response
+        response_message = data[1:].decode("utf-8").strip("\x00")
+        self.logger.debug("Response:`{}`".format(response_message))
+        return response_message
+
+    def read_info(self) -> Info:
+        """Read sensor info register containing sensor type and firmware version. e.g. EC, 2.0."""
+        self.logger.info("Reading sensor info")
+
+        # Send command
+        try:
+            response = self.process_command("i", processing_seconds=0.3)
+        except Exception as e:
+            message = "Unable to read info"
+            raise ReadInfoError(message, logger=self.logger) from e
+
+        # Parse response
+        _, sensor_type, firmware_version = response.split(",")
+
+        # Store firmware version
+        self.firmware_version = float(firmware_version)
+
+        # Create info dataclass
+        info = Info(sensor_type=sensor_type.lower(), firmware_version=firmware_version)
+
+        # Successfully read info
+        self.logger.debug(info)
+        return info
+
+    def read_status(self) -> Status:
+        """ Reads status from device. """
+        self.logger.info("Reading status")
+
+        # Send command
+        try:
+            response = self.process_command("Status", processing_seconds=0.3)
+        except Exception as e:
+            message = "Unable to read status"
+            raise ReadStatusError(message, logger=self.logger) from e
+
+        # Parse response message
+        command, code, voltage = response.split(",")
+
+        # Break out restart code
+        if code == "P":
+            prev_restart_reason = "Powered off"
+            self.logger.debug("Device previous restart due to powered off")
+        elif code == "S":
+            prev_restart_reason = "Software reset"
+            self.logger.debug("Device previous restart due to software reset")
+        elif code == "B":
+            prev_restart_reason = "Browned out"
+            self.logger.critical("Device browned out on previous restart")
+        elif code == "W":
+            prev_restart_reason = "Watchdog"
+            self.logger.debug("Device previous restart due to watchdog")
+        elif code == "U":
+            self.prev_restart_reason = "Unknown"
+            self.logger.warning("Device previous restart due to unknown")
+
+        # Build status data class
+        status = Status(prev_restart_reason=prev_restart_reason, voltage=voltage)
+
+        # Successfully read status
+        self.logger.debug(status)
+        return status
+
+    def enable_protocol_lock(self) -> None:
+        """Enable protocol lock."""
+        self.logger.debug("Enabling protocol lock")
+
+        # Send command
+        try:
+            self.process_command("Plock,1", processing_seconds=0.6)  # was 0.3
+        except Exception as e:
+            message = "Unable to enable protocol lock"
+            raise EnableProtocolLockError(message, logger=self.logger) from e
+
+    def disable_protocol_lock(self) -> None:
+        """Disable protocol lock. """
+        self.logger.debug("Disabling protocol lock")
+
+        # Send command
+        try:
+            self.process_command("Plock,0", processing_seconds=0.6)  # was 0.3
+        except Exception as e:
+            message = "Unable to disable protocol lock"
+            raise DisableProtocolLockError(message, logger=self.logger) from e
+
+    def enable_led(self) -> None:
+        """Enables led."""
+        self.logger.debug("Enabling led")
+
+        # Send command
+        try:
+            self.process_command("L,1", processing_seconds=0.3)
+        except Exception as e:
+            message = "Unable to enable led"
+            raise EnableLEDError(message, logger=self.logger) from e
+
+    def disable_led(self) -> None:
+        """Disables led."""
+        self.logger.debug("Disabling led")
+
+        # Send command
+        try:
+            self.process_command("L,0", processing_seconds=0.3)
+        except Exception as e:
+            message = "Unable to disable led"
+            raise DisableLEDError(message, logger=self.logger) from e
+
+    def enable_sleep_mode(self) -> None:
+        """Enables sleep mode, sensor will wake up by sending any command to it."""
+        self.logger.debug("Enabling sleep mode")
+
+        # Send command
+        try:
+            self.process_command("Sleep", processing_seconds=0.3, read_response=False)
+        except Exception as e:
+            message = "Unable to enable sleep mode"
+            raise EnableSleepModeError(message, logger=self.logger) from e

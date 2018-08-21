@@ -11,7 +11,7 @@ from device.peripherals.classes.peripheral_runner import PeripheralRunner
 from device.utilities.accessors import get_peripheral_config
 
 # Import driver
-from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
+from device.peripherals.classes.atlas.driver import AtlasDriver
 
 
 class DriverRunner(PeripheralRunner):
@@ -26,7 +26,6 @@ class DriverRunner(PeripheralRunner):
         self.parser.add_argument(
             "--status", action="store_true", help="read sensor status"
         )
-        self.parser.add_argument("--ph", action="store_true", help="read pH")
 
     def run(self, *args, **kwargs):
         """Runs driver."""
@@ -38,7 +37,7 @@ class DriverRunner(PeripheralRunner):
             mux = int(mux, 16)
 
         # Initialize driver
-        self.driver = AtlasPHDriver(
+        self.driver = AtlasDriver(
             name=self.args.name,
             bus=self.communication["bus"],
             address=int(self.communication["address"], 16),
@@ -57,12 +56,6 @@ class DriverRunner(PeripheralRunner):
             print("Reading status")
             status = self.driver.read_status()
             print(status)
-
-        # Check if reading pH
-        elif self.args.ph:
-            print("Reading pH")
-            ph, error = self.driver.read_potential_hydrogen()
-            print("pH: {}".format(ph))
 
 
 # Run main

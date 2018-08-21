@@ -1,9 +1,10 @@
 # Import standard python modules
 import time
-from typing import Optional, Tuple
+from typing import Optional, Tuple, NamedTuple
 
 # Import device comms
-from device.comms.i2c import I2C
+from device.comms.i2c2.main import I2C
+from device.comms.i2c2.exceptions import I2CError
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -13,9 +14,12 @@ from device.utilities import maths
 # Import parent class
 from device.peripherals.classes.atlas_driver import AtlasDriver
 
+# Import simulator
+from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
+
 
 class AtlasPHDriver(AtlasDriver):
-    """ Driver for AtlasEC electrical conductivity sensor. """
+    """Driver for Atlas pH sensor."""
 
     # Initialize sensor properties
     _potential_hydrogen_accuracy = 0.002
@@ -40,9 +44,9 @@ class AtlasPHDriver(AtlasDriver):
             mux=mux,
             channel=channel,
             logger_name="Driver({})".format(name),
-            i2c_name=name,
             dunder_name=__name__,
             simulate=simulate,
+            Simulator=AtlasPHSimulator,
         )
 
     def read_potential_hydrogen(self) -> Tuple[Optional[float], Error]:
