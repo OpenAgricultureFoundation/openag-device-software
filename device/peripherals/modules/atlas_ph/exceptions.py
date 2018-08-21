@@ -1,10 +1,9 @@
-class DriverError(Exception):
-    """Base class for errors raised by driver."""
+from device.peripherals.classes.atlas.exceptions import DriverError as AtlasDriverError
 
-    def __init__(self, message, logger=None):
-        self.message = message
-        if logger != None:
-            logger.error(message)
+
+class DriverError(AtlasDriverError):
+    """Base class for errors raised by driver."""
+    ...
 
 
 class InitError(DriverError):
@@ -12,21 +11,26 @@ class InitError(DriverError):
     ...
 
 
-# class SetupError(DriverError):
-#     """Setup errors for sensor driver."""
-#     ...
-
-
-class ReadInfoError(DriverError):
-    """Read info errors for sensor driver."""
+class SetupError(DriverError):
+    """Setup errors for sensor driver."""
     ...
 
 
-class ReadStatusError(DriverError):
-    """Read status errors for sensor driver."""
+class ReadPHError(DriverError):
+    """Read pH errors for sensor driver."""
     ...
 
 
-class ResetError(DriverError):
-    """Reset errors for sensor driver."""
+class SetCompensationTemperatureError(DriverError):
+    """Set compensation temperature errors for sensor driver."""
+    ...
+
+
+class TakeCalibrationError(DriverError):
+    """Take calibration errors for sensor driver."""
+    ...
+
+
+class ClearCalibrationError(DriverError):
+    """Clear calibration errors for sensor driver."""
     ...

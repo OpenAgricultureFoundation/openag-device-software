@@ -4,8 +4,8 @@ from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
 from device.comms.i2c2.main import I2C
-from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.exceptions import I2CError
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger

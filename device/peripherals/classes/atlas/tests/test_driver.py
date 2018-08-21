@@ -1,13 +1,16 @@
 # Import standard python libraries
 import sys, os, pytest
 
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+
 # Import driver elements
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.classes.atlas.simulator import AtlasSimulator
 from device.comms.i2c2.mux_simulator import MuxSimulator
 
 
-def test_init():
+def test_init() -> None:
     driver = AtlasDriver(
         name="Test",
         bus=2,
@@ -18,7 +21,7 @@ def test_init():
     )
 
 
-def test_read_info():
+def test_read_info() -> None:
     driver = AtlasDriver(
         "Test",
         2,
@@ -32,7 +35,7 @@ def test_read_info():
     assert info.firmware_version == "1.96"
 
 
-def test_read_status():
+def test_read_status() -> None:
     driver = AtlasDriver(
         "Test",
         2,
@@ -46,7 +49,7 @@ def test_read_status():
     assert status.voltage == 3.655
 
 
-def test_enable_protocol_lock():
+def test_enable_protocol_lock() -> None:
     driver = AtlasDriver(
         "Test",
         2,
@@ -58,7 +61,7 @@ def test_enable_protocol_lock():
     driver.enable_protocol_lock()
 
 
-def test_disable_protocol_lock():
+def test_disable_protocol_lock() -> None:
     driver = AtlasDriver(
         "Test",
         2,
@@ -70,7 +73,7 @@ def test_disable_protocol_lock():
     driver.disable_protocol_lock()
 
 
-def test_enable_led():
+def test_enable_led() -> None:
     driver = AtlasDriver(
         "Test",
         2,
@@ -82,7 +85,7 @@ def test_enable_led():
     driver.enable_led()
 
 
-def test_disable_led():
+def test_disable_led() -> None:
     driver = AtlasDriver(
         "Test",
         2,
@@ -94,7 +97,7 @@ def test_disable_led():
     driver.disable_led()
 
 
-def test_enable_sleep_mode():
+def test_enable_sleep_mode() -> None:
     driver = AtlasDriver(
         "Test",
         2,

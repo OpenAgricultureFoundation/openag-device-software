@@ -5,26 +5,30 @@ from typing import Optional, Tuple, NamedTuple
 # Import device comms
 from device.comms.i2c2.main import I2C
 from device.comms.i2c2.exceptions import I2CError
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities.error import Error
 from device.utilities import maths
 
-# Import parent class
-from device.peripherals.classes.atlas_driver import AtlasDriver
-
-# Import simulator
+# Import module elements
+from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
+from device.peripherals.modules.atlas_ph.exceptions import (
+    ReadPHError,
+    SetCompensationTemperatureError,
+    TakeCalibrationError,
+    ClearCalibrationError,
+)
 
 
 class AtlasPHDriver(AtlasDriver):
     """Driver for Atlas pH sensor."""
 
     # Initialize sensor properties
-    _potential_hydrogen_accuracy = 0.002
-    _min_potential_hydrogen = 0.001
-    _max_potential_hydrogen = 14.000
+    _ph_accuracy = 0.002
+    _min_ph = 0.001
+    _max_ph = 14.000
 
     def __init__(
         self,
@@ -34,8 +38,16 @@ class AtlasPHDriver(AtlasDriver):
         mux: Optional[int] = None,
         channel: Optional[int] = None,
         simulate: bool = False,
+        mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
         """ Initializes driver. """
+
+        # Check if simulating
+        if simulate:
+            self.logger.info("Simulating driver")
+            Simulator = AtlasPHSimulator
+        else:
+            Simulator = None
 
         super().__init__(
             name=name,
@@ -43,127 +55,103 @@ class AtlasPHDriver(AtlasDriver):
             address=address,
             mux=mux,
             channel=channel,
-            logger_name="Driver({})".format(name),
-            dunder_name=__name__,
             simulate=simulate,
-            Simulator=AtlasPHSimulator,
+            mux_simulator=mux_simulator,
+            Simulator=Simulator,
         )
 
-    def read_potential_hydrogen(self) -> Tuple[Optional[float], Error]:
-        """ Reads potential hydrogen from sensor, sets significant 
-            figures based off error magnitude. """
-        self.logger.debug("Reading potential hydrogen")
+    def setup(self) -> None:
+        """Sets up sensor."""
+        self.logger.debug("Setting up sensor")
+
+        try:
+            self.enable_led()
+            info = self.read_info()
+            if info.firmware_version > 1.94:
+                self.enable_protocol_lock()
+        except Exception as e:
+            raise SetupError("Unable to setup", logger=self.logger) from e
+
+    def read_ph(self, retry: bool = True) -> float:
+        """Reads potential hydrogen from sensor, sets significant 
+        figures based off error magnitude."""
+        self.logger.debug("Reading pH")
 
         # Get potential hydrogen reading from hardware
         # Assumed potential hydrogen is only enabled output
-        response, error = self.process_command("R", processing_seconds=1.2)  # was 0.6
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to read potential hydrogen")
-            self.logger.error(error.summary())
-            return None, error
+        try:
+            response = self.process_command("R", process_seconds=1.2, retry=retry)
+        except Exception as e:
+            message = "Unable to read pH"
+            raise ReadPHError(message, logger=self.logger) from e
 
         # Process response
-        potential_hydrogen_raw = float(response)
+        ph_raw = float(response)
 
         # Set significant figures based off error magnitude
-        error_magnitude = maths.magnitude(self._potential_hydrogen_accuracy)
+        error_magnitude = maths.magnitude(self._ph_accuracy)
         significant_figures = error_magnitude * -1
-        potential_hydrogen = round(potential_hydrogen_raw, significant_figures)
+        ph = round(ph_raw, significant_figures)
 
-        # Verify potential hydrogen value within valid range
-        if (
-            potential_hydrogen > self._min_potential_hydrogen
-            and potential_hydrogen < self._min_potential_hydrogen
-        ):
-            self.logger.warning("Potential hydrogen outside of valid range")
-            potential_hydrogen = None
+        # Verify pH value within valid range
+        if ph > self._min_ph and ph < self._min_ph:
+            self.logger.warning("pH outside of valid range")
+            ph = None
 
-        # Succesfully read pH!
-        self.logger.info("pH: {}".format(potential_hydrogen))
-        return potential_hydrogen, Error(None)
+        # Succesfully read pH
+        self.logger.debug("pH: {}".format(ph))
+        return ph
 
-    def set_compensation_temperature(self, temperature: float) -> Error:
+    def set_compensation_temperature(self, temperature: float) -> None:
         """ Commands sensor to set compensation temperature. """
         self.logger.info("Setting compensation temperature")
 
-        # Send command
-        command = "T,{}".format(temperature)
-        _, error = self.process_command(command, processing_seconds=0.3)
+        try:
+            command = "T,{}".format(temperature)
+            self.process_command(command, process_seconds=0.3, retry=retry)
+        except Exception as e:
+            message = "Unable to set compensation temperature"
+            raise SetCompensationTemperatureError(message, logger=self.logger) from e
 
-        # Check for error
-        if error.exists():
-            error.report("Driver unable to set compensation temperature")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully set compensation temperature!
-        return Error(None)
-
-    def take_low_point_calibration_reading(self, value: float) -> Error:
+    def take_low_point_calibration_reading(self, value: float) -> None:
         """ Commands sensor to take a low point calibration reading. """
         self.logger.info("Taking low point calibration reading")
 
-        # Send take low point calibration command to hardware
-        command = "Cal,low,{}".format(value)
-        _, error = self.process_command(command, processing_seconds=0.9)
+        try:
+            command = "Cal,low,{}".format(value)
+            self.process_command(command, process_seconds=0.9, retry=retry)
+        except Exception as e:
+            message = "Unable to take low point calibration"
+            raise TakeCalibrationError(message, logger=self.logger) from e
 
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take low point calibration reading")
-            self.logger.error(error.summary())
-            return error
-
-        # Succesfully took low point calibration reading
-        return Error(None)
-
-    def take_mid_point_calibration_reading(self, value: float) -> Error:
+    def take_mid_point_calibration_reading(self, value: float) -> None:
         """ Commands sensor to take a mid point calibration reading. """
-        self.logger.info("Taking mid point calibration reading, value={}".format(value))
+        self.logger.info("Taking mid point calibration reading")
 
-        # Send take mid point calibration command to hardware
-        command = "Cal,mid,{}".format(value)
-        _, error = self.process_command(command, processing_seconds=0.9)
+        try:
+            command = "Cal,mid,{}".format(value)
+            self.process_command(command, process_seconds=0.9, retry=retry)
+        except Exception as e:
+            message = "Unable to take mid point calibration reading"
+            raise TakeCalibrationError(message, logger=self.logger) from e
 
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take mid point calibration reading")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully took mid point calibration reading!
-        return Error(None)
-
-    def take_high_point_calibration_reading(self, value: float) -> Error:
+    def take_high_point_calibration_reading(self, value: float) -> None:
         """ Commands sensor to take a high point calibration reading. """
         self.logger.info("Taking high point calibration reading")
 
-        # Send take high point calibration command to hardware
-        command = "Cal,high,{}".format(value)
-        _, error = self.process_command(command, processing_seconds=0.9)
+        try:
+            command = "Cal,high,{}".format(value)
+            self.process_command(command, process_seconds=0.9, retry=retry)
+        except Exception as e:
+            message = "Unable to take high point calibration reading"
+            raise TakeCalibrationError(message, logger=self.logger) from e
 
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take high point calibration reading")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully took high point calibration reading!
-        return Error(None)
-
-    def clear_calibration_readings(self) -> Error:
+    def clear_calibration_readings(self) -> None:
         """ Commands sensor to clear calibration data. """
         self.logger.info("Clearing calibration readings")
 
-        # Send take high point calibration command to hardware
-        _, error = self.process_command("Cal,clear", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to clear calibration readings")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully cleared calibration readings
-        return Error(None)
+        try:
+            self.process_command("Cal,clear", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            message = "Unable to clear claibration readings"
+            raise ClearCalibrationError(message, logger=self.logger) from e

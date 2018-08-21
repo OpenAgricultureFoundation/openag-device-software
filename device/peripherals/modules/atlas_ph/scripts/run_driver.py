@@ -4,33 +4,29 @@ import os, sys
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
+# Import typing modules
+from typing import Any
 
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
 
-# Import driver
+# Import driver modules
+from device.peripherals.classes.atlas.scripts.run_driver import DriverRunner as AtlasDriverRunner
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(AtlasDriverRunner):
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         """Initializes run driver."""
         super().__init__(*args, **kwargs)
 
         # Initialize parser
-        self.parser.add_argument("--info", action="store_true", help="read sensor info")
-        self.parser.add_argument(
-            "--status", action="store_true", help="read sensor status"
-        )
         self.parser.add_argument("--ph", action="store_true", help="read pH")
 
-    def run(self, *args, **kwargs):
-        """Runs driver."""
-        super().run(*args, **kwargs)
+    def initialize_driver(self):
+        """Initializes driver instance."""
 
         # Initialize driver optional parameters
         mux = self.communication.get("mux", None)
@@ -46,22 +42,14 @@ class DriverRunner(PeripheralRunner):
             channel=self.communication.get("channel", None),
         )
 
-        # Check if reading info
-        if self.args.info:
-            print("Reading info")
-            info = self.driver.read_info()
-            print(info)
-
-        # Check if reading status
-        elif self.args.status:
-            print("Reading status")
-            status = self.driver.read_status()
-            print(status)
+    def run(self, *args: Any, **kwargs: Any):
+        """Runs driver."""
+        super().run(*args, **kwargs)
 
         # Check if reading pH
-        elif self.args.ph:
+        if self.args.ph:
             print("Reading pH")
-            ph, error = self.driver.read_potential_hydrogen()
+            ph = self.driver.read_ph()
             print("pH: {}".format(ph))
 
 

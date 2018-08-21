@@ -4,6 +4,9 @@ import os, sys
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
+# Import type checks
+from typing import Any
+
 # Import run peripheral parent class
 from device.peripherals.classes.peripheral_runner import PeripheralRunner
 
@@ -14,10 +17,10 @@ from device.utilities.accessors import get_peripheral_config
 from device.peripherals.classes.atlas.driver import AtlasDriver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(PeripheralRunner):  # type: ignore
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
         super().__init__(*args, **kwargs)
 
@@ -41,9 +44,8 @@ class DriverRunner(PeripheralRunner):
             "--sleep", action="store_true", help="enable sleep mode"
         )
 
-    def run(self, *args, **kwargs):
-        """Runs driver."""
-        super().run(*args, **kwargs)
+    def initialize_driver(self):
+        """Initialzes driver instance."""
 
         # Initialize driver optional parameters
         mux = self.communication.get("mux", None)
@@ -58,6 +60,13 @@ class DriverRunner(PeripheralRunner):
             mux=mux,
             channel=self.communication.get("channel", None),
         )
+
+    def run(self, *args: Any, **kwargs: Any) -> None:
+        """Runs driver."""
+        super().run(*args, **kwargs)
+
+        # Initialize driver
+        self.initialize_driver()
 
         # Check if reading info
         if self.args.info:

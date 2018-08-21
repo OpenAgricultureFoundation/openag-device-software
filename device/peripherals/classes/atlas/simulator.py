@@ -1,15 +1,16 @@
+from typing import Dict, Any
 from device.comms.i2c2.peripheral_simulator import PeripheralSimulator, verify_mux
 from device.utilities.bitwise import byte_str
 
 
-class AtlasSimulator(PeripheralSimulator):
+class AtlasSimulator(PeripheralSimulator): # type: ignore
     """Simulates communication with atlas sensors."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None: 
 
         super().__init__(*args, **kwargs)
 
-        self.registers = {}
+        self.registers: Dict = {}
 
         INFO_WRITE_BYTES = bytes([0x69, 0x00])
         INFO_RESPONSE_BYTES = bytes([0x01, 0x3F, 0x49, 0x2C, 0x45, 0x43, 0x2C, 0x31, 0x2E, 0x39, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])

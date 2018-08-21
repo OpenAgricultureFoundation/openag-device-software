@@ -14,7 +14,18 @@ from device.utilities.modes import Modes
 
 
 # Import driver elements
-from device.peripherals.classes.atlas.exceptions import *
+from device.peripherals.classes.atlas.exceptions import (
+    InitError,
+    ProcessCommandError,
+    ReadResponseError,
+    ReadInfoError,
+    ReadStatusError,
+    EnableProtocolLockError,
+    DisableProtocolLockError,
+    EnableLEDError,
+    DisableLEDError,
+    EnableSleepModeError,
+)
 
 
 class Info(NamedTuple):
@@ -30,7 +41,7 @@ class Status(NamedTuple):
 
 
 class AtlasDriver:
-    """ Parent class for atlas drivers. """
+    """Parent class for atlas drivers."""
 
     def __init__(
         self,
@@ -152,7 +163,7 @@ class AtlasDriver:
             raise ReadResponseError(message, logger=self.logger)
 
         # Successfully read response
-        response_message = data[1:].decode("utf-8").strip("\x00")
+        response_message = str(data[1:].decode("utf-8").strip("\x00"))
         self.logger.debug("Response:`{}`".format(response_message))
         return response_message
 
@@ -168,10 +179,11 @@ class AtlasDriver:
             raise ReadInfoError(message, logger=self.logger) from e
 
         # Parse response
-        _, sensor_type, firmware_version = response.split(",")
+        _, sensor_type, firmware_version = response.split(",")  # type: ignore
+        firmware_version = float(firmware_version)
 
         # Store firmware version
-        self.firmware_version = float(firmware_version)
+        self.firmware_version = firmware_version
 
         # Create info dataclass
         info = Info(sensor_type=sensor_type.lower(), firmware_version=firmware_version)
@@ -192,7 +204,7 @@ class AtlasDriver:
             raise ReadStatusError(message, logger=self.logger) from e
 
         # Parse response message
-        command, code, voltage = response.split(",")
+        command, code, voltage = response.split(",")  # type: ignore
 
         # Break out restart code
         if code == "P":

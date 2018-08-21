@@ -1,7 +1,10 @@
+from device.utilities.logger import Logger
+
+
 class DriverError(Exception):
     """Base class for errors raised by driver."""
 
-    def __init__(self, message, logger=None):
+    def __init__(self, message: str, logger: Logger = None) -> None:
         self.message = message
         if logger != None:
             logger.error(message)
