@@ -7,7 +7,7 @@ from device.utilities.logger import Logger
 
 
 class PeripheralEvents:
-   """Event mixin for peripherals."""
+    """Event mixin for peripherals."""
 
     # Initialize parent class var types
     logger: Logger
@@ -15,7 +15,7 @@ class PeripheralEvents:
     min_sampling_interval_seconds: float
 
     def process_event(self, request: Dict) -> None:
-       """Processes an event. Gets request parameters, executes request, returns 
+        """Processes an event. Gets request parameters, executes request, returns 
         response."""
 
         self.logger.debug("Processing event request: `{}`".format(request))
@@ -45,7 +45,7 @@ class PeripheralEvents:
             self.process_peripheral_specific_event(request)
 
     def process_reset_event(self) -> Dict:
-       """Processes reset event."""
+        """Processes reset event."""
         self.logger.debug("Processing reset event")
 
         # Check sensor is in acceptible mode
@@ -62,7 +62,7 @@ class PeripheralEvents:
         return {"status": 200, "message": "Resetting!"}
 
     def process_shutdown_event(self) -> Dict:
-       """Processes shutdown event."""
+        """Processes shutdown event."""
         self.logger.debug("Processing shutdown event")
 
         # Check sensor isn't already in shutdown mode
@@ -78,7 +78,7 @@ class PeripheralEvents:
         return {"status": 200, "message": "Shutting down"}
 
     def process_set_sampling_interval_event(self, request: Dict) -> Dict:
-       """Processes shutdown event."""
+        """Processes shutdown event."""
         self.logger.debug("Processing set sampling interval event")
 
         # Verify value in request
@@ -117,7 +117,7 @@ class PeripheralEvents:
         return {"status": 200, "message": "Set sampling interval"}
 
     def process_enable_calibration_mode_event(self) -> Dict:
-       """Processes enable calibration mode event."""
+        """Processes enable calibration mode event."""
         self.logger.debug("Processing enable calibration mode event")
 
         # Check if sensor alread in calibration mode
@@ -136,7 +136,7 @@ class PeripheralEvents:
         return {"status": 200, "message": "Enabling calibration mode"}
 
     def process_enable_manual_mode_event(self) -> Dict:
-       """Processes enable manual mode event."""
+        """Processes enable manual mode event."""
         self.logger.debug("Processing enable manual mode event")
 
         # Check if sensor alread in manual mode
@@ -155,7 +155,7 @@ class PeripheralEvents:
         return {"status": 200, "message": "Enabling manual mode"}
 
     def process_peripheral_specific_event(self, request: Dict) -> None:
-       """Processes peripheral specific event. This method should be overridden in 
+        """Processes peripheral specific event. This method should be overridden in 
         child class to handle child classes events."""
 
         message = "Unknown event request type!"
