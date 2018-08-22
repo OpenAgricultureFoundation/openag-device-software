@@ -6,6 +6,7 @@ import os
 import platform
 import time
 import urllib.request
+import uuid
 
 from app.viewers import ConnectViewer
 from app.viewers import IoTViewer
@@ -178,10 +179,14 @@ class ConnectUtils:
     @staticmethod
     def get_remote_UI_URL():
         try:
-            about = json.load(open("about.json"))
-            sn = str(about["serial_number"])
-            sn = sn.replace('-', '.')
-            return "http://{}.serveo.net/".format(sn)
+
+            # Get mac address
+            mac_addr = hex(uuid.getnode()).replace("0x", "")
+
+            # Build subdomain
+            subdomain = ".".join(mac_addr[i:i + 2] for i in range(0, 11, 2))
+
+            return "http://{}.serveo.net/".format(subdomain)
         except:
             pass
         return ''
