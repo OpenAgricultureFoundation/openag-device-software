@@ -12,8 +12,11 @@ from device.peripherals.classes.peripheral.events import PeripheralEvents
 from device.peripherals.modules.atlas_ph.exceptions import DriverError
 
 
-class AtlasPHEvents(PeripheralEvents):
+class AtlasPHEvents(PeripheralEvents):  # type: ignore
     """Event mixin for manager."""
+
+    # Initialize var types
+    mode: str
 
     def process_peripheral_specific_event(self, request: Dict) -> None:
         """Processes an event. Gets request parameters, executes request, returns 

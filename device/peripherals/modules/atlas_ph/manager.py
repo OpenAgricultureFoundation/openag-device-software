@@ -13,14 +13,14 @@ from device.peripherals.modules.atlas_ph.exceptions import DriverError
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 
-class AtlasPHManager(PeripheralManager, AtlasPHEvents):
+class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
     """ Manages an Atlas Scientific pH sensor. """
 
     # Initialize compensation temperature parameters
     temperature_threshold = 0.1  # celcius
-    prev_temperature = 0  # celcius
+    prev_temperature = 0.0  # celcius
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes sensor manager."""
 
         # Initialize parent class
@@ -31,9 +31,12 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
         self.temperature_name = self.variables["compensation"]["temperature_celcius"]
 
     @property
-    def ph(self) -> None:
+    def ph(self) -> Optional[float]:
         """Gets potential hydrogen value."""
-        return self.state.get_peripheral_reported_sensor_value(self.name, self.ph_name)
+        value = self.state.get_peripheral_reported_sensor_value(self.name, self.ph_name)
+        if value != None:
+            return float(value)
+        return None
 
     @ph.setter
     def ph(self, value: float) -> None:
@@ -46,9 +49,12 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
             )
 
     @property
-    def temperature(self) -> None:
+    def temperature(self) -> Optional[float]:
         """Gets compensation temperature value from shared environment state."""
-        return self.state.get_environment_reported_sensor_value(self.temperature_name)
+        value = self.state.get_environment_reported_sensor_value(self.temperature_name)
+        if value != None:
+            return float(value)
+        return None
 
     def initialize(self) -> None:
         """Initializes manager."""
@@ -84,7 +90,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
         try:
             self.driver.setup()
         except DriverError as e:
-            self.logger.excption("Unable to setup")
+            self.logger.exception("Unable to setup")
             self.mode = Modes.ERROR
             self.health = 0
 
@@ -95,7 +101,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
         try:
             # Update compensation temperature if new value
             if self.new_compensation_temperature():
-                self.driver.set_compensation_temperature(float(self.temperature))
+                self.driver.set_compensation_temperature(self.temperature)
 
             # Read pH and update health
             self.ph = self.driver.read_ph()
@@ -129,7 +135,8 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
             return False
 
         # Check if temperature value sufficiently different
-        if abs(self.temperature - self.prev_temperature) < self.temperature_threshold:
+        delta = abs(self.temperature - self.prev_temperature)  # type: ignore
+        if delta < self.temperature_threshold:
             return False
 
         # New compensation temperature exists

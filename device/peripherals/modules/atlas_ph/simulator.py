@@ -1,17 +1,23 @@
-from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
+# Import python types
+from typing import Any, Dict
+
+# Import device utilities 
 from device.utilities.bitwise import byte_str
 
+# Import simulator base clase
+from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
 
-class AtlasPHSimulator(PeripheralSimulator):
+
+class AtlasPHSimulator(PeripheralSimulator): # type: ignore
     """Simulates communication with atlas pH sensor."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """ Initializes simulator."""
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
-        self.registers = {}
+        self.registers: Dict = {}
 
         # Initialize write and response bytes
         PH_WRITE_BYTES = bytes([0x52, 0x00])

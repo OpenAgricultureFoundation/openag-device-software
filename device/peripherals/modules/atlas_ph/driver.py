@@ -15,6 +15,7 @@ from device.utilities import maths
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
 from device.peripherals.modules.atlas_ph.exceptions import (
+    SetupError,
     ReadPHError,
     SetCompensationTemperatureError,
     TakeCalibrationError,
@@ -22,7 +23,7 @@ from device.peripherals.modules.atlas_ph.exceptions import (
 )
 
 
-class AtlasPHDriver(AtlasDriver):
+class AtlasPHDriver(AtlasDriver):  # type: ignore
     """Driver for Atlas pH sensor."""
 
     # Initialize sensor properties
@@ -72,7 +73,7 @@ class AtlasPHDriver(AtlasDriver):
         except Exception as e:
             raise SetupError("Unable to setup", logger=self.logger) from e
 
-    def read_ph(self, retry: bool = True) -> float:
+    def read_ph(self, retry: bool = True) -> Optional[float]:
         """Reads potential hydrogen from sensor, sets significant 
         figures based off error magnitude."""
         self.logger.info("Reading pH")
@@ -94,9 +95,9 @@ class AtlasPHDriver(AtlasDriver):
         ph = round(ph_raw, significant_figures)
 
         # Verify pH value within valid range
-        if ph > self.min_ph and ph < self.min_ph:
+        if ph < self.min_ph or ph > self.max_ph:
             self.logger.warning("pH outside of valid range")
-            ph = None
+            return None
 
         # Succesfully read pH
         self.logger.info("pH: {}".format(ph))

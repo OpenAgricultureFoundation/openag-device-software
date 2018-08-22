@@ -11,7 +11,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "potential_hydrogen": "water_potential_hydrogen"
+                        "ph": "water_potential_hydrogen"
                     },
                     "actuator": null,
                     "compensation": {

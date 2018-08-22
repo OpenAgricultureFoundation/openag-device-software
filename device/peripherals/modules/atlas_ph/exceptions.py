@@ -1,7 +1,7 @@
 from device.peripherals.classes.atlas.exceptions import DriverError as AtlasDriverError
 
 
-class DriverError(AtlasDriverError):
+class DriverError(AtlasDriverError):  # type: ignore
     """Base class for errors raised by driver."""
     ...
 

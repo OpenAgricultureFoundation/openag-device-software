@@ -4,7 +4,7 @@ import sys, os, pytest, json
 # Import python types
 from typing import List
 
-# Set system path
+# Set system path and directory
 root_dir = os.environ["OPENAG_BRAIN_ROOT"]
 sys.path.append(root_dir)
 os.chdir(root_dir)
