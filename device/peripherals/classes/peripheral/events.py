@@ -18,8 +18,7 @@ class PeripheralEvents:
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {
-                "status": 400,
-                "message": "Invalid request parameters: {}".format(e),
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
             }
 
         # Process general event requests
@@ -48,9 +47,9 @@ class PeripheralEvents:
             and (self.mode != Modes.CALIBRATE)
             and (self.mode != Modes.SHUTDOWN)
         ):
-            error_message = "Unable to reset peripheral from {} mode!".format(self.mode)
-            self.logger.info(error_message)
-            response = {"status": 400, "message": error_message}
+            message = "Unable to reset peripheral from {} mode!".format(self.mode)
+            self.logger.info(message)
+            response = {"status": 400, "message": message}
 
         # Transition to reset mode on next state machine update
         self.mode = Modes.RESET
@@ -65,9 +64,9 @@ class PeripheralEvents:
 
         # Check sensor isn't already in shutdown mode
         if self.mode == Modes.SHUTDOWN:
-            error_message = "Device already in shutdown mode!"
-            self.logger.info(error_message)
-            response = {"status": 200, "message": error_message}
+            message = "Device already in shutdown mode!"
+            self.logger.info(message)
+            response = {"status": 200, "message": message}
 
         # Transition to shutdown mode on next state machine update
         self.mode = Modes.SHUTDOWN
@@ -86,17 +85,14 @@ class PeripheralEvents:
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             self.response = {
-                "status": 400,
-                "message": "Invalid request parameters: {}".format(e),
+                "status": 400, "message": "Invalid request parameters: {}".format(e)
             }
 
         # Check sensor is in normal or shutdown mode
         if (self.mode != Modes.NORMAL) and (self.mode != Modes.SHUTDOWN):
-            error_message = "Unable to set sampling interval from {} mode!".format(
-                self.mode
-            )
-            self.logger.info(error_message)
-            response = {"status": 400, "message": error_message}
+            message = "Unable to set sampling interval from {} mode!".format(self.mode)
+            self.logger.info(message)
+            response = {"status": 400, "message": message}
 
         # Safely get desired sampling interval
         try:
@@ -107,11 +103,11 @@ class PeripheralEvents:
 
         # Check desired sampling interval larger than min interval
         if desired_sampling_interval_seconds < self._min_sampling_interval_seconds:
-            error_message = "Unable to set sampling interval below {} seconds.".format(
+            message = "Unable to set sampling interval below {} seconds.".format(
                 self._min_sampling_interval_seconds
             )
-            self.logger.info(error_message)
-            response = {"status": 400, "message": error_message}
+            self.logger.info(message)
+            response = {"status": 400, "message": message}
 
         # Set new sampling interval
         self.sampling_interval_seconds = desired_sampling_interval_seconds

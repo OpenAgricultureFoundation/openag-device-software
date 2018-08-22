@@ -1,40 +1,38 @@
 # Import standard python modules
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
 
 # Import peripheral parent class
-from device.peripherals.classes.peripheral_manager import PeripheralManager
+from device.peripherals.classes.peripheral.manager import PeripheralManager
 
 # Import module elements
 from device.peripherals.modules.atlas_ph.events import AtlasPHEvents
 from device.peripherals.modules.atlas_ph.exceptions import DriverError
+from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 
 class AtlasPHManager(PeripheralManager, AtlasPHEvents):
     """ Manages an Atlas Scientific pH sensor. """
 
     # Initialize compensation temperature parameters
-    _temperature_threshold = 0.1  # celcius
-    _prev_temperature = 0  # celcius
+    temperature_threshold = 0.1  # celcius
+    prev_temperature = 0  # celcius
 
-    def __init__(self, *args, **kwargs):
-        """Instantiates sensor. Instantiates parent class, and initializes 
-        sensor variable name."""
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initializes sensor manager."""
 
-        # Instantiate parent class
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.ph_name = self.parameters["variables"]["sensor"]["ph"]
-        self.temperature_name = self.parameters["variables"]["compensation"][
-            "temperature_celcius"
-        ]
+        self.ph_name = self.variables["sensor"]["ph"]
+        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
 
     @property
     def ph(self) -> None:
-        """ Gets potential hydrogen value. """
+        """Gets potential hydrogen value."""
         return self.state.get_peripheral_reported_sensor_value(self.name, self.ph_name)
 
     @ph.setter
@@ -49,7 +47,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
 
     @property
     def temperature(self) -> None:
-        """ Gets compensation temperature value from shared environment state. """
+        """Gets compensation temperature value from shared environment state."""
         return self.state.get_environment_reported_sensor_value(self.temperature_name)
 
     def initialize(self) -> None:
@@ -62,41 +60,37 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
         # Initialize health
         self.health = 100.0
 
-        # Initialize driver optional parameters
-        mux = self.communication.get("mux", None)
-        if mux != None:
-            mux = int(mux, 16)
-
         # Initialize driver
         try:
-            self.driver = AtlasDriver(
+            self.driver = AtlasPHDriver(
                 name=self.name,
-                bus=self.communication["bus"],
-                address=int(self.communication["address"], 16),
-                mux=mux,
-                channel=self.communication.get("channel", None),
+                bus=self.bus,
+                address=self.address,
+                mux=self.mux,
+                channel=self.channel,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
         except DriverError as e:
-            self.logger.exception("Manager unable to initialize")
+            self.logger.exception("Unable to initialize")
             self.health = 0.0
             self.mode = Modes.ERROR
             return
 
     def setup(self) -> None:
         """Sets up sensor."""
-        self.logger.debug("Setting up sensor")
+        self.logger.info("Setting up")
 
         try:
             self.driver.setup()
         except DriverError as e:
-            self.logger.error("Unable to setup")
+            self.logger.excption("Unable to setup")
             self.mode = Modes.ERROR
             self.health = 0
 
     def update(self) -> None:
         """Updates sensor."""
+        self.logger.info("Updating")
 
         try:
             # Update compensation temperature if new value
@@ -120,11 +114,11 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
 
     def shutdown(self) -> None:
         """Shuts down sensor."""
-        self.logger.info("Shutting down sensor")
+        self.logger.info("Shutting down")
         self.clear_reported_values()
 
     def new_compensation_temperature(self) -> bool:
-        """Check if there is a new compensation temperature value."""
+        """Checks if there is a new compensation temperature value."""
 
         # Check if calibrating
         if self.mode == Modes.CALIBRATE:
@@ -135,7 +129,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):
             return False
 
         # Check if temperature value sufficiently different
-        if abs(self.temperature - self._prev_temperature) < self._temperature_threshold:
+        if abs(self.temperature - self.prev_temperature) < self.temperature_threshold:
             return False
 
         # New compensation temperature exists

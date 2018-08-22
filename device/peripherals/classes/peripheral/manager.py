@@ -21,8 +21,8 @@ class PeripheralManager:
     thread_is_active = True
 
     # Initialize timing variabless
-    _default_sampling_interval_seconds = 5
-    _min_sampling_interval_seconds = 2
+    default_sampling_interval_seconds = 5
+    min_sampling_interval_seconds = 2
     last_update_seconds = None
     last_update_interval_seconds = None
 
@@ -45,6 +45,20 @@ class PeripheralManager:
 
         # Load config parameters
         self.parameters = self.config["parameters"]
+        self.variables = self.parameters.get("variables", {})
+        self.communication = self.parameters.get("communication", {})
+
+        # Get standard i2c config parameters if they exist
+        self.bus = self.communication.get("bus", None)
+        self.address = self.communication.get("address", None)
+        self.mux = self.communication.get("mux", None)
+        self.channel = self.communication.get("channel", None)
+
+        # Convert i2c config params from hex to int if they exist
+        if self.address != None:
+            self.address = int(self.address, 16)
+        if self.mux != None:
+            self.mux = int(self.mux, 16)
 
         # Load setup dict and uuid
         self.setup_dict = self.load_setup_dict_from_file()
@@ -124,8 +138,8 @@ class PeripheralManager:
                 "sampling_interval_seconds"
             ]
         else:
-            self.sampling_interval_seconds = self._default_sampling_interval_seconds
-            return self._default_sampling_interval_seconds
+            self.sampling_interval_seconds = self.default_sampling_interval_seconds
+            return self.default_sampling_interval_seconds
 
     @sampling_interval_seconds.setter
     def sampling_interval_seconds(self, value):

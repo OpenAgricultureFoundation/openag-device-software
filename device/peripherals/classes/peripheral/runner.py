@@ -12,8 +12,13 @@ from device.comms.i2c import I2C
 from device.utilities.accessors import get_peripheral_config
 
 
-class PeripheralRunner:
-    """Runs peripherals."""
+class RunnerBase:
+    """Runner base class."""
+
+    # Initialize defaults
+    default_device = None
+    default_name = None
+    default_log_level = logging.DEBUG
 
     def __init__(self) -> None:
         """Initializes run peripheral."""
@@ -25,8 +30,9 @@ class PeripheralRunner:
         # Initialize parser
         self.parser = argparse.ArgumentParser(description="Test and debug script")
         self.parser.add_argument(
-            "--loop", action="store_true", help="loop command prompt"
+            "--default", action="store_true", help="use default device and name"
         )
+        self.parser.add_argument("--log-level", type=str, help="set logging level")
         self.parser.add_argument(
             "--device", type=str, help="specifies device config file name"
         )
@@ -57,7 +63,22 @@ class PeripheralRunner:
         self.args = self.parser.parse_args()
 
         # Initialize logger
-        logging.basicConfig(level=logging.DEBUG)
+        if self.args.log_level:
+            logging.basicConfig(level=getattr(logging, self.args.log_level))
+        else:
+            logging.basicConfig(level=self.default_log_level)
+
+        # Check if using defaults
+        if self.args.default:
+
+            # Check if defaults are set
+            if self.default_device == None or self.default_name == None:
+                print("Defaults are not setup")
+                sys.exit(0)
+
+            # Set defaults
+            self.args.device = self.default_device
+            self.args.name = self.default_name
 
         # Check if listing devices
         if self.args.devices:
@@ -109,16 +130,31 @@ class PeripheralRunner:
             self.device_config["peripherals"], self.args.name
         )
 
-        # Initialize peripheral communication
-        self.communication = self.peripheral_config["parameters"]["communication"]
-
         # Initialize peripheral setup
         setup_name = self.peripheral_config["parameters"]["setup"]["file_name"]
         self.peripheral_setup = json.load(
             open("device/peripherals/modules/" + setup_name + ".json")
         )
 
+        # Initialize parameters if exist
+        self.parameters = self.peripheral_config.get("parameters", {})
+
+        # Initialize communication if exists
+        self.communication = self.parameters.get("communication", {})
+
+        # Initialize standard i2c config parameters if they exist
+        self.bus = self.communication.get("bus", None)
+        self.address = self.communication.get("address", None)
+        self.mux = self.communication.get("mux", None)
+        self.channel = self.communication.get("channel", None)
+
+        # Convert i2c config params from hex to int if they exist
+        if self.address != None:
+            self.address = int(self.address, 16)
+        if self.mux != None:
+            self.mux = int(self.mux, 16)
+
 
 if __name__ == "__main__":
-    pr = PeripheralRunner()
-    pr.run()
+    runner = RunnerBase()
+    runner.run()

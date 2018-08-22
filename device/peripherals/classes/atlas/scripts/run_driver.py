@@ -8,7 +8,7 @@ sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 from typing import Any
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
+from device.peripherals.classes.peripheral.runner import RunnerBase
 
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
@@ -17,11 +17,16 @@ from device.utilities.accessors import get_peripheral_config
 from device.peripherals.classes.atlas.driver import AtlasDriver
 
 
-class DriverRunner(PeripheralRunner):  # type: ignore
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
+
+    # Initialize driver class
+    Driver = AtlasDriver
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
+
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize parser
@@ -44,65 +49,47 @@ class DriverRunner(PeripheralRunner):  # type: ignore
             "--sleep", action="store_true", help="enable sleep mode"
         )
 
-    def initialize_driver(self):
-        """Initialzes driver instance."""
-
-        # Initialize driver optional parameters
-        mux = self.communication.get("mux", None)
-        if mux != None:
-            mux = int(mux, 16)
-
-        # Initialize driver
-        self.driver = AtlasDriver(
-            name=self.args.name,
-            bus=self.communication["bus"],
-            address=int(self.communication["address"], 16),
-            mux=mux,
-            channel=self.communication.get("channel", None),
-        )
-
     def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
+
+        # Run parent class
         super().run(*args, **kwargs)
 
         # Initialize driver
-        self.initialize_driver()
+        self.driver = self.Driver(
+            name=self.args.name,
+            bus=self.bus,
+            address=self.address,
+            mux=self.mux,
+            channel=self.channel,
+        )
 
         # Check if reading info
         if self.args.info:
-            print("Reading info")
-            info = self.driver.read_info()
-            print(info)
+            print(self.driver.read_info())
 
         # Check if reading status
         elif self.args.status:
-            print("Reading status")
-            status = self.driver.read_status()
-            print(status)
+            print(self.driver.read_status())
 
         # Check if enabling protocol lock
         elif self.args.enable_plock:
-            print("Enabling protocol lock")
             self.driver.enable_protocol_lock()
 
         # Check if disabling protocol lock
         elif self.args.disable_plock:
-            print("Disabling protocol lock")
             self.driver.disable_protocol_lock()
 
         # Check if enabling led
         elif self.args.enable_led:
-            print("Enabling LED")
             self.driver.enable_led()
 
         # Check if disabling led
         elif self.args.disable_led:
-            print("Disabling LED")
             self.driver.disable_led()
 
         # Check if reading status
         elif self.args.sleep:
-            print("Enabling sleep mode")
             self.driver.enable_sleep_mode()
 
 

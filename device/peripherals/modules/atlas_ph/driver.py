@@ -26,9 +26,9 @@ class AtlasPHDriver(AtlasDriver):
     """Driver for Atlas pH sensor."""
 
     # Initialize sensor properties
-    _ph_accuracy = 0.002
-    _min_ph = 0.001
-    _max_ph = 14.000
+    ph_accuracy = 0.002
+    min_ph = 0.001
+    max_ph = 14.000
 
     def __init__(
         self,
@@ -62,7 +62,7 @@ class AtlasPHDriver(AtlasDriver):
 
     def setup(self) -> None:
         """Sets up sensor."""
-        self.logger.debug("Setting up sensor")
+        self.logger.info("Setting up sensor")
 
         try:
             self.enable_led()
@@ -75,7 +75,7 @@ class AtlasPHDriver(AtlasDriver):
     def read_ph(self, retry: bool = True) -> float:
         """Reads potential hydrogen from sensor, sets significant 
         figures based off error magnitude."""
-        self.logger.debug("Reading pH")
+        self.logger.info("Reading pH")
 
         # Get potential hydrogen reading from hardware
         # Assumed potential hydrogen is only enabled output
@@ -89,20 +89,22 @@ class AtlasPHDriver(AtlasDriver):
         ph_raw = float(response)
 
         # Set significant figures based off error magnitude
-        error_magnitude = maths.magnitude(self._ph_accuracy)
+        error_magnitude = maths.magnitude(self.ph_accuracy)
         significant_figures = error_magnitude * -1
         ph = round(ph_raw, significant_figures)
 
         # Verify pH value within valid range
-        if ph > self._min_ph and ph < self._min_ph:
+        if ph > self.min_ph and ph < self.min_ph:
             self.logger.warning("pH outside of valid range")
             ph = None
 
         # Succesfully read pH
-        self.logger.debug("pH: {}".format(ph))
+        self.logger.info("pH: {}".format(ph))
         return ph
 
-    def set_compensation_temperature(self, temperature: float) -> None:
+    def set_compensation_temperature(
+        self, temperature: float, retry: bool = True
+    ) -> None:
         """ Commands sensor to set compensation temperature. """
         self.logger.info("Setting compensation temperature")
 
@@ -113,8 +115,10 @@ class AtlasPHDriver(AtlasDriver):
             message = "Unable to set compensation temperature"
             raise SetCompensationTemperatureError(message, logger=self.logger) from e
 
-    def take_low_point_calibration_reading(self, value: float) -> None:
-        """ Commands sensor to take a low point calibration reading. """
+    def take_low_point_calibration_reading(
+        self, value: float, retry: bool = True
+    ) -> None:
+        """Commands sensor to take a low point calibration reading."""
         self.logger.info("Taking low point calibration reading")
 
         try:
@@ -124,7 +128,9 @@ class AtlasPHDriver(AtlasDriver):
             message = "Unable to take low point calibration"
             raise TakeCalibrationError(message, logger=self.logger) from e
 
-    def take_mid_point_calibration_reading(self, value: float) -> None:
+    def take_mid_point_calibration_reading(
+        self, value: float, retry: bool = True
+    ) -> None:
         """ Commands sensor to take a mid point calibration reading. """
         self.logger.info("Taking mid point calibration reading")
 
@@ -135,7 +141,9 @@ class AtlasPHDriver(AtlasDriver):
             message = "Unable to take mid point calibration reading"
             raise TakeCalibrationError(message, logger=self.logger) from e
 
-    def take_high_point_calibration_reading(self, value: float) -> None:
+    def take_high_point_calibration_reading(
+        self, value: float, retry: bool = True
+    ) -> None:
         """ Commands sensor to take a high point calibration reading. """
         self.logger.info("Taking high point calibration reading")
 
@@ -146,7 +154,7 @@ class AtlasPHDriver(AtlasDriver):
             message = "Unable to take high point calibration reading"
             raise TakeCalibrationError(message, logger=self.logger) from e
 
-    def clear_calibration_readings(self) -> None:
+    def clear_calibration_readings(self, retry: bool = True) -> None:
         """ Commands sensor to clear calibration data. """
         self.logger.info("Clearing calibration readings")
 

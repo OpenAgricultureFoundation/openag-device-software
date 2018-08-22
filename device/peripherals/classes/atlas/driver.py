@@ -140,7 +140,7 @@ class AtlasDriver:
 
             # Try to read one more time if retry enabled
             if retry == True:
-                self.logger.info("Sensor still processing, retrying read")
+                self.logger.debug("Sensor still processing, retrying read")
                 return self.read_response(process_seconds, num_bytes, retry=False)
             else:
                 message = "Unable to read response, insufficient processing time"
@@ -169,7 +169,7 @@ class AtlasDriver:
 
     def read_info(self, retry: bool = True) -> Info:
         """Read sensor info register containing sensor type and firmware version. e.g. EC, 2.0."""
-        self.logger.info("Reading sensor info")
+        self.logger.info("Reading info register")
 
         # Send command
         try:
@@ -194,7 +194,7 @@ class AtlasDriver:
 
     def read_status(self, retry: bool = True) -> Status:
         """ Reads status from device. """
-        self.logger.info("Reading status")
+        self.logger.info("Reading status register")
 
         # Send command
         try:
@@ -232,7 +232,7 @@ class AtlasDriver:
 
     def enable_protocol_lock(self, retry: bool = True) -> None:
         """Enable protocol lock."""
-        self.logger.debug("Enabling protocol lock")
+        self.logger.info("Enabling protocol lock")
 
         # Send command
         try:
@@ -254,7 +254,7 @@ class AtlasDriver:
 
     def enable_led(self, retry: bool = True) -> None:
         """Enables led."""
-        self.logger.debug("Enabling led")
+        self.logger.info("Enabling led")
 
         # Send command
         try:
@@ -265,7 +265,7 @@ class AtlasDriver:
 
     def disable_led(self, retry: bool = True) -> None:
         """Disables led."""
-        self.logger.debug("Disabling led")
+        self.logger.info("Disabling led")
 
         # Send command
         try:
@@ -276,7 +276,7 @@ class AtlasDriver:
 
     def enable_sleep_mode(self, retry: bool = True) -> None:
         """Enables sleep mode, sensor will wake up by sending any command to it."""
-        self.logger.debug("Enabling sleep mode")
+        self.logger.info("Enabling sleep mode")
 
         # Send command
         try:
