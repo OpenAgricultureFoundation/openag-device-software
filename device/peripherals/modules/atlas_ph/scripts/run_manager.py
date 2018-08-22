@@ -8,7 +8,7 @@ sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 from typing import Any
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral.manager_runner import ManagerRunnerBase
+from device.peripherals.classes.peripheral.scripts.run_manager import ManagerRunnerBase
 
 # Import device utilities
 from device.utilities.modes import Modes

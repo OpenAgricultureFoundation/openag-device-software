@@ -44,11 +44,11 @@ class AtlasPHDriver(AtlasDriver):
 
         # Check if simulating
         if simulate:
-            self.logger.info("Simulating driver")
             Simulator = AtlasPHSimulator
         else:
             Simulator = None
 
+        # Initialize parent class
         super().__init__(
             name=name,
             bus=bus,
