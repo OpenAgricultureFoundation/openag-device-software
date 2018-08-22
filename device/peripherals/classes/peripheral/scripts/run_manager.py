@@ -7,8 +7,8 @@ sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 # Import typing modules
 from typing import Any
 
-# Import run peripheral parent class
-from device.peripherals.classes.peripheral.runner import RunnerBase
+# Import runner base class
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
@@ -16,11 +16,17 @@ from device.utilities.accessors import get_peripheral_config
 # Import device state
 from device.state import State
 
+# Import peripheral manager
+from device.peripherals.classes.peripheral.manager import PeripheralManager
 
-class ManagerRunnerBase(RunnerBase):
+
+class ManagerRunnerBase(RunnerBase):  # type: ignore
     """Runs manager."""
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    # Initialize peripheral manager
+    Manager = PeripheralManager
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes manager runner base class."""
 
         # Initialize parent class
@@ -32,7 +38,7 @@ class ManagerRunnerBase(RunnerBase):
         self.parser.add_argument("--reset", action="store_true", help="resets")
         self.parser.add_argument("--shutdown", action="store_true", help="shutsdown")
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
 
         # Run parent class
@@ -61,3 +67,8 @@ class ManagerRunnerBase(RunnerBase):
         # Check if shutting down
         if self.args.shutdown:
             self.manager.shutdown()
+
+
+if __name__ == "__main__":
+    runner = ManagerRunnerBase()
+    runner.run()

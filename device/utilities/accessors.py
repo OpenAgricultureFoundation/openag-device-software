@@ -13,13 +13,24 @@ def set_nested_dict_safely(nested_dict: Dict, keys: List, value: str) -> None:
         nested_dict[keys[-1]] = value
 
 
-def get_nested_dict_safely(nested_dict: Dict, keys: List) -> Any:
+def get_nested_dict_safely(
+    nested_dict: Dict, keys: List, return_type: Optional[Any] = None
+) -> Any:
     """ Safely gets value from nested dict. """
     for key in keys:
         if key not in nested_dict:
             return None
         nested_dict = nested_dict[key]
-    return nested_dict  # on last key, nested dict becomes value
+
+    # On last key, nested dict becomes value
+    value = nested_dict
+
+    # Check if return type specified
+    if return_type != None:
+        return return_type(value)
+
+    # Otherwise return un-type cast value
+    return value
 
 
 def get_peripheral_config(peripheral_configs: List, name: str) -> Dict:

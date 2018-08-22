@@ -1,5 +1,7 @@
 # Import standard python modules
 import sys, os, argparse, logging, glob, json
+
+# Import python types
 from typing import List
 
 # Set system path
@@ -89,12 +91,14 @@ class RunnerBase:
 
         # Check for device config argument
         if self.args.device == None:
-            print("Please specify a device configuration (list devices with --devices)")
+            print("Please specify a device configuration or use --default")
+            print("Note: you can list available device configs with --devices")
             sys.exit(0)
 
         # Check for existing device config
         if self.args.device not in self.devices:
-            print("Invalid device config name (list devices with --devices)")
+            print("Invalid device config name")
+            print("Note: you can list devices with --devices)")
             sys.exit(0)
 
         # Load in device config
@@ -117,12 +121,14 @@ class RunnerBase:
 
         # Check for peripheral name argument
         if self.args.name == None:
-            print("Please specify a peripheral name (list names with --names")
+            print("Please specify a peripheral name or use --default")
+            print("Note: you can list names with --names")
             sys.exit(0)
 
         # Check for valid peripheral name
         if self.args.name not in self.names:
-            print("Invalid peripheral name (list names with --names)")
+            print("Invalid peripheral name")
+            print("Note: you can list names with --names)")
             sys.exit(0)
 
         # Initialize peripheral config

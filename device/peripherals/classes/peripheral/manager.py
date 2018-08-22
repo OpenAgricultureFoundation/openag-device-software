@@ -1,13 +1,19 @@
 # Import python modules
 import logging, time, threading, math, json
 
-# Import device modes and errors
+# Import python types
+from typing import Dict, Optional
+
+# Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
 from device.utilities.logger import Logger
 
 # Import device comms
-from device.comms.i2c import I2C
+from device.comms.i2c2.mux_simulator import MuxSimulator
+
+# Import device state
+from device.state import State
 
 
 class PeripheralManager:
@@ -26,7 +32,14 @@ class PeripheralManager:
     last_update_seconds = None
     last_update_interval_seconds = None
 
-    def __init__(self, name, state, config, simulate=False, mux_simulator=None):
+    def __init__(
+        self,
+        name: str,
+        state: State,
+        config: Dict,
+        simulate: bool = False,
+        mux_simulator: MuxSimulator = None,
+    ) -> None:
         """ Initializes peripheral. """
 
         # Initialize passed in parameters
@@ -48,6 +61,10 @@ class PeripheralManager:
         self.variables = self.parameters.get("variables", {})
         self.communication = self.parameters.get("communication", {})
 
+        # Ensure communication is a dict
+        if self.communication == None:
+            self.communication = {}
+
         # Get standard i2c config parameters if they exist
         self.bus = self.communication.get("bus", None)
         self.address = self.communication.get("address", None)
@@ -65,9 +82,12 @@ class PeripheralManager:
         self.setup_uuid = self.setup_dict["uuid"]
 
     @property
-    def health(self) -> None:
+    def health(self) -> Optional[float]:
         """ Gets health value. """
-        return self.state.get_peripheral_value(self.name, "health")
+        value = self.state.get_peripheral_value(self.name, "health")
+        if value != None:
+            return float(value)
+        return None
 
     @health.setter
     def health(self, value: dict) -> None:
@@ -77,72 +97,61 @@ class PeripheralManager:
     # TODO: Use state functions on remaining properties
 
     @property
-    def mode(self):
+    def mode(self) -> Optional[str]:
         """ Gets mode value. """
         return self._mode
 
     @mode.setter
-    def mode(self, value):
+    def mode(self, value: str) -> None:
         """ Safely updates peripheral mode in device state object. """
         self._mode = value
-        with threading.Lock():
-            if self.name not in self.state.peripherals:
-                self.state.peripherals[self.name] = {}
-            self.state.peripherals[self.name]["mode"] = value
+        self.state.set_peripheral_value(self.name, "mode", value)
 
     @property
-    def commanded_mode(self):
+    def commanded_mode(self) -> Optional[str]:
         """ Gets commanded mode from shared state object. """
-        if (
-            self.name in self.state.peripherals
-            and "commanded_mode" in self.state.peripherals[self.name]
-        ):
-            return self.state.peripherals[self.name]["commanded_mode"]
-        else:
-            return None
+        value = self.state.get_peripheral_value(self.name, "commanded_mode")
+        if value != None:
+            return str(value)
+        return None
 
     @commanded_mode.setter
-    def commanded_mode(self, value):
+    def commanded_mode(self, value: str) -> None:
         """ Safely updates commanded mode in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["commanded_mode"] = value
+        self.state.set_peripheral_value(self.name, "commanded_mode", value)
 
     @property
-    def setup_uuid(self):
+    def setup_uuid(self) -> Optional[str]:
         """ Gets setup uuid from shared state object. """
-        if (
-            self.name in self.state.peripherals
-            and "setup_uuid" in self.state.peripherals[self.name]
-        ):
-            return self.state.peripherals[self.name]["setup_uuid"]
-        else:
-            return None
+        value = self.state.get_peripheral_value(self.name, "setup_uuid")
+        if value != None:
+            return str(value)
+        return None
 
     @setup_uuid.setter
-    def setup_uuid(self, value):
+    def setup_uuid(self, value: str) -> None:
         """ Safely updates setup uuid in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["setup_uuid"] = value
+        self.state.set_peripheral_value(self.name, "setup_uuid", value)
 
     @property
-    def sampling_interval_seconds(self):
+    def sampling_interval_seconds(self) -> float:
         """ Gets sampling interval from shared state object. """
-        if (
-            self.name in self.state.peripherals
-            and "stored" in self.state.peripherals[self.name]
-            and "sampling_interval_seconds" in self.state.peripherals[self.name][
-                "stored"
-            ]
-        ):
-            return self.state.peripherals[self.name]["stored"][
-                "sampling_interval_seconds"
-            ]
-        else:
-            self.sampling_interval_seconds = self.default_sampling_interval_seconds
-            return self.default_sampling_interval_seconds
+
+        # Get stored sampling interval
+        peripheral_state = self.state.peripherals.get(self.name, {})
+        stored = peripheral_state.get("stored", {})
+        stored_sampling_interval = stored.get("sampling_interval_seconds", None)
+
+        # Check if stored sampling interval exists
+        if stored_sampling_interval != None:
+            return float(stored_sampling_interval)
+
+        # Otherwise set sampling interval seconds to default value and return
+        self.sampling_interval_seconds = self.default_sampling_interval_seconds
+        return self.default_sampling_interval_seconds
 
     @sampling_interval_seconds.setter
-    def sampling_interval_seconds(self, value):
+    def sampling_interval_seconds(self, value: float) -> None:
         """ Safely updates sampling interval in state object. """
         with threading.Lock():
             if "stored" not in self.state.peripherals[self.name]:
@@ -152,46 +161,38 @@ class PeripheralManager:
             ] = value
 
     @property
-    def request(self):
+    def request(self) -> Optional[Dict]:
         """ Gets request from shared state object. """
-        if (
-            self.name in self.state.peripherals
-            and "request" in self.state.peripherals[self.name]
-        ):
-            return self.state.peripherals[self.name]["request"]
-        else:
-            return None
+        value = self.state.get_peripheral_value(self.name, "request")
+        if value != None:
+            return dict(value)
+        return None
 
     @request.setter
-    def request(self, value):
+    def request(self, value: Optional[Dict]) -> None:
         """ Safely updates request in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["request"] = value
+        self.state.set_peripheral_value(self.name, "request", value)
 
     @property
-    def response(self):
+    def response(self) -> Optional[Dict]:
         """ Gets response from shared state object. """
-        if (
-            self.name in self.state.peripherals
-            and "response" in self.state.peripherals[self.name]
-        ):
-            return self.state.peripherals[self.name]["response"]
-        else:
-            return None
+        value = self.state.get_peripheral_value(self.name, "response")
+        if value != None:
+            return dict(value)
+        return None
 
     @response.setter
-    def response(self, value):
+    def response(self, value: Dict) -> None:
         """ Safely updates request in state object. """
-        with threading.Lock():
-            self.state.peripherals[self.name]["response"] = value
+        self.state.set_peripheral_value(self.name, "response", value)
 
-    def spawn(self):
+    def spawn(self) -> None:
         """ Spawns peripheral thread. """
         self.thread = threading.Thread(target=self.run_state_machine)
         self.thread.daemon = True
         self.thread.start()
 
-    def run_state_machine(self):
+    def run_state_machine(self) -> None:
         """ Runs peripheral state machine. """
         while self.thread_is_active:
             if self.mode == Modes.INIT:
@@ -214,7 +215,7 @@ class PeripheralManager:
                 self.error = "Invalid mode"
                 self.logger.critical(self.error)
 
-    def run_init_mode(self):
+    def run_init_mode(self) -> None:
         """ Runs initialization mode. Initializes peripheral state then 
             transitions to SETUP. Transitions to ERROR on error. """
         self.logger.info("Entered INIT")
@@ -226,7 +227,7 @@ class PeripheralManager:
         if self.mode != Modes.ERROR:
             self.mode = Modes.SETUP
 
-    def run_setup_mode(self):
+    def run_setup_mode(self) -> None:
         """ Runs setup mode. Sets up peripheral then transitions to NORMAL on 
             completion or ERROR on error. """
         self.logger.info("Entered SETUP")
@@ -238,7 +239,7 @@ class PeripheralManager:
         if self.mode != Modes.ERROR:
             self.mode = Modes.NORMAL
 
-    def run_normal_mode(self):
+    def run_normal_mode(self) -> None:
         """ Runs normal operation mode. Every sampling interval gets reported 
             sensor / actuator state, and sets desired actuator state. 
             Transitions to ERROR on error. """
@@ -267,7 +268,7 @@ class PeripheralManager:
             if self.request != None:
                 request = self.request
                 self.request = None
-                self.process_event(request)
+                self.process_event(request)  # type: ignore
 
             # Check for state transition
             transition_modes = [
@@ -279,7 +280,7 @@ class PeripheralManager:
             # Update every 100ms
             time.sleep(0.100)
 
-    def run_calibrate_mode(self):
+    def run_calibrate_mode(self) -> None:
         """ Runs calibrate mode. Currently just does the same thing as normal
             mode except variable reporting functions only update peripheral 
             state instead of both peripheral and environment. Transitions to 
@@ -309,12 +310,12 @@ class PeripheralManager:
             if self.request != None:
                 request = self.request
                 self.request = None
-                self.process_event(request)
+                self.process_event(request)  # type: ignore
 
             # Update every 100ms
             time.sleep(0.100)
 
-    def run_manual_mode(self):
+    def run_manual_mode(self) -> None:
         """ Runs manual mode. Waits for new events and checks for transition to
             normal, reset, shutdown, or error."""
         self.logger.info("Entered MANUAL")
@@ -325,7 +326,7 @@ class PeripheralManager:
             if self.request != None:
                 request = self.request
                 self.request = None
-                self.process_event(request)
+                self.process_event(request)  # type: ignore
 
             # Check for transition to normal, reset, shutdown, or error
             transition_modes = [Modes.NORMAL, Modes.RESET, Modes.SHUTDOWN, Modes.ERROR]
@@ -335,7 +336,7 @@ class PeripheralManager:
             # Update every 100ms
             time.sleep(0.100)
 
-    def run_error_mode(self):
+    def run_error_mode(self) -> None:
         """ Runs error mode. Clears reported values, waits for reset mode 
             command then transitions to RESET. """
         self.logger.info("Entered ERROR")
@@ -358,7 +359,7 @@ class PeripheralManager:
             if self.request != None:
                 request = self.request
                 self.request = None
-                self.process_event(request)
+                self.process_event(request)  # type: ignore
 
             # Check for transition to reset or shutdown
             transition_modes = [Modes.RESET, Modes.SHUTDOWN]
@@ -368,7 +369,7 @@ class PeripheralManager:
             # Update every 100ms
             time.sleep(0.1)
 
-    def run_reset_mode(self):
+    def run_reset_mode(self) -> None:
         """ Runs reset mode. Clears error state then transitions to INIT. """
         self.logger.info("Entered RESET")
 
@@ -378,7 +379,7 @@ class PeripheralManager:
         # Transition to init
         self.mode = Modes.INIT
 
-    def run_shutdown_mode(self):
+    def run_shutdown_mode(self) -> None:
         """ Runs shutdown mode. Shuts down peripheral, waits for 
             initialize command"""
         self.logger.info("Entered SHUTDOWN")
@@ -399,7 +400,7 @@ class PeripheralManager:
             if self.request != None:
                 request = self.request
                 self.request = None
-                self.process_event(request)
+                self.process_event(request)  # type: ignore
 
             # Check for transition to error or reset
             if self.mode == Modes.ERROR or self.mode == Modes.RESET:
@@ -414,31 +415,35 @@ class PeripheralManager:
                 self.logger.debug("Peripheral is shutdown, waiting for reset")
                 last_update_seconds = time.time()
 
-    def load_setup_dict_from_file(self):
+    def load_setup_dict_from_file(self) -> Dict:
         """ Loads setup dict from setup filename parameter. """
         self.logger.debug("Loading setup file")
         file_name = self.parameters["setup"]["file_name"]
         setup_dict = json.load(
             open("device/peripherals/modules/" + file_name + ".json")
         )
-        return setup_dict
+        return dict(setup_dict)
 
-    def initialize(self):
+    def initialize(self) -> None:
         """ Initializes peripheral. """
         self.logger.debug("No initialization required.")
 
-    def setup(self):
+    def setup(self) -> None:
         """ Sets up peripheral. """
         self.logger.debug("No setup required")
 
-    def update(self):
+    def update(self) -> None:
         """ Updates peripheral. """
         self.logger.debug("No update required")
 
-    def reset(self):
+    def reset(self) -> None:
         """ Resets peripheral. """
         self.logger.debug("No reset required")
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """ Shutsdown peripheral. """
         self.logger.debug("No shutdown required")
+
+    def clear_reported_values(self) -> None:
+        """Clears reported values. Child class should overwrite."""
+        self.logger.debug("No values to clear")

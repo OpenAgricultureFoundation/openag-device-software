@@ -1,14 +1,22 @@
+# Import python types
+from typing import Dict
+
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.errors import Errors
+from device.utilities.logger import Logger
 
 
 class PeripheralEvents:
-    """ Event mixin for peripherals. """
+   """Event mixin for peripherals."""
 
-    def process_event(self, request):
-        """ Processes an event. Gets request parameters, executes request, returns 
-            response. """
+    # Initialize parent class var types
+    logger: Logger
+    mode: str
+    min_sampling_interval_seconds: float
+
+    def process_event(self, request: Dict) -> None:
+       """Processes an event. Gets request parameters, executes request, returns 
+        response."""
 
         self.logger.debug("Processing event request: `{}`".format(request))
 
@@ -36,119 +44,120 @@ class PeripheralEvents:
             # Process peripheral specific requests
             self.process_peripheral_specific_event(request)
 
-    def process_reset_event(self):
-        """ Processes reset event. """
+    def process_reset_event(self) -> Dict:
+       """Processes reset event."""
         self.logger.debug("Processing reset event")
 
-        # Check sensor is in normal, error, or calibration mode
-        if (
-            (self.mode != Modes.NORMAL)
-            and (self.mode != Modes.ERROR)
-            and (self.mode != Modes.CALIBRATE)
-            and (self.mode != Modes.SHUTDOWN)
-        ):
+        # Check sensor is in acceptible mode
+        modes = [Modes.NORMAL, Modes.ERROR, Modes.CALIBRATE, Modes.SHUTDOWN]
+        if self.mode not in modes:
             message = "Unable to reset peripheral from {} mode!".format(self.mode)
             self.logger.info(message)
-            response = {"status": 400, "message": message}
+            return {"status": 400, "message": message}
 
         # Transition to reset mode on next state machine update
         self.mode = Modes.RESET
 
         # Return event response
-        response = {"status": 200, "message": "Resetting!"}
-        return response
+        return {"status": 200, "message": "Resetting!"}
 
-    def process_shutdown_event(self):
-        """ Processes shutdown event. """
+    def process_shutdown_event(self) -> Dict:
+       """Processes shutdown event."""
         self.logger.debug("Processing shutdown event")
 
         # Check sensor isn't already in shutdown mode
         if self.mode == Modes.SHUTDOWN:
-            message = "Device already in shutdown mode!"
+            message = "Device already in shutdown mode"
             self.logger.info(message)
-            response = {"status": 200, "message": message}
+            return {"status": 200, "message": message}
 
         # Transition to shutdown mode on next state machine update
         self.mode = Modes.SHUTDOWN
 
         # Return event response
-        response = {"status": 200, "message": "Shutting down!"}
-        return response
+        return {"status": 200, "message": "Shutting down"}
 
-    def process_set_sampling_interval_event(self, request):
-        """ Processes shutdown event. """
+    def process_set_sampling_interval_event(self, request: Dict) -> Dict:
+       """Processes shutdown event."""
         self.logger.debug("Processing set sampling interval event")
 
         # Verify value in request
         try:
             value = request["value"]
         except KeyError as e:
-            self.logger.exception("Invalid request parameters")
-            self.response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
-            }
-
-        # Check sensor is in normal or shutdown mode
-        if (self.mode != Modes.NORMAL) and (self.mode != Modes.SHUTDOWN):
-            message = "Unable to set sampling interval from {} mode!".format(self.mode)
+            message = "Invalid request parameters: {}".format(e)
             self.logger.info(message)
-            response = {"status": 400, "message": message}
+            return {"status": 400, "message": message}
+
+        # Check sensor is in acceptible mode
+        modes = [Modes.NORMAL, Modes.SHUTDOWN]
+        if self.mode not in modes:
+            message = "Unable to set sampling interval from {} mode".format(self.mode)
+            self.logger.info(message)
+            return {"status": 400, "message": message}
 
         # Safely get desired sampling interval
         try:
             desired_sampling_interval_seconds = float(value)
         except ValueError:
-            response = {"status": 400, "message": "Invalid sampling interval value!"}
-            return response
+            return {"status": 400, "message": "Invalid sampling interval value"}
 
         # Check desired sampling interval larger than min interval
-        if desired_sampling_interval_seconds < self._min_sampling_interval_seconds:
+        if desired_sampling_interval_seconds < self.min_sampling_interval_seconds:
             message = "Unable to set sampling interval below {} seconds.".format(
-                self._min_sampling_interval_seconds
+                self.min_sampling_interval_seconds
             )
             self.logger.info(message)
-            response = {"status": 400, "message": message}
+            return {"status": 400, "message": message}
 
         # Set new sampling interval
         self.sampling_interval_seconds = desired_sampling_interval_seconds
 
-        # Return event response
-        response = {"status": 200, "message": "Set sampling interval!"}
-        return response
+        # Successfully set sampling interval
+        return {"status": 200, "message": "Set sampling interval"}
 
-    def process_enable_calibration_mode_event(self):
-        """ Processes enable calibration mode event. """
+    def process_enable_calibration_mode_event(self) -> Dict:
+       """Processes enable calibration mode event."""
         self.logger.debug("Processing enable calibration mode event")
 
-        # TODO: Verify transition from valid mode
-
+        # Check if sensor alread in calibration mode
         if self.mode == Modes.CALIBRATE:
-            response = {"status": 200, "message": "Already in calibration mode!"}
-        else:
-            self.mode = Modes.CALIBRATE
-            response = {"status": 200, "message": "Enabling calibration mode!"}
-        return response
+            return {"status": 200, "message": "Already in calibration mode"}
 
-    def process_enable_manual_mode_event(self):
-        """ Processes enable manual mode event. """
+        # Check sensor is in acceptible mode
+        modes = [Modes.NORMAL, Modes.MANUAL]
+        if self.mode not in modes:
+            mode = self.mode.lower()
+            message = "Unable to enable calibration mode from {} mode".format(mode)
+            return {"status": 400, "message": message}
+
+        # Enable calibration mode
+        self.mode = Modes.CALIBRATE
+        return {"status": 200, "message": "Enabling calibration mode"}
+
+    def process_enable_manual_mode_event(self) -> Dict:
+       """Processes enable manual mode event."""
         self.logger.debug("Processing enable manual mode event")
 
-        # TODO: Verfiy transition from valid mode
-
+        # Check if sensor alread in manual mode
         if self.mode == Modes.MANUAL:
-            response = {"status": 200, "message": "Already in manual mode!"}
-        else:
-            self.mode = Modes.MANUAL
-            response = {"status": 200, "message": "Enabling manual mode!"}
-        return response
+            return {"status": 200, "message": "Already in manual mode"}
 
-    def process_peripheral_specific_event(self, request):
-        """ Processes peripheral specific event. """
+        # Check sensor is in acceptible mode
+        modes = [Modes.NORMAL, Modes.CALIBRATE]
+        if self.mode not in modes:
+            mode = self.mode.lower()
+            message = "Unable to enable manual mode from {} mode".format(mode)
+            return {"status": 400, "message": message}
 
-        # Execute request
-        if False:  # New event condition goes here
-            ...
-        else:
-            message = "Unknown event request type!"
-            self.logger.info(message)
-            self.response = {"status": 400, "message": message}
+        # Enable manual mode
+        self.mode = Modes.MANUAL
+        return {"status": 200, "message": "Enabling manual mode"}
+
+    def process_peripheral_specific_event(self, request: Dict) -> None:
+       """Processes peripheral specific event. This method should be overridden in 
+        child class to handle child classes events."""
+
+        message = "Unknown event request type!"
+        self.logger.info(message)
+        self.response = {"status": 400, "message": message}
