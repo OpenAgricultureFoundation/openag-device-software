@@ -9,8 +9,8 @@ from device.peripherals.classes.peripheral.manager import PeripheralManager
 
 # Import module elements
 from device.peripherals.modules.atlas_ph.events import AtlasPHEvents
-from device.peripherals.modules.atlas_ph.exceptions import DriverError
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
+from device.peripherals.classes.atlas.exceptions import DriverError
 
 
 class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore

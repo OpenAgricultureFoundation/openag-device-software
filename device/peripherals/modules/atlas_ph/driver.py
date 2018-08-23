@@ -14,13 +14,8 @@ from device.utilities import maths
 # Import module elements
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
-from device.peripherals.modules.atlas_ph.exceptions import (
-    SetupError,
-    ReadPHError,
-    SetCompensationTemperatureError,
-    TakeCalibrationError,
-    ClearCalibrationError,
-)
+from device.peripherals.modules.atlas_ph.exceptions import ReadPHError
+from device.peripherals.classes.atlas.exceptions import SetupError
 
 
 class AtlasPHDriver(AtlasDriver):  # type: ignore
@@ -64,14 +59,13 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
     def setup(self) -> None:
         """Sets up sensor."""
         self.logger.info("Setting up sensor")
-
         try:
             self.enable_led()
             info = self.read_info()
             if info.firmware_version > 1.94:
                 self.enable_protocol_lock()
         except Exception as e:
-            raise SetupError("Unable to setup", logger=self.logger) from e
+            raise SetupError(logger=self.logger) from e
 
     def read_ph(self, retry: bool = True) -> Optional[float]:
         """Reads potential hydrogen from sensor, sets significant 
@@ -83,8 +77,7 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
         try:
             response = self.process_command("R", process_seconds=1.2, retry=retry)
         except Exception as e:
-            message = "Unable to read pH"
-            raise ReadPHError(message, logger=self.logger) from e
+            raise ReadPHError(logger=self.logger) from e
 
         # Process response
         ph_raw = float(response)
@@ -102,65 +95,3 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
         # Succesfully read pH
         self.logger.info("pH: {}".format(ph))
         return ph
-
-    def set_compensation_temperature(
-        self, temperature: float, retry: bool = True
-    ) -> None:
-        """ Commands sensor to set compensation temperature. """
-        self.logger.info("Setting compensation temperature")
-
-        try:
-            command = "T,{}".format(temperature)
-            self.process_command(command, process_seconds=0.3, retry=retry)
-        except Exception as e:
-            message = "Unable to set compensation temperature"
-            raise SetCompensationTemperatureError(message, logger=self.logger) from e
-
-    def take_low_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
-        """Commands sensor to take a low point calibration reading."""
-        self.logger.info("Taking low point calibration reading")
-
-        try:
-            command = "Cal,low,{}".format(value)
-            self.process_command(command, process_seconds=0.9, retry=retry)
-        except Exception as e:
-            message = "Unable to take low point calibration"
-            raise TakeCalibrationError(message, logger=self.logger) from e
-
-    def take_mid_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
-        """ Commands sensor to take a mid point calibration reading. """
-        self.logger.info("Taking mid point calibration reading")
-
-        try:
-            command = "Cal,mid,{}".format(value)
-            self.process_command(command, process_seconds=0.9, retry=retry)
-        except Exception as e:
-            message = "Unable to take mid point calibration reading"
-            raise TakeCalibrationError(message, logger=self.logger) from e
-
-    def take_high_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
-        """ Commands sensor to take a high point calibration reading. """
-        self.logger.info("Taking high point calibration reading")
-
-        try:
-            command = "Cal,high,{}".format(value)
-            self.process_command(command, process_seconds=0.9, retry=retry)
-        except Exception as e:
-            message = "Unable to take high point calibration reading"
-            raise TakeCalibrationError(message, logger=self.logger) from e
-
-    def clear_calibration_readings(self, retry: bool = True) -> None:
-        """ Commands sensor to clear calibration data. """
-        self.logger.info("Clearing calibration readings")
-
-        try:
-            self.process_command("Cal,clear", process_seconds=0.3, retry=retry)
-        except Exception as e:
-            message = "Unable to clear claibration readings"
-            raise ClearCalibrationError(message, logger=self.logger) from e

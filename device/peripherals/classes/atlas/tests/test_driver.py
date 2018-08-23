@@ -107,3 +107,75 @@ def test_enable_sleep_mode() -> None:
         Simulator=AtlasSimulator,
     )
     driver.enable_sleep_mode()
+
+
+def test_set_compensation_temperature() -> None:
+    driver = AtlasDriver(
+        "Test",
+        2,
+        0x64,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        Simulator=AtlasSimulator,
+    )
+    driver.set_compensation_temperature(26.0)
+
+
+def test_take_low_point_calibration_reading() -> None:
+    driver = AtlasDriver(
+        "Test",
+        2,
+        0x64,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        Simulator=AtlasSimulator,
+    )
+    driver.take_low_point_calibration_reading(4.0)
+
+
+def test_take_mid_point_calibration_reading() -> None:
+    driver = AtlasDriver(
+        "Test",
+        2,
+        0x64,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        Simulator=AtlasSimulator,
+    )
+    driver.take_mid_point_calibration_reading(7.0)
+
+
+def test_take_high_point_calibration_reading() -> None:
+    driver = AtlasDriver(
+        "Test",
+        2,
+        0x64,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        Simulator=AtlasSimulator,
+    )
+    driver.take_high_point_calibration_reading(10.0)
+
+
+def test_clear_calibration_readings() -> None:
+    driver = AtlasDriver(
+        "Test",
+        2,
+        0x64,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        Simulator=AtlasSimulator,
+    )
+    driver.clear_calibration_readings()
+
+
+def test_factory_reset() -> None:
+    driver = AtlasDriver(
+        "Test",
+        2,
+        0x64,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        Simulator=AtlasSimulator,
+    )
+    driver.factory_reset()

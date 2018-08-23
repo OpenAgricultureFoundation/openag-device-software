@@ -9,7 +9,7 @@ from device.utilities.modes import Modes
 
 # Import peripheral modules
 from device.peripherals.classes.peripheral.events import PeripheralEvents
-from device.peripherals.modules.atlas_ph.exceptions import DriverError
+from device.peripherals.classes.atlas.exceptions import DriverError
 
 
 class AtlasPHEvents(PeripheralEvents):  # type: ignore

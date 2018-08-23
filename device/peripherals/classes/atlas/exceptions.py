@@ -1,60 +1,97 @@
+# Import python types
+from typing import Optional
+
+# Import device utilities
 from device.utilities.logger import Logger
 
 
 class DriverError(Exception):
     """Base class for errors raised by driver."""
+    message_base: str = ""
 
-    def __init__(self, message: str, logger: Logger = None) -> None:
-        self.message = message
+    def __init__(
+        self, message: Optional[str] = None, logger: Optional[Logger] = None
+    ) -> None:
+        """Initializes driver error."""
+
+        # Build error message
+        if message != None:
+            error_message = self.message_base + ": " + message  # type: ignore
+        elif self.message_base != "":
+            error_message = self.message_base
+        else:
+            return
+
+        # Display error
         if logger != None:
-            logger.error(message)
+            logger.error(error_message)  # type: ignore
+        else:
+            print(error_message)
 
 
 class InitError(DriverError):
-    """Initialization errors for sensor driver."""
-    ...
+    message_base = "Unable to initialize"
+
+
+class SetupError(DriverError):
+    message_base = "Unable to setup"
 
 
 class ProcessCommandError(DriverError):
-    """Process command errors for sensor driver."""
-    ...
+    message_base = "Unable to process command"
 
 
 class ReadResponseError(DriverError):
-    """Read response errors for sensor driver."""
-    ...
+    message_base = "Unable to read response"
 
 
 class ReadInfoError(DriverError):
-    """Read info errors for sensor driver."""
-    ...
+    message_base = "Unable to read info"
 
 
 class ReadStatusError(DriverError):
-    """Read status errors for sensor driver."""
-    ...
+    message_base = "Unable to read status"
 
 
 class EnableProtocolLockError(DriverError):
-    """Enable protocol lock errors for sensor driver."""
-    ...
+    message_base = "Unable to enable protocol lock"
 
 
 class DisableProtocolLockError(DriverError):
-    """Disable protocol lock errors for sensor driver."""
-    ...
+    message_base = "Unable to disable protocol lock"
 
 
 class EnableLEDError(DriverError):
-    """Enable led errors for sensor driver."""
-    ...
+    message_base = "Unable to enable LED"
 
 
 class DisableLEDError(DriverError):
-    """Disable led errors for sensor driver."""
-    ...
+    message_base = "Unable to disable LED"
 
 
 class EnableSleepModeError(DriverError):
-    """Enable sleep mode errors for sensor driver."""
-    ...
+    message_base = "Unable to enable sleep mode"
+
+
+class SetCompensationTemperatureError(DriverError):
+    message_base = "Unable to set compensation temperature"
+
+
+class TakeLowPointCalibrationError(DriverError):
+    message_base = "Unable to take low point calibration reading"
+
+
+class TakeMidPointCalibrationError(DriverError):
+    message_base = "Unable to take mid point calibration reading"
+
+
+class TakeHighPointCalibrationError(DriverError):
+    message_base = "Unable to take high point calibration reading"
+
+
+class ClearCalibrationError(DriverError):
+    message_base = "Unable to clear calibration readings"
+
+
+class FactoryResetError(DriverError):
+    message_base = "Unable to perform factory reset"
