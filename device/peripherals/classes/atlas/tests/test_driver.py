@@ -32,7 +32,7 @@ def test_read_info() -> None:
     )
     info = driver.read_info()
     assert info.sensor_type == "ec"
-    assert info.firmware_version == "1.96"
+    assert info.firmware_version == 1.96
 
 
 def test_read_status() -> None:
