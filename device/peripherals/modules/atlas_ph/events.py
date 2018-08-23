@@ -44,7 +44,7 @@ class AtlasPHEvents(PeripheralEvents):  # type: ignore
 
         # Verify value in request
         try:
-            value = int(request["value"])
+            value = float(request["value"])
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             message = "Invalid request parameters: {}".format(e)
@@ -86,7 +86,7 @@ class AtlasPHEvents(PeripheralEvents):  # type: ignore
 
         # Verify value in request
         try:
-            value = int(request["value"])
+            value = float(request["value"])
         except KeyError as e:
             self.logger.exception("Invalid request parameters")
             message = "Invalid request parameters: {}".format(e)
@@ -128,7 +128,7 @@ class AtlasPHEvents(PeripheralEvents):  # type: ignore
 
         # Verify value in request
         try:
-            value = int(request["value"])
+            value = float(request["value"])
         except KeyError as e:
             message = "Invalid request parameters: {}".format(e)
             self.logger.exception(message)
