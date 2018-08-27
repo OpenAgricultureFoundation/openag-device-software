@@ -1,0 +1,12 @@
+Source: openagbrain
+Maintainer: Rob Baynes <rbaynes@mit.edu>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.8
+Build-Depends: debhelper (>= 9)
+
+Package: openagbrain
+Architecture: any
+Depends: ${misc:Depends}, postgresql, python3
+Description: OpenAg Brain
+ Controls food computers.

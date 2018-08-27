@@ -2,18 +2,13 @@
 
 if [[ "$OSTYPE" == "linux"* ]]; then
 
-# If the brain is running from /etc/rc.local, stop it.
-echo 'Prompting for the root password, use "openag12"'
-sudo service rc.local stop
+  # If the brain is running from /etc/rc.local, stop it.
+  sudo service rc.local stop
 
-# Fix up some directories and files that may be owned by root
-sudo chmod 777 logs/ logs/peripherals/ images/ logs/*.log logs/peripherals/*.log
-sudo chown debian:debian -R logs images
-
+  # Fix up some directories and files that may be owned by root
+  sudo chmod -f -R 777 logs/ images/ 
+  #sudo chown -f -R debian:debian logs images
 fi
-
-# Get the latest code
-git pull
 
 # Install any new python modules
 source venv/bin/activate

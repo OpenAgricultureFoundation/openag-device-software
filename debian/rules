@@ -1,0 +1,5 @@
+#!/usr/bin/make -f
+# This is a Makefile, so be mindful of targets, rules and hard tabs.
+%:
+	dh $@
+
