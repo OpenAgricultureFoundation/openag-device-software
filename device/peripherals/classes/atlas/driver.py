@@ -85,6 +85,7 @@ class AtlasDriver:
 
     def setup(self, retry: bool = True):
         """Setsup sensor."""
+        self.logger.debug("Setting up sensor")
         try:
             self.enable_led()
             info = self.read_info()
@@ -332,7 +333,7 @@ class AtlasDriver:
         """Clears calibration readings."""
         self.logger.info("Clearing calibration readings")
         try:
-            self.process_command("Cal,clear", process_seconds=0.3, retry=retry)
+            self.process_command("Cal,clear", process_seconds=0.9, retry=retry)
         except Exception as e:
             raise ClearCalibrationError(logger=self.logger) from e
 

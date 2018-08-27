@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys
+import os, sys, pytest
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])

@@ -14,14 +14,14 @@ from device.peripherals.classes.atlas.exceptions import DriverError
 
 
 class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
-    """ Manages an Atlas Scientific pH sensor. """
+    """Manages an Atlas Scientific pH sensor."""
 
     # Initialize compensation temperature parameters
     temperature_threshold = 0.1  # celcius
     prev_temperature = 0.0  # celcius
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Initializes sensor manager."""
+        """Initializes manager."""
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
@@ -119,7 +119,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
         self.clear_reported_values()
 
     def shutdown(self) -> None:
-        """Shuts down sensor."""
+        """Shutsdown sensor."""
         self.logger.info("Shutting down")
         self.clear_reported_values()
 

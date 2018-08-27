@@ -12,10 +12,13 @@ from device.peripherals.classes.peripheral.events import PeripheralEvents
 from device.peripherals.classes.atlas.exceptions import DriverError
 
 
-class AtlasECEvents(PeripheralEvents):
+class AtlasECEvents(PeripheralEvents):  # type: ignore
     """Event mixin for atlas electrical conductivity sensor."""
 
-    def process_peripheral_specific_event(self, request: Dict) -> Dict:
+    # Define var types
+    mode: str
+
+    def process_peripheral_specific_event(self, request: Dict) -> None:
         """Processes an event. Gets request parameters, executes request, returns 
         response."""
 
@@ -94,8 +97,9 @@ class AtlasECEvents(PeripheralEvents):
         return {"status": 200, "message": message}
 
     def process_low_point_calibration_event(self, request: Dict) -> Dict:
-        """Processes low point calibration event. Gets request parameters,
-        executes request, returns response."""
+        """ Processes low point calibration event. Gets request parameters,
+            executes request, returns response. Requires calibration value 
+            to be within range 0-4. """
         self.logger.info("Processing low point calibration event")
 
         # Verify value in request
@@ -129,8 +133,9 @@ class AtlasECEvents(PeripheralEvents):
         return {"status": 200, "message": message}
 
     def process_high_point_calibration_event(self, request: Dict) -> Dict:
-        """Processes high point calibration event. Gets request parameters,
-        executes request, returns response."""
+        """ Processes high point calibration event. Gets request parameters,
+            executes request, returns response. Requires calibration value 
+            to be within range 10-14. """
         self.logger.info("Processing high point calibration event")
 
         # Verify value in request
@@ -164,7 +169,7 @@ class AtlasECEvents(PeripheralEvents):
         return {"status": 200, "message": message}
 
     def process_clear_calibration_event(self) -> Dict:
-        """Processes clear calibration event."""
+        """ Processes clear calibration event. """
         self.logger.info("Processing clear calibration event")
 
         # Require mode to be in CALIBRATE

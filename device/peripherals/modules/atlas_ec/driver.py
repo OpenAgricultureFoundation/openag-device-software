@@ -25,12 +25,13 @@ from device.peripherals.modules.atlas_ec.exceptions import (
     DisableSalinityOutputError,
     EnableSpecificGravityOutputError,
     DisableSpecificGravityOutputError,
+    SetProbeTypeError,
     TakeDryCalibrationError,
     TakeSinglePointCalibrationError,
 )
 
 
-class AtlasECDriver(AtlasDriver):
+class AtlasECDriver(AtlasDriver):  # type: ignore
     """ Driver for atlas ec sensor. """
 
     # Initialize sensor properties
@@ -80,6 +81,7 @@ class AtlasECDriver(AtlasDriver):
             self.disable_tds_output()
             self.disable_salinity_output()
             self.disable_specific_gravity_output()
+            self.set_probe_type(1.0)
         except Exception as e:
             raise SetupError(logger=self.logger) from e
 
@@ -108,7 +110,7 @@ class AtlasECDriver(AtlasDriver):
         # Verify ec value within valid range
         if ec > self.min_ec and ec < self.min_ec:
             self.logger.warning("ec outside of valid range")
-            ec = None
+            return None
 
         # Successfully read ec
         self.logger.info("EC: {} mS/cm".format(ec))
@@ -178,7 +180,7 @@ class AtlasECDriver(AtlasDriver):
         except Exception as e:
             raise DisableSpecificGravityOutputError(logger=self.logger) from e
 
-    def set_probe_type(self, value: str, retry: bool = True) -> None:
+    def set_probe_type(self, value: float, retry: bool = True) -> None:
         """Set probe type to value."""
         self.logger.info("Setting probe type")
         try:

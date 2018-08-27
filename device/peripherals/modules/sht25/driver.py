@@ -17,7 +17,7 @@ from device.peripherals.modules.sht25.exceptions import *
 
 
 class UserRegister(NamedTuple):
-    """ Dataclass for parsed user register byte. """
+    """Dataclass for parsed user register byte."""
 
     resolution: int
     end_of_battery: bool
@@ -26,13 +26,13 @@ class UserRegister(NamedTuple):
 
 
 class SHT25Driver:
-    """ Driver for atlas sht25 temperature and humidity sensor. """
+    """Driver for atlas sht25 temperature and humidity sensor."""
 
     # Initialize variable properties
-    _min_temperature = -40  # C
-    _max_temperature = 125  # C
-    _min_humidity = 0  # %RH
-    _max_humidity = 100  # %RH
+    min_temperature = -40  # C
+    max_temperature = 125  # C
+    min_humidity = 0  # %RH
+    max_humidity = 100  # %RH
 
     def __init__(
         self,
@@ -105,7 +105,7 @@ class SHT25Driver:
         temperature = float("{:.0f}".format(temperature))
 
         # Verify temperature value within valid range
-        if temperature > self._min_temperature and temperature < self._min_temperature:
+        if temperature > self.min_temperature and temperature < self.min_temperature:
             self.logger.warning("Temperature outside of valid range")
             temperature = None
 
@@ -142,7 +142,7 @@ class SHT25Driver:
         humidity = float("{:.0f}".format(humidity))
 
         # Verify humidity value within valid range
-        if humidity > self._min_humidity and humidity < self._min_humidity:
+        if humidity > self.min_humidity and humidity < self.min_humidity:
             self.logger.warning("Humidity outside of valid range")
             humidity = None
 

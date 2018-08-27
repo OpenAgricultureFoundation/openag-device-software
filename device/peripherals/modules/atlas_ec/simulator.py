@@ -24,6 +24,7 @@ class AtlasECSimulator(AtlasSimulator):  # type: ignore
         # Requires overwriting simulator read / write functions to add state
 
         EC_WRITE_BYTES = bytes([0x52, 0x00])
+        EC_RESPONSE_BYTES = bytes([0x01, 0x30, 0x2E, 0x30, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
         ENABLE_EC_WRITE_BYTES = bytes([0x4F, 0x2C, 0x45, 0x43, 0x2C, 0x31, 0x00])
         ENABLE_EC_RESPONSE_BYTES = ATLAS_SUCCESS_31
@@ -49,7 +50,7 @@ class AtlasECSimulator(AtlasSimulator):  # type: ignore
         DISABLE_SG_WRITE_BYTES = bytes([0x4F, 0x2C, 0x53, 0x47, 0x2C, 0x30, 0x00])
         DISABLE_SG_RESPONSE_BYTES = ATLAS_SUCCESS_31
 
-        SET_PROBE_1_WRITE_BYTES = bytes([[0x4B, 0x2C, 0x31, 0x2E, 0x30, 0x00]])
+        SET_PROBE_1_WRITE_BYTES = bytes([0x4B, 0x2C, 0x31, 0x2E, 0x30, 0x00])
         SET_PROBE_1_RESPONSE_BYTES = ATLAS_SUCCESS_31
 
         CALIBRATE_DRY_WRITE_BYTES = bytes([0x43, 0x61, 0x6C, 0x2C, 0x64, 0x72, 0x79, 0x00])
@@ -57,6 +58,7 @@ class AtlasECSimulator(AtlasSimulator):  # type: ignore
 
         self.writes.update(
             {
+                byte_str(EC_WRITE_BYTES): EC_RESPONSE_BYTES,
                 byte_str(ENABLE_EC_WRITE_BYTES): ENABLE_EC_RESPONSE_BYTES,
                 byte_str(DISABLE_EC_WRITE_BYTES): DISABLE_EC_RESPONSE_BYTES,
                 byte_str(ENABLE_TDS_WRITE_BYTES): ENABLE_TDS_RESPONSE_BYTES,

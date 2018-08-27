@@ -104,7 +104,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm"
+                        "ec_ms_cm": "water_electrical_conductivity_ms_cm"
                     },
                     "actuator": null,
                     "compensation": {
