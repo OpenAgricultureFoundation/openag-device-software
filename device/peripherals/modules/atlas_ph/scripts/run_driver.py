@@ -44,10 +44,6 @@ class DriverRunner(AtlasDriverRunner):
         if self.args.ph:
             print("pH: {}".format(self.driver.read_ph()))
 
-        # Check if setting compensation temperature
-        elif self.args.set_temp:
-            self.driver.set_compensation_temperature(float(self.args.set_temp))
-
 
 # Run main
 if __name__ == "__main__":

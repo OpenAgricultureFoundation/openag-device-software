@@ -131,8 +131,12 @@ class I2C(object):
     @retry(MuxError, tries=5, delay=0.2, backoff=3, lock=True)
     def set_mux(self, mux: int, channel: int, retry: bool = False) -> None:
         """Sets mux to channel"""
-        self.logger.debug("Setting mux 0x{:02X} to channel {}".format(mux, channel))
         channel_byte = 0x01 << channel
+        self.logger.debug(
+            "Setting mux 0x{:02X} to channel {}, writing: [0x{:02X}]".format(
+                mux, channel, channel_byte
+            )
+        )
         try:
             self.io.write(mux, bytes([channel_byte]))
         except WriteError as e:

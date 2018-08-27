@@ -83,6 +83,16 @@ class AtlasDriver:
         except I2CError as e:
             raise InitError(logger=self.logger)
 
+    def setup(self, retry: bool = True):
+        """Setsup sensor."""
+        try:
+            self.enable_led()
+            info = self.read_info()
+            if info.firmware_version > 1.94:
+                self.enable_protocol_lock()
+        except Exception as e:
+            raise SetupError(logger=self.logger) from e
+
     def process_command(
         self,
         command_string: str,
@@ -124,7 +134,7 @@ class AtlasDriver:
         self.logger.debug("Waiting for {} seconds".format(process_seconds))
         time.sleep(process_seconds)
 
-        # Read device data
+        # Read device dataSet
         try:
             self.logger.debug("Reading response")
             data = self.i2c.read(num_bytes)

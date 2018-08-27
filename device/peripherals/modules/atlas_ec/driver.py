@@ -14,12 +14,19 @@ from device.utilities import maths
 # Import module elements
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.modules.atlas_ec.simulator import AtlasECSimulator
+from device.peripherals.classes.atlas.exceptions import SetupError
 from device.peripherals.modules.atlas_ec.exceptions import (
-    SetupError,
     ReadECError,
-    SetCompensationTemperatureError,
-    TakeCalibrationError,
-    ClearCalibrationError,
+    EnableECOutputError,
+    DisableECOutputError,
+    EnableTDSOutputError,
+    DisableTDSOutputError,
+    EnableSalinityOutputError,
+    DisableSalinityOutputError,
+    EnableSpecificGravityOutputError,
+    DisableSpecificGravityOutputError,
+    TakeDryCalibrationError,
+    TakeSinglePointCalibrationError,
 )
 
 
@@ -69,6 +76,10 @@ class AtlasECDriver(AtlasDriver):
             info = self.read_info()
             if info.firmware_version > 1.94:
                 self.enable_protocol_lock()
+            self.enable_ec_output()
+            self.disable_tds_output()
+            self.disable_salinity_output()
+            self.disable_specific_gravity_output()
         except Exception as e:
             raise SetupError(logger=self.logger) from e
 
@@ -99,22 +110,9 @@ class AtlasECDriver(AtlasDriver):
             self.logger.warning("ec outside of valid range")
             ec = None
 
-        # Successfully read electical conductivity!
+        # Successfully read ec
         self.logger.info("EC: {} mS/cm".format(ec))
-        return ec, Error(None)
-
-    def set_compensation_temperature(
-        self, temperature: float, retry: bool = True
-    ) -> None:
-        """Sets compensation temperature."""
-        self.logger.info("Setting compensation temperature")
-
-        try:
-            command = "T,{}".format(temperature)
-            self.process_command(command, process_seconds=0.3, retry=retry)
-        except Exception as e:
-            message = "Unable to set compensation temperature"
-            raise SetCompensationTemperatureError(message, logger=self.logger) from e
+        return ec
 
     def enable_ec_output(self, retry: bool = True) -> None:
         """Enables ec output when reporting readings."""
@@ -140,7 +138,7 @@ class AtlasECDriver(AtlasDriver):
         except Exception as e:
             raise EnableTDSOutputError(logger=self.logger) from e
 
-    def disable_tds_output(self, retry: bool = True) -> Error:
+    def disable_tds_output(self, retry: bool = True) -> None:
         """Disables total dissolved solids output when reporting readings. """
         self.logger.info("Disabling total dissolved solids output")
         try:
@@ -168,17 +166,17 @@ class AtlasECDriver(AtlasDriver):
         """Enables specific gravity output when reporting readings."""
         self.logger.info("Enabling specific gravity output")
         try:
-            self.process_command("O,SG,1", process_seconds=0., retry=retry)
+            self.process_command("O,SG,1", process_seconds=0.3, retry=retry)
         except Exception as e:
             raise EnableSpecificGravityOutputError(logger=self.logger) from e
 
-    def disable_specific_gravity_output(self) -> None:
+    def disable_specific_gravity_output(self, retry: bool = True) -> None:
         """Disables specific gravity output when reporting readings."""
         self.logger.info("Disabling specific gravity output in hardware")
         try:
             self.process_command("O,SG,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisableSpecificGravityOutput(logger=self.logger) from e
+            raise DisableSpecificGravityOutputError(logger=self.logger) from e
 
     def set_probe_type(self, value: str, retry: bool = True) -> None:
         """Set probe type to value."""
@@ -192,7 +190,7 @@ class AtlasECDriver(AtlasDriver):
         """Take a dry calibration reading."""
         self.logger.info("Taking dry calibration reading")
         try:
-            self.process_command("Cal,dry", process_seconds=0.6, retry=retry)
+            self.process_command("Cal,dry", process_seconds=2.0, retry=retry)
         except Exception as e:
             raise TakeDryCalibrationError(logger=self.logger) from e
 
@@ -202,12 +200,20 @@ class AtlasECDriver(AtlasDriver):
         """Takes a single point calibration reading."""
         self.logger.info("Taking single point calibration reading")
 
+        # Temporary solution
+        message = "Not implemented"
+        raise TakeSinglePointCalibrationError(message=message, logger=self.logger)
+
+        # TODO: Debug why this command returns an invalid syntax code
+        # See datasheet: https://bit.ly/2rTuCub
+
         # Convert mS/cm to uS/cm
-        ec = value * 1000
+        # ec = int(value * 1000)
 
         # Send command
-        try:
-            command = "Cal,{}".format(ec)
-            self.process_command(command, process_seconds=0.6, retry=retry)
-        except Exception as e:
-            raise TakeSinglePointCalibrationError(logger=self.logger) from e
+        # try:
+        #     command = "Cal,{}".format(ec)
+        #     self.logger.debug("command = {}".format(command))
+        #     self.process_command(command, process_seconds=0.6, retry=retry)
+        # except Exception as e:
+        #     raise TakeSinglePointCalibrationError(logger=self.logger) from e

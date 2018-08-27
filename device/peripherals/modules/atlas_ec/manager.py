@@ -18,20 +18,17 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
     """ Manages an Atlas Scientific electrical conductivity sensor. """
 
     # Initialize compensation temperature parameters
-    _temperature_threshold = 0.1  # celcius
-    _prev_temperature = 0
+    temperature_threshold = 0.1  # celcius
+    prev_temperature = 0  # celcius
 
     def __init__(self, *args, **kwargs):
-        """ Instantiates manager Instantiates parent class, and initializes 
-            sensor variable name. """
+        """Initializes manager."""
 
-        # Instantiate parent class
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.electrical_conductivity_name = self.parameters["variables"]["sensor"][
-            "electrical_conductivity_ms_cm"
-        ]
+        self.ec_name = self.parameters["variables"]["sensor"]["ec_ms_cm"]
         self.temperature_name = self.parameters["variables"]["compensation"][
             "temperature_celcius"
         ]
@@ -47,21 +44,17 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
         )
 
     @property
-    def electrical_conductivity(self) -> None:
+    def ec(self) -> None:
         """ Gets electrical conductivity value. """
-        return self.state.get_peripheral_reported_sensor_value(
-            self.name, self.electrical_conductivity_name
-        )
+        return self.state.get_peripheral_reported_sensor_value(self.name, self.ec_name)
 
-    @electrical_conductivity.setter
-    def electrical_conductivity(self, value: float) -> None:
+    @ec.setter
+    def ec(self, value: float) -> None:
         """ Sets electrical conductivity value in shared state. Does not update enironment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(
-            self.name, self.electrical_conductivity_name, value
-        )
+        self.state.set_peripheral_reported_sensor_value(self.name, self.ec_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
-                self.name, self.electrical_conductivity_name, value
+                self.name, self.ec_name, value
             )
 
     @property
@@ -118,7 +111,7 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
 
             # Set compensation temperature
             error = self.sensor.set_compensation_temperature(self.temperature)
-            self._prev_temperature = self.temperature
+            self.prev_temperature = self.temperature
 
             # Check for errors
             if error.exists():
@@ -129,7 +122,7 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
                 return
 
         # Read electrical conductivity
-        ec, error = self.sensor.read_electrical_conductivity()
+        ec, error = self.sensor.read_ec()
 
         # Check for errors:
         if error.exists():
@@ -140,7 +133,7 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
             return
 
         # Update reported values
-        self.electrical_conductivity = ec
+        self.ec = ec
         self.health = self.sensor.health.percent
 
     def reset(self) -> None:
@@ -175,7 +168,7 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
             return False
 
         # Check if temperature value sufficiently different
-        if abs(self.temperature - self._prev_temperature) < self._temperature_threshold:
+        if abs(self.temperature - self.prev_temperature) < self.temperature_threshold:
             return False
 
         # New compensation temperature exists!
@@ -183,4 +176,4 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):
 
     def clear_reported_values(self) -> None:
         """ Clears reported values. """
-        self.electrical_conductivity = None
+        self.ec = None

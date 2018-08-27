@@ -32,6 +32,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize parser
         self.parser.add_argument("--info", action="store_true", help="read info")
         self.parser.add_argument("--status", action="store_true", help="read status")
+        self.parser.add_argument("--setup", action="store_true", help="setup sensor")
         self.parser.add_argument(
             "--enable-plock", action="store_true", help="enables protocol lock"
         )
@@ -88,6 +89,10 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Check if reading status
         elif self.args.status:
             print(self.driver.read_status())
+
+        # Check if setting up sensor
+        elif self.args.setup:
+            print(self.driver.setup())
 
         # Check if enabling protocol lock
         elif self.args.enable_plock:

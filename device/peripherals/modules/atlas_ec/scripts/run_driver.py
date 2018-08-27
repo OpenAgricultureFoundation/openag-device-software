@@ -1,134 +1,128 @@
 # Import standard python libraries
-import sys, os, json, argparse, logging, time, shlex
+import os, sys, logging
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Set correct import path
-if cwd.endswith("atlas_ec"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
-
-from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
+# Import typing modules
+from typing import Any
 
 # Import device utilities
-from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
-# Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug driver")
-parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
-parser.add_argument("--info", action="store_true", help="set logger in info mode")
-parser.add_argument("--loop", action="store_true", help="loop command prompt")
-
-# Setup parser configs
-parser.add_argument("--device", type=str, help="specifies device config file name")
-parser.add_argument("--name", type=str, help="specifies peripheral name in config")
+# Import driver modules
+from device.peripherals.classes.atlas.scripts.run_driver import DriverRunner as AtlasDriverRunner
+from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 
 
-# Setup parser functions
-parser.add_argument("--device-info", action="store_true", help="read sensor info")
-parser.add_argument("--status", action="store_true", help="read sensor status")
-parser.add_argument("--ec", action="store_true", help="read electrical conductivity")
-parser.add_argument("--factory", action="store_true", help="perform factory reset")
+class DriverRunner(AtlasDriverRunner):
+    """Runs driver."""
 
-# TODO: Remove me, this is a hack
-os.chdir("../../../../")
+    # Initialize driver class
+    Driver = AtlasECDriver
+
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "AtlasEC-Reservoir"
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initializes run driver."""
+
+        # Initialize parent class
+        super().__init__(*args, **kwargs)
+
+        # Initialize parser
+        self.parser.add_argument("--ec", action="store_true", help="read EC")
+        self.parser.add_argument(
+            "--enable-ec", action="store_true", help="enable EC output"
+        )
+        self.parser.add_argument(
+            "--disable-ec", action="store_true", help="disable EC output"
+        )
+        self.parser.add_argument(
+            "--enable-tds", action="store_true", help="enable TDS output"
+        )
+        self.parser.add_argument(
+            "--disable-tds", action="store_true", help="disable TDS output"
+        )
+        self.parser.add_argument(
+            "--enable-salinity", action="store_true", help="enable salinity output"
+        )
+        self.parser.add_argument(
+            "--disable-salinity", action="store_true", help="disable salinity output"
+        )
+        self.parser.add_argument(
+            "--enable-sg", action="store_true", help="enable specific gravity output"
+        )
+        self.parser.add_argument(
+            "--disable-sg", action="store_true", help="disable specific gravity output"
+        )
+        self.parser.add_argument("--set-probe", type=float, help="set probe type")
+        self.parser.add_argument(
+            "--calibrate-dry", action="store_true", help="take dry calibration"
+        )
+        self.parser.add_argument(
+            "--calibrate-single", type=float, help="take single point calibration"
+        )
+
+    def run(self, *args: Any, **kwargs: Any):
+        """Runs driver."""
+
+        # Run parent class
+        super().run(*args, **kwargs)
+
+        # Check if reading pH
+        if self.args.ec:
+            print("EC: {}".format(self.driver.read_ec()))
+
+        # Check if enabling ec output
+        elif self.args.enable_ec:
+            self.driver.enable_ec_output()
+
+        # Check if disabling ec output
+        elif self.args.disable_ec:
+            self.driver.disable_ec_output()
+
+        # Check if enabling ec output
+        elif self.args.enable_tds:
+            self.driver.enable_tds_output()
+
+        # Check if disabling tds output
+        elif self.args.disable_tds:
+            self.driver.disable_tds_output()
+
+        # Check if enabling salinity output
+        elif self.args.enable_salinity:
+            self.driver.enable_salinity_output()
+
+        # Check if disabling salinity output
+        elif self.args.disable_salinity:
+            self.driver.disable_salinity_output()
+
+        # Check if enabling specific gravity output
+        elif self.args.enable_sg:
+            self.driver.enable_specific_gravity_output()
+
+        # Check if disabling specific gravity output
+        elif self.args.disable_sg:
+            self.driver.disable_specific_gravity_output()
+
+        # Check if setting probe type
+        elif self.args.set_probe:
+            self.driver.set_probe_type(self.args.set_probe)
+
+        # Check if calibrating dry
+        elif self.args.calibrate_dry:
+            self.driver.take_dry_calibration_reading()
+
+        # Check if taking single point calibration reading
+        elif self.args.calibrate_single:
+            self.driver.take_single_point_calibration_reading(
+                self.args.calibrate_single
+            )
+
 
 # Run main
 if __name__ == "__main__":
-
-    # Read in arguments
-    args = parser.parse_args()
-
-    # Initialize logger
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    elif args.info:
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-
-    # Check for device config
-    if args.device == None:
-        print("Please specify a device configuraion")
-        sys.exit(0)
-
-    # Check for peripheral name
-    if args.name == None:
-        print("Please specify a peripheral name")
-        sys.exit(0)
-
-    # Set device config
-    print("Using device config: {}".format(args.device))
-    device_config = json.load(open("data/devices/{}.json".format(args.device)))
-    peripheral_config = get_peripheral_config(device_config["peripherals"], args.name)
-
-    # Initialize driver
-    driver = AtlasECDriver(
-        name=args.name,
-        bus=peripheral_config["parameters"]["communication"]["bus"],
-        address=int(peripheral_config["parameters"]["communication"]["address"], 16),
-        mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
-        channel=peripheral_config["parameters"]["communication"]["channel"],
-    )
-
-    # Check for loop
-    if args.loop:
-        loop = True
-    else:
-        loop = False
-
-    # Loop forever
-    while True:
-
-        # Check if reading info
-        if args.device_info:
-            print("Reading info")
-            sensor_type, firmware_version, error = driver.read_info()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Sensor type: {}".format(sensor_type))
-                print("Firmware version: {}".format(firmware_version))
-
-        # Check if reading status
-        elif args.status:
-            print("Reading status")
-            prev_restart_reason, voltage, error = driver.read_status()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Prev restart reason: {}".format(prev_restart_reason))
-                print("Voltage: {}".format(voltage))
-
-        # Check if reading electrical conductivity
-        elif args.ec:
-            print("Reading electrical conductivity")
-            ec, error = driver.read_electrical_conductivity()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("EC: {} mS/cm".format(ec))
-
-        # Check if performing factory reset
-        elif args.factory:
-            print("Performing factory reset")
-            error = driver.factory_reset()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Successfully performed factory reset")
-
-        # Check for new command if loop enabled
-        if loop:
-            new_command = input("New command: ")
-            args = parser.parse_args(shlex.split(new_command))
-        else:
-            break
+    dr = DriverRunner()
+    dr.run()
