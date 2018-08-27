@@ -43,5 +43,6 @@ if ! grep "OPENAG_BRAIN_ROOT" $cwd/venv/bin/activate > /dev/null; then
 fi
 
 # Remove rc.local and sym link to openag-device-software/config/rc.local
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 sudo rm -f /etc/rc.local
-sudo ln -s $cwd/config/rc.local /etc/rc.local
+sudo ln -s $DIR/config/rc.local /etc/rc.local
