@@ -1,0 +1,11 @@
+openagbrain (1.0-2) stable; urgency=medium
+
+  * Fixed minor package script issue. 
+
+ -- Rob Baynes <rbaynes@mit.edu>  Tue, 28 Aug 2018 19:30:11 +0000
+
+openagbrain (1.0-1) stable; urgency=medium
+
+  * First public release.
+
+ -- rob baynes <rbaynes@mit.edu>  Thu, 23 Aug 2018 19:04:57 +0000

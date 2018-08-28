@@ -16,3 +16,4 @@ htmlcov
 .pytest_cache/
 .coverage
 device.txt
+build-deb-pkg-tmp/

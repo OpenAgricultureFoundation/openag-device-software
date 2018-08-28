@@ -1,5 +1,5 @@
 #!/bin/sh
-chdir /home/debian/openag-device-software
-/home/debian/openag-device-software/run.sh &
+chdir /opt/openagbrain
+/opt/openagbrain/run.sh &
 sleep 15
-python /home/debian/openag-device-software/scripts/forward_ports.py &
+python /opt/openagbrain/scripts/forward_ports.py &

@@ -1,4 +1,4 @@
-# Debian apt-package notes
+# Debian package creation notes
 
 - Don't use chroot - we need to access /var/lib/connman and /dev/video
 - https://wiki.debian.org/Packaging/Intro?action=show&redirect=IntroDebianPackaging
@@ -15,7 +15,7 @@
 ### Step 1 
 #### Install debian package tools on Debian 9.3 on a Beaglebone Black.
     sudo apt-get update
-    sudo apt-get install -y build-essential devscripts debhelper
+    sudo apt-get install -y build-essential devscripts debhelper reprepro
 
 ### Step 2 
 #### Make and correctly name upstream tarball from our source.
@@ -25,7 +25,7 @@
   - `openagbrain-1.0/`
 - Write a script that creates the tarball and ONLY the files we want to ship.  
   - e.g. exclude `.git/ registration/data  config/device.txt`, etc.
-  - Include `pyenv/` since it takes so damn long to build.
+  - Include `pyenv/` since it takes so long to build.
   - Include `debian/` since it probably won't change much except for versions.
 
 ### Step 3 
@@ -49,21 +49,21 @@ man dch
   - `man debhelper` 
 
 - Create `debian/control`
-  - __Do we need more dependencies??__  
+  - Add the dependencies of our package (just the big ones).
 
 ```
 Source: openagbrain
 Maintainer: Rob Baynes <rbaynes@mit.edu>
 Section: misc
 Priority: optional
-Standards-Version: 3.9.2
+Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 9)
 
 Package: openagbrain
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: embedded control software for OpenAg food computers
- openagbrain controls the food computer.
+Depends: ${misc:Depends}, postgresql, python3
+Description: OpenAg Brain
+ Controls food computers.
 ```
 
 - Create `debian/copyright`
@@ -72,26 +72,20 @@ Description: embedded control software for OpenAg food computers
 
 - Create `debian/rules`
   - It is a Makefile, so use hard TABs before the dh and $(MAKE) commands.
-  - We will need to change our install dir?  First see what this does.
-  - `vi debian/rules`
 
 ```
 #!/usr/bin/make -f
 %:
         dh $@
-
-override_dh_auto_install:
-        $(MAKE) DESTDIR=$$(pwd)/debian/openagbrain prefix=/usr install
 ```
 
 - Create debian/source/format
   - `mkdir -p debian/source`
   - `echo "3.0 (quilt)" > debian/source/format`
 
-- Create debian/openagbrain.dirs file - __where do we want our code to live??__
+- Create debian/openagbrain.dirs file 
 ```
-usr/bin
-usr/share/man/man1
+opt/openagbrain
 ```
 
 ### Step 4 
@@ -109,9 +103,9 @@ usr/share/man/man1
 #### Upload the package to our public package server.
 https://wiki.debian.org/DebianRepository/Setup
 - Set up public server to host files.
-- Can we use openag-v1.appspot.com or gcloud storage public dir?
+- Can we use gcloud storage public dir?
 - Add this package server URL to our sources.list in our BBB image.
-- Look at this debian tool: https://packages.debian.org/search?keywords=reprepro
+- Look at the debian reprepro tool.
 
 ### Step 7
 #### Update the package version and release it
