@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."
+echo ""
+
+
 # This script creates a debian package of the OpenAg Brain python app for
 # installation on a Beaglebone that controls a Food Computer.
 
@@ -58,17 +62,19 @@ dch --distribution stable -v $MAJMIN-$PATCH
 cp debian/changelog $TOPDIR/debian/
 
 # Build the .deb package file (puts a bunch of files in the parent dir).
-# Skip the package checks (lintian) and don't sign source or changes (-us -uc).
-debuild --no-lintian -us -uc 
+# Skip the package checks (lintian) and sign the source and changes.
+#No signing: debuild --no-lintian -us -uc 
+debuild --no-lintian 
 
 PKG=$SUBDIR/$PACKAGE\_$MAJMIN-$PATCH\_armhf.deb
 echo ""
 echo "TEST this package: sudo dpkg -i $PKG"
 
 echo ""
-echo "Remember to VERIFY, git add, commit, push change to the $TOPDIR/debian/changelog"
+echo "The package you want to upload is in $PKG"
 
 echo ""
-echo "The package you want to upload is in $PKG"
+echo "Remember to VERIFY, git add, commit, push change to the $TOPDIR/debian/changelog"
+echo ""
 
 
