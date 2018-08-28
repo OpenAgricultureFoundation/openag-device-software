@@ -1,6 +1,8 @@
 # Import standard python modules
-from typing import Optional, Tuple, List, Dict
 import time, json
+
+# Import python types
+from typing import Optional, List, Dict, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
@@ -13,12 +15,16 @@ from device.peripherals.classes.peripheral_events import PeripheralEvents
 from device.peripherals.utilities import light
 
 
-class LEDDAC5578Events(PeripheralEvents):
-    """ Event mixin for led array. """
+class LEDDAC5578Events(PeripheralEvents):  # type: ignore
+    """Event mixin for led array."""
 
-    def process_peripheral_specific_event(self, request):
-        """ Processes peripheral specific event event. Gets request parameters, 
-            executes request, returns response. """
+    # Initialize var types
+    mode: str
+    request: Optional[Dict[str, Any]]
+
+    def process_peripheral_specific_event(self, request: Dict[str, Any]) -> None:
+        """Processes peripheral specific event event. Gets request parameters, 
+        executes request, returns response."""
 
         # Execute request
         if request["type"] == "Turn On":
@@ -35,64 +41,57 @@ class LEDDAC5578Events(PeripheralEvents):
         elif request["type"] == "Calculate ULRF From Watts":
             self.response = self.process_calculate_ulrf_from_watts(request)
         else:
-            message = "Unknown event request type!"
+            message = "Unknown event request type"
             self.logger.info(message)
             self.response = {"status": 400, "message": message}
 
-    def process_turn_on_event(self):
-        """ Processes turn on event. """
+    def process_turn_on_event(self) -> Dict[str, Any]:
+        """Processes turn on event."""
         self.logger.debug("Processing turn on event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            response = {"status": 400, "message": "Must be in manual mode."}
-            return response
+            return {"status": 400, "message": "Must be in manual mode."}
 
         # Turn on array and update reported variables
-        error = self.array.turn_on()
-        self.update_reported_variables()
-
-        # Check for errors
-        if error.exists():
+        try:
+            self.array.turn_on()
+            self.update_reported_variables()
+        except Exception as e:
             self.mode = Modes.ERROR
-            response = {"status": 400, "message": error.trace}
-            return response
+            message = "Unable to turn on: {}".format(e)
+            return {"status": 400, "message": message}
 
-        # Successfully turned on!
-        response = {"status": 200, "message": "Turned on!"}
-        return response
+        # Successfully turned on
+        return {"status": 200, "message": "Turned on"}
 
-    def process_turn_off_event(self):
-        """ Processes turn off event. """
+    def process_turn_off_event(self) -> Dict[str, Any]:
+        """Processes turn off event."""
         self.logger.debug("Processing turn off event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            response = {"status": 400, "message": "Must be in manual mode."}
-            return response
+            return {"status": 400, "message": "Must be in manual mode."}
 
         # Turn off array and update reported variables
-        error = self.array.turn_off()
-        self.update_reported_variables()
-
-        # Check for errors
-        if error.exists():
+        try:
+            self.array.turn_off()
+            self.update_reported_variables()
+        except Exception as e:
             self.mode = Modes.ERROR
-            response = {"status": 400, "message": error.trace}
-            return response
+            message = "Unable to turn off: {}".format(e)
+            return {"status": 400, "message": message}
 
-        # Successfully turned on!
-        response = {"status": 200, "message": "Turned off!"}
-        return response
+        # Successfully turned off
+        return {"status": 200, "message": "Turned off"}
 
-    def process_set_channel_event(self, request) -> None:
-        """ Processes set channel event. """
+    def process_set_channel_event(self, request: Dict[str, Any]) -> Dict[str, Any]:
+        """Processes set channel event."""
         self.logger.debug("Processing set channel event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            response = {"status": 400, "message": "Must be in manual mode."}
-            return response
+            return {"status": 400, "message": "Must be in manual mode."}
 
         # Verify request parameters
         try:
@@ -102,43 +101,38 @@ class LEDDAC5578Events(PeripheralEvents):
             return {"status": 400, "message": "Invalid request parameter: " + str(e)}
 
         # Set channel and update reported variables
-        error = self.array.set_output(channel_name, float(percent))
-        self.update_reported_variables()
-
-        # Check for errors
-        if error.exists():
+        try:
+            self.array.set_output(channel_name, float(percent))
+            self.update_reported_variables()
+        except Exception as e:
             self.mode = Modes.ERROR
-            response = {"status": 400, "message": error.trace}
-            return response
+            message = "Unable to set channel: {}".format(e)
+            return {"status": 400, "message": message}
 
-        # Successfully turned on!
-        response = {"status": 200, "message": "Turned on!"}
-        return response
+        # Successfully turned on
+        return {"status": 200, "message": "Turned on"}
 
-    def initialize_fade_event(self) -> Dict:
-        """ Fades through all channels if no channel is specified. """
+    def initialize_fade_event(self) -> Dict[str, Any]:
+        """Fades through all channels if no channel is specified."""
         self.logger.debug("Initializing fade event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            response = {"status": 400, "message": "Must be in manual mode."}
-            return response
+            return {"status": 400, "message": "Must be in manual mode."}
 
-        # Successfully initialized fade event!
-        response = {"status": 200, "message": "Fading!"}
-        return response
+        # Successfully initialized fade event
+        return {"status": 200, "message": "Fading"}
 
-    def fade(self, channel_name: Optional[str] = None):
-        """ Fades through channel names. """
+    def fade(self, channel_name: Optional[str] = None) -> None:
+        """Fades through channel names."""
         self.logger.debug("Fading")
 
         # Turn off channels
-        error = self.array.turn_off()
-
-        # Check for errors
-        if error.exists():
-            error.report("Unable to fade array")
-            return error
+        try:
+            self.array.turn_off()
+        except Exception as e:
+            self.logger.exception("Unable to fade array")
+            return
 
         # Set channel or channels
         if channel_name != None:
@@ -158,13 +152,10 @@ class LEDDAC5578Events(PeripheralEvents):
 
                     # Set array output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
-                    error = self.array.set_output(channel_name, value)
-
-                    # Check for errors
-                    if error.exists():
-                        error.report("Unable to fade array")
-                        self.logger.error(error.trace)
-                        self.mode = Modes.ERROR
+                    try:
+                        error = self.array.set_output(channel_name, value)
+                    except Exception as e:
+                        self.logger.exception("Unable to fade array")
                         return
 
                     # Check for new events
@@ -186,13 +177,10 @@ class LEDDAC5578Events(PeripheralEvents):
 
                     # Set array output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
-                    error = self.array.set_output(channel_name, value)
-
-                    # Check for errors
-                    if error.exists():
-                        error.report("Unable to fade array")
-                        self.logger.error(error.trace)
-                        self.mode = Modes.ERROR
+                    try:
+                        self.array.set_output(channel_name, value)
+                    except Exception as e:
+                        self.logger.exception("Unable to fade array")
                         return
 
                     # Check for new events
@@ -209,7 +197,7 @@ class LEDDAC5578Events(PeripheralEvents):
                     # Update every 100ms
                     time.sleep(0.1)
 
-    def process_calculate_ulrf_from_percents(self, request) -> Dict:
+    def process_calculate_ulrf_from_percents(self, request: Dict[str, Any]) -> Dict:
         """Processes calculating universal light recipe format (ULRF) parameters 
         from channel power percents."""
         self.logger.debug("Processing calculating ULRF from percents")
@@ -232,7 +220,7 @@ class LEDDAC5578Events(PeripheralEvents):
             )
             return {
                 "status": 200,
-                "message": "Successfully calculated!",
+                "message": "Successfully calculated",
                 "spectrum_nm_percents": spectrum,
                 "ppfd_umol_m2_s": ppfd,
                 "illumination_distance_cm": distance,
