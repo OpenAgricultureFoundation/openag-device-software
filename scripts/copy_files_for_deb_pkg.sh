@@ -40,15 +40,12 @@ cp -R app/ \
 
 # Copy some individual files that are in the top level dir:
 cp __init__.py \
-  install.sh \
   LICENSE \
   manage.py \
   README.md \
   requirements.txt \
   run.sh \
-  setup_python.sh \
   simulate.sh \
-  upgrade.sh \
   $DEST
 
 # Make some empty directories we will use:

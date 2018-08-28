@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Get the full path to this script, the top dir is one up.
+TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+TOPDIR+=/..
+cd $TOPDIR
+
 if [[ "$OSTYPE" == "linux"* ]]; then
 
   # If the brain is running from /etc/rc.local, stop it.
@@ -46,14 +51,13 @@ echo "from django.contrib.auth.models import User; User.objects.filter(email='op
 # openssl s_client -connect mqtt.googleapis.com:8883
 
 # Check if brain root env is exported in venv activate, if not add it
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-if ! grep "OPENAG_BRAIN_ROOT" $DIR/venv/bin/activate > /dev/null; then
-   echo "export OPENAG_BRAIN_ROOT=$DIR" >> $DIR/venv/bin/activate
+if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
+   echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
 fi
 
 # Remove rc.local and sym link to config/rc.local
 sudo rm -f /etc/rc.local
-sudo ln -s $DIR/config/rc.local /etc/rc.local
+sudo ln -s $TOPDIR/config/rc.local /etc/rc.local
 sudo systemctl daemon-reload
 
 # Start the OpenAg Brain as a service running as rc.local

@@ -3,4 +3,4 @@
 # This script is run by apt after unpacking the .deb file.
 
 cd /opt/openagbrain/
-./upgrade.sh
+./scripts/upgrade.sh
