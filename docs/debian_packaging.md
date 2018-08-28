@@ -15,7 +15,7 @@
 ### Step 1 
 #### Install debian package tools on Debian 9.3 on a Beaglebone Black.
     sudo apt-get update
-    sudo apt-get install -y build-essential devscripts debhelper
+    sudo apt-get install -y build-essential devscripts debhelper reprepro
 
 ### Step 2 
 #### Make and correctly name upstream tarball from our source.
