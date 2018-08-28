@@ -9,7 +9,6 @@
 			"sensor": null,
 			"actuator": null
 		},	
-		"directory": "images/",
 		"communication": null
 	},
 	"events": [

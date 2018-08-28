@@ -1,36 +1,5 @@
-from device.peripherals.classes.atlas.exceptions import DriverError as AtlasDriverError
-
-
-class DriverError(AtlasDriverError):  # type: ignore
-    """Base class for errors raised by driver."""
-    ...
-
-
-class InitError(DriverError):
-    """Initialization errors for sensor driver."""
-    ...
-
-
-class SetupError(DriverError):
-    """Setup errors for sensor driver."""
-    ...
+from device.peripherals.classes.atlas.exceptions import DriverError
 
 
 class ReadPHError(DriverError):
-    """Read pH errors for sensor driver."""
-    ...
-
-
-class SetCompensationTemperatureError(DriverError):
-    """Set compensation temperature errors for sensor driver."""
-    ...
-
-
-class TakeCalibrationError(DriverError):
-    """Take calibration errors for sensor driver."""
-    ...
-
-
-class ClearCalibrationError(DriverError):
-    """Clear calibration errors for sensor driver."""
-    ...
+    message_base = "Unable to read pH"

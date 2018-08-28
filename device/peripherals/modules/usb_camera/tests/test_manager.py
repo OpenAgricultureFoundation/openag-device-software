@@ -1,76 +1,94 @@
 # Import standard python libraries
-import sys, os, json
+import os, sys, json
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
-
-# Set correct import path
-if cwd.endswith("usb_camera"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
-
-# Import manager
-from device.peripherals.modules.usb_camera.manager import USBCameraManager
+# Set system path and directory
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
 # Import device utilities
-from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
+from device.utilities.modes import Modes
 
-# Import shared memory
+# Import device state
 from device.state import State
 
-# Set directory for loading files
-if cwd.endswith("usb_camera"):
-    os.chdir("../../../../")
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Import test config
-device_config = json.load(
-    open("device/peripherals/modules/usb_camera/tests/config.json")
-)
-peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-1")
+# Import peripheral manager
+from device.peripherals.modules.usb_camera.manager import USBCameraManager
 
-# Initialize state
-state = State()
+# Load test config
+path = root_dir + "/device/peripherals/modules/usb_camera/tests/config.json"
+device_config = json.load(open(path))
+peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-Top")
 
 
-def test_init():
+def test_init() -> None:
     manager = USBCameraManager(
-        name="Test", state=state, config=peripheral_config, simulate=True
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
     )
-    assert True
 
 
-def test_initialize():
-    manager = USBCameraManager("Test", state, peripheral_config, simulate=True)
+def test_initialize() -> None:
+    manager = USBCameraManager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
     manager.initialize()
-    assert True
 
 
-def test_setup():
-    manager = USBCameraManager("Test", state, peripheral_config, simulate=True)
+def test_setup() -> None:
+    manager = USBCameraManager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.setup()
-    assert True
 
 
-def test_update():
-    manager = USBCameraManager("Test", state, peripheral_config, simulate=True)
+def test_update() -> None:
+    manager = USBCameraManager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.update()
-    assert True
 
 
-def test_reset():
-    manager = USBCameraManager("Test", state, peripheral_config, simulate=True)
+def test_reset() -> None:
+    manager = USBCameraManager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.reset()
-    assert True
 
 
-def test_shutdown():
-    manager = USBCameraManager("Test", state, peripheral_config, simulate=True)
+def test_shutdown() -> None:
+    manager = USBCameraManager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.shutdown()
-    assert True

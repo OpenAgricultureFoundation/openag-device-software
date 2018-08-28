@@ -79,7 +79,10 @@ class PeripheralManager:
 
         # Load setup dict and uuid
         self.setup_dict = self.load_setup_dict_from_file()
-        self.setup_uuid = self.setup_dict["uuid"]
+        self.setup_uuid = self.setup_dict.get("uuid", None)
+
+        # Pull out setup properties if they exist
+        self.properties = self.setup_dict.get("properties", {})
 
     @property
     def health(self) -> Optional[float]:

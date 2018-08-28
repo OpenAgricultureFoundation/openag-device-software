@@ -5,7 +5,7 @@ namespace = {}
 counters = {}
 
 
-def aquire_lock(value):
+def acquire_lock(value):
     with namespace_lock:
         if value in namespace:
             counters[value] += 1

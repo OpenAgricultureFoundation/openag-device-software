@@ -1,8 +1,8 @@
 {
     "peripherals": [
         {
-            "name": "Camera-1",
-            "type": "ELPUSB500W02ML21",
+            "name": "Camera-Top",
+            "type": "USBCamera",
             "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
             "parameters": {
                 "setup": {
@@ -13,8 +13,10 @@
                     "sensor": null,
                     "actuator": null
                 },
-                "directory": "device/peripherals/modules/usb_camera/tests/images/",
-                "communication": null
+                "communication": {
+                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                    "usb_mux_channel": 1
+                }
             }
         }
     ]

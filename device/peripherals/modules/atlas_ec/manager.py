@@ -83,7 +83,6 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):  # type: ignore
             self.logger.exception("Unable to initialize")
             self.health = 0.0
             self.mode = Modes.ERROR
-            return
 
     def setup(self) -> None:
         """ Sets up manager."""
