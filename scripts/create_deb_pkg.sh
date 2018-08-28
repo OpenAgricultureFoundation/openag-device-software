@@ -77,4 +77,5 @@ echo ""
 echo "Remember to VERIFY, git add, commit, push change to the $TOPDIR/debian/changelog"
 echo ""
 
-
+echo "Then run scripts/git_tag_deb_package.sh"
+echo ""
