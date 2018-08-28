@@ -1,5 +1,7 @@
 # Import standard python modules
 import time
+
+# Import python types
 from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
@@ -78,8 +80,7 @@ class SHT25Driver:
             self.read_user_register(retry=True)
 
         except I2CError as e:
-            message = "Driver unable to initialize"
-            raise InitError(message, logger=self.logger)
+            raise InitError(logger=self.logger) from e
 
     def read_temperature(self, retry: bool = True) -> Optional[float]:
         """ Reads temperature value."""
@@ -89,8 +90,7 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xF3]), retry=retry)
         except I2CError as e:
-            message = ("Driver unable to read temperature")
-            raise ReadTemperatureError(message, logger=self.logger) from e
+            raise ReadTemperatureError(logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
         # SHT25 is 12-bit so max temperature processing time is 22ms
@@ -100,10 +100,7 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
-            message = (
-                "Driver unable to read temperature"
-            )  # TODO: Make better error messages
-            raise ReadTemperatureError(message, logger=self.logger) from e
+            raise ReadTemperatureError(logger=self.logger) from e
 
         # Convert temperature data and set significant figures
         msb, lsb = bytes_
@@ -128,8 +125,7 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xF5]), retry=retry)
         except I2CError as e:
-            message = "Driver unable to read humidity"
-            raise ReadHumidityError(message, logger=self.logger) from e
+            raise ReadHumidityError(logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
         # SHT25 is 12-bit so max humidity processing time is 29ms
@@ -139,8 +135,7 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)  # Read sensor data
         except I2CError as e:
-            message = "Driver unable to read humidity"
-            raise ReadHumidityError(message, logger=self.logger) from e
+            raise ReadHumidityError(logger=self.logger) from e
 
         # Convert humidity data and set significant figures
         msb, lsb = bytes_
@@ -165,8 +160,7 @@ class SHT25Driver:
         try:
             byte = self.i2c.read_register(0xE7, retry=retry)
         except I2CError as e:
-            message = "Driver unable to read user register"
-            raise ReadUserRegisterError(message, logger=self.logger) from e
+            raise ReadUserRegisterError(logger=self.logger) from e
 
         # Parse register content
         resolution_msb = bitwise.get_bit_from_byte(bit=7, byte=byte)
@@ -190,5 +184,4 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xFE]), retry=retry)
         except I2CError as e:
-            message = "Driver unable to reset"
-            raise ResetError(message, logger=self.logger) from e
+            raise ResetError(logger=self.logger) from e

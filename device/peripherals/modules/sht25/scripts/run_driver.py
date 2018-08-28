@@ -1,4 +1,4 @@
-# Import standard python libraries
+# Import standard python modules
 import os, sys
 
 # Import python types
@@ -9,9 +9,6 @@ sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
 from device.peripherals.classes.peripheral_runner import PeripheralRunner
-
-# Import device utilities
-from device.utilities.accessors import get_peripheral_config
 
 # Import driver
 from device.peripherals.modules.sht25.driver import SHT25Driver
