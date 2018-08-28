@@ -4,6 +4,7 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
   # If the brain is running from /etc/rc.local, stop it.
   sudo service rc.local stop
+  sudo systemctl daemon-reload
 
   # Fix up some directories and files that may be owned by root
   sudo chmod -f -R 777 logs/ images/ 
@@ -46,3 +47,8 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 sudo rm -f /etc/rc.local
 sudo ln -s $DIR/config/rc.local /etc/rc.local
+sudo systemctl daemon-reload
+
+# Start the OpenAg Brain as a service running as rc.local
+sudo service rc.local start
+sudo systemctl status rc.local --no-pager

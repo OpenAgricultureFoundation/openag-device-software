@@ -4,3 +4,4 @@
 # Stop the service we are running as.
 
 service rc.local stop
+systemctl daemon-reload

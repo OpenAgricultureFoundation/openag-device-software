@@ -25,31 +25,31 @@ cd $TOPDIR
 
 # Do all package building in a subdir, to avoid polluting the parent dir.
 # Add this directory to the projects .gitignore file
-SUBDIR=$TOPDIR/"deb-pkg-tmp"
+SUBDIR=$TOPDIR/"build-deb-pkg-tmp"
 rm -fr $SUBDIR
 
 # Debian packaging tools require a versioned source dir, so make a temp dir.
-# Note: dir uses a '-' between package and major.minor
-NEWDIR=$PACKAGE-$MAJMIN
-mkdir -p $SUBDIR/$NEWDIR
+# NOTE: dir uses a '-' between package and major.minor
+VERDIR=$PACKAGE-$MAJMIN
+mkdir -p $SUBDIR/$VERDIR
 
 # Copy the debian package building control files to the versioned dir.
-cp -R debian/ $SUBDIR/$NEWDIR
-cp Makefile $SUBDIR/$NEWDIR
+cp -R debian/ $SUBDIR/$VERDIR
+cp debian/Makefile $SUBDIR/$VERDIR
 
 # Copy ONLY the dirs & files that we need to deploy. 
 # (not this script, .git/, etc.)
-./scripts/copy_files_for_deb_pkg.sh $SUBDIR/$NEWDIR
+./scripts/copy_files_for_deb_pkg.sh $SUBDIR/$VERDIR
 
 # Create the source tarball that the deb pkg tools require.
-# Note: dir uses a '_' between package and major.minor
+# NOTE: dir uses a '_' between package and major.minor
 cd $SUBDIR
 TARBALL=$PACKAGE\_$MAJMIN.orig.tar.gz
 rm -f $TARBALL 
-tar czvf $TARBALL $NEWDIR
+tar czvf $TARBALL $VERDIR
 
 # Update the debian/changelog (will open vi)
-cd $NEWDIR
+cd $VERDIR
 DEBFULLNAME='Rob Baynes' \
 DEBEMAIL='rbaynes@mit.edu' \
 dch --distribution stable -v $MAJMIN-$PATCH

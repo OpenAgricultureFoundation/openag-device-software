@@ -1,34 +1,4 @@
-openagbrain (1.0-5) stable; urgency=medium
-
-  * johnny five
-
- -- Rob Baynes <rbaynes@mit.edu>  Mon, 27 Aug 2018 19:04:10 +0000
-
-openagbrain (1.0-4) stable; urgency=medium
-
-  * 4 
-
- -- Rob Baynes <rbaynes@mit.edu>  Mon, 27 Aug 2018 18:59:40 +0000
-
-openagbrain (1.0-3) stable; urgency=medium
-
-  * hi 
-
- -- Rob Baynes <rbaynes@mit.edu>  Mon, 27 Aug 2018 18:54:33 +0000
-
-openagbrain (1.0-2) stable; urgency=medium
-
-  * 2 
-
- -- Rob Baynes <rbaynes@mit.edu>  Mon, 27 Aug 2018 17:00:24 +0000
-
 openagbrain (1.0-1) stable; urgency=medium
-
-  * hi
-
- -- Rob Baynes <rbaynes@mit.edu>  Mon, 27 Aug 2018 16:39:36 +0000
-
-openagbrain (1.0-0) stable; urgency=medium
 
   * First public release.
 
