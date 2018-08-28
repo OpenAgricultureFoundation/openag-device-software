@@ -55,11 +55,9 @@ mkdir -p $DEST/logs/peripherals
 # Clean up any files that might be in a working / configured install that we 
 # don't want in the package:
 cd $DEST
-rm -fr config/device.txt \
-  registration/data
-
-# Provide a default device config (should be an EDU?)
-echo "unspecified" > config/device.txt
+rm -fr \
+  registration/data \
+  config/device.txt
 
 
 

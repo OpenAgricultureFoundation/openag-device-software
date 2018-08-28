@@ -52,7 +52,14 @@ echo "from django.contrib.auth.models import User; User.objects.filter(email='op
 
 # Check if brain root env is exported in venv activate, if not add it
 if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
-   echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
+  echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
+fi
+
+# If there is no device type configured, make an unspecified one
+DEV_FILE='config/device.txt'
+if [ ! -f $DEV_FILE ]; then
+  # No file, so create one
+  echo "unspecified" > $DEV_FILE
 fi
 
 # Remove rc.local and sym link to config/rc.local
