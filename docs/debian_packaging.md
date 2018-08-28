@@ -115,77 +115,25 @@ https://wiki.debian.org/DebianRepository/Setup
 
 ### Step 7
 #### Update the package version and release it
-- Script to check the last version you released `show_last_deb_pg_ver.sh`
+- Script to check the last version you released `scripts/show_last_deb_pg_ver.sh`
 
-```
-#!/bin/bash
+- Script to update the version (major, minor, patch or all) `scripts/create_deb_pkg.sh`
 
-LASTVER=`dpkg-parsechangelog --show-field Version`
-echo "The last version of this debian package is: $LASTVER"
-```
-
-- Script to update the version (major, minor, patch or all) `create_deb_pkg.sh`
-
-```
-#!/bin/bash
-
-# Save the path to THIS script (before we go changing dirs)
-ORIGDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# Do all package building in a subdir, to avoid polluting the parent dir.
-# Add this directory to the projects .gitignore file
-SUBDIR="deb-pkg"
-rm -fr $SUBDIR
-
-if [ $# -lt 2 ]; then
-    echo "Error: missing two mandatory command line args."
-    echo "Usage: major.minor patch"
-    echo "Example to produce version 2.3.1 (or 2.3-1 in deb format):  2.3 1"
-    exit 1
-fi
-
-PACKAGE="hithere"
-MAJMIN=$1
-PATCH=$2
-echo "package: $PACKAGE"
-echo "major.minor: $MAJMIN"
-echo "patch: $PATCH"
-
-# Debian packaging tools require a versioned source dir, so make a temp dir.
-# Note: dir uses a '-' between package and major.minor
-NEWDIR=$PACKAGE-$MAJMIN
-mkdir -p $SUBDIR/$NEWDIR
-
-# Copy ONLY the files that we need to deploy. (not this script, .git/, etc.)
-cp -R debian/ $SUBDIR/$NEWDIR
-cp hithere.1 hithere.c Makefile $SUBDIR/$NEWDIR
-
-# Create the source tarball that the deb pkg tools require.
-# Note: dir uses a '_' between package and major.minor
-cd $SUBDIR
-TARBALL=$PACKAGE\_$MAJMIN.orig.tar.gz
-rm -f $TARBALL
-tar czvf $TARBALL $NEWDIR
-
-# Update the debian/changelog (will open vi)
-cd $NEWDIR
-DEBFULLNAME='Rob Baynes' \
-DEBEMAIL='rbaynes@mit.edu' \
-dch --distribution stable -v $MAJMIN-$PATCH
-
-# Save the changes to the debian changelog back to the git repo
-cp debian/changelog $ORIGDIR/debian
-
-# Build the .deb package file (puts a bunch of files in the parent dir).
-debuild -us -uc
-
-echo "Remember to VERIFY, git add, commit, push change to the $ORIGDIR/debian/changelog"
-
-echo "The package you want to upload is in $SUBDIR/$PACKAGE\_$MAJMIN-$PATCH_armhf.deb"
-```
 
 - In this example, you are releasing version 2.3.1 (debian uses 2.3-1).
 
 ```
 ./create_deb_pkg.sh 2.3 1
 ```
+
+# Remove a package
+```
+sudo dpkg --purge openagbrain
+```
+
+# Install a package from a local file
+```
+sudo dpkg -i deb-pkg/openagbrain_1.0-3_armhf.deb
+```
+
+
