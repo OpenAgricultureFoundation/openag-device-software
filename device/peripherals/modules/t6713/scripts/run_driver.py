@@ -1,6 +1,9 @@
 # Import standard python libraries
 import os, sys
 
+# Import python types
+from typing import Any
+
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
@@ -14,11 +17,17 @@ from device.utilities.accessors import get_peripheral_config
 from device.peripherals.modules.t6713.driver import T6713Driver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(PeripheralRunner):  # type: ignore
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "T6713-Top"
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
+
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize parser
@@ -33,55 +42,46 @@ class DriverRunner(PeripheralRunner):
             "--disable-abc", action="store_true", help="disables abc logic"
         )
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
-        super().run(*args, **kwargs)
 
-        # Initialize driver optional parameters
-        mux = self.communication.get("mux", None)
-        if mux != None:
-            mux = int(mux, 16)
+        # Run parent class
+        super().run(*args, **kwargs)
 
         # Initialize driver
         self.driver = T6713Driver(
             name=self.args.name,
-            bus=self.communication["bus"],
-            address=int(self.communication["address"], 16),
-            mux=mux,
-            channel=self.communication.get("channel", None),
+            bus=self.bus,
+            address=self.address,
+            mux=self.mux,
+            channel=self.channel,
         )
 
         # Check if reading status
         if self.args.status:
-            print("Reading status")
-            status = self.driver.read_status(retry=True)
+            status = self.driver.read_status()
             print("Status: {}".format(status))
 
         # Check if setting up sensor
         if self.args.setup:
-            print("Setting up sensor")
-            self.driver.setup(retry=True)
+            self.driver.setup()
 
         # Check if reading carbon dioxide
         elif self.args.co2:
-            print("Reading co2")
-            co2 = self.driver.read_co2(retry=True)
+            co2 = self.driver.read_co2()
             print("Co2: {} ppm".format(co2))
 
         # Check if resetting sensor
         elif self.args.reset:
-            print("Resetting")
-            self.driver.reset(retry=True)
+            self.driver.reset()
 
         # Check if enabling abc logic
         elif self.args.enable_abc:
-            print("Enabling abc logic")
-            self.driver.enable_abc_logic(retry=True)
+            self.driver.enable_abc_logic()
 
         # Check if disabling abc logic
         elif self.args.disable_abc:
-            print("Disabling abc logic")
-            self.driver.disable_abc_logic(retry=True)
+            self.driver.disable_abc_logic()
 
 
 # Run main

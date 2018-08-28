@@ -13,11 +13,18 @@ from device.utilities import bitwise
 
 # Import driver elements
 from device.peripherals.modules.t6713.simulator import T6713Simulator
-from device.peripherals.modules.t6713.exceptions import *
+from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
+from device.peripherals.modules.t6713.exceptions import (
+    ReadCo2Error,
+    ReadStatusError,
+    EnableABCLogicError,
+    DisableABCLogicError,
+    ResetError,
+)
 
 
 class Status(NamedTuple):
-    """ Data class for parsed status. """
+    """Data class for parsed status."""
     error_condition: bool
     flash_error: bool
     calibration_error: bool
@@ -29,12 +36,12 @@ class Status(NamedTuple):
 
 
 class T6713Driver:
-    """ Driver for atlas t6713 carbon dioxide sensor. """
+    """Driver for t6713 co2 sensor."""
 
     # Initialize co2 properties
-    _min_co2 = 10  # ppm
-    _max_co2 = 5000  # ppm
-    _warmup_timeout = 120  # seconds
+    min_co2 = 10  # ppm
+    max_co2 = 5000  # ppm
+    warmup_timeout = 120  # seconds
 
     def __init__(
         self,
@@ -46,7 +53,7 @@ class T6713Driver:
         simulate: Optional[bool] = False,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
-        """ Initializes t6713 driver. """
+        """Initializes t6713 driver."""
 
         # Initialize parameters
         self.simulate = simulate
@@ -77,7 +84,7 @@ class T6713Driver:
             message = "Driver unable to initialize"
             raise InitError(message, logger=self.logger)
 
-    def setup(self, retry: bool = False) -> None:
+    def setup(self, retry: bool = True) -> None:
         """Sets up sensor."""
 
         # Set ABC logic state
@@ -121,17 +128,14 @@ class T6713Driver:
                 break
 
             # Check if timed out
-            if time.time() - start_time > self._warmup_timeout:
+            if time.time() - start_time > self.warmup_timeout:
                 raise SetupError("Warmup period timed out", logger=self.logger)
 
             # Update every 3 seconds
             time.sleep(3)
 
-        # Setup successful!
-        self.logger.debug("Setup successful")
-
-    def read_co2(self, retry: bool = False) -> float:
-        """Reads co2 value from sensor hardware."""
+    def read_co2(self, retry: bool = True) -> Optional[float]:
+        """Reads co2 value."""
         self.logger.debug("Reading co2")
 
         # Read co2 data, requires mux diable to read all x4 bytes
@@ -149,16 +153,16 @@ class T6713Driver:
         co2 = round(co2, 0)
 
         # Verify co2 value within valid range
-        if co2 > self._min_co2 and co2 < self._min_co2:
+        if co2 > self.min_co2 and co2 < self.min_co2:
             self.logger.warning("Co2 outside of valid range")
-            cco2 = None
+            return None
 
-        # Successfully read carbon dioxide!
+        # Successfully read carbon dioxide
         self.logger.debug("Co2: {} ppm".format(co2))
         return co2
 
-    def read_status(self, retry: bool = False) -> Status:
-        """ Reads status from sensor hardware. """
+    def read_status(self, retry: bool = True) -> Status:
+        """Reads status."""
         self.logger.debug("Reading status")
 
         # Read status data, requires mux diable to read all x4 bytes
@@ -183,12 +187,12 @@ class T6713Driver:
             single_point_calibration=bool(bitwise.get_bit_from_byte(7, status_msb)),
         )
 
-        # Successfully read status!
+        # Successfully read status
         self.logger.debug("Status: {}".format(status))
         return status
 
-    def enable_abc_logic(self, retry: bool = False) -> None:
-        """ Enables ABC logic on sensor hardware. """
+    def enable_abc_logic(self, retry: bool = True) -> None:
+        """Enables ABC logic."""
         self.logger.info("Enabling abc logic")
 
         # Send command
@@ -198,8 +202,8 @@ class T6713Driver:
             message = ("Driver unable to read ABC logic")
             raise EnableABCLogicError(message, logger=self.logger) from e
 
-    def disable_abc_logic(self, retry: bool = False) -> None:
-        """ Disables ABC logic on sensor hardware. """
+    def disable_abc_logic(self, retry: bool = True) -> None:
+        """Disables ABC logic."""
         self.logger.info("Disabling abc logic")
 
         # Send command
@@ -209,8 +213,8 @@ class T6713Driver:
             message = ("Driver unable to disable ABC logic")
             raise DisableABCLogicError(message, logger=self.logger) from e
 
-    def reset(self, retry: bool = False):
-        """ Initiates soft reset on sensor hardware. """
+    def reset(self, retry: bool = True) -> None:
+        """Initiates soft reset."""
         self.logger.info("Performing soft reset")
 
         # Send command

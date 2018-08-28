@@ -4,8 +4,8 @@ import os, sys, pytest
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Import device utilities
-from device.utilities.accessors import get_peripheral_config
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
@@ -13,66 +13,68 @@ from device.peripherals.modules.atlas_ec.exceptions import TakeSinglePointCalibr
 
 
 def test_init() -> None:
-    driver = AtlasECDriver(name="Test", bus=2, address=0x77, simulate=True)
+    driver = AtlasECDriver(
+        name="Test", bus=2, address=0x77, simulate=True, mux_simulator=MuxSimulator()
+    )
 
 
 def test_read_ec() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     ec = driver.read_ec()
     assert ec == 0.0
 
 
 def test_enable_ec_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.enable_ec_output()
 
 
 def test_disable_ec_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.enable_ec_output()
 
 
 def test_enable_tds_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.enable_tds_output()
 
 
 def test_disable_tds_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.disable_tds_output()
 
 
 def test_enable_salinity_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.enable_salinity_output()
 
 
 def test_disable_salinity_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.disable_salinity_output()
 
 
 def test_enable_specific_gravity_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.enable_specific_gravity_output()
 
 
 def test_disable_specific_gravity_output() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.disable_specific_gravity_output()
 
 
 def test_set_probe_type() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.set_probe_type(1.0)
 
 
 def test_take_dry_calibration_reading() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.take_dry_calibration_reading()
 
 
 def test_take_single_point_calibration_reading() -> None:
-    driver = AtlasECDriver("Test", 2, 0x77, simulate=True)
+    driver = AtlasECDriver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     with pytest.raises(TakeSinglePointCalibrationError):
         driver.take_single_point_calibration_reading(1.413)

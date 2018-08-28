@@ -20,6 +20,10 @@ from device.peripherals.modules.sht25.driver import SHT25Driver
 class DriverRunner(PeripheralRunner):  # type: ignore
     """Runs driver."""
 
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "SHT25-Top"
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
         super().__init__(*args, **kwargs)
@@ -37,37 +41,31 @@ class DriverRunner(PeripheralRunner):  # type: ignore
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
-        super().run(*args, **kwargs)
 
-        # Initialize driver optional parameters
-        mux = self.communication.get("mux", None)
-        if mux != None:
-            mux = int(mux, 16)
+        # Run parent class
+        super().run(*args, **kwargs)
 
         # Initialize driver
         self.driver = SHT25Driver(
             name=self.args.name,
-            bus=self.communication["bus"],
-            address=int(self.communication["address"], 16),
-            mux=mux,
-            channel=self.communication.get("channel", None),
+            bus=self.bus,
+            address=self.address,
+            mux=self.mux,
+            channel=self.channel,
         )
 
         # Check if reading temperature
         if self.args.temperature:
-            print("Reading temperature")
             temperature = self.driver.read_temperature()
             print("Temperature: {} C".format(temperature))
 
         # Check if reading humidity
         elif self.args.humidity:
-            print("Reading humidity")
             humidity = self.driver.read_humidity()
             print("Humidity: {} %".format(humidity))
 
         # Check if reading user register
         elif self.args.user_register:
-            print("Reading user register")
             user_register = self.driver.read_user_register()
             print(user_register)
 

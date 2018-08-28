@@ -1,9 +1,14 @@
 # Import standard python libraries
-import sys, os, pytest
+import os, sys, pytest
 
-# Import manager
-from device.peripherals.modules.sht25.driver import SHT25Driver
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+
+# Import mux simulator
 from device.comms.i2c2.mux_simulator import MuxSimulator
+
+# Import peripheral driver
+from device.peripherals.modules.sht25.driver import SHT25Driver
 
 
 def test_init() -> None:
@@ -33,5 +38,5 @@ def test_read_user_register() -> None:
 
 
 def test_reset() -> None:
-    driver = SHT25Driver("Test", 2, 0x77, simulate=True)
+    driver = SHT25Driver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
     driver.reset()

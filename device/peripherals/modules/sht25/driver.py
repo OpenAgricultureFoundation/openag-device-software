@@ -51,7 +51,7 @@ class SHT25Driver:
         simulate: Optional[bool] = False,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
-        """ Initializes sht25 driver. """
+        """Initializes driver."""
 
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
@@ -81,8 +81,8 @@ class SHT25Driver:
             message = "Driver unable to initialize"
             raise InitError(message, logger=self.logger)
 
-    def read_temperature(self, retry: bool = False) -> Optional[float]:
-        """ Reads temperature value from sensor hardware. """
+    def read_temperature(self, retry: bool = True) -> Optional[float]:
+        """ Reads temperature value."""
         self.logger.debug("Reading temperature")
 
         # Send read temperature command (no-hold master)
@@ -120,8 +120,8 @@ class SHT25Driver:
         self.logger.debug("Temperature: {} C".format(temperature))
         return temperature
 
-    def read_humidity(self, retry: bool = False) -> Optional[float]:
-        """ Reads humidity value from sensor hardware. """
+    def read_humidity(self, retry: bool = True) -> Optional[float]:
+        """Reads humidity value."""
         self.logger.debug("Reading humidity value from hardware")
 
         # Send read humidity command (no-hold master)
@@ -157,8 +157,8 @@ class SHT25Driver:
         self.logger.debug("Humidity: {} %".format(humidity))
         return humidity
 
-    def read_user_register(self, retry: bool = False) -> UserRegister:
-        """ Reads user register from sensor hardware. """
+    def read_user_register(self, retry: bool = True) -> UserRegister:
+        """ Reads user register."""
         self.logger.debug("Reading user register")
 
         # Read register
@@ -178,12 +178,12 @@ class SHT25Driver:
             reload_disabled=bool(bitwise.get_bit_from_byte(bit=1, byte=byte)),
         )
 
-        # Successfully read user register!
+        # Successfully read user register
         self.logger.debug("User register: {}".format(user_register))
         return user_register
 
-    def reset(self, retry: bool = False) -> None:
-        """ Initiates soft reset on sensor hardware. """
+    def reset(self, retry: bool = True) -> None:
+        """Initiates soft reset."""
         self.logger.info("Initiating soft reset")
 
         # Send reset command

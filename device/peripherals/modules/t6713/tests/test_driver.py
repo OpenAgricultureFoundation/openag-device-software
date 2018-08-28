@@ -1,39 +1,31 @@
 # Import standard python libraries
-import sys, os
+import os, sys, pytest
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Set correct import path
-if cwd.endswith("t6713"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Import sensor
+# Import peripheral driver
 from device.peripherals.modules.t6713.driver import T6713Driver
 
 
-def test_init():
-    driver = T6713Driver(name="Test", bus=2, address=0x77, simulate=True)
+def test_init() -> None:
+    driver = T6713Driver(
+        name="Test", bus=2, address=0x77, simulate=True, mux_simulator=MuxSimulator()
+    )
 
 
-def test_read_carbon_dioxide():
-    driver = T6713Driver("Test", 2, 0x77, simulate=True)
-    carbon_dioxide, error = driver.read_carbon_dioxide()
-    assert error.exists() == False
-    assert carbon_dioxide == 0.0
+def test_read_co2() -> None:
+    driver = T6713Driver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
+    co2 = driver.read_co2()
+    assert co2 == 546.0
 
 
-def test_read_status():
-    driver = T6713Driver("Test", 2, 0x77, simulate=True)
-    status, error = driver.read_status()
-    assert error.exists() == False
+def test_read_status() -> None:
+    driver = T6713Driver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
+    status = driver.read_status()
     assert status.error_condition == False
     assert status.flash_error == False
     assert status.calibration_error == False
@@ -44,13 +36,11 @@ def test_read_status():
     assert status.single_point_calibration == False
 
 
-def test_enable_abc_logic():
-    driver = T6713Driver("Test", 2, 0x77, simulate=True)
-    error = driver.enable_abc_logic()
-    assert error.exists() == False
+def test_enable_abc_logic() -> None:
+    driver = T6713Driver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
+    driver.enable_abc_logic()
 
 
-def test_disable_abc_logic():
-    driver = T6713Driver("Test", 2, 0x77, simulate=True)
-    error = driver.disable_abc_logic()
-    assert error.exists() == False
+def test_disable_abc_logic() -> None:
+    driver = T6713Driver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
+    driver.disable_abc_logic()

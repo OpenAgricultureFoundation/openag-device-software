@@ -34,7 +34,7 @@ class AtlasECEvents(PeripheralEvents):  # type: ignore
         elif request["type"] == "Clear Calibration":
             self.response = self.process_clear_calibration_event()
         else:
-            message = "Unknown event request type!"
+            message = "Unknown event request type"
             self.logger.info(message)
             self.response = {"status": 400, "message": message}
 

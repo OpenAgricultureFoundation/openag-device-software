@@ -12,5 +12,6 @@ class SHT25Events(PeripheralEvents):  # type: ignore
         """ Processes an event. Gets request parameters, executes request, returns 
             response. """
 
-        message = "Unknown event request type"
+        message = "Unknown event request type!"
         self.logger.info(message)
+        self.response = {"status": 400, "message": message}

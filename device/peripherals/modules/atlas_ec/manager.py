@@ -88,7 +88,6 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):  # type: ignore
     def setup(self) -> None:
         """ Sets up manager."""
         self.logger.debug("Setting up manager")
-
         try:
             self.driver.setup()
         except DriverError as e:
