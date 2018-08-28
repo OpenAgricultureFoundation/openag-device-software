@@ -13,12 +13,19 @@ from device.utilities import bitwise
 
 # Import driver elements
 from device.peripherals.modules.sht25.simulator import SHT25Simulator
-from device.peripherals.modules.sht25.exceptions import *
+
+# Import exceptions
+from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
+from device.peripherals.modules.sht25.exceptions import (
+    ReadTemperatureError,
+    ReadHumidityError,
+    ReadUserRegisterError,
+    ResetError,
+)
 
 
 class UserRegister(NamedTuple):
     """Dataclass for parsed user register byte."""
-
     resolution: int
     end_of_battery: bool
     heater_enabled: bool
@@ -26,11 +33,11 @@ class UserRegister(NamedTuple):
 
 
 class SHT25Driver:
-    """Driver for atlas sht25 temperature and humidity sensor."""
+    """Driver for sht25 temperature and humidity sensor."""
 
     # Initialize variable properties
-    min_temperature = -40  # C
-    max_temperature = 125  # C
+    min_temperature = -40  # celcius
+    max_temperature = 125  # celcius
     min_humidity = 0  # %RH
     max_humidity = 100  # %RH
 
@@ -74,7 +81,7 @@ class SHT25Driver:
             message = "Driver unable to initialize"
             raise InitError(message, logger=self.logger)
 
-    def read_temperature(self, retry: bool = False) -> float:
+    def read_temperature(self, retry: bool = False) -> Optional[float]:
         """ Reads temperature value from sensor hardware. """
         self.logger.debug("Reading temperature")
 
@@ -101,19 +108,19 @@ class SHT25Driver:
         # Convert temperature data and set significant figures
         msb, lsb = bytes_
         raw = msb * 256 + lsb
-        temperature = -46.85 + ((raw * 175.72) / 65536.0)
+        temperature = float(-46.85 + ((raw * 175.72) / 65536.0))
         temperature = float("{:.0f}".format(temperature))
 
         # Verify temperature value within valid range
         if temperature > self.min_temperature and temperature < self.min_temperature:
             self.logger.warning("Temperature outside of valid range")
-            temperature = None
+            return None
 
-        # Successfully read temperature!
+        # Successfully read temperature
         self.logger.debug("Temperature: {} C".format(temperature))
         return temperature
 
-    def read_humidity(self, retry: bool = False) -> float:
+    def read_humidity(self, retry: bool = False) -> Optional[float]:
         """ Reads humidity value from sensor hardware. """
         self.logger.debug("Reading humidity value from hardware")
 
@@ -138,15 +145,15 @@ class SHT25Driver:
         # Convert humidity data and set significant figures
         msb, lsb = bytes_
         raw = msb * 256 + lsb
-        humidity = -6 + ((raw * 125.0) / 65536.0)
+        humidity = float(-6 + ((raw * 125.0) / 65536.0))
         humidity = float("{:.0f}".format(humidity))
 
         # Verify humidity value within valid range
         if humidity > self.min_humidity and humidity < self.min_humidity:
             self.logger.warning("Humidity outside of valid range")
-            humidity = None
+            return None
 
-        # Successfully read humidity!
+        # Successfully read humidity
         self.logger.debug("Humidity: {} %".format(humidity))
         return humidity
 

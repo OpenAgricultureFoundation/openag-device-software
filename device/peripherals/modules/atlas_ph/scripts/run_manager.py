@@ -7,15 +7,11 @@ sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 # Import typing modules
 from typing import Any
 
-# Import run peripheral parent class
-from device.peripherals.classes.peripheral.scripts.run_manager import ManagerRunnerBase
-
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.accessors import get_peripheral_config
 
-# Import device state
-from device.state import State
+# Import run peripheral parent class
+from device.peripherals.classes.peripheral.scripts.run_manager import ManagerRunnerBase
 
 # Import peripheral manager
 from device.peripherals.modules.atlas_ph.manager import AtlasPHManager

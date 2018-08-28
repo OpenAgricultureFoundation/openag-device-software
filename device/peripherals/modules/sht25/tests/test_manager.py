@@ -1,54 +1,95 @@
 # Import standard python libraries
-import sys, os, json
+import os, sys, json
 
-# Import manager
-from device.peripherals.modules.sht25.manager import SHT25Manager
+# Set system path and directory
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
 # Import device utilities
-from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
+from device.utilities.modes import Modes
 
-# Import shared memory
+# Import device state
 from device.state import State
 
-# Initialize state
-state = State()
+# Import simulators
+from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.peripherals.modules.sht25.simulator import SHT25Simulator
 
-# Import test config
-device_config = json.load(open("device/peripherals/modules/sht25/tests/config.json"))
+# Import peripheral manager
+from device.peripherals.modules.sht25.manager import SHT25Manager
+
+# Load test config
+path = root_dir + "/device/peripherals/modules/sht25/tests/config.json"
+device_config = json.load(open(path))
 peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
 
 
-def test_init():
+def test_init() -> None:
     manager = SHT25Manager(
-        name="Test", state=state, config=peripheral_config, simulate=True
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
     )
 
 
-def test_initialize():
-    manager = SHT25Manager("Test", state, peripheral_config, simulate=True)
+def test_initialize() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
     manager.initialize()
 
 
-def test_setup():
-    manager = SHT25Manager("Test", state, peripheral_config, simulate=True)
+def test_setup() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.setup()
-    assert True
 
 
-def test_update():
-    manager = SHT25Manager("Test", state, peripheral_config, simulate=True)
+def test_update() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.update()
-    assert True
 
 
-def test_reset():
-    manager = SHT25Manager("Test", state, peripheral_config, simulate=True)
+def test_reset() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.reset()
-    assert True
 
 
-def test_shutdown():
-    manager = SHT25Manager("Test", state, peripheral_config, simulate=True)
+def test_shutdown() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.shutdown()
-    assert True

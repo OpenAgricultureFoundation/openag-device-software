@@ -6,11 +6,11 @@ from device.utilities.modes import Modes
 
 # Import peripheral parent class
 from device.peripherals.classes.peripheral.manager import PeripheralManager
+from device.peripherals.classes.peripheral.exceptions import DriverError
 
 # Import module elements
 from device.peripherals.modules.atlas_ec.events import AtlasECEvents
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
-from device.peripherals.classes.atlas.exceptions import DriverError
 
 
 class AtlasECManager(PeripheralManager, AtlasECEvents):  # type: ignore

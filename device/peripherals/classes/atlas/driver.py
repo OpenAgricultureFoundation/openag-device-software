@@ -13,10 +13,9 @@ from device.utilities.logger import Logger
 from device.utilities.modes import Modes
 
 
-# Import driver elements
+# Import driver exceptions
+from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
 from device.peripherals.classes.atlas.exceptions import (
-    InitError,
-    SetupError,
     ProcessCommandError,
     ReadResponseError,
     ReadInfoError,

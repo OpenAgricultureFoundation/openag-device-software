@@ -1,11 +1,11 @@
 # Import standard python modules
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
 
 # Import peripheral parent class
-from device.peripherals.classes.peripheral_manager import PeripheralManager
+from device.peripherals.classes.peripheral.manager import PeripheralManager
 
 # Import sht25 elements
 from device.peripherals.modules.sht25.events import SHT25Events
@@ -13,32 +13,33 @@ from device.peripherals.modules.sht25.driver import SHT25Driver
 from device.peripherals.modules.sht25.exceptions import DriverError
 
 
-class SHT25Manager(PeripheralManager, SHT25Events):
-    """ Manages an sht25 temperature and humidity sensor. """
+class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
+    """Manages an sht25 temperature and humidity sensor."""
 
-    def __init__(self, *args, **kwargs):
-        """ Instantiates manager Instantiates parent class, and initializes 
-            sensor variable name. """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initializes manager."""
 
-        # Instantiate parent class
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.temperature_name = self.parameters["variables"]["sensor"][
-            "temperature_celcius"
-        ]
-        self.humidity_name = self.parameters["variables"]["sensor"]["humidity_percent"]
+        self.temperature_name = self.variables["sensor"]["temperature_celcius"]
+        self.humidity_name = self.variables["sensor"]["humidity_percent"]
 
     @property
-    def temperature(self) -> None:
-        """ Gets temperature value. """
-        return self.state.get_peripheral_reported_sensor_value(
+    def temperature(self) -> Optional[float]:
+        """Gets temperature value."""
+        value = self.state.get_peripheral_reported_sensor_value(
             self.name, self.temperature_name
         )
+        if value != None:
+            return float(value)
+        return None
 
     @temperature.setter
     def temperature(self, value: float) -> None:
-        """ Sets temperature value in shared state. Does not update environment from calibration mode. """
+        """Sets temperature value in shared state. Does not update environment from 
+        calibration mode."""
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.temperature_name, value
         )
@@ -48,15 +49,19 @@ class SHT25Manager(PeripheralManager, SHT25Events):
             )
 
     @property
-    def humidity(self) -> None:
-        """ Gets humidity value. """
-        return self.state.get_peripheral_reported_sensor_value(
+    def humidity(self) -> Optional[float]:
+        """Gets humidity value."""
+        value = self.state.get_peripheral_reported_sensor_value(
             self.name, self.humidity_name
         )
+        if value != None:
+            return float(value)
+        return None
 
     @humidity.setter
     def humidity(self, value: float) -> None:
-        """ Sets humidity value in shared state. Does not update environment from calibration mode. """
+        """Sets humidity value in shared state. Does not update environment from 
+        calibration mode."""
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.humidity_name, value
         )
@@ -92,9 +97,6 @@ class SHT25Manager(PeripheralManager, SHT25Events):
             self.mode = Modes.ERROR
             return
 
-        # Successful initialization!
-        self.logger.info("Initialized successfully")
-
     def setup(self) -> None:
         """Sets up sensor."""
         self.logger.info("No setup required")
@@ -127,7 +129,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         self.health = 100.0
 
     def reset(self) -> None:
-        """ Resets sensor. """
+        """Resets sensor."""
         self.logger.info("Resetting")
 
         # Clear reported values
@@ -140,20 +142,15 @@ class SHT25Manager(PeripheralManager, SHT25Events):
         except DriverError:
             self.logger.exception("Unable to reset driver")
 
-        # Sucessfully reset!
-        self.logger.debug("Successfully reset!")
+        # Sucessfully reset
+        self.logger.debug("Successfully reset")
 
     def shutdown(self) -> None:
-        """ Shuts down sensor. """
+        """Shutsdown sensor."""
         self.logger.info("Shutting down")
-
-        # Clear reported values
         self.clear_reported_values()
 
-        # Successfully shutdown
-        self.logger.info("Successfully shutdown!")
-
-    def clear_reported_values(self):
-        """ Clears reported values. """
+    def clear_reported_values(self) -> None:
+        """Clears reported values."""
         self.temperature = None
         self.humidity = None

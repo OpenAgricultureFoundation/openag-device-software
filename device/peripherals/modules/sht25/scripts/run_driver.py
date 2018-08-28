@@ -1,6 +1,9 @@
 # Import standard python libraries
 import os, sys
 
+# Import python types
+from typing import Any
+
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
@@ -14,10 +17,10 @@ from device.utilities.accessors import get_peripheral_config
 from device.peripherals.modules.sht25.driver import SHT25Driver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(PeripheralRunner):  # type: ignore
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
         super().__init__(*args, **kwargs)
 
@@ -32,7 +35,7 @@ class DriverRunner(PeripheralRunner):
             "--user-register", action="store_true", help="read user register"
         )
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
         super().run(*args, **kwargs)
 

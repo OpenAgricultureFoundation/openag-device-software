@@ -14,7 +14,7 @@ from device.utilities import maths
 # Import module elements
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.modules.atlas_ec.simulator import AtlasECSimulator
-from device.peripherals.classes.atlas.exceptions import SetupError
+from device.peripherals.classes.peripheral.exceptions import SetupError
 from device.peripherals.modules.atlas_ec.exceptions import (
     ReadECError,
     EnableECOutputError,

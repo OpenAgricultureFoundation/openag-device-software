@@ -15,7 +15,7 @@ from device.utilities import maths
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
 from device.peripherals.modules.atlas_ph.exceptions import ReadPHError
-from device.peripherals.classes.atlas.exceptions import SetupError
+from device.peripherals.classes.peripheral.exceptions import SetupError
 
 
 class AtlasPHDriver(AtlasDriver):  # type: ignore
