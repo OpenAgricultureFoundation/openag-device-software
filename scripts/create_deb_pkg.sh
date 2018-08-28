@@ -55,17 +55,20 @@ DEBEMAIL='rbaynes@mit.edu' \
 dch --distribution stable -v $MAJMIN-$PATCH
 
 # Save the changes to the debian changelog back to the git repo
-cp debian/changelog $TOPDIR/debian
+cp debian/changelog $TOPDIR/debian/
 
 # Build the .deb package file (puts a bunch of files in the parent dir).
 # Skip the package checks (lintian) and don't sign source or changes (-us -uc).
 debuild --no-lintian -us -uc 
 
 PKG=$SUBDIR/$PACKAGE\_$MAJMIN-$PATCH\_armhf.deb
-echo "\nTEST this package: sudo dpkg -i $PKG"
+echo ""
+echo "TEST this package: sudo dpkg -i $PKG"
 
-echo "\nRemember to VERIFY, git add, commit, push change to the $TOPDIR/debian/changelog"
+echo ""
+echo "Remember to VERIFY, git add, commit, push change to the $TOPDIR/debian/changelog"
 
-echo "\nThe package you want to upload is in $PKG"
+echo ""
+echo "The package you want to upload is in $PKG"
 
 

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# This script is run by apt after a 'dpkg --purge openagbrain'
+# Stop the service we are running as.
+
+service rc.local stop
+systemctl daemon-reload
+rm /etc/rc.local

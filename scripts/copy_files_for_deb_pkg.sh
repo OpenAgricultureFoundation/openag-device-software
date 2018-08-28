@@ -42,7 +42,6 @@ cp -R app/ \
 cp __init__.py \
   install.sh \
   LICENSE \
-  Makefile \
   manage.py \
   README.md \
   requirements.txt \
