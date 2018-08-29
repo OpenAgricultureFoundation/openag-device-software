@@ -147,6 +147,8 @@ class RunnerBase:
 
         # Initialize communication if exists
         self.communication = self.parameters.get("communication", {})
+        if self.communication == None:
+            self.communication = {}
 
         # Initialize standard i2c config parameters if they exist
         self.bus = self.communication.get("bus", None)

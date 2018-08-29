@@ -8,13 +8,13 @@ from typing import Any
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import driver
 from device.peripherals.modules.sht25.driver import SHT25Driver
 
 
-class DriverRunner(PeripheralRunner):  # type: ignore
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
 
     # Initialize defaults

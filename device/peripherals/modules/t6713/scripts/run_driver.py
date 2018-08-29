@@ -8,16 +8,13 @@ from typing import Any
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
-
-# Import device utilities
-from device.utilities.accessors import get_peripheral_config
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import driver
 from device.peripherals.modules.t6713.driver import T6713Driver
 
 
-class DriverRunner(PeripheralRunner):  # type: ignore
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
 
     # Initialize defaults
