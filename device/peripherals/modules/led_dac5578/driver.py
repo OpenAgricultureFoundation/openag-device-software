@@ -10,6 +10,9 @@ from device.utilities.logger import Logger
 # Import mux simulator
 from device.comms.i2c2.mux_simulator import MuxSimulator
 
+# Import peripheral utilities
+from device.peripherals.utilities import light
+
 # Import dac driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver
 
@@ -19,7 +22,12 @@ from device.peripherals.classes.peripheral.exceptions import (
     InitError,
     SetupError,
 )
-from device.peripherals.modules.led_dac5578.exceptions import TurnOnError, TurnOffError
+from device.peripherals.modules.led_dac5578.exceptions import (
+    NoActivePanelsError,
+    TurnOnError,
+    TurnOffError,
+    SetSPDError,
+)
 
 
 class LEDDAC5578Panel(object):
@@ -110,42 +118,65 @@ class LEDDAC5578Driver:
             self.panels.append(panel)
 
     def turn_on(self) -> None:
-        """Turns on led."""
+        """Turns on leds."""
         self.logger.debug("Turning on")
         channel_outputs = self.build_channel_outputs(100)
         self.set_outputs(channel_outputs)
 
     def turn_off(self) -> None:
-        """Turns off led."""
+        """Turns off leds."""
         self.logger.debug("Turning off")
         channel_outputs = self.build_channel_outputs(0)
         self.set_outputs(channel_outputs)
 
-    def set_output(self, channel_name: str, percent: float) -> None:
-        """Sets output on each panel. Converts channel name to channel number 
-        then sets output on dac."""
-        self.logger.debug("Setting ch {}: {}".format(channel_name, percent))
+    def set_spd(
+        self,
+        desired_distance_cm: float,
+        desired_ppfd_umol_m2_s: float,
+        desired_spectrum_nm_percent: Dict,
+    ) -> Tuple[Optional[Dict], Optional[Dict], Optional[Dict]]:
+        """Sets spectral power distribution."""
+        message = "Setting spd, distance={}cm, ppfd={}umol/m2/s, spectrum={}".format(
+            desired_distance_cm, desired_ppfd_umol_m2_s, desired_spectrum_nm_percent
+        )
+        self.logger.debug(message)
 
-        # Convert channel name to channel number
+        # Approximate spectral power distribution
         try:
-            channel_number = self.get_channel_number(channel_name)
+            channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s = light.approximate_spd(
+                channel_configs=self.channel_configs,
+                desired_distance_cm=desired_distance_cm,
+                desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
+                desired_spectrum_nm_percent=desired_spectrum_nm_percent,
+            )
         except Exception as e:
-            raise SetOutputError(logger=self.logger) from e
+            message = "approximate spd failed"
+            raise SetSPDError(message=message, logger=self.logger) from e
 
-        # Set output on each active panel
+        # Check at least one panel is active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            raise NoActivePanelsError(logger=self.logger)
+
+        # Set outputs on each active panel
         for panel in active_panels:
-
-            # Check if panel is active low
-            if panel.active_low:
-                percent = 100 - percent
-
-            # Set output on panel
             try:
-                panel.driver.set_output(channel_number, percent)
+                self.set_outputs(channel_outputs)
             except Exception as e:
-                self.logger.exception("Unable to set output on `{}`".format(panel.name))
-                panel.is_shutdown = True
+                self.logger.exception("Unable to set output on {}".format(panel.name))
+
+        # Check at least one panel is still active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            message = "failed when setting spd"
+            raise NoActivePanelsError(message=message, logger=self.logger)
+        # Successfully set channel outputs
+        self.logger.debug(
+            "Successfully set spd, output: channels={}, spectrum={}, ppfd={}umol/m2/s".format(
+                channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s
+            )
+        )
+        return (channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s)
 
     def set_outputs(self, outputs: dict) -> None:
         """Sets outputs on dac. Converts channel names to channel numbers 
@@ -165,7 +196,10 @@ class LEDDAC5578Driver:
             # Append to converted outputs
             converted_outputs[number] = percent
 
-        self.logger.debug("converted_outputs = {}".format(converted_outputs))
+        # Check at least one panel is active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            raise NoActivePanelsError(logger=self.logger)
 
         # Set outputs on each active panel
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
@@ -180,6 +214,37 @@ class LEDDAC5578Driver:
             # Set outputs on panel
             try:
                 panel.driver.write_outputs(converted_outputs)
+            except Exception as e:
+                self.logger.exception("Unable to set output on `{}`".format(panel.name))
+                panel.is_shutdown = True
+
+    def set_output(self, channel_name: str, percent: float) -> None:
+        """Sets output on each panel. Converts channel name to channel number 
+        then sets output on dac."""
+        self.logger.debug("Setting ch {}: {}".format(channel_name, percent))
+
+        # Convert channel name to channel number
+        try:
+            channel_number = self.get_channel_number(channel_name)
+        except Exception as e:
+            raise SetOutputError(logger=self.logger) from e
+
+        # Check at least one panel is active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            raise NoActivePanelsError(logger=self.logger)
+
+        # Set output on each active panel
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        for panel in active_panels:
+
+            # Check if panel is active low
+            if panel.active_low:
+                percent = 100 - percent
+
+            # Set output on panel
+            try:
+                panel.driver.set_output(channel_number, percent)
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True

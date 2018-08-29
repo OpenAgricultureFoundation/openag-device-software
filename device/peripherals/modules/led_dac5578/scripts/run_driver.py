@@ -31,6 +31,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         self.parser.add_argument("--on", action="store_true", help="turn on leds")
         self.parser.add_argument("--off", action="store_true", help="turn off leds")
         self.parser.add_argument("--fade", action="store_true", help="fade leds")
+        self.parser.add_argument("--set-spd", action="store_true", help="sets spd")
 
     def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
@@ -56,6 +57,16 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Check if fading
         elif self.args.fade:
             self.driver.fade()
+
+        # Check if setting spd
+        elif self.args.set_spd:
+
+            distance = 10
+            ppfd = 800
+            spectrum = {
+                "380-399": 0, "400-499": 26, "500-599": 22, "600-700": 39, "701-780": 13
+            }
+            self.driver.set_spd(distance, ppfd, spectrum)
 
 
 # Run main
