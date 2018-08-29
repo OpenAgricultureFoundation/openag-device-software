@@ -85,8 +85,7 @@ class LEDDAC5578Panel(object):
             )
             self.is_shutdown = False
         except Exception as e:
-            self.logger.warning("Unable to initialize `{}`".format(self.name))
-            self.logger.exception("uh oh")
+            self.logger.exception("Unable to initialize `{}`".format(self.name))
             self.is_shutdown = True
 
 
@@ -116,6 +115,11 @@ class LEDDAC5578Driver:
             panel = LEDDAC5578Panel(name, config, simulate, mux_simulator, self.logger)
             panel.initialize()
             self.panels.append(panel)
+
+        # Check at least one panel is still active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            raise NoActivePanelsError(message=message, logger=self.logger)
 
     def turn_on(self) -> None:
         """Turns on leds."""
@@ -170,6 +174,7 @@ class LEDDAC5578Driver:
         if len(active_panels) < 1:
             message = "failed when setting spd"
             raise NoActivePanelsError(message=message, logger=self.logger)
+
         # Successfully set channel outputs
         self.logger.debug(
             "Successfully set spd, output: channels={}, spectrum={}, ppfd={}umol/m2/s".format(
@@ -218,6 +223,12 @@ class LEDDAC5578Driver:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True
 
+        # Check at least one panel is still active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            message = "failed when setting outputs"
+            raise NoActivePanelsError(message=message, logger=self.logger)
+
     def set_output(self, channel_name: str, percent: float) -> None:
         """Sets output on each panel. Converts channel name to channel number 
         then sets output on dac."""
@@ -248,6 +259,12 @@ class LEDDAC5578Driver:
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True
+
+        # Check at least one panel is still active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            message = "failed when setting output"
+            raise NoActivePanelsError(message=message, logger=self.logger)
 
     def get_channel_number(self, channel_name: str) -> int:
         """Gets channel number from channel name."""
