@@ -1,11 +1,11 @@
 # Import standard python modules
-from typing import Tuple, Optional, List
 import time
+
+# Import python types
+from typing import Tuple, Optional, List
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities.error import Error
-from device.utilities.health import Health
 
 # Import peripheral utilities
 from device.peripherals.utilities import light
@@ -15,10 +15,9 @@ from device.peripherals.modules.led_dac5578.panel import LEDDAC5578Panel
 
 
 class LEDDAC5578Array(object):
-    """ An array of LED panels. """
+    """An array of LED panels."""
 
-    _is_shutdown: bool = False
-    _min_health: float = 40.0
+    # Initialize vars
     channel_outputs: dict = {}
 
     def __init__(
@@ -28,8 +27,8 @@ class LEDDAC5578Array(object):
         channel_configs: dict,
         simulate: bool = False,
     ) -> None:
-        """ Instantiates LED array. Assumes all panels have the same channel
-            config. If that is not the case, consider using multiple arrays. """
+        """Instantiates LED array. Assumes all panels have the same channel
+        config. If that is not the case, consider using multiple arrays."""
 
         # Instantiate logger
         self.logger = Logger(name="Array({})".format(name), dunder_name=__name__)
@@ -58,61 +57,23 @@ class LEDDAC5578Array(object):
         self.get_channel_number = self.panels[0].get_channel_number
         self.build_channel_outputs = self.panels[0].build_channel_outputs
 
-    @property
-    def health(self):
-        """ Calculates health percentage from number of healthy panels over
-            total number of panels. """
-        num_healthy = len([panel for panel in self.panels if panel.healthy])
-        return num_healthy / len(self.panels) * 100.0
-
-    @property
-    def healthy(self):
-        """ Calculates healthyness by comparing health to min health. """
-        return self.health > self._min_health
-
-    @property
-    def is_shutdown(self) -> bool:
-        """ Returns device shutdown status from health or if manually set. """
-        return self._is_shutdown or not self.healthy
-
-    @is_shutdown.setter
-    def is_shutdown(self, value: bool) -> bool:
-        """ Shutsdown array. """
-        self._is_shutdown = value
-
-    def initialize(self) -> Error:
-        """ Initializes array. Initializes all panels in array. """
+    def initialize(self) -> None:
+        """ Initializes all panels in array."""
         self.logger.debug("Initializing array")
-
-        # Initialize all panels
         for panel in self.panels:
-
-            # Try to initialize panel until successful or shuts down
-            while not panel.is_shutdown:
-                error = panel.initialize()
-
-                # Check if successful
-                if not error.exists():
-                    break
-
-        # Check if array became unhealthy
-        if not self.healthy:
-            error.report("Array unable to initialize")
-            return error
-
-        # Successfully initialized!
-        self.logger.debug("Initialization successful")
-        return Error(None)
+            panel.initialize()
 
     def shutdown(self):
-        """ Shutsdown all panels in array. """
-        self.is_shutdown = True
+        """Shutsdown all panels in array."""
+        self.logger.debug("Shutting down array")
+        for panel in self.panels:
+            panel.shutdown()
 
     def reset(self):
-        """ Resets all panels in array. """
+        """Resets all panels in array."""
+        self.logger.debug("Resetting array")
         for panel in self.panels:
             panel.reset()
-        self.is_shutdown = False
 
     def set_output(self, channel_name: str, percent: float) -> Error:
         """ Sets output on all panels if not shutdown. """
