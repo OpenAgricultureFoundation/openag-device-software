@@ -1,7 +1,7 @@
 {   
     "format": "openag-standard-v1",
     "name": "Education v0.3.0",
-    "uuid": "e762daf6-298c-408c-8b5d-f3ed14b01710",
+    "uuid": "846ab69e-56f8-4283-80a5-52f47e37e7d9",
     "peripherals": [
         {
             "name": "LEDPanel-Top",
@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
+                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": false}
                     ]
                 }
             }
@@ -42,7 +42,30 @@
                     "sensor": null,
                     "actuator": null
                 },
-                "communication": null,
+                "communication": {
+                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                    "usb_mux_channel": 1
+                },
+                "directory": "images/"
+            }
+        },
+        {
+            "name": "Camera-Side",
+            "type": "USBCamera",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera ",
+                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "communication": {
+                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                    "usb_mux_channel": 3
+                },
                 "directory": "images/"
             }
         },
@@ -71,17 +94,22 @@
             }
         },
         {
-            "name": "T6713-Top",
-            "type": "T6713",
-            "uuid": "ac313032-ce59-4ec2-9370-726aa4e34302",
+            "name": "CCS811-Top",
+            "type": "CCS811",
+            "uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
             "parameters": {
                 "setup": {
-                    "name": "T6713 CO2 Sensor",
-                    "file_name": "t6713/setups/default"
+                    "name": "CCS811 Carbon Dioxide Sensor",
+                    "file_name": "ccs811/setups/default"
                 },
                 "variables": {
                     "sensor": {
-                        "carbon_dioxide_ppm": "air_carbon_dioxide_ppm"
+                        "co2_ppm": "air_carbon_dioxide_ppm",
+                        "tvoc_ppb": "air_total_volatile_organic_compounds_ppb"
+                    },
+                    "compensation": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"
                     },
                     "actuator": null
                 },
@@ -89,7 +117,7 @@
                     "bus": 2, 
                     "mux": "0x77", 
                     "channel": 2, 
-                    "address": "0x15"
+                    "address": "0x5a"
                 }
             }
         },
