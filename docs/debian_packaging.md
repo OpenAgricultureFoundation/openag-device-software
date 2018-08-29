@@ -121,7 +121,7 @@ gsutil -m cp -r conf/ db/ dists/ pool/ rbaynes@mit.edu.gpg.key gs://openag-v1-de
 ### Step 9 
 #### Install package on a Beaglebone (put in our flasher image) 
 ```
-wget -O - https://storage.googleapis.com/openag-v1-debian-packages/rbaynes@mit.edu.gpg.key | sudo apt-key add -
+sudo bash -c 'wget -O - https://storage.googleapis.com/openag-v1-debian-packages/rbaynes@mit.edu.gpg.key | apt-key add - '
 
 sudo bash -c 'echo "deb https://storage.googleapis.com/openag-v1-debian-packages/ stretch main" >> /etc/apt/sources.list'
 
