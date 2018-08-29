@@ -92,7 +92,7 @@ class DAC5578Driver:
         # Send set output command to dac
         self.logger.debug("Writing to dac: ch={}, byte={}".format(channel, byte))
         try:
-            self.i2c.write([0x30 + channel, byte, 0x00], disable_mux=disable_mux)
+            self.i2c.write(bytes([0x30 + channel, byte, 0x00]), disable_mux=disable_mux)
         except I2CError as e:
             raise WriteOutputError(logger=self.logger) from e
 

@@ -8,14 +8,18 @@ from typing import Any, Dict
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import peripheral driver
 from device.peripherals.common.dac5578.driver import DAC5578Driver
 
 
-class DriverRunner(PeripheralRunner):  # type: ignore
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
+
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "LEDPanel-Top"
 
     # Initialize var types
     communication: Dict[str, Any]
