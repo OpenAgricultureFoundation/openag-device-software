@@ -55,8 +55,10 @@ cd ~/openag-device-software
 - In this example, you are releasing version 1.0.1 (debian uses 1.0-1).
 - NOTE: this script opens vi to allow you to give a description of the release.  It is OK to edit the file, then save it and quit.
 - If you create the same version, just make sure the changelog file (the one the editor opens on) has UNIQUE versions and is sane.
+- Make sure our version.txt matches the package version!!!
 ```
 cd ~/openag-device-software
+vi config/version.txt
 ./scripts/create_deb_pkg.sh 1.0 1
 ```
 - See what is in the package that was built:
