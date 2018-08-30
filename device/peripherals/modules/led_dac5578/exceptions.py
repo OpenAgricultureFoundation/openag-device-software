@@ -16,3 +16,15 @@ class TurnOnError(DriverError):  # type: ignore
 
 class TurnOffError(DriverError):  # type: ignore
     message_base = "Unable to turn off"
+
+
+class SetOutputError(DriverError):  # type: ignore
+    message_base = "Unable to set output"
+
+
+class SetOutputsError(DriverError):  # type: ignore
+    message_base = "Unable to set outputs"
+
+
+class InvalidChannelNameError(DriverError):  # type: ignore
+    message_base = "Invalid channel name"

@@ -19,8 +19,8 @@ from device.peripherals.modules.led_dac5578.driver import LEDDAC5578Driver
 from device.peripherals.classes.peripheral.exceptions import DriverError
 
 
-class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
-    """ Manages an LED driver controlled by a dac5578. """
+class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
+    """Manages an LED driver controlled by a dac5578."""
 
     prev_desired_ppfd: Optional[float] = None
     prev_desired_spectrum: Optional[Dict[str, float]] = None
@@ -45,7 +45,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         ]
 
     @property
-    def spectrum(self) -> Optional[Dict[str, float]]:
+    def spectrum(self) -> Any:
         """Gets spectrum value."""
         return self.state.get_peripheral_reported_sensor_value(
             self.name, self.spectrum_name
@@ -62,7 +62,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         )
 
     @property
-    def desired_spectrum(self) -> dict:
+    def desired_spectrum(self) -> Any:
         """Gets desired spectrum value from shared environment state if not 
         in manual mode, otherwise gets it from peripheral state."""
         if self.mode != Modes.MANUAL:
@@ -130,7 +130,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         )
 
     @property
-    def desired_distance(self) -> float:
+    def desired_distance(self) -> Optional[float]:
         """Gets desired distance value from shared environment state if not 
         in manual mode, otherwise gets it from peripheral state."""
         if self.mode != Modes.MANUAL:
@@ -147,7 +147,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
             return None
 
     @property
-    def channel_outputs(self) -> Dict[str, float]:
+    def channel_outputs(self) -> Any:
         """Gets channel outputs value."""
         return self.state.get_peripheral_reported_actuator_value(
             self.name, self.channel_outputs_name
@@ -164,7 +164,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         )
 
     @property
-    def desired_channel_outputs(self) -> Dict[str, float]:
+    def desired_channel_outputs(self) -> Any:
         """ Gets desired distance value from shared environment state if not 
             in manual mode, otherwise gets it from peripheral state. """
         if self.mode != Modes.MANUAL:
@@ -192,6 +192,8 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
                 name=self.name,
                 panel_configs=self.communication.get("panels"),
                 channel_configs=self.setup_dict.get("channel_configs"),
+                simulate=self.simulate,
+                mux_simulator=self.mux_simulator,
             )
         except DriverError as e:
             self.logger.exception("Manager unable to initialize")
@@ -202,7 +204,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         """Sets up manager by turning off leds."""
         self.logger.debug("Setting up")
         try:
-            self.driver.turn_off()
+            self.channel_outputs = self.driver.turn_off()
         except DriverError as e:
             self.logger.exception("Unable to setup")
             self.mode = Modes.ERROR
@@ -280,17 +282,17 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         self.prev_desired_distance = self.desired_distance
 
     def reset(self) -> None:
-        """ Resets manager. """
+        """Resets manager."""
         self.logger.debug
         self.clear_reported_values()
 
     def shutdown(self) -> None:
-        """ Shuts down manager. """
+        """Shuts down manager."""
         self.logger.debug("Shutting down")
         self.clear_reported_values()
 
-    def clear_reported_values(self):
-        """ Clears reported values. """
+    def clear_reported_values(self) -> None:
+        """Clears reported values."""
         self.ppfd = None
         self.spectrum = None
         self.distance = None
@@ -299,11 +301,8 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):
         self.prev_desired_spectrum = None
         self.prev_desired_distance = None
 
-    def update_reported_variables(self):
-        """ Updates reported variables. """
-
-        # Get channel outputs stored in driver
-        self.channel_outputs = self.driver.channel_outputs
+    def update_reported_variables(self) -> None:
+        """Updates reported variables."""
 
         # Get previously used distance or default setup distance
         if self.distance == None:

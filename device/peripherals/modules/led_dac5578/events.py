@@ -16,7 +16,7 @@ from device.peripherals.utilities import light
 
 
 class LEDDAC5578Events(PeripheralEvents):  # type: ignore
-    """Event mixin for led array."""
+    """Event mixin for led driver."""
 
     # Initialize var types
     mode: str
@@ -53,9 +53,9 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         if self.mode != Modes.MANUAL:
             return {"status": 400, "message": "Must be in manual mode."}
 
-        # Turn on array and update reported variables
+        # Turn on driver and update reported variables
         try:
-            self.array.turn_on()
+            self.driver.turn_on()
             self.update_reported_variables()
         except Exception as e:
             self.mode = Modes.ERROR
@@ -73,9 +73,9 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         if self.mode != Modes.MANUAL:
             return {"status": 400, "message": "Must be in manual mode."}
 
-        # Turn off array and update reported variables
+        # Turn off driver and update reported variables
         try:
-            self.array.turn_off()
+            self.driver.turn_off()
             self.update_reported_variables()
         except Exception as e:
             self.mode = Modes.ERROR
@@ -102,7 +102,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 
         # Set channel and update reported variables
         try:
-            self.array.set_output(channel_name, float(percent))
+            self.driver.set_output(channel_name, float(percent))
             self.update_reported_variables()
         except Exception as e:
             self.mode = Modes.ERROR
@@ -129,16 +129,16 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 
         # Turn off channels
         try:
-            self.array.turn_off()
+            self.driver.turn_off()
         except Exception as e:
-            self.logger.exception("Unable to fade array")
+            self.logger.exception("Unable to fade driver")
             return
 
         # Set channel or channels
         if channel_name != None:
             channel_names = [channel_name]
         else:
-            channel_outputs = self.array.build_channel_outputs(0)
+            channel_outputs = self.driver.build_channel_outputs(0)
             channel_names = channel_outputs.keys()
 
         # Loop forever
@@ -150,12 +150,12 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                 # Fade up
                 for value in range(0, 100, 10):
 
-                    # Set array output
+                    # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
                     try:
-                        error = self.array.set_output(channel_name, value)
+                        self.driver.set_output(channel_name, value)
                     except Exception as e:
-                        self.logger.exception("Unable to fade array")
+                        self.logger.exception("Unable to fade driver")
                         return
 
                     # Check for new events
@@ -175,12 +175,12 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                 # Fade down
                 for value in range(100, 0, -10):
 
-                    # Set array output
+                    # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
                     try:
-                        self.array.set_output(channel_name, value)
+                        self.driver.set_output(channel_name, value)
                     except Exception as e:
-                        self.logger.exception("Unable to fade array")
+                        self.logger.exception("Unable to fade driver")
                         return
 
                     # Check for new events
@@ -196,35 +196,3 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 
                     # Update every 100ms
                     time.sleep(0.1)
-
-    def process_calculate_ulrf_from_percents(self, request: Dict[str, Any]) -> Dict:
-        """Processes calculating universal light recipe format (ULRF) parameters 
-        from channel power percents."""
-        self.logger.debug("Processing calculating ULRF from percents")
-
-        # Verify request parameters
-        try:
-            data = json.loads(request["value"])
-            channel_power_percents = data["channel_power_percents"]
-            illumination_distance = data["illumination_distance_cm"]
-        except KeyError as e:
-            self.logger.exception("Invalid request parameters")
-            return {"status": 400, "message": "Invalid request parameter: " + str(e)}
-
-        # Calculate light urf parameters
-        try:
-            spectrum, ppfd, distance = light.calculate_ulrf_from_percents(
-                channel_configs=self.channel_configs,
-                channel_power_percents=channel_power_percents,
-                distance=illumination_distance,
-            )
-            return {
-                "status": 200,
-                "message": "Successfully calculated",
-                "spectrum_nm_percents": spectrum,
-                "ppfd_umol_m2_s": ppfd,
-                "illumination_distance_cm": distance,
-            }
-        except Exception as e:  # TODO: Break out exception types
-            self.logger.exception("Unable to calculate light urf from percents")
-            return {"status": 500, "message": str(e)}

@@ -2,7 +2,7 @@
 import time
 
 # Import python types
-from typing import NamedTuple, Optional, Tuple, Dict, Any
+from typing import NamedTuple, Optional, Tuple, Dict, Any, List
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -27,6 +27,9 @@ from device.peripherals.modules.led_dac5578.exceptions import (
     TurnOnError,
     TurnOffError,
     SetSPDError,
+    SetOutputError,
+    SetOutputsError,
+    InvalidChannelNameError,
 )
 
 
@@ -49,10 +52,10 @@ class LEDDAC5578Panel(object):
 
         # Initialize panel parameters
         self.driver_name = driver_name
-        self.name = config.get("name")
+        self.name = str(config.get("name"))
         self.full_name = driver_name + "-" + self.name
         self.bus = config.get("bus")
-        self.address = int(config.get("address"), 16)
+        self.address = int(config.get("address"), 16)  # type: ignore
         self.active_low = config.get("active_low")
         self.simulate = simulate
         self.mux_simulator = mux_simulator
@@ -63,12 +66,12 @@ class LEDDAC5578Panel(object):
         # Initialize i2c mux address
         self.mux = config.get("mux")
         if self.mux != None:
-            self.mux = int(self.mux, 16)
+            self.mux = int(self.mux, 16)  # type: ignore
 
         # Initialize i2c channel value
         self.channel = config.get("channel")
         if self.channel != None:
-            self.channel = int(self.channel)
+            self.channel = int(self.channel)  # type: ignore
 
     def initialize(self) -> None:
         """Initializes panel."""
@@ -95,7 +98,7 @@ class LEDDAC5578Driver:
     def __init__(
         self,
         name: str,
-        panel_configs: Dict[str, Any],
+        panel_configs: List[Dict[str, Any]],
         channel_configs: Dict[str, Any],
         simulate: bool = False,
         mux_simulator: Optional[MuxSimulator] = None,
@@ -110,7 +113,7 @@ class LEDDAC5578Driver:
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
 
         # Initialize panels
-        self.panels = []
+        self.panels: List[LEDDAC5578Panel] = []
         for config in panel_configs:
             panel = LEDDAC5578Panel(name, config, simulate, mux_simulator, self.logger)
             panel.initialize()
@@ -119,19 +122,21 @@ class LEDDAC5578Driver:
         # Check at least one panel is still active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         if len(active_panels) < 1:
-            raise NoActivePanelsError(message=message, logger=self.logger)
+            raise NoActivePanelsError(logger=self.logger)
 
-    def turn_on(self) -> None:
+    def turn_on(self) -> Dict[str, float]:
         """Turns on leds."""
         self.logger.debug("Turning on")
         channel_outputs = self.build_channel_outputs(100)
         self.set_outputs(channel_outputs)
+        return channel_outputs
 
-    def turn_off(self) -> None:
+    def turn_off(self) -> Dict[str, float]:
         """Turns off leds."""
         self.logger.debug("Turning off")
         channel_outputs = self.build_channel_outputs(0)
         self.set_outputs(channel_outputs)
+        return channel_outputs
 
     def set_spd(
         self,
@@ -218,7 +223,7 @@ class LEDDAC5578Driver:
 
             # Set outputs on panel
             try:
-                panel.driver.write_outputs(converted_outputs)
+                panel.driver.write_outputs(converted_outputs)  # type: ignore
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True
@@ -255,7 +260,7 @@ class LEDDAC5578Driver:
 
             # Set output on panel
             try:
-                panel.driver.set_output(channel_number, percent)
+                panel.driver.set_output(channel_number, percent)  # type: ignore
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True
@@ -269,15 +274,16 @@ class LEDDAC5578Driver:
     def get_channel_number(self, channel_name: str) -> int:
         """Gets channel number from channel name."""
         for channel_config in self.channel_configs:
-            if channel_config["name"]["brief"] == channel_name:
-                channel_number = int(channel_config["channel"]["software"])
+            if channel_config["name"]["brief"] == channel_name:  # type: ignore
+                channel = channel_config["channel"]  # type: ignore
+                channel_number = int(channel["software"])  # type: ignore
                 return channel_number
-        raise InvalidChannelName(message=channel_name, logger=self.logger)
+        raise InvalidChannelNameError(message=channel_name, logger=self.logger)
 
     def build_channel_outputs(self, value: float) -> Dict[str, float]:
         """Build channel outputs. Sets each channel to provided value."""
         channel_outputs = {}
         for channel_config in self.channel_configs:
-            name = channel_config["name"]["brief"]
+            name = channel_config["name"]["brief"]  # type: ignore
             channel_outputs[name] = value
         return channel_outputs
