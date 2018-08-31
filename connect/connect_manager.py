@@ -28,8 +28,10 @@ class ConnectManager:
         self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
 
-        # these values never change, so only get them once
+        # this never changes, so only get once
         self.state.connect["is_bbb"] = ConnectUtils.is_bbb()
+
+        # initialize this
         self.state.connect["device_UI"] = ConnectUtils.get_remote_UI_URL()
 
     # ------------------------------------------------------------------------

@@ -23,12 +23,12 @@ class ConnectUtils:
         try:
             cv = ConnectViewer()  # data from the state.connect dict and DB
 
-            # These never change, initialized by ConnectionManager,
+            # This never changes, initialized by ConnectionManager,
             # and read from the state dict here.
             status['is_bbb'] = cv.connect_dict['is_bbb']
-            status['device_UI'] = cv.connect_dict['device_UI']
 
             # These change dynamically, so get each time.
+            status['device_UI'] = ConnectUtils.get_remote_UI_URL()
             status['is_wifi_bbb'] = ConnectUtils.is_wifi_bbb()
             status['wifis'] = ConnectUtils.get_wifis()
             status['IP'] = ConnectUtils.get_IP()
