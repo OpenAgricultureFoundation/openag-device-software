@@ -18,10 +18,7 @@ fi
 
 # Install any new python modules
 source venv/bin/activate
-# Also cache all downloaded pip packages, so we can put in our deb. pkg.
-mkdir -p venv/pip_cache
-pip download -d venv/pip_cache -r requirements.txt
-pip install -f venv/pip_cache -r requirements.txt -t venv/packages
+pip install -f venv/pip_cache -r requirements.txt -t venv/packages --upgrade
 
 # Recreate a fresh (empty) database
 #echo 'Recreating database...'
@@ -52,7 +49,8 @@ fi
 
 # Load our models
 echo 'Migrating the django/postgres database...'
-python manage.py migrate
+export PYTHONPATH=$TOPDIR/venv/packages
+python3 manage.py migrate
 
 # Also need to make our user super again for the django admin
 echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python manage.py shell

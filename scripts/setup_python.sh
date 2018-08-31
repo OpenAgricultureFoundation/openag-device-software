@@ -1,11 +1,14 @@
 #!/bin/bash
 
+# Get the full path to this script, the top dir is one up.
+TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+TOPDIR+=/..
+cd $TOPDIR
+
 rm -fr venv
 virtualenv -p python3.6 venv
 source venv/bin/activate
-# Also cache all downloaded pip packages, so we can put in our deb. pkg.
-mkdir -p venv/pip_cache
-pip download -d venv/pip_cache -r requirements.txt
+./scripts/cache_pip_packages.sh
 pip install -f venv/pip_cache -r requirements.txt -t venv/packages
 
 echo 'Creating our internal postgres application account...'
