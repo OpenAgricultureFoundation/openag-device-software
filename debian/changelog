@@ -1,5 +1,5 @@
-openagbrain (0.1-2) stable; urgency=medium
+openagbrain (0.0-1) stable; urgency=medium
 
-  * Sprint v0.1.2 complete.
+  * Github v0.1.2 being used as package v0.0.1 to start package release process.
 
  -- rob baynes <rbaynes@mit.edu>  Thu, 23 Aug 2018 19:04:57 +0000
