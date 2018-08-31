@@ -3,7 +3,10 @@
 rm -fr venv
 virtualenv -p python3.6 venv
 source venv/bin/activate
-pip install -r requirements.txt
+# Also cache all downloaded pip packages, so we can put in our deb. pkg.
+mkdir -p venv/pip_cache
+pip download -d venv/pip_cache -r requirements.txt
+pip install -f venv/pip_cache -r requirements.txt -t venv/packages
 
 echo 'Creating our internal postgres application account...'
 if [[ "$OSTYPE" == "linux"* ]]; then
