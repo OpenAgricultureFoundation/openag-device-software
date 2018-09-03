@@ -13,24 +13,11 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
   # Fix up some directories and files that may be owned by root
   sudo chmod -f -R 777 logs/ images/ 
-  #sudo chown -f -R debian:debian logs images
 fi
 
 # Install any new python modules
 source venv/bin/activate
 pip install -f venv/pip_cache -r requirements.txt -t venv/packages --upgrade
-
-# Recreate a fresh (empty) database
-#echo 'Recreating database...'
-#if [[ "$OSTYPE" == "linux"* ]]; then
-#  sudo -u postgres psql -c "DROP DATABASE openag_brain;"
-#  sudo -u postgres psql -c "CREATE DATABASE openag_brain OWNER openag;"
-#  sudo -u postgres psql -c "ALTER USER openag SUPERUSER;"
-#else # we are on OSX
-#  psql postgres -c "DROP DATABASE openag_brain;"
-#  psql postgres -c "CREATE DATABASE openag_brain OWNER openag;"
-#  psql postgres -c "ALTER USER openag SUPERUSER;"
-#fi
 
 # Remove all rows in the state table only.
 echo 'Updating database...'

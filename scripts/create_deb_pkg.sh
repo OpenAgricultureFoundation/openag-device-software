@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ "$OSTYPE" != "linux"* ]]; then
+    echo "This script can only be run on a BBB."
+    exit 1
+fi 
+
 echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."
 echo ""
 
