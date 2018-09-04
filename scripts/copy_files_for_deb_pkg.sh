@@ -19,8 +19,8 @@ echo "Destination dir: $DEST"
 mkdir -p $DEST
 
 # Remove all __pycache__ dirs from current source dir:
-echo "Cleaning up __pycache__ dirs..."
-sudo sh -c 'find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf'
+#echo "Cleaning up __pycache__ dirs..."
+#sudo sh -c 'find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf'
 
 echo "Copying files..."
 # Copy the app source dirs:

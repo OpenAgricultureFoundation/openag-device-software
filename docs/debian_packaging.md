@@ -59,6 +59,7 @@ cd ~/openag-device-software
 ```
 cd ~/openag-device-software
 vi config/version.txt
+./scripts/download_pip_packages.sh
 ./scripts/create_deb_pkg.sh 1.0 1
 ```
 - See what is in the package that was built:
