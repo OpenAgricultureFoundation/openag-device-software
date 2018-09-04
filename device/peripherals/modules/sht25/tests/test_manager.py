@@ -15,7 +15,6 @@ from device.state import State
 
 # Import simulators
 from device.comms.i2c2.mux_simulator import MuxSimulator
-from device.peripherals.modules.sht25.simulator import SHT25Simulator
 
 # Import peripheral manager
 from device.peripherals.modules.sht25.manager import SHT25Manager
@@ -93,3 +92,45 @@ def test_shutdown() -> None:
     )
     manager.initialize()
     manager.shutdown()
+
+
+def test_turn_on() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
+
+    # Try to turn on outside manual mode
+    manager.mode = Modes.NORMAL
+    manager.process_event(request={"type": "Turn On"})
+    assert manager.response["status"] == 400
+
+    # Turn on from manual mode
+    manager.mode = Modes.MANUAL
+    manager.process_event(request={"type": "Turn On"})
+    assert manager.response["status"] == 200
+
+
+def test_turn_off() -> None:
+    manager = SHT25Manager(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
+
+    # Try to turn off outside manual mode
+    manager.mode = Modes.NORMAL
+    manager.process_event(request={"type": "Turn Off"})
+    assert manager.response["status"] == 400
+
+    # Turn off from manual mode
+    manager.mode = Modes.MANUAL
+    manager.process_event(request={"type": "Turn Off"})
+    assert manager.response["status"] == 200
