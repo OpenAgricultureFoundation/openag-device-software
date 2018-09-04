@@ -7,7 +7,7 @@
     "parameters": {
         "variables": {
             "sensor": {
-                "electrical_conductivity_ms_cm": {
+                "ec_ms_cm": {
                     "name": {
                         "type": "string",
                         "default": "water_electrical_conductivity_ms_cm"
@@ -151,7 +151,7 @@
     "info": {
         "variables": {
             "sensors":{
-                "electrical_conductivity_ms_cm": {
+                "ec_ms_cm": {
                     "units": "mS/cm",
                     "range": [0.005, 200],
                     "accuracy": {

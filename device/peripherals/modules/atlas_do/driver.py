@@ -1,204 +1,165 @@
 # Import standard python modules
-import time
-from typing import Optional, Tuple
+import time, threading
+
+# Import python types
+from typing import Optional, Tuple, NamedTuple
 
 # Import device comms
-from device.comms.i2c import I2C
+from device.comms.i2c2.main import I2C
+from device.comms.i2c2.exceptions import I2CError
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities.error import Error
-from device.utilities import math
+from device.utilities import maths
 
-# Import parent class
-from device.peripherals.classes.atlas_driver import AtlasDriver
+# Import module elements
+from device.peripherals.classes.atlas.driver import AtlasDriver
+from device.peripherals.modules.atlas_do.simulator import AtlasDOSimulator
+from device.peripherals.modules.atlas_do.exceptions import (
+    ReadDOError,
+    EnableMgLOutputError,
+    DisableMgLOutputError,
+    EnablePercentSaturationOutputError,
+    DisablePercentSaturationOutputError,
+    SetCompensationECError,
+    SetCompensationPressureError,
+)
+from device.peripherals.classes.peripheral.exceptions import SetupError
 
 
-class AtlasDODriver(AtlasDriver):
-    """ Driver for atlas dissolved oxygen sensor. """
+class AtlasDODriver(AtlasDriver):  # type: ignore
+    """Driver for atlas dissolved oxygen sensor."""
 
     # Initialize sensor properties
-    _dissolved_oxygen_accuracy = 0.05  # mg/L
-    _min_dissolved_oxygen = 0.01
-    _max_dissolved_oxygen = 100
+    do_accuracy = 0.05  # mg/L
+    min_do = 0.01
+    max_do = 100
 
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
         channel: Optional[int] = None,
         simulate: bool = False,
+        mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
         """ Initializes driver. """
 
+        # Check if simulating
+        if simulate:
+            Simulator = AtlasDOSimulator
+        else:
+            Simulator = None
+
+        # Initialize parent class
         super().__init__(
             name=name,
+            i2c_lock=i2c_lock,
             bus=bus,
             address=address,
             mux=mux,
             channel=channel,
-            logger_name="Driver({})".format(name),
-            i2c_name=name,
-            dunder_name=__name__,
             simulate=simulate,
+            mux_simulator=mux_simulator,
+            Simulator=Simulator,
         )
 
-    def read_dissolved_oxygen(self) -> Tuple[float, Error]:
-        """ Reads dissolved oxygen from sensor, sets significant 
-            figures based off error magnitude, returns value in mg/L. """
-        self.logger.debug("Reading dissolved oxygen value from hardware")
+    def setup(self) -> None:
+        """Sets up sensor."""
+        self.logger.info("Setting up sensor")
+        try:
+            self.enable_led()
+            info = self.read_info()
+            if info.firmware_version > 1.94:
+                self.enable_protocol_lock()
+            self.enable_mg_l()
+            self.disable_percent_saturation()
+        except Exception as e:
+            raise SetupError(logger=self.logger) from e
+
+    def read_do(self, retry: bool = True) -> Optional[float]:
+        """Reads dissolved oxygen value."""
+        self.logger.debug("Reading DO")
 
         # Get dissolved oxygen reading from hardware
         # Assumed dissolved oxygen is only enabled output
-        response, error = self.process_command("R", processing_seconds=0.6)
-
-        # Check for errors
-        if error.exists():
-            error.report("Unable to read electrical conductivity")
-            self.logger.error(error.summary())
-            return None, error
+        try:
+            response = self.process_command("R", process_seconds=0.6, retry=retry)
+        except Exception as e:
+            raise ReadDOError(logger=self.logger) from e
 
         # Parse response
-        dissolved_oxygen_raw = float(response)
+        do_raw = float(response)
 
         # Set significant figures based off error magnitude
-        error_magnitude = math.magnitude(self._dissolved_oxygen_accuracy)
+        error_magnitude = maths.magnitude(self.do_accuracy)
         significant_figures = error_magnitude * -1
-        dissolved_oxygen = round(dissolved_oxygen_raw, significant_figures)
+        do = round(do_raw, significant_figures)
 
         # Verify dissolved oxygen value within valid range
-        if (
-            dissolved_oxygen > self._min_dissolved_oxygen
-            and dissolved_oxygen < self._min_dissolved_oxygen
-        ):
+        if do > self.min_do and do < self.min_do:
             self.logger.warning("Dissolved oxygen outside of valid range")
-            dissolved_oxygen = None
+            return None
 
-        # Successfully read dissolved oxygen!
-        self.logger.debug("dissolved_oxygen = {}".format(dissolved_oxygen))
-        return dissolved_oxygen, Error(None)
+        # Successfully read dissolved oxygen
+        self.logger.debug("DO: {}".format(do))
+        return do
 
-    def set_compensation_temperature(self, temperature: float) -> Error:
-        """ Commands sensor to set compensation temperature. """
-        self.logger.info("Setting compensation temperature")
+    def enable_mg_l_output(self, retry: bool = True) -> None:
+        """Enables DO mg/L output."""
+        self.logger.info("Enabling DO mg/L output")
+        try:
+            self.process_command("O,mg,1", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise EnableMgLOutputError(logger=self.logger) from e
 
-        # Send command
-        command = "T,{}".format(temperature)
-        _, error = self.process_command(command, processing_seconds=0.3)
+    def disable_mg_l_output(self, retry: bool = True) -> None:
+        """Disables DO mg/L output."""
+        self.logger.info("Disabling DO mg/L output")
+        try:
+            self.process_command("O,mg,0", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise DisableMgLOutputError(logger=self.logger) from e
 
-        # Check for error
-        if error.exists():
-            error.report("Driver unable to set compensation temperature")
-            self.logger.error(error.summary())
-            return error
+    def enable_percent_saturation_output(self, retry: bool = True) -> None:
+        """Enables precent saturation output."""
+        self.logger.info("Enabling percent saturation output")
+        try:
+            self.process_command("O,%,1", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise EnablePercentSaturationOutputError(logger=self.logger) from e
 
-        # Successfully set compensation temperature!
-        return Error(None)
+    def disable_percent_saturation_output(self, retry: bool = True) -> None:
+        """Disables percent saturation output."""
+        self.logger.info("Disabling percent saturation output")
+        try:
+            self.process_command("O,%,0", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise DisablePercentSaturationOutputError(logger=self.logger) from e
 
-    def set_compensation_pressure(self, value: float) -> Error:
-        """ Commands sensor to set compensation pressure. """
-        self.logger.info("Setting compensation temperature")
-
-        # Send command
-        command = "T,{}".format(value)
-        _, error = self.process_command(command, processing_seconds=0.3)
-
-        # Check for error
-        if error.exists():
-            error.report("Driver unable to set compensation pressure")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully set compensation pressure!
-        return Error(None)
-
-    def set_compensation_electrical_conductivity(self, value_ms_cm: float) -> Error:
-        """ Commands sensor to set compensation electrical conductivity. """
-        self.logger.info("Setting compensation electrical conductivity")
+    def set_compensation_ec(self, value_ms_cm: float, retry: bool = True) -> None:
+        """Sets compensation ec."""
+        self.logger.info("Setting compensation ec")
 
         # Convert value to uS/Cm
         value_us_cm = value_ms_cm * 1000.0
-
-        # Send command
         command = "S,{}".format(value_us_cm)
-        _, error = self.process_command(command, processing_seconds=0.3)
-
-        # Check for error
-        if error.exists():
-            error.report("Driver unable to set compensation electrical conductivity")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully set compensation electrical conductivity!
-        return Error(None)
-
-    def enable_mg_l_output(self) -> Error:
-        """ Commands sensor to enable dissolved oxygen in mg/L output when 
-            reporting readings. """
-        self.logger.info("Enabling dissolved oxygen mg/L output in hardware")
 
         # Send command
-        _, error = self.process_command("O,mg,1", processing_seconds=0.3)
+        try:
+            self.process_command(command, process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise SetCompensationECError(logger=self.logger) from e
 
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to enable dissolved oxygen mg/L output")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully enabled dissolved oxygen mg/L output!
-        return Error(None)
-
-    def disable_mg_l_output(self) -> Error:
-        """ Commands sensor to disable dissolved oxygen in mg/L output when 
-            reporting readings. """
-        self.logger.info("Disabling dissolved oxygen mg/L output in hardware")
-
-        # Send command
-        _, error = self.process_command("O,mg,0", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to disable dissolved oxygen mg/L output")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully disabled dissolved oxygen mg/L output!
-        return Error(None)
-
-    def enable_percent_saturation_output(self) -> Error:
-        """ Commands sensor to enable percent saturation output when 
-            reporting readings. """
-        self.logger.info("Enabling percent saturation output in hardware")
-
-        # Send command
-        _, error = self.process_command("O,%,1", processing_seconds=0.3)
-        self.logger.error(error.summary())
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to enable percent saturation output")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully enabled percent saturation output!
-        return Error(None)
-
-    def disable_percent_saturation_output(self) -> Error:
-        """ Commands sensor to disable percent saturation output when 
-            reporting readings. """
-        self.logger.info("Disabling percent saturation output in hardware")
-
-        # Send command
-        _, error = self.process_command("O,%,0", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to disable percent saturation output")
-            self.logger.error(error.summary())
-            return error
-
-        # Successfully disabled percent saturation output!
-        return Error(None)
+    def set_compensation_pressure(self, value: float, retry: bool = True) -> None:
+        """Sets compensation ec."""
+        self.logger.info("Setting compensation pressure")
+        try:
+            command = "P,{}".format(value)
+            self.process_command(command, process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise SetCompensationPressureError(logger=self.logger) from e

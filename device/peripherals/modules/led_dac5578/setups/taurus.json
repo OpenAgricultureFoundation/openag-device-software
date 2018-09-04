@@ -292,16 +292,6 @@
 		    "value": null,
 		    "sequence": null,
 		    "is_manual": true
-		},
-		{
-		    "name": "Calculate ULRF From Percents",
-		    "description": "Calculates universal light recipe format (ULRF) from channel power percents.",
-		    "value": {
-                "default": null,
-                "unit": "nm: %"
-            },
-		    "sequence": null,
-		    "is_manual": true
 		}
 	],
 	"info": {

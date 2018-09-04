@@ -10,7 +10,7 @@ from device.utilities.bitwise import byte_str
 from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
 from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Initialize type checking variablesbyte_str
+# Initialize type checking variables
 F = TypeVar("F", bound=Callable[..., Any])
 ET = TypeVar("ET", bound=Optional[Type[BaseException]])
 EV = TypeVar("EV", bound=Optional[BaseException])
@@ -101,7 +101,7 @@ class PeripheralSimulator:
             # Decrement num bytes to read
             num_bytes = num_bytes - 1
 
-        # Successfully read bytes!
+        # Successfully read bytes
         return bytes(bytes_)
 
     def write(self, address: int, bytes_: bytes) -> None:

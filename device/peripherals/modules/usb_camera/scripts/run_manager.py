@@ -1,116 +1,28 @@
 # Import standard python libraries
-import sys, os, json, argparse, logging, time, shlex
+import os, sys
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Set correct import path
-if cwd.endswith("usb_camera"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
+# Import run peripheral parent class
+from device.peripherals.classes.peripheral.scripts.run_manager import ManagerRunnerBase
 
-# Import manager
+# Import peripheral manager
 from device.peripherals.modules.usb_camera.manager import USBCameraManager
 
-# Import device utilities
-from device.utilities.logger import Logger
-from device.utilities.accessors import get_peripheral_config
 
-# Import device state
-from device.state import State
+class ManagerRunner(ManagerRunnerBase):  # type: ignore
+    """Runs manager."""
 
-# Initialize state
-state = State()
+    # Initialize manager class
+    Manager = USBCameraManager
 
-# Set directory for loading files
-if cwd.endswith("usb_camera"):
-    os.chdir("../../../../")
-
-# Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug usb elp camera manager")
-parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
-parser.add_argument("--info", action="store_true", help="set logger in info mode")
-parser.add_argument("--loop", action="store_true", help="loop command prompt")
-
-# Setup parser configs
-parser.add_argument("--device", type=str, help="specifies device config")
-
-# Setup parser functions
-parser.add_argument("--update", action="store_true", help="updates sensor")
-parser.add_argument("--reset", action="store_true", help="resets sensor")
-parser.add_argument("--shutdown", action="store_true", help="shuts down sensor")
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "Camera-Top"
 
 
 # Run main
 if __name__ == "__main__":
-
-    # Read in arguments
-    args = parser.parse_args()
-
-    # Initialize logger
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    elif args.info:
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-
-    # Check for device config
-    if args.device != None:
-        print("Using device config: {}".format(args.device))
-        device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "Camera-Top"
-        )
-        peripheral_config["parameters"][
-            "directory"
-        ] = "device/peripherals/modules/usb_camera/scripts/images/"
-    else:
-        print("Please specify a device configuraion")
-        sys.exit(0)
-
-    # Instantiate manager
-    manager = USBCameraManager(name="Camera-Top", state=state, config=peripheral_config)
-
-    # Initialize and setup manager
-    print("Initializing...")
-    manager.initialize()
-    print("Setting up...")
-    manager.setup()
-
-    # Check for loop
-    if args.loop:
-        loop = True
-    else:
-        loop = False
-
-    # Loop forever
-    while True:
-
-        # Check if updating
-        if args.update:
-            print("Updating...")
-            manager.update()
-
-        # Check if resetting
-        if args.reset:
-            print("Resetting...")
-            manager.reset()
-
-        # Check if updating
-        if args.shutdown:
-            print("Shutting down...")
-            manager.shutdown()
-
-        # Check for new command if loop enabled
-        if loop:
-            new_command = input("New command: ")
-            args = parser.parse_args(shlex.split(new_command))
-        else:
-            break
+    runner = ManagerRunner()
+    runner.run()

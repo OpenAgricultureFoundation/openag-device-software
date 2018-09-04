@@ -1,45 +1,57 @@
 # Import standard python libraries
-import sys, os
+import os, sys, pytest, glob, threading
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
+# Import python types
+from typing import List
 
-# Set correct import path
-if cwd.endswith("usb_camera"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
+# Set system path and directory
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
-# Import driver
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
+
+# Import peripheral driver
 from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
-# Set directory for loading files
-if cwd.endswith("usb_camera"):
-    os.chdir("../../../../")
-
-# Set directory
+# Set test image directory
 directory = "device/peripherals/modules/usb_camera/tests/images/"
 
 
-def test_init():
+def delete_test_images() -> None:
+    filelist = glob.glob(os.path.join(directory, "*.png"))
+    for f in filelist:
+        os.remove(f)
+
+
+def list_test_images() -> List[str]:
+    return glob.glob(os.path.join(directory, "*.png"))
+
+
+def test_init() -> None:
     driver = USBCameraDriver(
         name="Test",
-        resolution=(2592, 1944),
+        resolution="640x480",
         vendor_id=0x05A3,
         product_id=0x9520,
-        directory=directory,
         simulate=True,
+        mux_simulator=MuxSimulator(),
+        i2c_lock=threading.RLock(),
     )
 
 
-def test_capture():
+def test_capture() -> None:
+    delete_test_images()
     driver = USBCameraDriver(
-        "Test", (2592, 1944), 0x05A3, 0x9520, directory, simulate=True
+        name="Test",
+        resolution="640x480",
+        vendor_id=0x05A3,
+        product_id=0x9520,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        i2c_lock=threading.RLock(),
     )
-    error = driver.capture()
-    assert error.exists() == False
+    driver.capture()
+    images = list_test_images()
+    assert len(images) == 1

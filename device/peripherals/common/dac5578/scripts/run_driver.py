@@ -1,48 +1,48 @@
-# Import standard python libraries
-import os, sys
+# Import standard python modules
+import os, sys, threading
+
+# Import python types
+from typing import Any, Dict
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
-# Import device utilities
-from device.utilities.accessors import get_peripheral_config
-
-# Import driver
-from device.peripherals.common.dac5578.driver import DAC5578
+# Import peripheral driver
+from device.peripherals.common.dac5578.driver import DAC5578Driver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "LEDPanel-Top"
+
+    # Initialize var types
+    communication: Dict[str, Any]
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
+
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize parser
-        self.parser.add_argument(
-            "--panel-name", type=str, help="specifies panel name in config"
-        )
-        self.parser.add_argument("--probe", action="store_true", help="probes device")
-        self.parser.add_argument("-c", "--channel", type=int, help="sets channel (0-7)")
-        self.parser.add_argument(
-            "-p", "--percent", type=int, help="sets output percent (0-100)"
-        )
-        self.parser.add_argument(
-            "--high", action="store_true", help="outputs high voltage"
-        )
-        self.parser.add_argument(
-            "--low", action="store_true", help="outputs low voltage"
-        )
-        self.parser.add_argument(
-            "--fade", action="store_true", help="fades voltage x10 times"
-        )
+        self.parser.add_argument("--panel-name", type=str, help="specify panel name")
+        self.parser.add_argument("--channel", type=int, help="set channel (0-7)")
+        self.parser.add_argument("--percent", type=int, help="set output (0-100%)")
+        self.parser.add_argument("--high", action="store_true", help="set output high")
+        self.parser.add_argument("--low", action="store_true", help="set output low")
+        self.parser.add_argument("--fade", action="store_true", help="fade low-high")
         self.parser.add_argument("--reset", action="store_true", help="resets device")
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
+
+        # Run parent class
         super().run(*args, **kwargs)
 
         # Check is dac is used in led panel
@@ -65,7 +65,7 @@ class DriverRunner(PeripheralRunner):
                 # Check if panel name was found
                 if name == None:
                     print(
-                        "Unable to find panel named `{}`, using first entry instead".format(
+                        "Unable to find panel `{}`, using first entry instead".format(
                             self.args.panel_name
                         )
                     )
@@ -76,88 +76,41 @@ class DriverRunner(PeripheralRunner):
             mux = int(mux, 16)
 
         # Initialize driver
-        self.driver = DAC5578(
+        self.driver = DAC5578Driver(
             name=self.args.name,
+            i2c_lock=threading.RLock(),
             bus=self.communication["bus"],
             address=int(self.communication["address"], 16),
             mux=mux,
             channel=self.communication.get("channel", None),
         )
 
-        # Check if probing
-        if self.args.probe:
-            print("Probing")
-            error = self.driver.probe()
-            if error.exists():
-                print("error = {}".format(error.trace))
-            else:
-                print("Probe successful")
-
         # Check if setting a channel to a value
-        elif self.args.channel != None and self.args.percent != None:
-            print(
-                "Setting channel {} to {}%".format(self.args.channel, self.args.percent)
-            )
-            error = self.driver.write_output(self.args.channel, self.args.percent)
-            if error.exists():
-                print("Error: {}".format(error.trace))
+        if self.args.channel != None and self.args.percent != None:
+            self.driver.write_output(self.args.channel, self.args.percent)
 
         # Check if setting all channels to a value
         elif self.args.channel == None and self.args.percent != None:
-            print("Setting all channels to {}%".format(self.args.percent))
-
             outputs = {}
             for i in range(8):
                 outputs[i] = self.args.percent
-
-            error = self.driver.write_outputs(outputs)
-            if error.exists():
-                print("Error: {}".format(error.trace))
+            self.driver.write_outputs(outputs)
 
         # Check if setting a channel or all channels high
         elif self.args.high:
-            print(
-                "Setting {channel} high".format(
-                    channel="all channels"
-                    if self.args.channel == None
-                    else "channel: " + str(self.args.channel)
-                )
-            )
-            error = self.driver.set_high(channel=self.args.channel)
-            if error.exists():
-                print("Error: {}".format(error.trace))
+            self.driver.set_high(channel=self.args.channel)
 
         # Check if setting a channel or all channels low
         elif self.args.low:
-            print(
-                "Setting {channel} low".format(
-                    channel="all channels"
-                    if self.args.channel == None
-                    else "channel: " + str(self.args.channel)
-                )
-            )
-            error = self.driver.set_low(channel=self.args.channel)
-            if error.exists():
-                print("Error: {}".format(error.trace))
+            self.driver.set_low(channel=self.args.channel)
 
         # Check if fading
         elif self.args.fade:
-            print(
-                "Fading {channel}".format(
-                    channel="all channels"
-                    if self.args.channel == None
-                    else "channel: " + str(self.args.channel)
-                )
-            )
-            error = self.driver.fade(cycles=10, channel=self.args.channel)
-            if error.exists():
-                print("Error: {}".format(error.trace))
+            self.driver.fade(cycles=10, channel=self.args.channel)
 
         # Check if resetting
         elif self.args.reset:
-            print("Resetting")
             self.driver.reset()
-            print("Reset successful")
 
 
 # Run main

@@ -44,7 +44,7 @@ class RecipeManager:
     def error(self, value):
         """ Safely updates recipe error in shared state. """
         self._error = value
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["error"] = value
 
     @property
@@ -57,7 +57,7 @@ class RecipeManager:
     def mode(self, value):
         """ Safely updates recipe mode in shared state. """
         self._mode = value
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["mode"] = value
 
     @property
@@ -71,7 +71,7 @@ class RecipeManager:
     @commanded_mode.setter
     def commanded_mode(self, value):
         """ Safely updates commanded mode in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["commanded_mode"] = value
 
     @property
@@ -85,7 +85,7 @@ class RecipeManager:
     @stored_mode.setter
     def stored_mode(self, value):
         """ Safely updates stored mode in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["stored_mode"] = value
 
     @property
@@ -99,7 +99,7 @@ class RecipeManager:
     @recipe_uuid.setter
     def recipe_uuid(self, value):
         """ Safely updates recipe uuid in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["recipe_uuid"] = value
 
     @property
@@ -113,7 +113,7 @@ class RecipeManager:
     @commanded_recipe_uuid.setter
     def commanded_recipe_uuid(self, value):
         """ Safely updates commanded recipe uuid in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["commanded_recipe_uuid"] = value
 
     @property
@@ -127,7 +127,7 @@ class RecipeManager:
     @recipe_name.setter
     def recipe_name(self, value):
         """ Safely updates recipe name in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["recipe_name"] = value
 
     @property
@@ -160,7 +160,7 @@ class RecipeManager:
             start_datestring = None
 
         # Update start timestamp minutes and datestring in shared state
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["start_timestamp_minutes"] = value
             self.state.recipe["start_datestring"] = start_datestring
 
@@ -176,7 +176,7 @@ class RecipeManager:
     def commanded_start_timestamp_minutes(self, value):
         """ Safely updates commanded_start_timestamp_minutes 
             in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["commanded_start_timestamp_minutes"] = value
 
     @property
@@ -207,7 +207,7 @@ class RecipeManager:
             duration_string = None
 
         # Safely update duration minutes and string in shared state
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["duration_minutes"] = value
             self.state.recipe["duration_string"] = duration_string
 
@@ -241,7 +241,7 @@ class RecipeManager:
             time_elapsed_string = None
 
         # Safely update values in shared state
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["last_update_minute"] = value
             self.state.recipe["percent_complete"] = percent_complete
             self.state.recipe["percent_complete_string"] = percent_complete_string
@@ -300,7 +300,7 @@ class RecipeManager:
     @current_phase.setter
     def current_phase(self, value):
         """ Safely updates current phase in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["current_phase"] = value
 
     @property
@@ -314,7 +314,7 @@ class RecipeManager:
     @current_cycle.setter
     def current_cycle(self, value):
         """ Safely updates current cycle in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["current_cycle"] = value
 
     @property
@@ -328,7 +328,7 @@ class RecipeManager:
     @current_environment_name.setter
     def current_environment_name(self, value):
         """ Safely updates current environment name in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["current_environment_name"] = value
 
     @property
@@ -342,7 +342,7 @@ class RecipeManager:
     @current_environment_state.setter
     def current_environment_state(self, value):
         """ Safely updates current environment state in shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.recipe["current_environment_state"] = value
             self.set_desired_sensor_values(value)
 
@@ -647,7 +647,7 @@ class RecipeManager:
 
     def clear_desired_sensor_state(self):
         """ Sets desired sensor state to null values. """
-        with threading.Lock():
+        with self.state.lock:
             for variable in self.state.environment["sensor"]["desired"]:
                 self.state.environment["sensor"]["desired"][variable] = None
 
@@ -682,7 +682,7 @@ class RecipeManager:
 
     def set_desired_sensor_values(self, environment_dict):
         """ Sets desired sensor values from provided environment dict. """
-        with threading.Lock():
+        with self.state.lock:
             for variable in environment_dict:
                 self.state.environment["sensor"]["desired"][
                     variable

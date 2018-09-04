@@ -77,8 +77,11 @@ class PeripheralFileHandler(logging.Handler):
         super().__init__(*args, **kwargs)
 
         # Load device config
-        with open("config/device.txt") as f:
-            config_name = f.readline().strip()
+        if os.path.exists("config/device.txt"):
+            with open("config/device.txt") as f:
+                config_name = f.readline().strip()
+        else:
+            config_name = "unspecified"
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
         # Get peripheral configs

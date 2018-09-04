@@ -1,123 +1,51 @@
 # Import standard python libraries
-import sys, os, json, argparse, logging, time, shlex
+import os, sys, logging
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Set correct import path
-if cwd.endswith("atlas_ph"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
-
-# Import driver
-from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
+# Import typing modules
+from typing import Any
 
 # Import device utilities
-from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
 
-# Set directory for loading files
-if cwd.endswith("atlas_ph"):
-    os.chdir("../../../../")
+# Import driver modules
+from device.peripherals.classes.atlas.scripts.run_driver import DriverRunner as AtlasDriverRunner
+from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
-# Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
-parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
-parser.add_argument("--info", action="store_true", help="set logger in info mode")
-parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Setup parser configs
-parser.add_argument("--device", type=str, help="specifies device config")
+class DriverRunner(AtlasDriverRunner):
+    """Runs driver."""
 
-# Setup parser functions
-parser.add_argument("-i", "--read-info", action="store_true", help="read sensor info")
-parser.add_argument(
-    "-s", "--read-status", action="store_true", help="read sensor status"
-)
-parser.add_argument("-r", "--read-ph", action="store_true", help="read pH")
+    # Initialize driver class
+    Driver = AtlasPHDriver
+
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "AtlasPH-Reservoir"
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initializes run driver."""
+
+        # Initialize parent class
+        super().__init__(*args, **kwargs)
+
+        # Initialize parser
+        self.parser.add_argument("--ph", action="store_true", help="read pH")
+
+    def run(self, *args: Any, **kwargs: Any):
+        """Runs driver."""
+
+        # Run parent class
+        super().run(*args, **kwargs)
+
+        # Check if reading pH
+        if self.args.ph:
+            print("pH: {}".format(self.driver.read_ph()))
 
 
 # Run main
 if __name__ == "__main__":
-
-    # Read in arguments
-    args = parser.parse_args()
-
-    # Initialize logger
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    elif args.info:
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-
-    # Check for device config
-    if args.device != None:
-        print("Using device config: {}".format(args.device))
-        device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "AtlasPH-Reservoir"
-        )
-    else:
-        print("Please specify a device configuraion")
-        sys.exit(0)
-
-    # Initialize driver
-    driver = AtlasPHDriver(
-        name="AtlasPH-Reservoir",
-        bus=peripheral_config["parameters"]["communication"]["bus"],
-        address=int(peripheral_config["parameters"]["communication"]["address"], 16),
-        mux=int(peripheral_config["parameters"]["communication"]["mux"], 16),
-        channel=peripheral_config["parameters"]["communication"]["channel"],
-    )
-
-    # Check for loop
-    if args.loop:
-        loop = True
-    else:
-        loop = False
-
-    # Loop forever
-    while True:
-
-        # Check if reading info
-        if args.read_info:
-            print("Reading info")
-            sensor_type, firmware_version, error = driver.read_info()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Sensor type: {}".format(sensor_type))
-                print("Firmware version: {}".format(firmware_version))
-
-        # Check if reading status
-        elif args.read_status:
-            print("Reading status")
-            prev_restart_reason, voltage, error = driver.read_status()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("Prev restart reason: {}".format(prev_restart_reason))
-                print("Voltage: {}".format(voltage))
-
-        # Check if reading electrical conductivity
-        elif args.read_ph:
-            print("Reading pH")
-            ph, error = driver.read_potential_hydrogen()
-            if error.exists():
-                print("Error: {}".format(error.trace))
-            else:
-                print("pH: {}".format(ph))
-
-        # Check for new command if loop enabled
-        if loop:
-            new_command = input("New command: ")
-            args = parser.parse_args(shlex.split(new_command))
-        else:
-            break
+    dr = DriverRunner()
+    dr.run()
