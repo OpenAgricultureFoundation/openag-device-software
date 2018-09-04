@@ -18,7 +18,7 @@ fi
 # Install any new python modules
 source venv/bin/activate
 export XDG_CACHE_HOME=venv/pip_cache
-pip install -f venv/pip_download -r requirements.txt -t venv/pip_installed --upgrade
+pip install -f venv/pip_download -r requirements.txt 
 
 # Remove all rows in the state table only.
 echo 'Updating database...'
