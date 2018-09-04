@@ -15,7 +15,6 @@ from device.state import State
 
 # Import simulators
 from device.comms.i2c2.mux_simulator import MuxSimulator
-from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
 
 # Import peripheral manager
 from device.peripherals.modules.atlas_ph.manager import AtlasPHManager

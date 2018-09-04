@@ -32,7 +32,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
 
     @property
     def ph(self) -> Optional[float]:
-        """Gets potential hydrogen value."""
+        """Gets pH value."""
         value = self.state.get_peripheral_reported_sensor_value(self.name, self.ph_name)
         if value != None:
             return float(value)
@@ -40,7 +40,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
 
     @ph.setter
     def ph(self, value: float) -> None:
-        """Sets potential hydrogen value in shared state. Does not update enironment 
+        """Sets pH value in shared state. Does not update enironment 
         from calibration mode."""
         self.state.set_peripheral_reported_sensor_value(self.name, self.ph_name, value)
         if self.mode != Modes.CALIBRATE:
@@ -81,7 +81,6 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
             self.logger.exception("Unable to initialize")
             self.health = 0.0
             self.mode = Modes.ERROR
-            return
 
     def setup(self) -> None:
         """Sets up sensor."""
@@ -111,7 +110,6 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
             self.logger.error("Unable to update")
             self.mode = Modes.ERROR
             self.health = 0
-            return
 
     def reset(self) -> None:
         """Resets sensor."""

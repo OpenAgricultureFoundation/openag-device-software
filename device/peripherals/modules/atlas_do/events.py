@@ -5,7 +5,7 @@ from typing import Optional, Tuple, List, Dict
 from device.peripherals.classes.peripheral.events import PeripheralEvents
 
 
-class SHT25Events(PeripheralEvents):  # type: ignore
+class AtlasDOEvents(PeripheralEvents):  # type: ignore
     """Event mixin for manager."""
 
     def process_peripheral_specific_event(self, request: Dict) -> None:

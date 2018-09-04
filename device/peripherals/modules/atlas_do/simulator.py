@@ -8,7 +8,7 @@ from device.utilities.bitwise import byte_str
 from device.peripherals.classes.atlas.simulator import AtlasSimulator
 
 
-class AtlasPHSimulator(AtlasSimulator): # type: ignore
+class AtlasDOSimulator(AtlasSimulator): # type: ignore
     """Simulates communication with sensor."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -19,8 +19,8 @@ class AtlasPHSimulator(AtlasSimulator): # type: ignore
 
         self.registers: Dict = {}
 
-        # Initialize write and response bytes
-        PH_WRITE_BYTES = bytes([0x52, 0x00])
-        PH_RESPONSE_BYTES = bytes([0x01, 0x34, 0x2E, 0x30, 0x30, 0x31, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+        # # Initialize write and response bytes
+        # EXAMPLE_WRITE_BYTES = bytes([0x00])
+        # EXAMPLE_RESPONSE_BYTES = bytes([0x00, 0x00])
         
-        self.writes[byte_str(PH_WRITE_BYTES)] = PH_RESPONSE_BYTES
+        # self.writes[byte_str(EXAMPLE_WRITE_BYTES)] = EXAMPLE_RESPONSE_BYTES
