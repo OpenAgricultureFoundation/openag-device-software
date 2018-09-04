@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys
+import os, sys, threading
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
@@ -46,6 +46,7 @@ class DriverRunner(RunnerBase):
             resolution=self.peripheral_setup["properties"]["resolution"],
             usb_mux_comms=self.communication.get("usb_mux_comms", None),
             usb_mux_channel=self.communication.get("usb_mux_channel", None),
+            i2c_lock=threading.RLock(),
         )
 
         # Check if capturing image w/mux management

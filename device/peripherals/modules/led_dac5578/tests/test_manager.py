@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, pytest, json
+import os, sys, pytest, json, threading
 
 # Set system path
 root_dir = os.environ["OPENAG_BRAIN_ROOT"]
@@ -24,22 +24,11 @@ path = root_dir + "/device/peripherals/modules/led_dac5578/tests/config.json"
 device_config = json.load(open(path))
 peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-1")
 
-# Set testing variable values
-# desired_distance_cm = 5
-# desired_ppfd_umol_m2_s = 100
-# desired_spectrum_nm_percent = {
-#     "400-449": 10,
-#     "449-499": 10,
-#     "500-549": 30,
-#     "550-559": 30,
-#     "600-649": 10,
-#     "650-699": 10,
-# }
-
 
 def test_init() -> None:
     manager = LEDDAC5578Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -50,6 +39,7 @@ def test_init() -> None:
 def test_initialize() -> None:
     manager = LEDDAC5578Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -61,6 +51,7 @@ def test_initialize() -> None:
 def test_setup() -> None:
     manager = LEDDAC5578Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -73,6 +64,7 @@ def test_setup() -> None:
 def test_update() -> None:
     manager = LEDDAC5578Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -85,6 +77,7 @@ def test_update() -> None:
 def test_reset() -> None:
     manager = LEDDAC5578Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -97,6 +90,7 @@ def test_reset() -> None:
 def test_shutdown() -> None:
     manager = LEDDAC5578Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,

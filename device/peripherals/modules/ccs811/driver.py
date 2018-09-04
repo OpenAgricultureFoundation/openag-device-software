@@ -90,6 +90,7 @@ class CCS811Driver:
         try:
             self.i2c = I2C(
                 name=name,
+                i2c_lock=i2c_lock,
                 bus=bus,
                 address=address,
                 mux=mux,

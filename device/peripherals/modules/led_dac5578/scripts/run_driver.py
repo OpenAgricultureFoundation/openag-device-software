@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, sys
+import os, sys, threading
 
 # Import python types
 from typing import Any
@@ -41,6 +41,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize driver
         self.driver = LEDDAC5578Driver(
             name=self.args.name,
+            i2c_lock=threading.RLock(),
             panel_configs=self.communication.get("panels"),
             channel_configs=self.peripheral_setup.get("channel_configs"),
         )

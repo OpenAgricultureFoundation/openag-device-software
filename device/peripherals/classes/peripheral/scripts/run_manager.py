@@ -46,7 +46,10 @@ class ManagerRunnerBase(RunnerBase):  # type: ignore
 
         # Instantiate manager
         self.manager = self.Manager(
-            name=self.args.name, state=State(), config=self.peripheral_config
+            name=self.args.name,
+            i2c_lock=threading.RLock(),
+            state=State(),
+            config=self.peripheral_config,
         )
 
         # Initialize manager

@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, pytest
+import os, sys, pytest, threading
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
@@ -13,5 +13,10 @@ from device.peripherals.modules.atlas_do.driver import AtlasDODriver
 
 def test_init() -> None:
     driver = AtlasDODriver(
-        name="Test", bus=2, address=0x77, simulate=True, mux_simulator=True
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x77,
+        simulate=True,
+        mux_simulator=True,
     )

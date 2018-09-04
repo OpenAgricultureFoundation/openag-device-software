@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys
+import os, sys, threading
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
@@ -76,6 +76,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize driver
         self.driver = self.Driver(
             name=self.args.name,
+            i2c_lock=threading.RLock(),
             bus=self.bus,
             address=self.address,
             mux=self.mux,

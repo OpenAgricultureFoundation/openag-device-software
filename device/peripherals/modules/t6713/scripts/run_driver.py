@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys
+import os, sys, threading
 
 # Import python types
 from typing import Any
@@ -48,6 +48,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize driver
         self.driver = T6713Driver(
             name=self.args.name,
+            i2c_lock=threading.RLock(),
             bus=self.bus,
             address=self.address,
             mux=self.mux,

@@ -1,5 +1,5 @@
 # Import standard python modules
-import pytest, sys, os, json, time
+import pytest, sys, os, json, threading
 
 # Import python types
 from typing import List
@@ -33,23 +33,47 @@ class PM(PeripheralEvents, PeripheralManager):
 
 
 def test_init():
-    manager = PM(name="Test", state=State(), config=peripheral_config, simulate=True)
+    manager = PM(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
+    )
 
 
 def test_shutdown():
-    manager = PM(name="Test", state=State(), config=peripheral_config, simulate=True)
+    manager = PM(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
+    )
     manager.process_event(request={"type": "Shutdown"})
     assert manager.mode == Modes.SHUTDOWN
     assert manager.response["status"] == 200
 
 
 def test_set_sampling_interval():
-    manager = PM(name="Test", state=State(), config=peripheral_config, simulate=True)
+    manager = PM(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
+    )
     manager.process_event(request={"type": "Set Sampling Interval", "value": 5})
     assert manager.sampling_interval_seconds == 5
 
 
 def test_unknown_event():
-    manager = PM(name="Test", state=State(), config=peripheral_config, simulate=True)
+    manager = PM(
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
+    )
     manager.process_event(request={"type": "Junk Event Name"})
     assert manager.response["status"] == 400

@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, sys
+import os, sys, threading
 
 # Import python types
 from typing import Any, Dict
@@ -78,6 +78,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize driver
         self.driver = DAC5578Driver(
             name=self.args.name,
+            i2c_lock=threading.RLock(),
             bus=self.communication["bus"],
             address=int(self.communication["address"], 16),
             mux=mux,

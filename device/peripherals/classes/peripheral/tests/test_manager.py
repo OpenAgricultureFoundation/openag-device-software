@@ -1,5 +1,5 @@
 # Import standard python modules
-import sys, os, pytest, json
+import sys, os, pytest, json, threading
 
 # Import python types
 from typing import List
@@ -28,13 +28,21 @@ peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-
 
 def test_init():
     peripheral_manager = PeripheralManager(
-        name="Test", state=State(), config=peripheral_config, simulate=True
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
     )
 
 
 def test_run_init_mode():
     peripheral_manager = PeripheralManager(
-        name="Test", state=State(), config=peripheral_config, simulate=True
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
     )
     peripheral_manager.run_init_mode()
     assert peripheral_manager.mode == Modes.SETUP
@@ -42,7 +50,11 @@ def test_run_init_mode():
 
 def test_run_setup_mode():
     peripheral_manager = PeripheralManager(
-        name="Test", state=State(), config=peripheral_config, simulate=True
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
     )
     peripheral_manager.run_setup_mode()
     assert peripheral_manager.mode == Modes.NORMAL
@@ -50,7 +62,11 @@ def test_run_setup_mode():
 
 def test_run_reset_mode():
     peripheral_manager = PeripheralManager(
-        name="Test", state=State(), config=peripheral_config, simulate=True
+        name="Test",
+        state=State(),
+        config=peripheral_config,
+        i2c_lock=threading.RLock(),
+        simulate=True,
     )
     peripheral_manager.run_reset_mode()
     assert peripheral_manager.mode == Modes.INIT

@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, json
+import os, sys, json, threading
 
 # Set system path and directory
 root_dir = os.environ["OPENAG_BRAIN_ROOT"]
@@ -28,6 +28,7 @@ peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-T
 def test_init() -> None:
     manager = SHT25Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -38,6 +39,7 @@ def test_init() -> None:
 def test_initialize() -> None:
     manager = SHT25Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -49,6 +51,7 @@ def test_initialize() -> None:
 def test_setup() -> None:
     manager = SHT25Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -61,6 +64,7 @@ def test_setup() -> None:
 def test_update() -> None:
     manager = SHT25Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -73,6 +77,7 @@ def test_update() -> None:
 def test_reset() -> None:
     manager = SHT25Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,
@@ -85,6 +90,7 @@ def test_reset() -> None:
 def test_shutdown() -> None:
     manager = SHT25Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,

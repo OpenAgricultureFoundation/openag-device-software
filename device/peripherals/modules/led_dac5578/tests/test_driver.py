@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, pytest, json
+import os, sys, pytest, json, threading
 
 # Set system path
 root_dir = os.environ["OPENAG_BRAIN_ROOT"]
@@ -27,6 +27,7 @@ channel_configs = peripheral_setup["channel_configs"]
 def test_init() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
+        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
         channel_configs=channel_configs,
         simulate=True,
@@ -37,6 +38,7 @@ def test_init() -> None:
 def test_turn_on() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
+        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
         channel_configs=channel_configs,
         simulate=True,
@@ -48,6 +50,7 @@ def test_turn_on() -> None:
 def test_turn_off() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
+        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
         channel_configs=channel_configs,
         simulate=True,
@@ -59,6 +62,7 @@ def test_turn_off() -> None:
 def test_set_spd() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
+        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
         channel_configs=channel_configs,
         simulate=True,

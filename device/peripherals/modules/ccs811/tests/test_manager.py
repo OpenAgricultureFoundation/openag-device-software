@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, json
+import os, sys, json, threading
 
 # Set system path and directory
 root_dir = os.environ["OPENAG_BRAIN_ROOT"]
@@ -28,6 +28,7 @@ peripheral_config = get_peripheral_config(device_config["peripherals"], "CCS811-
 def test_init() -> None:
     manager = CCS811Manager(
         name="Test",
+        i2c_lock=threading.RLock(),
         state=State(),
         config=peripheral_config,
         simulate=True,

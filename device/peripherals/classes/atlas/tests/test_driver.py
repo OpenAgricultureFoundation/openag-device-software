@@ -1,5 +1,5 @@
 # Import standard python libraries
-import sys, os, pytest
+import sys, os, pytest, threading
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
@@ -13,6 +13,7 @@ from device.comms.i2c2.mux_simulator import MuxSimulator
 def test_init() -> None:
     driver = AtlasDriver(
         name="Test",
+        i2c_lock=threading.RLock(),
         bus=2,
         address=0x64,
         simulate=True,
@@ -23,9 +24,10 @@ def test_init() -> None:
 
 def test_read_info() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -37,9 +39,10 @@ def test_read_info() -> None:
 
 def test_read_status() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -51,9 +54,10 @@ def test_read_status() -> None:
 
 def test_enable_protocol_lock() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -63,9 +67,10 @@ def test_enable_protocol_lock() -> None:
 
 def test_disable_protocol_lock() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -75,9 +80,10 @@ def test_disable_protocol_lock() -> None:
 
 def test_enable_led() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -87,9 +93,10 @@ def test_enable_led() -> None:
 
 def test_disable_led() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -99,9 +106,10 @@ def test_disable_led() -> None:
 
 def test_enable_sleep_mode() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -111,9 +119,10 @@ def test_enable_sleep_mode() -> None:
 
 def test_set_compensation_temperature() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -123,9 +132,10 @@ def test_set_compensation_temperature() -> None:
 
 def test_take_low_point_calibration_reading() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -135,9 +145,10 @@ def test_take_low_point_calibration_reading() -> None:
 
 def test_take_mid_point_calibration_reading() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -147,9 +158,10 @@ def test_take_mid_point_calibration_reading() -> None:
 
 def test_take_high_point_calibration_reading() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -159,9 +171,10 @@ def test_take_high_point_calibration_reading() -> None:
 
 def test_clear_calibration_readings() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
@@ -171,9 +184,10 @@ def test_clear_calibration_readings() -> None:
 
 def test_factory_reset() -> None:
     driver = AtlasDriver(
-        "Test",
-        2,
-        0x64,
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x64,
         simulate=True,
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,

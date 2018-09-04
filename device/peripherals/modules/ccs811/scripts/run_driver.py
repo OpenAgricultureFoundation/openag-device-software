@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, sys
+import os, sys, threading
 
 # Import python types
 from typing import Any
@@ -53,6 +53,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize driver
         self.driver = CCS811Driver(
             name=self.args.name,
+            i2c_lock=threading.RLock(),
             bus=self.bus,
             address=self.address,
             mux=self.mux,

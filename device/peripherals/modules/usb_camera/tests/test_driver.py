@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, pytest, glob
+import os, sys, pytest, glob, threading
 
 # Import python types
 from typing import List
@@ -37,6 +37,7 @@ def test_init() -> None:
         product_id=0x9520,
         simulate=True,
         mux_simulator=MuxSimulator(),
+        i2c_lock=threading.RLock(),
     )
 
 
@@ -49,6 +50,7 @@ def test_capture() -> None:
         product_id=0x9520,
         simulate=True,
         mux_simulator=MuxSimulator(),
+        i2c_lock=threading.RLock(),
     )
     driver.capture()
     images = list_test_images()
