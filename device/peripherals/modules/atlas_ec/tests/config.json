@@ -6,12 +6,12 @@
             "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
             "parameters": {
                 "setup": {
-                    "name": "Atlas Electrical Conductivity Sensor EZO K1.0",
+                    "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
                     "file_name": "atlas_ec/setups/default_k1_0"
                 },
                 "variables": {
                     "sensor": {
-                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm"
+                        "ec_ms_cm": "water_electrical_conductivity_ms_cm"
                     },
                     "actuator": null,
                     "compensation": {
@@ -20,9 +20,9 @@
                 },
                 "communication": {
                     "bus": 2, 
+                    "address": "0x64",
                     "mux": "0x77", 
-                    "channel": 4,
-                    "address": "0x64"
+                    "channel": 4
                 }
             }
         }

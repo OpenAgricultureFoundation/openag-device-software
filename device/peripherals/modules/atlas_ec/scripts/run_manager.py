@@ -1,101 +1,101 @@
 # Import standard python libraries
-import sys, os, json, argparse, logging, time, shlex
+import os, sys, logging
 
-# Import manager module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_ec.manager import AtlasECManager
-except:
-    # ... if running tests from same dir as manager.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.atlas_ec.manager import AtlasECManager
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+
+# Import typing modules
+from typing import Any
 
 # Import device utilities
-from device.utilities.logger import Logger
-from device.utilities.accessors import get_peripheral_config
+from device.utilities.modes import Modes
 
-# Import device state
-from device.state import State
+# Import run peripheral parent class
+from device.peripherals.classes.peripheral.scripts.run_manager import ManagerRunnerBase
 
-# Initialize state
-state = State()
+# Import peripheral manager
+from device.peripherals.modules.atlas_ec.manager import AtlasECManager
 
-# Setup parser basics
-parser = argparse.ArgumentParser(description="Test and debug AtlasEC hardware")
-parser.add_argument("--debug", action="store_true", help="set logger in debug mode")
-parser.add_argument("--info", action="store_true", help="set logger in info mode")
-parser.add_argument("--loop", action="store_true", help="loop command prompt")
 
-# Setup parser configs
-parser.add_argument("--device", type=str, help="specifies device config")
+class ManagerRunner(ManagerRunnerBase):
+    """Runs manager."""
 
-# Setup parser functions
-parser.add_argument("--update", action="store_true", help="updates sensor")
-parser.add_argument("--reset", action="store_true", help="resets sensor")
-parser.add_argument("--shutdown", action="store_true", help="shuts down sensor")
+    # Initialize manager class
+    Manager = AtlasECManager
+
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "AtlasEC-Reservoir"
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        """Initializes run driver."""
+
+        # Initialize parent class
+        super().__init__(*args, **kwargs)
+
+        # Initialize parser
+        self.parser.add_argument(
+            "--calibrate-dry", action="store_true", help="take dry calibration"
+        )
+        self.parser.add_argument(
+            "--calibrate-low", type=float, help="take a low point calibration"
+        )
+        self.parser.add_argument(
+            "--calibrate-high", type=float, help="take a high point calibration"
+        )
+        self.parser.add_argument(
+            "--calibrate-single", type=float, help="take a single point calibration"
+        )
+        self.parser.add_argument(
+            "--calibrate-clear", action="store_true", help="clears calibration readings"
+        )
+
+    def run(self, *args, **kwargs):
+        """Runs driver."""
+
+        # Run parent class
+        super().run(*args, **kwargs)
+
+        # Check taking dry point calibration reading
+        if self.args.calibrate_dry:
+            self.manager.mode = Modes.CALIBRATE
+            request_type = "Dry Calibration"
+            request = {"type": request_type}
+            self.manager.process_event(request)
+            print(self.manager.response["message"])
+
+        # Check if taking low point calibration reading
+        elif self.args.calibrate_low:
+            self.manager.mode = Modes.CALIBRATE
+            request_type = "Low Point Calibration"
+            request = {"type": request_type, "value": self.args.calibrate_low}
+            self.manager.process_event(request)
+            print(self.manager.response["message"])
+
+        # Check if taking high point calibration reading
+        elif self.args.calibrate_high:
+            self.manager.mode = Modes.CALIBRATE
+            request_type = "High Point Calibration"
+            request = {"type": request_type, "value": self.args.calibrate_high}
+            self.manager.process_event(request)
+            print(self.manager.response["message"])
+
+        # Check taking single point calibration reading
+        elif self.args.calibrate_single:
+            self.manager.mode = Modes.CALIBRATE
+            request_type = "Single Point Calibration"
+            request = {"type": request_type, "value": self.args.calibrate_single}
+            self.manager.process_event(request)
+            print(self.manager.response["message"])
+
+        # Check if clearing calibration readings
+        elif self.args.calibrate_clear:
+            self.manager.mode = Modes.CALIBRATE
+            self.manager.process_event({"type": "Clear Calibration"})
+            print(self.manager.response["message"])
+
 
 # Run main
 if __name__ == "__main__":
-
-    # Read in arguments
-    args = parser.parse_args()
-
-    # Initialize logger
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    elif args.info:
-        logging.basicConfig(level=logging.INFO)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-
-    # Check for device config
-    if args.device != None:
-        print("Using device config: {}".format(args.device))
-        device_config = json.load(open("data/devices/{}.json".format(args.device)))
-        peripheral_config = get_peripheral_config(
-            device_config["peripherals"], "AtlasEC-Reservoir"
-        )
-    else:
-        print("Please specify a device configuraion")
-        sys.exit(0)
-
-    # Initialize manager
-    manager = AtlasECManager(name="AtlasEC-1", state=state, config=peripheral_config)
-
-    # Initialize and setup manager
-    print("Initializing...")
-    manager.initialize()
-    print("Setting up...")
-    manager.setup()
-
-    # Check for loop
-    if args.loop:
-        loop = True
-    else:
-        loop = False
-
-    # Loop forever
-    while True:
-
-        # Check if updating
-        if args.update:
-            print("Updating...")
-            manager.update()
-
-        # Check if resetting
-        if args.reset:
-            print("Resetting...")
-            manager.reset()
-
-        # Check if updating
-        if args.shutdown:
-            print("Shutting down...")
-            manager.shutdown()
-
-        # Check for new command if loop enabled
-        if loop:
-            new_command = input("New command: ")
-            args = parser.parse_args(shlex.split(new_command))
-        else:
-            break
+    runner = ManagerRunner()
+    runner.run()

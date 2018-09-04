@@ -19,8 +19,7 @@
                 "communication": {
                     "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
                     "usb_mux_channel": 1
-                },
-                "directory": "images/"
+                }
             }
         },
         {
@@ -39,8 +38,7 @@
                 "communication": {
                     "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
                     "usb_mux_channel": 3
-                },
-                "directory": "images/"
+                }
             }
         }
     ],

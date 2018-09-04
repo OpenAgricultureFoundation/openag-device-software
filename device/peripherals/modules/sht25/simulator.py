@@ -1,11 +1,17 @@
-from device.comms.i2c2.peripheral_simulator import PeripheralSimulator, verify_mux
+# Import python types
+from typing import Any
+
+# Import device utilities
 from device.utilities.bitwise import byte_str
 
+# Import simulator elements
+from device.comms.i2c2.peripheral_simulator import PeripheralSimulator, verify_mux
 
-class SHT25Simulator(PeripheralSimulator):
+
+class SHT25Simulator(PeripheralSimulator):  # type: ignore
     """Simulates communication with sht25 sensor."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
 
         super().__init__(*args, **kwargs)
 

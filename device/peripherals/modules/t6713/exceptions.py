@@ -1,42 +1,22 @@
-class DriverError(Exception):
-    """Base class for errors raised by driver."""
-
-    def __init__(self, message, logger=None):
-        self.message = message
-        if logger != None:
-            logger.error(message)
+# Import driver error base class
+from device.peripherals.classes.peripheral.exceptions import DriverError
 
 
-class InitError(DriverError):
-    """Initialization errors for sensor driver."""
-    ...
+class ReadCo2Error(DriverError):  # type: ignore
+    message_base = "Unable to read co2"
 
 
-class SetupError(DriverError):
-    """Setup errors for sensor driver."""
-    ...
+class ReadStatusError(DriverError):  # type: ignore
+    message_base = "Unable to read status"
 
 
-class ReadCo2Error(DriverError):
-    """Read Co2 errors for sensor driver."""
-    ...
+class EnableABCLogicError(DriverError):  # type: ignore
+    message_base = "Unable to enable ABC logic"
 
 
-class ReadStatusError(DriverError):
-    """Read status errors for sensor driver."""
-    ...
+class DisableABCLogicError(DriverError):  # type: ignore
+    message_base = "Unable to disable ABC logic"
 
 
-class EnableABCLogicError(DriverError):
-    """Enable ABC logic errors for sensor driver."""
-    ...
-
-
-class DisableABCLogicError(DriverError):
-    """Disable ABC logic errors for sensor driver."""
-    ...
-
-
-class ResetError(DriverError):
-    """Reset errors for sensor driver."""
-    ...
+class ResetError(DriverError):  # type: ignore
+    message_base = "Unable to reset"

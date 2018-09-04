@@ -1,358 +1,225 @@
 # Import standard python modules
-import time
-from typing import Optional, Tuple
+import time, threading
+
+# Import python types
+from typing import Optional, Tuple, NamedTuple
 
 # Import device comms
-from device.comms.i2c import I2C
+from device.comms.i2c2.main import I2C
+from device.comms.i2c2.exceptions import I2CError
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities.error import Error
 from device.utilities import maths
 
-0.0065
-# Import parent class
-from device.peripherals.classes.atlas_driver import AtlasDriver
+# Import module elements
+from device.peripherals.classes.atlas.driver import AtlasDriver
+from device.peripherals.modules.atlas_ec.simulator import AtlasECSimulator
+from device.peripherals.classes.peripheral.exceptions import SetupError
+from device.peripherals.modules.atlas_ec.exceptions import (
+    ReadECError,
+    EnableECOutputError,
+    DisableECOutputError,
+    EnableTDSOutputError,
+    DisableTDSOutputError,
+    EnableSalinityOutputError,
+    DisableSalinityOutputError,
+    EnableSpecificGravityOutputError,
+    DisableSpecificGravityOutputError,
+    SetProbeTypeError,
+    TakeDryCalibrationError,
+    TakeSinglePointCalibrationError,
+)
 
 
-class AtlasECDriver(AtlasDriver):
-    """ Driver for atlas electrical conductivity sensor. """
+class AtlasECDriver(AtlasDriver):  # type: ignore
+    """ Driver for atlas ec sensor. """
 
     # Initialize sensor properties
-    _electrical_conductivity_accuracy_percent = 2
-    _min_electrical_conductivity = 0.005
-    _max_electrical_conductivity = 200
+    ec_accuracy_percent = 2
+    min_ec = 0.005
+    max_ec = 200
 
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
         channel: Optional[int] = None,
         simulate: bool = False,
+        mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
         """ Initializes driver. """
 
+        # Check if simulating
+        if simulate:
+            Simulator = AtlasECSimulator
+        else:
+            Simulator = None
+
+        # Initialize parent class
         super().__init__(
             name=name,
+            i2c_lock=i2c_lock,
             bus=bus,
             address=address,
             mux=mux,
             channel=channel,
-            logger_name="Driver({})".format(name),
-            i2c_name=name,
-            dunder_name=__name__,
             simulate=simulate,
+            mux_simulator=mux_simulator,
+            Simulator=Simulator,
         )
 
-    def read_electrical_conductivity(self) -> Tuple[float, Error]:
-        """ Reads electrical conductivity from sensor, sets significant 
+    def setup(self) -> None:
+        """Sets up sensor."""
+        self.logger.info("Setting up sensor")
+        try:
+            self.enable_led()
+            info = self.read_info()
+            if info.firmware_version > 1.94:
+                self.enable_protocol_lock()
+            self.enable_ec_output()
+            self.disable_tds_output()
+            self.disable_salinity_output()
+            self.disable_specific_gravity_output()
+            self.set_probe_type(1.0)
+        except Exception as e:
+            raise SetupError(logger=self.logger) from e
+
+    def read_ec(self, retry: bool = True) -> Optional[float]:
+        """ Reads ec from sensor, sets significant 
             figures based off error magnitude, returns value in mS/cm. """
-        self.logger.info("Reading electrical conductivity")
+        self.logger.info("Reading EC")
 
-        # Get electrical conductivity reading from hardware
-        # Assumes electrical conductivity is only enabled output
-        response, error = self.process_command("R", processing_seconds=0.6)
+        # Get ec reading from hardware
+        # Assumes ec is only enabled output
+        try:
+            ec_raw = self.process_command("R", process_seconds=0.6, retry=retry)
+        except Exception as e:
+            message = "Driver unable to read ec"
+            raise ReadECError(message, logger=self.logger) from e
 
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to read electrical conductivity")
-            return None, error
-
-        # Parse response
-        electrical_conductivity_us_cm = float(response)
-
-        # Convert from uS/cm to mS/cm
-        electrical_conductivity = electrical_conductivity_us_cm / 1000
+        # Parse response, convert from uS/cm to mS/cm
+        ec = float(ec_raw) / 1000
 
         # Set significant figures based off error magnitude
-        error_value = (
-            electrical_conductivity
-            * self._electrical_conductivity_accuracy_percent
-            / 100
-        )
+        error_value = ec * self.ec_accuracy_percent / 100
         error_magnitude = maths.magnitude(error_value)
         significant_figures = error_magnitude * -1
-        electrical_conductivity = round(electrical_conductivity, significant_figures)
+        ec = round(ec, significant_figures)
 
-        # Verify electrical conductivity value within valid range
-        if (
-            electrical_conductivity > self._min_electrical_conductivity
-            and electrical_conductivity < self._min_electrical_conductivity
-        ):
-            self.logger.warning("Electrical conductivity outside of valid range")
-            electrical_conductivity = None
+        # Verify ec value within valid range
+        if ec > self.min_ec and ec < self.min_ec:
+            self.logger.warning("ec outside of valid range")
+            return None
 
-        # Successfully read electical conductivity!
-        self.logger.info("EC: {} mS/cm".format(electrical_conductivity))
-        return electrical_conductivity, Error(None)
+        # Successfully read ec
+        self.logger.info("EC: {} mS/cm".format(ec))
+        return ec
 
-    def set_compensation_temperature(self, temperature: float) -> Error:
-        """ Commands sensor to set compensation temperature. """
-        self.logger.info("Setting compensation temperature")
+    def enable_ec_output(self, retry: bool = True) -> None:
+        """Enables ec output when reporting readings."""
+        self.logger.info("Enabling ec output")
+        try:
+            self.process_command("O,EC,1", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise EnableECOutputError(logger=self.logger) from e
 
-        # Send command
-        command = "T,{}".format(temperature)
-        _, error = self.process_command(command, processing_seconds=0.3)
+    def disable_ec_output(self, retry: bool = True) -> None:
+        """Disables ec output when reporting readings."""
+        self.logger.info("Disabling ec output")
+        try:
+            self.process_command("O,EC,0", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise DisableECOutputError(logger=self.logger) from e
 
-        # Check for error
-        if error.exists():
-            error.report("Driver unable to set compensation temperature")
-            return error
+    def enable_tds_output(self, retry: bool = True) -> None:
+        """Enables total dissolved solids output when reporting readings."""
+        self.logger.info("Enabling tds output")
+        try:
+            self.process_command("O,TDS,1", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise EnableTDSOutputError(logger=self.logger) from e
 
-        # Successfully set compensation temperature!
-        return Error(None)
-
-    def enable_electrical_conductivity_output(self) -> Error:
-        """ Commands sensor to enable electrical conductivity output when 
-            reporting readings. """
-        self.logger.info("Enabling electrical conductivity output")
-
-        # Send command
-        _, error = self.process_command("O,EC,1", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to enable electrical conductivity output")
-            return error
-
-        # Successfully enabled electrical conductivity output!
-        return Error(None)
-
-    def disable_electrical_conductivity_output(self) -> Error:
-        """ Commands sensor to disable electrical conductivity output when 
-            reporting readings. """
-        self.logger.info("Disabling electrical conductivity")
-
-        # Send command
-        _, error = self.process_command("O,EC,0", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to disable electrical conductivity")
-            return error
-
-        # Successfully disabled electrical conductivity output!
-        return Error(None)
-
-    def enable_total_dissolved_solids_output(self) -> Error:
-        """ Commands sensor to enable total dissolved solids output when 
-            reporting readings. """
-        self.logger.info("Enabling total dissolved solids output")
-
-        # Send command
-        _, error = self.process_command("O,TDS,1", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to enable total dissolved solids output")
-            return error
-
-        # Successfully enabled total dissolved solids output!
-        return Error(None)
-
-    def disable_total_dissolved_solids_output(self) -> Error:
-        """ Commands sensor to disable total dissolved solids output when 
-            reporting readings. """
+    def disable_tds_output(self, retry: bool = True) -> None:
+        """Disables total dissolved solids output when reporting readings. """
         self.logger.info("Disabling total dissolved solids output")
+        try:
+            self.process_command("O,TDS,0", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise DisableTDSOutputError(logger=self.logger) from e
 
-        # Send command
-        _, error = self.process_command("O,TDS,0", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to disable total dissolved solids output")
-            return error
-
-        # Successfully disabled total dissolved solids output!
-        return Error(None)
-
-    def enable_salinity_output(self) -> Error:
-        """ Commands sensor to enable salinity output when reporting 
-            readings. """
+    def enable_salinity_output(self, retry: bool = True) -> None:
+        """Enables salinity output when reporting readings."""
         self.logger.info("Enabling salinity output")
+        try:
+            self.process_command("O,S,1", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise EnableSalinityOutputError(logger=self.logger)
 
-        # Send command
-        _, error = self.process_command("O,S,1", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to enable salinity output")
-            return error
-
-        # Successfully enabled salinity output!
-        return Error(None)
-
-    def disable_salinity_output(self) -> Error:
-        """ Commands sensor to disable salinity output when reporting 
-            readings. """
+    def disable_salinity_output(self, retry: bool = True) -> None:
+        """Disables salinity output when reporting readings."""
         self.logger.info("Disabling salinity output")
+        try:
+            self.process_command("O,S,0", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise DisableSalinityOutputError(logger=self.logger) from e
 
-        # Send command
-        _, error = self.process_command("O,S,0", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to disable salinity output")
-            return error
-
-        # Successfully disabled salinity output!
-        return Error(None)
-
-    def enable_specific_gravity_output(self) -> Error:
-        """ Commands sensor to enable specific gravity output when reporting
-            readings. """
+    def enable_specific_gravity_output(self, retry: bool = True) -> None:
+        """Enables specific gravity output when reporting readings."""
         self.logger.info("Enabling specific gravity output")
+        try:
+            self.process_command("O,SG,1", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise EnableSpecificGravityOutputError(logger=self.logger) from e
 
-        # Send command
-        _, error = self.process_command("O,SG,1", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to enable specific gravity output")
-            return error
-
-        # Successfully enabled specific gravity output!
-        return Error(None)
-
-    def disable_specific_gravity_output(self) -> Error:
-        """ Commands sensor to disable specific gravity output when reporting
-            readings. """
+    def disable_specific_gravity_output(self, retry: bool = True) -> None:
+        """Disables specific gravity output when reporting readings."""
         self.logger.info("Disabling specific gravity output in hardware")
+        try:
+            self.process_command("O,SG,0", process_seconds=0.3, retry=retry)
+        except Exception as e:
+            raise DisableSpecificGravityOutputError(logger=self.logger) from e
 
-        # Send command
-        _, error = self.process_command("O,SG,0", processing_seconds=0.3)
+    def set_probe_type(self, value: float, retry: bool = True) -> None:
+        """Set probe type to value."""
+        self.logger.info("Setting probe type")
+        try:
+            self.process_command("K,{}".format(value), process_seconds=0.3)
+        except Exception as e:
+            raise SetProbeTypeError(logger=self.logger) from e
 
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to disable specific gravity output")
-            return error
-
-        # Successfully disable specific gravity output!
-        return Error(None)
-
-    def set_probe_type(self, value: str) -> Error:
-        """ Commands sensor to set probe type to value. """
-        self.logger.info("Setting probe type in hardware")
-
-        # Send command
-        _, error = self.process_command("K,{}".format(value), processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to set probe type")
-            return error
-
-        # Successfully set probe type!
-        return Error(None)
-
-    def take_dry_calibration_reading(self) -> Error:
-        """ Commands sensor to take a dry calibration reading. """
-        self.logger.info("Taking dry calibration reading in hardware")
-
-        # Send command
-        _, error = self.process_command("Cal,dry", processing_seconds=0.6)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take dry calibration reading")
-            return error
-
-        # Successfully took dry calibration reading!
-        return Error(None)
+    def take_dry_calibration_reading(self, retry: bool = True) -> None:
+        """Take a dry calibration reading."""
+        self.logger.info("Taking dry calibration reading")
+        try:
+            self.process_command("Cal,dry", process_seconds=2.0, retry=retry)
+        except Exception as e:
+            raise TakeDryCalibrationError(logger=self.logger) from e
 
     def take_single_point_calibration_reading(
-        self, electrical_conductivity: float
-    ) -> Error:
-        """ Commands sensor to take a single point calibration reading. """
-        self.logger.info("Taking single point calibration reading in hardware.")
+        self, value: float, retry: bool = True
+    ) -> None:
+        """Takes a single point calibration reading."""
+        self.logger.info("Taking single point calibration reading")
+
+        # Temporary solution
+        message = "Not implemented"
+        raise TakeSinglePointCalibrationError(message=message, logger=self.logger)
+
+        # TODO: Debug why this command returns an invalid syntax code
+        # See datasheet: https://bit.ly/2rTuCub
 
         # Convert mS/cm to uS/cm
-        electrical_conductivity_us_cm = electrical_conductivity * 1000
+        # ec = int(value * 1000)
 
         # Send command
-        command = "Cal,{}".format(electrical_conductivity_us_cm)
-        _, error = self.process_command(command, processing_seconds=0.6)
-
-        # Check for errors-> Error
-        if error.exists():
-            error.report("Driver unable to take single point calibration reading")
-            return error
-
-        # Successfully took single point calibration reading!
-        return Error(None)
-
-    def take_low_point_calibration_reading(
-        self, electrical_conductivity: float
-    ) -> Error:
-        """ Commands sensor to take a low point calibration reading. """
-        self.logger.info("Taking low point calibration reading in hardware.")
-
-        # Convert mS/cm to uS/cm
-        electrical_conductivity_us_cm = electrical_conductivity * 1000
-
-        # Send command
-        command = "Cal,low,{}".format(electrical_conductivity_us_cm)
-        _, error = self.process_command(command, processing_seconds=0.6)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take low point calibration reading")
-            return error
-
-        # Successfully took low point calibration reading!
-        return Error(None)
-
-    def take_high_point_calibration_reading(
-        self, electrical_conductivity: float
-    ) -> Error:
-        """ Commands sensor to take a high point calibration reading. """
-        self.logger.info("Taking high point calibration reading in hardware.")
-
-        # Convert mS/cm to uS/cm
-        electrical_conductivity_us_cm = electrical_conductivity * 1000
-
-        # Send command
-        command = "Cal,high,{}".format(electrical_conductivity_us_cm)
-        _, error = self.process_command(command, processing_seconds=0.6)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to take high point calibration reading")
-            return error
-
-        # Successfully took high point calibration reading!
-        return Error(None)
-
-    def clear_calibration_readings(self) -> Error:
-        """ Commands sensor to clear calibration readings. """
-        self.logger.info("Clearing calibration readings.")
-
-        # Send command
-        _, error = self.process_command("Cal,clear", processing_seconds=0.3)
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to clear calibration readings")
-            return error
-
-        # Successfully cleared calibration readings!
-        return Error(None)
-
-    def factory_reset(self) -> Error:
-        """ Commands sensor to clear calibration readings. """
-        self.logger.info("Performing factory reset")
-
-        # Send command
-        _, error = self.process_command(
-            "Factory", processing_seconds=0.3, read_response=False
-        )
-
-        # Check for errors
-        if error.exists():
-            error.report("Driver unable to perform factory reset")
-            return error
-
-        # Successfully cleared calibration readings!
-        return Error(None)
+        # try:
+        #     command = "Cal,{}".format(ec)
+        #     self.logger.debug("command = {}".format(command))
+        #     self.process_command(command, process_seconds=0.6, retry=retry)
+        # except Exception as e:
+        #     raise TakeSinglePointCalibrationError(logger=self.logger) from e

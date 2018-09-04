@@ -1,52 +1,53 @@
 # Import standard python modules
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
 
 # Import peripheral parent class
-from device.peripherals.classes.peripheral_manager import PeripheralManager
+from device.peripherals.classes.peripheral.manager import PeripheralManager
 
-# Import ccs811 elements
+# Import driver elements
 from device.peripherals.modules.ccs811.events import CCS811Events
 from device.peripherals.modules.ccs811.driver import CCS811Driver
 from device.peripherals.modules.ccs811.exceptions import DriverError
 
 
-class CCS811Manager(PeripheralManager, CCS811Events):
-    """ Manages an ccs811 co2 sensor. """
+class CCS811Manager(PeripheralManager, CCS811Events):  # type: ignore
+    """Manages an ccs811 co2 sensor."""
 
     # Initialize compensation variable parameters
-    _temperature_threshold = 0.1  # celcius
-    _prev_temperature = 25
-    _humidity_threshold = 0.1  # percent
-    _prev_humidity = 50
+    temperature_threshold = 0.1  # celcius
+    prev_temperature: Optional[float] = 25.0
+    humidity_threshold = 0.1  # percent
+    prev_humidity: Optional[float] = 50.0
 
-    def __init__(self, *args, **kwargs):
-        """ Instantiates manager Instantiates parent class, and initializes 
-            sensor variable name. """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initializes manager."""
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.co2_name = self.parameters["variables"]["sensor"]["co2_ppm"]
-        self.tvoc_name = self.parameters["variables"]["sensor"]["tvoc_ppb"]
-        self.temperature_name = self.parameters["variables"]["compensation"][
-            "temperature_celcius"
-        ]
-        self.humidity_name = self.parameters["variables"]["compensation"][
-            "humidity_percent"
-        ]
+        self.co2_name = self.variables["sensor"]["co2_ppm"]
+        self.tvoc_name = self.variables["sensor"]["tvoc_ppb"]
+        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
+        self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
     @property
-    def co2(self) -> None:
-        """ Gets co2 value. """
-        return self.state.get_peripheral_reported_sensor_value(self.name, self.co2_name)
+    def co2(self) -> Optional[float]:
+        """Gets co2 value."""
+        value = self.state.get_peripheral_reported_sensor_value(
+            self.name, self.co2_name
+        )
+        if value != None:
+            return float(value)
+        return None
 
     @co2.setter
     def co2(self, value: float) -> None:
-        """ Sets co2 value in shared state. Does not update environment from calibration mode. """
+        """Sets co2 value in shared state. Does not update environment from 
+        calibration mode."""
         self.state.set_peripheral_reported_sensor_value(self.name, self.co2_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
@@ -54,15 +55,19 @@ class CCS811Manager(PeripheralManager, CCS811Events):
             )
 
     @property
-    def tvoc(self) -> None:
-        """ Gets tvoc value. """
-        return self.state.get_peripheral_reported_sensor_value(
+    def tvoc(self) -> Optional[float]:
+        """Gets tvoc value."""
+        value = self.state.get_peripheral_reported_sensor_value(
             self.name, self.tvoc_name
         )
+        if value != None:
+            return float(value)
+        return None
 
     @tvoc.setter
     def tvoc(self, value: float) -> None:
-        """ Sets tvoc value in shared state. Does not update environment from calibration mode. """
+        """ Sets tvoc value in shared state. Does not update environment from 
+        calibration mode. """
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.tvoc_name, value
         )
@@ -72,14 +77,20 @@ class CCS811Manager(PeripheralManager, CCS811Events):
             )
 
     @property
-    def temperature(self) -> None:
-        """ Gets compensation temperature value from shared environment state. """
-        return self.state.get_environment_reported_sensor_value(self.temperature_name)
+    def temperature(self) -> Optional[float]:
+        """Gets compensation temperature value from shared environment state."""
+        value = self.state.get_environment_reported_sensor_value(self.temperature_name)
+        if value != None:
+            return float(value)
+        return None
 
     @property
-    def humidity(self) -> None:
-        """ Gets compensation humidity value from shared environment state. """
-        return self.state.get_environment_reported_sensor_value(self.humidity_name)
+    def humidity(self) -> Optional[float]:
+        """Gets compensation humidity value from shared environment state."""
+        value = self.state.get_environment_reported_sensor_value(self.humidity_name)
+        if value != None:
+            return float(value)
+        return None
 
     def initialize(self) -> None:
         """Initializes manager."""
@@ -95,25 +106,23 @@ class CCS811Manager(PeripheralManager, CCS811Events):
         try:
             self.driver = CCS811Driver(
                 name=self.name,
-                bus=self.parameters["communication"]["bus"],
-                mux=int(self.parameters["communication"]["mux"], 16),
-                channel=self.parameters["communication"]["channel"],
-                address=int(self.parameters["communication"]["address"], 16),
+                i2c_lock=self.i2c_lock,
+                bus=self.bus,
+                mux=self.mux,
+                channel=self.channel,
+                address=self.address,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
         except DriverError as e:
-            self.logger.exception("Manager unable to initialize")
+            self.logger.exception("Unable to initialize")
             self.health = 0.0
             self.mode = Modes.ERROR
-            return
-
-        # Successful initialization!
-        self.logger.info("Initialized successfully")
 
     def setup(self) -> None:
-        """Sets up sensor."""
-        self.driver.setup(retry=True)
+        """Sets up manager."""
+        self.logger.debug("Setting up")
+        self.driver.setup()
 
     def update(self) -> None:
         """Updates sensor by reading co2 and tvoc values then reports them to shared 
@@ -125,23 +134,23 @@ class CCS811Manager(PeripheralManager, CCS811Events):
             # Set compensation variables
             try:
                 self.driver.write_environment_data(
-                    temperature=self.temperature, humidity=self.humidity, retry=True
+                    temperature=self.temperature, humidity=self.humidity
                 )
 
                 # Update previous values
                 if self.temperature != None:
-                    self._prev_temperature = self.temperature
+                    self.prev_temperature = self.temperature
                 if self.humidity != None:
-                    self._prev_humidity = self.humidity
+                    self.prev_humidity = self.humidity
 
             except DriverError:
-                self.logger.error("Unable to set compensation variables")
+                self.logger.exception("Unable to set compensation variables")
                 self.mode = Modes.ERROR
                 self.health = 0.0
 
         # Read co2 and tvoc
         try:
-            co2, tvoc = self.driver.read_algorithm_data(retry=True)
+            co2, tvoc = self.driver.read_algorithm_data()
         except DriverError:
             self.logger.exception("Unable to read co2, tvoc")
             self.mode = Modes.ERROR
@@ -156,45 +165,48 @@ class CCS811Manager(PeripheralManager, CCS811Events):
     def reset(self) -> None:
         """ Resets sensor. """
         self.logger.info("Resetting")
-
-        # Clear reported values
         self.clear_reported_values()
-
-        # Sucessfully reset!
-        self.logger.debug("Successfully reset!")
 
     def shutdown(self) -> None:
-        """ Shuts down sensor. """
+        """Shutsdown sensor."""
         self.logger.info("Shutting down")
-
-        # Clear reported values
         self.clear_reported_values()
 
-        # Successfully shutdown
-        self.logger.info("Successfully shutdown!")
-
-    def clear_reported_values(self):
-        """ Clears reported values. """
+    def clear_reported_values(self) -> None:
+        """Clears reported values."""
         self.co2 = None
         self.tvoc = None
 
     def new_compensation_variables(self) -> bool:
-        """ Check if there is a new compensation variable value. """
+        """Checks if there is a new compensation variable value."""
 
-        # Check if calibrating
+        # Check if in calibration mode
         if self.mode == Modes.CALIBRATE:
             return False
 
-        # Check if compensation variables exists
-        if self.temperature == None and self.humidity == None:
-            return False
+        # Check for new temperature
+        if self.temperature != None:
 
-        # Check if variables value sufficiently different
-        if (
-            abs(self.temperature - self._prev_temperature) < self._temperature_threshold
-            and abs(self.humidity - self._prev_humidity) < self._humidity_threshold
-        ):
-            return False
+            # Check for prev temperature
+            if self.prev_temperature == None:
+                return True
 
-        # New compensation variables exists!
-        return True
+            # Check for sufficiently different temperature
+            delta_t = abs(self.temperature - self.prev_temperature)  # type: ignore
+            if delta_t > self.temperature_threshold:
+                return True
+
+        # Check for new humidity
+        if self.humidity != None:
+
+            # Check for prev humidity
+            if self.prev_humidity == None:
+                return True
+
+            # Check for sufficiently different humidity
+            delta_h = abs(self.humidity - self.prev_humidity)  # type: ignore
+            if delta_h > self.humidity_threshold:
+                return True
+
+        # New compensation variable does not exists
+        return False

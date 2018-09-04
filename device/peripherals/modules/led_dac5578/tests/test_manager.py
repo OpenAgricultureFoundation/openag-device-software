@@ -1,71 +1,100 @@
 # Import standard python libraries
-import sys, os, json
+import os, sys, pytest, json, threading
 
-# Import module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
-except:
-    # ... if running tests from same dir as panel.py
-    sys.path.append("../../../../")
-    from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
+# Set system path
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
-# Import shared memory
+# Import device utilities
+from device.utilities.modes import Modes
+from device.utilities.accessors import get_peripheral_config
+
+# Import device state
 from device.state import State
 
-# Change directory for importing files
-os.chdir("../../../../")
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Import test config
-device_config = json.load(
-    open("device/peripherals/modules/led_dac5578/tests/config.json")
-)
-peripheral_config = device_config["peripherals"][0]
+# Import peripheral driver
+from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager
 
-# Set testing variable values
-desired_distance_cm = 5
-desired_ppfd_umol_m2_s = 100
-desired_spectrum_nm_percent = {
-    "400-449": 10,
-    "449-499": 10,
-    "500-549": 30,
-    "550-559": 30,
-    "600-649": 10,
-    "650-699": 10,
-}
-
-# Initialize state
-state = State()
+# Load test config and setup
+path = root_dir + "/device/peripherals/modules/led_dac5578/tests/config.json"
+device_config = json.load(open(path))
+peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-1")
 
 
-def test_init():
-    array = LEDDAC5578Manager(
-        name="Test", state=state, config=peripheral_config, simulate=True
+def test_init() -> None:
+    manager = LEDDAC5578Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
     )
 
 
-def test_initialize():
-    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate=True)
-    array.initialize()
+def test_initialize() -> None:
+    manager = LEDDAC5578Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
 
 
-def test_setup():
-    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate=True)
-    array.initialize()
-    array.setup()
+def test_setup() -> None:
+    manager = LEDDAC5578Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
+    manager.setup()
 
 
-def test_update():
-    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate=True)
-    array.initialize()
-    array.setup()
-    array.update()
+def test_update() -> None:
+    manager = LEDDAC5578Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
+    manager.update()
 
 
-def test_shutdown():
-    array = LEDDAC5578Manager("Test", state, peripheral_config, simulate=True)
-    array.initialize()
-    array.setup()
-    array.update()
-    array.shutdown()
+def test_reset() -> None:
+    manager = LEDDAC5578Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
+    manager.reset()
+
+
+def test_shutdown() -> None:
+    manager = LEDDAC5578Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
+    manager.shutdown()

@@ -1,52 +1,28 @@
 # Import standard python libraries
-import sys, os
+import os, sys, pytest, threading
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running test from: {}".format(cwd))
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Set correct import path
-if cwd.endswith("sht25"):
-    print("Running test locally")
-    os.chdir("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running test globally")
-else:
-    print("Running test from invalid location")
-    sys.exit(0)
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Import manager
-from device.peripherals.modules.sht25.driver import SHT25Driver
+# Import peripheral driver
+from device.peripherals.modules.ccs811.driver import CCS811Driver
 
 
-def test_init():
-    driver = SHT25Driver(name="Test", bus=2, address=0x77, simulate=True)
+def test_init() -> None:
+    driver = CCS811Driver(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x77,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
 
 
-def test_read_temperature():
-    driver = SHT25Driver("Test", 2, 0x77, simulate=True)
-    temperature, error = driver.read_temperature()
-    assert error.exists() == False
-    assert temperature == -47.0
-
-
-def test_read_humidity():
-    driver = SHT25Driver("Test", 2, 0x77, simulate=True)
-    humidity, error = driver.read_humidity()
-    assert error.exists() == False
-    assert humidity == -6.0
-
-
-def test_read_user_register():
-    driver = SHT25Driver("Test", 2, 0x77, simulate=True)
-    user_register, error = driver.read_user_register()
-    assert error.exists() == False
-    assert user_register.end_of_battery == False
-    assert user_register.heater_enabled == False
-    assert user_register.reload_disabled == False
-
-
-def test_reset():
-    driver = SHT25Driver("Test", 2, 0x77, simulate=True)
-    error = driver.reset()
-    assert error.exists() == False
+# def test_read_algorithm_data() -> None:
+#     driver = CCS811Driver("Test", 2, 0x77, simulate=True, mux_simulator=MuxSimulator())
+#     co2, tvoc = driver.read_algorithm_data()
+#     assert co2 == 404

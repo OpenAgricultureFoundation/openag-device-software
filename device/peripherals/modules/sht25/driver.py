@@ -1,11 +1,13 @@
 # Import standard python modules
-import time
+import time, threading
+
+# Import python types
 from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
 from device.comms.i2c2.main import I2C
-from device.comms.i2c2.mux_simulator import MuxSimulator
 from device.comms.i2c2.exceptions import I2CError
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -13,8 +15,10 @@ from device.utilities import bitwise
 
 # Import driver elements
 from device.peripherals.modules.sht25.simulator import SHT25Simulator
+
+# Import exceptions
+from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
 from device.peripherals.modules.sht25.exceptions import (
-    InitError,
     ReadTemperatureError,
     ReadHumidityError,
     ReadUserRegisterError,
@@ -23,8 +27,7 @@ from device.peripherals.modules.sht25.exceptions import (
 
 
 class UserRegister(NamedTuple):
-    """ Dataclass for parsed user register byte. """
-
+    """Dataclass for parsed user register byte."""
     resolution: int
     end_of_battery: bool
     heater_enabled: bool
@@ -32,17 +35,18 @@ class UserRegister(NamedTuple):
 
 
 class SHT25Driver:
-    """ Driver for atlas sht25 temperature and humidity sensor. """
+    """Driver for sht25 temperature and humidity sensor."""
 
     # Initialize variable properties
-    _min_temperature = -40  # C
-    _max_temperature = 125  # C
-    _min_humidity = 0  # %RH
-    _max_humidity = 100  # %RH
+    min_temperature = -40  # celcius
+    max_temperature = 125  # celcius
+    min_humidity = 0  # %RH
+    max_humidity = 100  # %RH
 
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -50,7 +54,7 @@ class SHT25Driver:
         simulate: Optional[bool] = False,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
-        """ Initializes sht25 driver. """
+        """Initializes driver."""
 
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
@@ -66,6 +70,7 @@ class SHT25Driver:
         try:
             self.i2c = I2C(
                 name=name,
+                i2c_lock=i2c_lock,
                 bus=bus,
                 address=address,
                 mux=mux,
@@ -77,19 +82,17 @@ class SHT25Driver:
             self.read_user_register(retry=True)
 
         except I2CError as e:
-            message = "Driver unable to initialize"
-            raise InitError(message, logger=self.logger)
+            raise InitError(logger=self.logger) from e
 
-    def read_temperature(self, retry: bool = False) -> float:
-        """ Reads temperature value from sensor hardware. """
+    def read_temperature(self, retry: bool = True) -> Optional[float]:
+        """ Reads temperature value."""
         self.logger.debug("Reading temperature")
 
         # Send read temperature command (no-hold master)
         try:
             self.i2c.write(bytes([0xF3]), retry=retry)
         except I2CError as e:
-            message = ("Driver unable to read temperature")
-            raise ReadTemperatureError(message, logger=self.logger) from e
+            raise ReadTemperatureError(logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
         # SHT25 is 12-bit so max temperature processing time is 22ms
@@ -99,36 +102,32 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
-            message = (
-                "Driver unable to read temperature"
-            )  # TODO: Make better error messages
-            raise ReadTemperatureError(message, logger=self.logger) from e
+            raise ReadTemperatureError(logger=self.logger) from e
 
         # Convert temperature data and set significant figures
         msb, lsb = bytes_
         raw = msb * 256 + lsb
-        temperature = -46.85 + ((raw * 175.72) / 65536.0)
+        temperature = float(-46.85 + ((raw * 175.72) / 65536.0))
         temperature = float("{:.0f}".format(temperature))
 
         # Verify temperature value within valid range
-        if temperature > self._min_temperature and temperature < self._min_temperature:
+        if temperature > self.min_temperature and temperature < self.min_temperature:
             self.logger.warning("Temperature outside of valid range")
-            temperature = None
+            return None
 
-        # Successfully read temperature!
+        # Successfully read temperature
         self.logger.debug("Temperature: {} C".format(temperature))
         return temperature
 
-    def read_humidity(self, retry: bool = False) -> float:
-        """ Reads humidity value from sensor hardware. """
+    def read_humidity(self, retry: bool = True) -> Optional[float]:
+        """Reads humidity value."""
         self.logger.debug("Reading humidity value from hardware")
 
         # Send read humidity command (no-hold master)
         try:
             self.i2c.write(bytes([0xF5]), retry=retry)
         except I2CError as e:
-            message = "Driver unable to read humidity"
-            raise ReadHumidityError(message, logger=self.logger) from e
+            raise ReadHumidityError(logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
         # SHT25 is 12-bit so max humidity processing time is 29ms
@@ -138,34 +137,32 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)  # Read sensor data
         except I2CError as e:
-            message = "Driver unable to read humidity"
-            raise ReadHumidityError(message, logger=self.logger) from e
+            raise ReadHumidityError(logger=self.logger) from e
 
         # Convert humidity data and set significant figures
         msb, lsb = bytes_
         raw = msb * 256 + lsb
-        humidity = -6 + ((raw * 125.0) / 65536.0)
+        humidity = float(-6 + ((raw * 125.0) / 65536.0))
         humidity = float("{:.0f}".format(humidity))
 
         # Verify humidity value within valid range
-        if humidity > self._min_humidity and humidity < self._min_humidity:
+        if humidity > self.min_humidity and humidity < self.min_humidity:
             self.logger.warning("Humidity outside of valid range")
-            humidity = None
+            return None
 
-        # Successfully read humidity!
+        # Successfully read humidity
         self.logger.debug("Humidity: {} %".format(humidity))
         return humidity
 
-    def read_user_register(self, retry: bool = False) -> UserRegister:
-        """ Reads user register from sensor hardware. """
+    def read_user_register(self, retry: bool = True) -> UserRegister:
+        """ Reads user register."""
         self.logger.debug("Reading user register")
 
         # Read register
         try:
             byte = self.i2c.read_register(0xE7, retry=retry)
         except I2CError as e:
-            message = "Driver unable to read user register"
-            raise ReadUserRegisterError(message, logger=self.logger) from e
+            raise ReadUserRegisterError(logger=self.logger) from e
 
         # Parse register content
         resolution_msb = bitwise.get_bit_from_byte(bit=7, byte=byte)
@@ -177,17 +174,16 @@ class SHT25Driver:
             reload_disabled=bool(bitwise.get_bit_from_byte(bit=1, byte=byte)),
         )
 
-        # Successfully read user register!
+        # Successfully read user register
         self.logger.debug("User register: {}".format(user_register))
         return user_register
 
-    def reset(self, retry: bool = False) -> None:
-        """ Initiates soft reset on sensor hardware. """
+    def reset(self, retry: bool = True) -> None:
+        """Initiates soft reset."""
         self.logger.info("Initiating soft reset")
 
         # Send reset command
         try:
             self.i2c.write(bytes([0xFE]), retry=retry)
         except I2CError as e:
-            message = "Driver unable to reset"
-            raise ResetError(message, logger=self.logger) from e
+            raise ResetError(logger=self.logger) from e
