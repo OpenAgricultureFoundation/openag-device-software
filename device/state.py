@@ -17,9 +17,10 @@ class State(object):
     iot = {}
     resource = {}
     connect = {}
+    upgrade = {}
 
     def __str__(self):
-        return "State(device={}, environment={}, recipe={}, " "peripherals={}, controllers={}, iot={}, resource={}, " "connect={})".format(
+        return "State(device={}, environment={}, recipe={}, peripherals={}, controllers={}, iot={}, resource={}, connect={}, upgrade={})".format(
             self.device,
             self.environment,
             self.recipe,
@@ -28,6 +29,7 @@ class State(object):
             self.iot,
             self.resource,
             self.connect,
+            self.upgrade,
         )
 
     def set_environment_reported_sensor_value(

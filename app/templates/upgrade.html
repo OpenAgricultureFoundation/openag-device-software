@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<html>
+   <body>
+      <div class="upgrade">
+        <h2>Resources</h2>
+         <div class="card">
+            <h3>About</h3>
+            <ul>
+              <li><b>Status:</b> {{ status }}
+              <li><b>Current Software Version:</b> {{ current_version }}
+              <li><b>Available Software Upgrade to Version:</b> {{ upgrade_version }}
+              <li><b>debugrob Upgrade button</b> {{ show_upgrade }}
+                  
+              {% if error != None %}
+              <li><b>Error:</b> {{ error }}
+              {% endif %}
+            </ul>
+         </div>
+      </div>
+   </body>
+</html>
+{% endblock %}

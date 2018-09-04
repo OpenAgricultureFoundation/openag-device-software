@@ -37,7 +37,7 @@ fi
 
 # Load our models
 echo 'Migrating the django/postgres database...'
-export PYTHONPATH=$TOPDIR/venv/packages
+export PYTHONPATH=$TOPDIR/venv/lib
 python3 manage.py migrate
 
 # Also need to make our user super again for the django admin

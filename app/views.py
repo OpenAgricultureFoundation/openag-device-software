@@ -70,6 +70,7 @@ from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
 from connect.connect_utils import ConnectUtils
+from upgrade.upgrade_utils import UpgradeUtils
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
@@ -530,6 +531,23 @@ class Connect(APIView):
 
         response = ConnectUtils.get_status()
         logger.info("Connect response={}".format(response))
+        return Response(response)
+
+
+class Upgrade(APIView):
+    """UI page fields for UpgradeManager."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "upgrade.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        extra = {"console_name": "views.Upgrade"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = UpgradeUtils.get_status()
+        logger.info("Upgrade response={}".format(response))
         return Response(response)
 
 

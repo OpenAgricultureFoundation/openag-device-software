@@ -11,7 +11,7 @@
         body {
          background-color: #f1f1f1;
         }
-       .dashboard, .events, .recipes, .environments, .peripherals, .config, .password, .logs, .iot, .resources, .connect {
+       .dashboard, .events, .recipes, .environments, .peripherals, .config, .password, .logs, .iot, .resources, .connect, .upgrade {
         padding: 20px;
        }
        .card {
@@ -55,11 +55,14 @@
             <li {% if 'resource' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'resource' %}">Resources</a>
             </li>
+            <li {% if 'config' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'device-config' %}">Config</a>
+            </li>
             <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'connect' %}">Connect</a>
             </li>
-            <li {% if 'config' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'device-config' %}">Config</a>
+            <li {% if 'upgrade' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
             </li>
             <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
