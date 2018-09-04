@@ -1,5 +1,7 @@
 # Import standard python modules
-import time, os, datetime, glob
+import time, os, datetime, glob, threading
+
+# Import python types
 from typing import Optional, Tuple, Dict, Any, List
 
 # Import device comms
@@ -36,6 +38,7 @@ class USBCameraDriver:
         simulate: bool = False,
         usb_mux_comms: Optional[Dict[str, Any]] = None,
         usb_mux_channel: Optional[int] = None,
+        i2c_lock: Optional[threading.Lock] = None,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
         """Initializes USB camera camera."""
@@ -75,6 +78,7 @@ class USBCameraDriver:
         try:
             self.dac5578 = DAC5578Driver(
                 name=name,
+                i2c_lock=i2c_lock,  # type: ignore
                 bus=usb_mux_comms.get("bus", None),  # type: ignore
                 address=int(usb_mux_comms.get("address", None), 16),  # type: ignore
                 mux=mux,
@@ -130,7 +134,9 @@ class USBCameraDriver:
 
         # Turn on usb mux channel
         try:
-            self.dac5578.set_high(channel=self.usb_mux_channel, retry=retry)  # type: ignore
+            self.dac5578.set_high(
+                channel=self.usb_mux_channel, retry=retry
+            )  # type: ignore
         except DriverError as e:
             raise EnableCameraError(logger=self.logger) from e
 
@@ -143,7 +149,9 @@ class USBCameraDriver:
 
         # Turn off usb mux channel
         try:
-            self.dac5578.set_low(channel=self.usb_mux_channel, retry=retry) # type: ignore
+            self.dac5578.set_low(
+                channel=self.usb_mux_channel, retry=retry
+            )  # type: ignore
         except DriverError as e:
             raise DisableCameraError(logger=self.logger) from e
 

@@ -1,5 +1,7 @@
 # Import standard python modules
-import time
+import time, threading
+
+# Import python types
 from typing import Optional, Tuple, NamedTuple
 
 # Import device comms
@@ -29,6 +31,7 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -47,6 +50,7 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
         # Initialize parent class
         super().__init__(
             name=name,
+            i2c_lock=i2c_lock,
             bus=bus,
             address=address,
             mux=mux,

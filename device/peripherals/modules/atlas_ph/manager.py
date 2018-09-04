@@ -70,6 +70,7 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
         try:
             self.driver = AtlasPHDriver(
                 name=self.name,
+                i2c_lock=self.i2c_lock,
                 bus=self.bus,
                 address=self.address,
                 mux=self.mux,

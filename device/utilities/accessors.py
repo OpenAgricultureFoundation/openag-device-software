@@ -3,9 +3,11 @@ import threading, subprocess, pyudev
 from typing import Dict, Optional, List, Any
 
 
-def set_nested_dict_safely(nested_dict: Dict, keys: List, value: str) -> None:
+def set_nested_dict_safely(
+    nested_dict: Dict, keys: List, value: str, lock: threading.Lock
+) -> None:
     """ Safely sets value in nested dict. """
-    with threading.Lock():
+    with lock:
         for key in keys[:-1]:
             if key not in nested_dict:
                 nested_dict[key] = {}

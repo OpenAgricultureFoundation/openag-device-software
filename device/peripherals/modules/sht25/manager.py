@@ -84,6 +84,7 @@ class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
         try:
             self.driver = SHT25Driver(
                 name=self.name,
+                i2c_lock=self.i2c_lock,
                 bus=self.bus,
                 mux=self.mux,
                 channel=self.channel,

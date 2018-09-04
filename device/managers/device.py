@@ -114,7 +114,7 @@ class DeviceManager:
     def mode(self, value):
         """ Safely updates mode in state object. """
         self._mode = value
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["mode"] = value
 
     @property
@@ -128,7 +128,7 @@ class DeviceManager:
     @commanded_mode.setter
     def commanded_mode(self, value):
         """ Safely updates commanded mode in state object. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["commanded_mode"] = value
 
     @property
@@ -142,7 +142,7 @@ class DeviceManager:
     @request.setter
     def request(self, value):
         """ Safely updates request in state object. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["request"] = value
 
     @property
@@ -156,7 +156,7 @@ class DeviceManager:
     @response.setter
     def response(self, value):
         """ Safely updates response in state object. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["response"] = value
 
     @property
@@ -168,7 +168,7 @@ class DeviceManager:
     def error(self, value):
         """ Safely updates error in shared state. """
         self._error = value
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["error"] = value
 
     @property
@@ -182,7 +182,7 @@ class DeviceManager:
     @config_uuid.setter
     def config_uuid(self, value):
         """ Safely updates config uuid in state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["config_uuid"] = value
 
     @property
@@ -196,7 +196,7 @@ class DeviceManager:
     @commanded_config_uuid.setter
     def commanded_config_uuid(self, value):
         """Safely updates commanded config uuid in state."""
-        with threading.Lock():
+        with self.state.lock:
             self.state.device["commanded_config_uuid"] = value
 
     @property
@@ -287,13 +287,16 @@ class DeviceManager:
 
         # Check if config uuid changed, if so, adjust state
         if self.config_uuid != device_config["uuid"]:
-            with threading.Lock():
+            with self.state.lock:
                 self.state.peripherals = {}
                 set_nested_dict_safely(
-                    self.state.environment, ["reported_sensor_stats"], {}
+                    self.state.environment,
+                    ["reported_sensor_stats"],
+                    {},
+                    self.state.lock,
                 )
                 set_nested_dict_safely(
-                    self.state.environment, ["sensor", "reported"], {}
+                    self.state.environment, ["sensor", "reported"], {}, self.state.lock
                 )
                 self.config_uuid = device_config["uuid"]
 
@@ -738,6 +741,9 @@ class DeviceManager:
             simulate = False
             mux_simulator = None
 
+        # Create thread locks
+        i2c_lock = threading.RLock()
+
         # Create peripheral managers
         self.peripheral_managers = {}
         for peripheral_config_dict in self.config_dict["peripherals"]:
@@ -773,6 +779,7 @@ class DeviceManager:
                 state=self.state,
                 config=peripheral_config_dict,
                 simulate=simulate,
+                i2c_lock=i2c_lock,
                 mux_simulator=mux_simulator,
             )
             self.peripheral_managers[peripheral_name] = peripheral_manager

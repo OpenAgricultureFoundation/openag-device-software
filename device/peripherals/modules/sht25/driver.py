@@ -1,5 +1,5 @@
 # Import standard python modules
-import time
+import time, threading
 
 # Import python types
 from typing import NamedTuple, Optional, Tuple
@@ -46,6 +46,7 @@ class SHT25Driver:
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -69,6 +70,7 @@ class SHT25Driver:
         try:
             self.i2c = I2C(
                 name=name,
+                i2c_lock=i2c_lock,
                 bus=bus,
                 address=address,
                 mux=mux,

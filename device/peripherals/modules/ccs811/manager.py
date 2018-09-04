@@ -106,6 +106,7 @@ class CCS811Manager(PeripheralManager, CCS811Events):  # type: ignore
         try:
             self.driver = CCS811Driver(
                 name=self.name,
+                i2c_lock=self.i2c_lock,
                 bus=self.bus,
                 mux=self.mux,
                 channel=self.channel,

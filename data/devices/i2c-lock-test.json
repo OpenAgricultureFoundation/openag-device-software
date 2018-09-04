@@ -1,7 +1,7 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Education v0.1.0",
-    "uuid": "4cffeb04-22db-44f6-9cf4-07b595b420f0",
+    "name": "I2C Lock Test",
+    "uuid": "e0091092-5191-44ee-be94-0d50a4c01843",
     "peripherals": [
         {
             "name": "LEDPanel-Top",
@@ -94,32 +94,6 @@
             }
         },
         {
-            "name": "AtlasEC-Reservoir",
-            "type": "AtlasEC",
-            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
-            "parameters": {
-                "setup": {
-                    "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
-                    "file_name": "atlas_ec/setups/default_k1_0"
-                },
-                "variables": {
-                    "sensor": {
-                        "ec_ms_cm": "water_electrical_conductivity_ms_cm"
-                    },
-                    "actuator": null,
-                    "compensation": {
-                        "temperature_celcius": null
-                    }
-                },
-                "communication": {
-                    "bus": 2, 
-                    "address": "0x64",
-                    "mux": "0x77", 
-                    "channel": 4
-                }
-            }
-        },
-        {
             "name": "AtlasPH-Reservoir",
             "type": "AtlasPH",
             "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
@@ -142,6 +116,32 @@
                     "mux": "0x77", 
                     "channel": 4, 
                     "address": "0x63"
+                }
+            }
+        },
+        {
+            "name": "AtlasEC-Reservoir",
+            "type": "AtlasEC",
+            "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
+                    "file_name": "atlas_ec/setups/default_k1_0"
+                },
+                "variables": {
+                    "sensor": {
+                        "ec_ms_cm": "water_electrical_conductivity_ms_cm"
+                    },
+                    "actuator": null,
+                    "compensation": {
+                        "temperature_celcius": null
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "address": "0x64",
+                    "mux": "0x77", 
+                    "channel": 4
                 }
             }
         }

@@ -33,6 +33,7 @@ class DAC5578Driver:
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -56,6 +57,7 @@ class DAC5578Driver:
         try:
             self.i2c = I2C(
                 name="DAC5578-{}".format(name),
+                i2c_lock=i2c_lock,
                 bus=bus,
                 address=address,
                 mux=mux,

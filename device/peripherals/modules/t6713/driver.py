@@ -46,6 +46,7 @@ class T6713Driver:
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -57,6 +58,7 @@ class T6713Driver:
 
         # Initialize parameters
         self.simulate = simulate
+        self.i2c_lock = i2c_lock
 
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
@@ -72,6 +74,7 @@ class T6713Driver:
         try:
             self.i2c = I2C(
                 name=name,
+                i2c_lock=i2c_lock,
                 bus=bus,
                 address=address,
                 mux=mux,
@@ -137,7 +140,7 @@ class T6713Driver:
 
         # Read co2 data, requires mux disable to read all x4 bytes
         try:
-            with threading.Lock():
+            with self.i2c_lock:
                 self.i2c.write(bytes([0x04, 0x13, 0x8b, 0x00, 0x01]), retry=retry)
                 bytes_ = self.i2c.read(4, retry=retry, disable_mux=True)
         except I2CError as e:
@@ -163,7 +166,7 @@ class T6713Driver:
 
         # Read status data, requires mux diable to read all x4 bytes
         try:
-            with threading.Lock():
+            with self.i2c_lock:
                 self.i2c.write(bytes([0x04, 0x13, 0x8a, 0x00, 0x01]), retry=retry)
                 bytes_ = self.i2c.read(4, retry=retry, disable_mux=True)
         except I2CError as e:

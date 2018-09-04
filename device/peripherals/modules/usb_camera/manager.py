@@ -54,6 +54,7 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):  # type: ignore
                 resolution=self.properties.get("resolution"),
                 usb_mux_comms=self.usb_mux_comms,
                 usb_mux_channel=self.usb_mux_channel,
+                i2c_lock=self.i2c_lock,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )

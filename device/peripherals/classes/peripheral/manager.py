@@ -37,6 +37,7 @@ class PeripheralManager:
         name: str,
         state: State,
         config: Dict,
+        i2c_lock: threading.Lock,
         simulate: bool = False,
         mux_simulator: MuxSimulator = None,
     ) -> None:
@@ -46,6 +47,7 @@ class PeripheralManager:
         self.name = name
         self.state = state
         self.config = config
+        self.i2c_lock = i2c_lock
         self.simulate = simulate
         self.mux_simulator = mux_simulator
 
@@ -155,8 +157,8 @@ class PeripheralManager:
 
     @sampling_interval_seconds.setter
     def sampling_interval_seconds(self, value: float) -> None:
-        """ Safely updates sampling interval in state object. """
-        with threading.Lock():
+        """Safely updates sampling interval in state object."""
+        with self.state.lock:
             if "stored" not in self.state.peripherals[self.name]:
                 self.state.peripherals[self.name]["stored"] = {}
             self.state.peripherals[self.name]["stored"][

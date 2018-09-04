@@ -60,6 +60,7 @@ class T6713Manager(PeripheralManager, T6713Events):  # type: ignore
         try:
             self.driver = T6713Driver(
                 name=self.name,
+                i2c_lock=self.i2c_lock,
                 bus=self.parameters["communication"]["bus"],
                 mux=int(self.parameters["communication"]["mux"], 16),
                 channel=self.parameters["communication"]["channel"],

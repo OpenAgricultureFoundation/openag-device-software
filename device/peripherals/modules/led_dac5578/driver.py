@@ -44,6 +44,7 @@ class LEDDAC5578Panel(object):
         self,
         driver_name: str,
         config: Dict[str, Any],
+        i2c_lock: threading.Lock,
         simulate: bool,
         mux_simulator: Optional[MuxSimulator],
         logger: Logger,
@@ -57,11 +58,10 @@ class LEDDAC5578Panel(object):
         self.bus = config.get("bus")
         self.address = int(config.get("address"), 16)  # type: ignore
         self.active_low = config.get("active_low")
+        self.i2c_lock = i2c_lock
         self.simulate = simulate
         self.mux_simulator = mux_simulator
         self.logger = logger
-
-        self.logger.error(self.address)
 
         # Initialize i2c mux address
         self.mux = config.get("mux")
@@ -79,6 +79,7 @@ class LEDDAC5578Panel(object):
         try:
             self.driver = DAC5578Driver(
                 name=self.full_name,
+                i2c_lock=self.i2c_lock,
                 bus=self.bus,
                 address=self.address,
                 mux=self.mux,
@@ -100,6 +101,7 @@ class LEDDAC5578Driver:
         name: str,
         panel_configs: List[Dict[str, Any]],
         channel_configs: Dict[str, Any],
+        i2c_lock: threading.Lock,
         simulate: bool = False,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
@@ -107,6 +109,7 @@ class LEDDAC5578Driver:
 
         # Initialize driver parameters
         self.channel_configs = channel_configs
+        self.i2c_lock = i2c_lock
         self.simulate = simulate
 
         # Initialize logger
@@ -115,7 +118,9 @@ class LEDDAC5578Driver:
         # Initialize panels
         self.panels: List[LEDDAC5578Panel] = []
         for config in panel_configs:
-            panel = LEDDAC5578Panel(name, config, simulate, mux_simulator, self.logger)
+            panel = LEDDAC5578Panel(
+                name, config, i2c_lock, simulate, mux_simulator, self.logger
+            )
             panel.initialize()
             self.panels.append(panel)
 

@@ -1,5 +1,7 @@
 # Import standard python modules
 import time, threading
+
+# Import python variables
 from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
@@ -61,6 +63,7 @@ class CCS811Driver:
     def __init__(
         self,
         name: str,
+        i2c_lock: threading.Lock,
         bus: int,
         address: int,
         mux: Optional[int] = None,

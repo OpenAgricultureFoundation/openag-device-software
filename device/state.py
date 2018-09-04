@@ -17,6 +17,7 @@ class State(object):
     iot = {}
     resource = {}
     connect = {}
+    lock = threading.RLock()
 
     def __str__(self):
         return "State(device={}, environment={}, recipe={}, " "peripherals={}, controllers={}, iot={}, resource={}, " "connect={})".format(
@@ -35,7 +36,7 @@ class State(object):
     ):
         """ Sets reported sensor value to shared environment state. """
 
-        # TODO: Clean this up
+        # TODO: Clean this up, it is a mess...
 
         # Ensure valid dict structure
         if "reported_sensor_stats" not in self.environment:
@@ -71,7 +72,7 @@ class State(object):
         if value is None:
             simple = True
 
-        with threading.Lock():
+        with self.lock:
             # Update individual instantaneous
             by_type = self.environment["reported_sensor_stats"]["individual"][
                 "instantaneous"
@@ -162,18 +163,20 @@ class State(object):
 
     def set_environment_desired_sensor_value(self, variable, value):
         """ Sets desired sensor value to shared environment state. """
-        set_nested_dict_safely(self.environment, ["sensor", "desired", variable], value)
+        set_nested_dict_safely(
+            self.environment, ["sensor", "desired", variable], value, self.lock
+        )
 
     def set_environment_reported_actuator_value(self, variable, value):
         """ Sets reported actuator value to shared environment state. """
         set_nested_dict_safely(
-            self.environment, ["actuator", "reported", variable], value
+            self.environment, ["actuator", "reported", variable], value, self.lock
         )
 
     def set_environment_desired_actuator_value(self, variable, value):
         """ Sets desired actuator value to shared environment state. """
         set_nested_dict_safely(
-            self.environment, ["actuator", "desired", variable], value
+            self.environment, ["actuator", "desired", variable], value, self.lock
         )
 
     def get_environment_reported_sensor_value(self, variable):
@@ -200,7 +203,9 @@ class State(object):
 
     def set_peripheral_value(self, peripheral, variable, value):
         """ Sets peripheral to shared peripheral state. """
-        set_nested_dict_safely(self.peripherals, [peripheral, variable], value)
+        set_nested_dict_safely(
+            self.peripherals, [peripheral, variable], value, self.lock
+        )
 
     def get_peripheral_value(self, peripheral, variable):
         """ Gets peripheral value from shared peripheral state. """
@@ -209,25 +214,37 @@ class State(object):
     def set_peripheral_reported_sensor_value(self, peripheral, variable, value):
         """ Sets reported sensor value to shared peripheral state. """
         set_nested_dict_safely(
-            self.peripherals, [peripheral, "sensor", "reported", variable], value
+            self.peripherals,
+            [peripheral, "sensor", "reported", variable],
+            value,
+            self.lock,
         )
 
     def set_peripheral_desired_sensor_value(self, peripheral, variable, value):
         """ Sets desired sensor value to shared peripheral state. """
         set_nested_dict_safely(
-            self.peripherals, [peripheral, "sensor", "desired", variable], value
+            self.peripherals,
+            [peripheral, "sensor", "desired", variable],
+            value,
+            self.lock,
         )
 
     def set_peripheral_reported_actuator_value(self, peripheral, variable, value):
         """ Sets reported actuator value to shared peripheral state. """
         set_nested_dict_safely(
-            self.peripherals, [peripheral, "actuator", "reported", variable], value
+            self.peripherals,
+            [peripheral, "actuator", "reported", variable],
+            value,
+            self.lock,
         )
 
     def set_peripheral_desired_actuator_value(self, peripheral, variable, value):
         """ Sets desired actuator value to shared peripheral state. """
         set_nested_dict_safely(
-            self.peripherals, [peripheral, "actuator", "desired", variable], value
+            self.peripherals,
+            [peripheral, "actuator", "desired", variable],
+            value,
+            self.lock,
         )
 
     def get_peripheral_reported_sensor_value(self, peripheral, variable):

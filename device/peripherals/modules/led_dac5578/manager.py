@@ -194,6 +194,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
                 name=self.name,
                 panel_configs=self.communication.get("panels"),
                 channel_configs=self.setup_dict.get("channel_configs"),
+                i2c_lock=self.i2c_lock,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
