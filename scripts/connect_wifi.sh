@@ -40,8 +40,7 @@ connmanctl enable wifi > /dev/null 2>&1
 sleep 4
 sudo killall -s 9 autossh > /dev/null 2>&1
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR/..
-./forward_ports.sh > /dev/null 2>&1
+python $DIR/forward_ports.py > /dev/null 2>&1
  
 #connmanctl services
 #ifconfig wlan0

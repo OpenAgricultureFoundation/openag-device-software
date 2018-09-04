@@ -1,9 +1,18 @@
 #!/bin/bash
 
+# Get the full path to this script, the top dir is one up.
+TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+TOPDIR+=/..
+cd $TOPDIR
+
 rm -fr venv
+mkdir -p venv/pip_cache
+export XDG_CACHE_HOME=venv/pip_cache
 virtualenv -p python3.6 venv
 source venv/bin/activate
-pip install -r requirements.txt
+./scripts/download_pip_packages.sh
+pip install -f venv/pip_download -r requirements.txt 
+
 
 echo 'Creating our internal postgres application account...'
 if [[ "$OSTYPE" == "linux"* ]]; then

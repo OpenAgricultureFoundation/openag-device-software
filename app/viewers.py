@@ -208,6 +208,9 @@ class EnvironmentViewer:
                     "`peripheral_type` must be either `sensor` or `actuator`"
                 )
 
+            if info is None:
+                continue
+
             # Get peripheral name and unit
             name = info["name"]["verbose"]
             unit = info["unit"]["brief"]
@@ -238,6 +241,9 @@ class EnvironmentViewer:
                 raise ValueError(
                     "`peripheral_type` must be either `sensor` or `actuator`"
                 )
+
+            if info is None:
+                continue
 
             # Get peripheral name and unit
             name = info["name"]["verbose"]

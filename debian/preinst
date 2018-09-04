@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# This script is run by apt before unpacking the .deb file.
+# Stop the service we are running as.
+
+service rc.local stop
+systemctl daemon-reload
