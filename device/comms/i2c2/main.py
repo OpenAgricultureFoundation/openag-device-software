@@ -95,38 +95,44 @@ class I2C(object):
     ) -> None:
         """Writes byte list to device. Converts byte list to byte array then
         sends bytes. Returns error message."""
-        self.manage_mux("write bytes", disable_mux)
-        self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
-        self.io.write(self.address, bytes_)
+        with threading.Lock():
+            self.manage_mux("write bytes", disable_mux)
+            self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
+            self.io.write(self.address, bytes_)
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def read(
         self, num_bytes: int, retry: bool = False, disable_mux: bool = False
     ) -> bytes:
         """Reads num bytes from device. Returns byte array."""
-        self.manage_mux("read bytes", disable_mux)
-        self.logger.debug("Reading {} bytes".format(num_bytes))
-        bytes_ = bytes(self.io.read(self.address, num_bytes))
-        self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
-        return bytes_
+        with threading.Lock():
+            self.manage_mux("read bytes", disable_mux)
+            self.logger.debug("Reading {} bytes".format(num_bytes))
+            bytes_ = bytes(self.io.read(self.address, num_bytes))
+            self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
+            return bytes_
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def read_register(
         self, register: int, retry: bool = False, disable_mux: bool = False
     ) -> int:
-        """ Reads byte stored in register at address. """
-        self.manage_mux("read register", disable_mux)
-        self.logger.debug("Reading register: 0x{:02X}".format(register))
-        return int(self.io.read_register(self.address, register))
+        """Reads byte stored in register at address."""
+        with threading.Lock():
+            self.manage_mux("read register", disable_mux)
+            self.logger.debug("Reading register: 0x{:02X}".format(register))
+            return int(self.io.read_register(self.address, register))
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3, lock=True)
     def write_register(
         self, register: int, value: int, retry: bool = False, disable_mux: bool = False
     ) -> None:
-        self.manage_mux("write register", disable_mux)
-        message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(register, value)
-        self.logger.debug(message)
-        self.io.write_register(self.address, register, value)
+        with threading.Lock():
+            self.manage_mux("write register", disable_mux)
+            message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(
+                register, value
+            )
+            self.logger.debug(message)
+            self.io.write_register(self.address, register, value)
 
     @retry(MuxError, tries=5, delay=0.2, backoff=3, lock=True)
     def set_mux(self, mux: int, channel: int, retry: bool = False) -> None:

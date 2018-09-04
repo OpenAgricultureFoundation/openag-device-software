@@ -1,5 +1,5 @@
 # Import standard python modules
-import time
+import time, threading
 
 # Import python types
 from typing import NamedTuple, Optional, Tuple, Dict, Any, List
@@ -260,7 +260,7 @@ class LEDDAC5578Driver:
 
             # Set output on panel
             try:
-                panel.driver.set_output(channel_number, percent)  # type: ignore
+                panel.driver.write_output(channel_number, percent)  # type: ignore
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True

@@ -1,5 +1,5 @@
 # Import standard python modules
-import threading
+import threading, time
 
 # Import python types
 from typing import Optional, Tuple, Dict, Any
@@ -25,6 +25,8 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
     prev_desired_ppfd: Optional[float] = None
     prev_desired_spectrum: Optional[Dict[str, float]] = None
     prev_desired_distance: Optional[float] = None
+    prev_pulse_time: float = 0
+    pulse_interval: float = 30  # seconds -> every 10 minutes
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize light driver."""
@@ -217,14 +219,14 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         """Updates led driver if desired spectrum, ppfd, or distance value changes."""
 
         # Initialize update flag
-        update = False
+        update_required = False
 
         # Check for new desired ppfd
         if self.desired_ppfd != None and self.desired_ppfd != self.prev_desired_ppfd:
             self.logger.info("Received new desired ppfd")
             self.logger.debug("desired_ppfd = {} Watts".format(self.desired_ppfd))
             self.distance = self.desired_distance
-            update = True
+            update_required = True
 
         # Check for new desired spectrum
         if (
@@ -233,7 +235,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         ):
             self.logger.info("Received new desired spectrum")
             self.logger.debug("desired_spectrum = {}".format(self.desired_spectrum))
-            update = True
+            update_required = True
 
         # Check for new illumination distance
         if (
@@ -242,19 +244,30 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         ):
             self.logger.info("Received new desired illumination distance")
             self.logger.debug("desired_distance = {} cm".format(self.desired_distance))
-            update = True
+            update_required = True
 
-        # Check if update is required
-        if not update:
-            return
-
-        # Verify all desired values exist:
+        # Check if all desired values exist:
+        all_desired_values_exist = True
         if (
             self.desired_ppfd == None
             or self.desired_spectrum == None
             or self.desired_distance == None
         ):
-            self.logger.warning("Unable to update, not all desired values are set")
+            all_desired_values_exist = False
+
+        # Check for pulse timeout - must send update to device every pulse interval
+        pulse_required = False
+        if self.pulse_interval != None:
+            pulse_delta = time.time() - self.prev_pulse_time
+            if pulse_delta > self.pulse_interval:
+                pulse_required = True
+
+        # Only require update on pulse timeout if all desired values exist
+        if pulse_required and all_desired_values_exist:
+            update_required = True
+
+        # Check if update is required
+        if not update_required:
             return
 
         # Set spectral power distribution from desired values
@@ -266,7 +279,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
             )
             self.health = 100.0
         except DriverError as e:
-            self.logger.error("Unable to set spd")
+            self.logger.exception("Unable to set spd")
             self.mode = Modes.ERROR
             self.health = 0
             return
@@ -280,6 +293,9 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         self.prev_desired_ppfd = self.desired_ppfd
         self.prev_desired_spectrum = self.desired_spectrum
         self.prev_desired_distance = self.desired_distance
+
+        # Update latest pulse time
+        self.prev_pulse_time = time.time()
 
     def reset(self) -> None:
         """Resets manager."""
