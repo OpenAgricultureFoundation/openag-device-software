@@ -38,7 +38,7 @@
 		"blue_day": {
 			"name": "Blue Day",
 			"light_spectrum_nm_percent": {"400-449": 50, "450-499": 50, "500-549": 0, "550-559": 0, "600-649": 0, "650-699": 0},
-			"light_ppfd_umol_m2_s": 100,
+			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10
 		}
 	},
