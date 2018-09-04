@@ -1,24 +1,30 @@
-# Import standard python libraries
+# Import standard python modules
 import os, sys
+
+# Import python types
+from typing import Any
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
-
-# Import device utilities
-from device.utilities.accessors import get_peripheral_config
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import driver
 from device.peripherals.modules.ccs811.driver import CCS811Driver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    # Initialize defaults
+    default_device = "edu-v0.2.0"
+    default_name = "CCS811-Top"
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
+
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize parser
@@ -38,71 +44,58 @@ class DriverRunner(PeripheralRunner):
         )
         self.parser.add_argument("--start-app", action="store_true", help="starts app")
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
-        super().run(*args, **kwargs)
 
-        # Initialize driver optional parameters
-        mux = self.communication.get("mux", None)
-        if mux != None:
-            mux = int(mux, 16)
+        # Run parent class
+        super().run(*args, **kwargs)
 
         # Initialize driver
         self.driver = CCS811Driver(
             name=self.args.name,
-            bus=self.communication["bus"],
-            address=int(self.communication["address"], 16),
-            mux=mux,
-            channel=self.communication.get("channel", None),
+            bus=self.bus,
+            address=self.address,
+            mux=self.mux,
+            channel=self.channel,
         )
 
         # Check if setting up sensor
         if self.args.setup:
-            print("Setting up sensor")
-            self.driver.setup(retry=True)
+            self.driver.setup()
 
         # Check if reading co2/tvoc
         elif self.args.co2 or self.args.tvoc:
-            print("Reading co2/tvoc")
-            co2, tvoc = self.driver.read_algorithm_data(retry=True)
+            co2, tvoc = self.driver.read_algorithm_data()
             print("CO2: {} ppm".format(co2))
             print("TVOC: {} ppm".format(tvoc))
 
         # Check if setting measurement mode
         elif self.args.mode != None:
-            print("Setting measurement mode")
-            self.driver.write_measurement_mode(self.args.mode, False, False, retry=True)
+            self.driver.write_measurement_mode(self.args.mode, False, False)
 
         # Check if reading status register
         elif self.args.status:
-            print("Reading status register")
-            status_register = self.driver.read_status_register(retry=True)
-            print(status_register)
+            print(self.driver.read_status_register())
 
         # Check if reading error register
         elif self.args.error:
-            print("Reading error register")
-            error_register = self.driver.read_error_register(retry=True)
-            print(error_register)
+            print(self.driver.read_error_register())
 
         # Check if resetting
         elif self.args.reset:
-            print("Resetting")
-            self.driver.reset(retry=True)
+            self.driver.reset()
 
         # Check if checking hardware id
         elif self.args.check_hardware_id:
-            print("Checking hardware ID")
-            self.driver.check_hardware_id(retry=True)
+            self.driver.check_hardware_id()
             print("Hardware ID is Valid")
 
         # Check if starting app
         elif self.args.start_app:
-            print("Starting app")
-            self.driver.start_app(retry=True)
+            self.driver.start_app()
 
 
 # Run main
 if __name__ == "__main__":
-    dr = DriverRunner()
-    dr.run()
+    runner = DriverRunner()
+    runner.run()

@@ -23,6 +23,8 @@ class DriverRunner(RunnerBase):  # type: ignore
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
+
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize parser

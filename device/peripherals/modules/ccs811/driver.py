@@ -13,7 +13,24 @@ from device.utilities import bitwise
 
 # Import driver elements
 from device.peripherals.modules.ccs811.simulator import CCS811Simulator
-from device.peripherals.modules.ccs811.exceptions import *
+from device.peripherals.classes.peripheral.exceptions import (
+    DriverError,
+    InitError,
+    SetupError,
+)
+from device.peripherals.modules.ccs811.exceptions import (
+    StartAppError,
+    ReadAlgorithmDataError,
+    HardwareIDError,
+    StatusError,
+    ReadRegisterError,
+    WriteRegisterError,
+    WriteMeasurementModeError,
+    ResetError,
+    WriteEnvironmentDataError,
+)
+
+# TODO: Verify sensor w/run_driver script, add bytes to simulator, finish writing tests
 
 
 class StatusRegister(NamedTuple):
@@ -36,10 +53,10 @@ class CCS811Driver:
     """Driver for atlas ccs811 carbon dioxide and total volatile organic compounds sensor."""
 
     # Initialize variable properties
-    _min_co2 = 400.0  # ppm
-    _max_co2 = 8192.0  # ppm
-    _min_tvoc = 0.0  # ppb
-    _max_tvoc = 1187.0  # ppb
+    min_co2 = 400.0  # ppm
+    max_co2 = 8192.0  # ppm
+    min_tvoc = 0.0  # ppb
+    max_tvoc = 1187.0  # ppb
 
     def __init__(
         self,
@@ -78,10 +95,9 @@ class CCS811Driver:
                 PeripheralSimulator=Simulator,
             )
         except I2CError as e:
-            message = "Driver unable to initialize"
-            raise InitError(message, logger=self.logger) from e
+            raise InitError(logger=self.logger) from e
 
-    def setup(self, retry: bool = False):
+    def setup(self, retry: bool = True) -> None:
         """Setups sensor."""
         try:
             self.reset(retry=retry)
@@ -105,46 +121,38 @@ class CCS811Driver:
                     break
 
         except DriverError as e:
-            raise SetupError("Unable to setup", logger=self.logger) from e
+            raise SetupError(logger=self.logger) from e
 
-    def start_app(self, retry: bool = False):
+    def start_app(self, retry: bool = True) -> None:
         """Starts app by writing a byte to the app start register."""
         self.logger.info("Starting app")
-
-        # Write a byte to app start register
         try:
             self.i2c.write(bytes([0xF4]), retry=retry)
         except I2CError as e:
-            raise StartAppError("Unable to start app", logger=self.logger) from e
+            raise StartAppError(logger=self.logger) from e
 
-    def read_hardware_id(self, retry: bool = False) -> int:
+    def read_hardware_id(self, retry: bool = True) -> int:
         """Reads hardware ID from sensor."""
         self.logger.info("Reading hardware ID")
-
-        # Read register
         try:
-            return self.i2c.read_register(0x20, retry=retry)
+            return int(self.i2c.read_register(0x20, retry=retry))
         except I2CError as e:
-            message = "Driver unable to read harware id register"
-            raise ReadRegisterError(message, logger=self.logger) from e
+            raise ReadRegisterError(message="hw id reg", logger=self.logger) from e
 
-    def check_hardware_id(self, retry: bool = False) -> None:
+    def check_hardware_id(self, retry: bool = True) -> None:
         """Checks for valid id in hardware id register."""
         self.logger.info("Checking hardware ID")
         hardware_id = self.read_hardware_id(retry=retry)
         if hardware_id != 0x81:
-            raise HardwareIDError("Invalid hardware ID", logger=self.logger)
+            raise HardwareIDError(logger=self.logger)
 
-    def read_status_register(self, retry: bool = False) -> StatusRegister:
+    def read_status_register(self, retry: bool = True) -> StatusRegister:
         """Reads status of sensor."""
         self.logger.info("Reading status register")
-
-        # Read register
         try:
             byte = self.i2c.read_register(0x00, retry=retry)
         except I2CError as e:
-            message = "Driver unable to read status register"
-            raise ReadRegisterError(message, logger=self.logger) from e
+            raise ReadRegisterError(message="status reg", logger=self.logger) from e
 
         # Parse status register byte
         status_register = StatusRegister(
@@ -156,24 +164,20 @@ class CCS811Driver:
         self.logger.debug(status_register)
         return status_register
 
-    def check_for_errors(self, retry: bool = False) -> None:
+    def check_for_errors(self, retry: bool = True) -> None:
         """Checks for errors in status register."""
         self.logger.info("Checking for errors")
         status_register = self.read_status_register(retry=retry)
         if status_register.error:
-            message = "Error in status register"
-            raise StatusError(message, status_register, logger=self.logger)
+            raise StatusError(message=status_register, logger=self.logger)
 
-    def read_error_register(self, retry: bool = False) -> ErrorRegister:
+    def read_error_register(self, retry: bool = True) -> ErrorRegister:
         """Reads error register."""
         self.logger.info("Reading error register")
-
-        # Read register
         try:
             byte = self.i2c.read_register(0x0E, retry=retry)
         except I2CError as e:
-            message = "Driver unable to read error register"
-            raise ReadRegisterError(message, logger=self.logger) from e
+            raise ReadRegisterError(message="error reg", logger=self.logger) from e
 
         # Parse error register byte
         return ErrorRegister(
@@ -190,7 +194,7 @@ class CCS811Driver:
         drive_mode: int,
         enable_data_ready_interrupt: bool,
         enable_threshold_interrupt: bool,
-        retry: bool = False,
+        retry: bool = True,
     ) -> None:
         """Writes measurement mode to the sensor."""
         self.logger.debug("Writing measurement mode")
@@ -230,12 +234,14 @@ class CCS811Driver:
         try:
             self.i2c.write(bytes([0x01, write_byte]), retry=retry)
         except I2CError as e:
-            message = "Unable to write measurement mode"
-            raise WriteMeasurementModeError(message, logger=self.logger) from e
+            raise WriteMeasurementModeError(logger=self.logger) from e
 
     def write_environment_data(
-        self, temperature=None, humidity=None, retry: bool = False
-    ):
+        self,
+        temperature: Optional[float] = None,
+        humidity: Optional[float] = None,
+        retry: bool = True,
+    ) -> None:
         """Writes compensation temperature and / or humidity to sensor."""
         self.logger.debug("Writing environment data")
 
@@ -245,7 +251,8 @@ class CCS811Driver:
 
         # Calculate temperature bytes
         if temperature != None:
-            temp_msb, temp_lsb = bitwise.convert_base_1_512(temperature + 25)
+            t = temperature
+            temp_msb, temp_lsb = bitwise.convert_base_1_512(t + 25)  # type: ignore
         else:
             temp_msb = 0x64
             temp_lsb = 0x00
@@ -262,11 +269,10 @@ class CCS811Driver:
         try:
             self.i2c.write(bytes(bytes_), retry=retry)
         except I2CError as e:
-            message = "Unable to write measurement mode"
-            raise WriteEnvironmentDataError(messsage, logger=self.logger) from e
+            raise WriteEnvironmentDataError(logger=self.logger) from e
 
     def read_algorithm_data(
-        self, retry: bool = False, reread: int = 5
+        self, retry: bool = True, reread: int = 5
     ) -> Tuple[float, float]:
         """Reads algorighm data from sensor hardware."""
         self.logger.debug("Reading co2/tvoc algorithm data")
@@ -275,8 +281,7 @@ class CCS811Driver:
         try:
             status = self.read_status_register()
         except ReadRegisterError as e:
-            message = "Unable to read status register"
-            raise ReadAlgorithmDataError(message) from e
+            raise ReadAlgorithmDataError(logger=self.logger) from e
 
         # Check if data is ready
         if not status.data_ready:
@@ -285,30 +290,33 @@ class CCS811Driver:
                 time.sleep(1)
                 self.read_algorithm_data(retry=retry, reread=reread - 1)
             else:
-                raise ReadAlgorithmDataError("Algorithm data not ready")
+                message = "data not ready"
+                raise ReadAlgorithmDataError(message=message, logger=self.logger)
 
         # Get algorithm data
         try:
             self.i2c.write(bytes([0x02]), retry=retry)
             bytes_ = self.i2c.read(4)
-        except (WriteError, ReadError):
-            raise ReadAlgorithmDataError("Unable to get algorithm data") from e
+        except I2CError:
+            raise ReadAlgorithmDataError(logger=self.logger) from e
 
         # Parse data bytes
         co2 = float(bytes_[0] * 255 + bytes_[1])
         tvoc = float(bytes_[2] * 255 + bytes_[3])
 
         # Verify co2 value within valid range
-        if co2 > self._min_co2 and co2 < self._min_co2:
-            raise ReadAlgorithmDataError("CO2 reading outside of valid range")
+        if co2 > self.min_co2 and co2 < self.min_co2:
+            message = "CO2 reading outside of valid range"
+            raise ReadAlgorithmDataError(message=message, logger=self.logger)
 
         # Verify tvos within valid range
-        if tvoc > self._min_tvoc and tvoc < self._min_tvoc:
-            raise ReadAlgorithmDataError("TVOC reading outside of valid range")
+        if tvoc > self.min_tvoc and tvoc < self.min_tvoc:
+            message = "TVOC reading outside of valid range"
+            raise ReadAlgorithmDataError(message=message, logger=self.logger)
 
         # Successfully read sensor data!
-        self.logger.debug("Carbon Dioxide: {} ppm".format(co2))
-        self.logger.debug("Total Volatile Organic Compounds: {} ppb".format(tvoc))
+        self.logger.debug("CO2: {} ppm".format(co2))
+        self.logger.debug("TVOC: {} ppb".format(tvoc))
         return co2, tvoc
 
     def read_raw_data(self) -> None:
@@ -319,7 +327,7 @@ class CCS811Driver:
         """ Read value of NTC. Can be used to calculate temperature. """
         ...
 
-    def reset(self, retry: bool = False) -> None:
+    def reset(self, retry: bool = True) -> None:
         """Resets sensor and places into boot mode."""
         self.logger.debug("Resetting sensor")
 
@@ -328,5 +336,4 @@ class CCS811Driver:
         try:
             self.i2c.write(bytes(bytes_), retry=retry)
         except I2CError as e:
-            message = "Unable to reset sensor"
-            raise ResetError(message, logger=self.logger) from e
+            raise ResetError(logger=self.logger) from e

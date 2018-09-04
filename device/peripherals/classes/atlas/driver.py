@@ -82,7 +82,7 @@ class AtlasDriver:
         except I2CError as e:
             raise InitError(logger=self.logger)
 
-    def setup(self, retry: bool = True):
+    def setup(self, retry: bool = True) -> None:
         """Setsup sensor."""
         self.logger.debug("Setting up sensor")
         try:

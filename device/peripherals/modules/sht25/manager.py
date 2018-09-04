@@ -7,7 +7,7 @@ from device.utilities.modes import Modes
 # Import peripheral parent class
 from device.peripherals.classes.peripheral.manager import PeripheralManager
 
-# Import sht25 elements
+# Import driver elements
 from device.peripherals.modules.sht25.events import SHT25Events
 from device.peripherals.modules.sht25.driver import SHT25Driver
 from device.peripherals.modules.sht25.exceptions import DriverError
@@ -84,10 +84,10 @@ class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
         try:
             self.driver = SHT25Driver(
                 name=self.name,
-                bus=self.parameters["communication"]["bus"],
-                mux=int(self.parameters["communication"]["mux"], 16),
-                channel=self.parameters["communication"]["channel"],
-                address=int(self.parameters["communication"]["address"], 16),
+                bus=self.bus,
+                mux=self.mux,
+                channel=self.channel,
+                address=self.address,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
@@ -95,10 +95,9 @@ class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
             self.logger.exception("Manager unable to initialize")
             self.health = 0.0
             self.mode = Modes.ERROR
-            return
 
     def setup(self) -> None:
-        """Sets up sensor."""
+        """Sets up manager."""
         self.logger.info("No setup required")
 
     def update(self) -> None:
