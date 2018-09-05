@@ -4,4 +4,4 @@ TOPDIR=/opt/openagbrain
 chdir $TOPDIR
 $TOPDIR/run.sh &
 sleep 15
-python $TOPDIR/scripts/forward_ports.py &
+$TOPDIR/scripts/persist_ports.sh &
