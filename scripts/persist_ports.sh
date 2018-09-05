@@ -21,7 +21,7 @@ while true; do
 		# TODO: Check if brain is running, else...send an error somewhere
 
 		sudo killall -s 9 autossh > /dev/null 2>&1
-		autossh -M 0 -R $url:80:localhost:80 serveo.net -R $url:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
+		autossh -M 0 -R $url:80:localhost:80 serveo.net -R $serial:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
 	fi
 
 	# Update every 5 minutes
