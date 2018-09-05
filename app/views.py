@@ -437,7 +437,7 @@ class DeviceConfigList(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        device_config_objects = DeviceConfignModel.objects.all()
+        device_config_objects = DeviceConfigModel.objects.all()
         device_config_viewers = []
         for device_config_object in device_config_objects:
             device_config_viewers.append(DeviceConfigViewer(device_config_object))
