@@ -20,6 +20,24 @@ The entire install process includes:
 
 Proceed to [Installation Part 1: Purchase BBB + SD Card](docs/purchase_bbb.md)
 
+## Contributing
+This repo is distrubuted on production devices via debian packaging. For local development,
+either start with one of the developer images and follow the standard install process. If 
+starting fresh:
+ 1. Clone this repo:
+ ```
+ cd ~
+ git clone https://github.com/OpenAgInitiative/openag-device-software.git
+ ```
+ 2. Enable `developer mode`
+ ```
+ touch ~/openag-device-software/config/develop
+ ```
+ 3. Run upgrade script
+ ```
+ cd ~/openag-device-software/
+ ./scripts/upgrade.sh
+ ```
 
 ## Contents
  - [Install Instructions](docs/install.md)

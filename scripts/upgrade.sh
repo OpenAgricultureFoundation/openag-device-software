@@ -51,9 +51,17 @@ if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
   echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
 fi
 
-# Remove rc.local and sym link to config/rc.local
+# Remove rc.local
 sudo rm -f /etc/rc.local
-sudo ln -s $TOPDIR/config/rc.local /etc/rc.local
+
+# Sym link to config/rc.local.<run_context>
+if [ ! -f 'config/develop' ]; then
+  sudo ln -s $TOPDIR/config/rc.local.production /etc/rc.local
+else
+  sudo ln -s $TOPDIR/config/rc.local.development /etc/rc.local
+fi
+
+# Reload rc.local daemon
 sudo systemctl daemon-reload
 
 # Start the OpenAg Brain as a service running as rc.local
