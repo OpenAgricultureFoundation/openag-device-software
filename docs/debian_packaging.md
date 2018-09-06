@@ -46,9 +46,17 @@ gpg --armor --export rbaynes@mit.edu > rbaynes@mit.edu.gpg.key
 ### Step 3 
 #### Create the debian package 
 - You have tested this release and run it, right?!?
+- Create a directory and pull the code (MUST use this dir, and DON'T forget the period at the end of the git command!):
+```
+cd /opt
+sudo mkdir openagbrain
+sudo chown debian:debian openagbrain
+cd openagbrain
+git clone https://github.com/OpenAgInitiative/openag-device-software .
+```
 - Check the last version you released:
 ```
-cd ~/openag-device-software
+cd /opt/openagbrain
 ./scripts/show_last_deb_pg_ver.sh
 ```
 - Script parameters are: MAJOR.MINOR PATCH
@@ -57,7 +65,7 @@ cd ~/openag-device-software
 - If you create the same version, just make sure the changelog file (the one the editor opens on) has UNIQUE versions and is sane.
 - Make sure our version.txt matches the package version!!!
 ```
-cd ~/openag-device-software
+cd /opt/openagbrain
 vi config/version.txt
 ./scripts/download_pip_packages.sh
 ./scripts/create_deb_pkg.sh 1.0 1
@@ -102,7 +110,7 @@ vi conf/distributions
   SignWith: yes
   Pull: stretch
 
-reprepro -Vb . includedeb stretch /home/debian/openag-device-software/build-deb-pkg-tmp/openagbrain_1.0-1_armhf.deb
+reprepro -Vb . includedeb stretch /opt/openagbrain/build-deb-pkg-tmp/openagbrain_1.0-1_armhf.deb
 
 tar czvf pkg.tgz conf/ db/ dists/ pool/ rbaynes@mit.edu.gpg.key
 ```
