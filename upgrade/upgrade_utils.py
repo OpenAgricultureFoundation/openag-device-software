@@ -20,8 +20,8 @@ class UpgradeUtils:
     def get_status():
         status = {}
         try:
-            cv = UpgradeViewer()  # data from the state.upgrade dict and DB
-            status = cv.upgrade_dict
+            uv = UpgradeViewer()  # data from the state.upgrade dict and DB
+            status = uv.upgrade_dict
         except:
             pass
         return status
@@ -40,15 +40,12 @@ class UpgradeUtils:
           Candidate: 0.1-2
         """
         try:
-            state.upgrade["status"] = "Checking for updates..."
+            state.upgrade['status'] = 'Checking for upgrades...'
 
-            print('debugrob, apt-get update start')
             # update this machines list of available packages
             cmd = ['sudo', 'apt-get', 'update']
             subprocess.run(cmd)
-            print('debugrob, apt-get update end')
 
-            print('debugrob, apt-cache start')
             # command and list of args as list of strings
             cmd = ['apt-cache', 'policy', 'openagbrain']
             with subprocess.Popen(cmd, stdout=subprocess.PIPE,
@@ -68,27 +65,44 @@ class UpgradeUtils:
                             candidate = tokens[1]
                             break
 
-                state.upgrade["current_version"] = installed
-                state.upgrade["upgrade_version"] = candidate
-                state.upgrade["show_upgrade"] = True
-                print('debugrob, current_version={}'.format(installed))
-                print('debugrob, upgrade_version={}'.format(candidate))
-#debugrob: update status with directions for user.
-            print('debugrob, apt-cache end')
+                state.upgrade['current_version'] = installed
+                state.upgrade['upgrade_version'] = candidate
+                # very simple upgrade logic, trust debian package logic
+                if '(none)' == installed or \
+                        installed != candidate:
+                    state.upgrade['show_upgrade'] = True
+
+            state.upgrade['status'] = 'Up to date.'
+            if state.upgrade.get('show_upgrade', False):
+                state.upgrade['status'] = 'Software upgrade is available.'
+
         except:
-            pass
-        return False
+            return False
+        return True
 
 
     # ------------------------------------------------------------------------
     # Update our debian package with the latest version available.
     @staticmethod
-    def update_software(state):
+    def update_software():
         """
         sudo apt-get install -y openagbrain
         """
-        state.upgrade["status"] = "Upgrading to latest version..."
-#debugrob: do this
-        state.upgrade["status"] = "Up to date."
+        try:
+#debugrob, does this dict > StateModel allow writing?
+            uv = UpgradeViewer()  # data from the state.upgrade dict and DB
+            upgrade = uv.upgrade_dict
+            upgrade["status"] = "Upgrading to latest version..."
+
+            # update our debian package
+            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
+            subprocess.run(cmd)
+
+            upgrade['status'] = 'Up to date.'
+            upgrade['show_upgrade'] = False
+
+        except:
+            return False
+        return True
 
 

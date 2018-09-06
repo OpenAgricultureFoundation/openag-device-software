@@ -123,7 +123,6 @@ urlpatterns = [
     url(r"^iot/$", views.IoT.as_view(), name="iot"),
     url(r"^resource/$", views.Resource.as_view(), name="resource"),
     url(r"^connect/$", views.Connect.as_view(), name="connect"),
-    url(r"^upgrade/$", views.Upgrade.as_view(), name="upgrade"),
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),

@@ -1,22 +1,74 @@
 {% extends 'base.html' %}
+
+{% block javascript %}
+<script>
+  //--------------------------------------------------------------------------
+  window.onload = function() {
+
+    document.getElementById("status").innerHTML = "{{status}}";
+    document.getElementById("current_version").innerHTML = "{{current_version}}";
+    document.getElementById("upgrade_version").innerHTML = "{{upgrade_version}}";
+
+    {% if show_upgrade %}
+      $('#show_upgrade_but').collapse('show');
+    {% endif %}
+  }
+
+  //--------------------------------------------------------------------------
+  function upgrade() {
+    document.getElementById("status").innerHTML = 'Upgrading, this will take a few minutes...';
+    upgradePromise()
+      .then(function(upgradeSuccess) {
+        document.getElementById("status").innerHTML = 'Up to date.';
+      })
+      .catch(function(error) {
+        document.getElementById("status").innerHTML = 'Failed.';
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function upgradePromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/upgrade/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var upgradeSuccess = data;
+          resolve(upgradeSuccess)
+        },
+        error: function(data) {
+          console.log("upgrade failed")
+          reject(data)
+        }
+      });
+    })
+  }
+
+</script>
+{% endblock %}
+
 {% block content %}
+
 <html>
    <body>
       <div class="upgrade">
         <h2>Software Upgrade</h2>
          <div class="card">
             <ul>
-              <li><b>Status:</b> {{ status }}
-              <li><b>Current Software Version:</b> {{ current_version }}
-              <li><b>Available Software Upgrade to Version:</b> {{ upgrade_version }}
-              {% if show_upgrade %}
-              <li><b>debugrob put Upgrade button here</b> 
-              {% endif %}
-                  
+              <li><b>Status:</b> <span id="status"></span>
+              <li><b>Current Software Version:</b> <span id="current_version"></span>
+              <li><b>Available Software Upgrade to Version:</b> <span id="upgrade_version"></span>
               {% if error != None %}
               <li><b>Error:</b> {{ error }}
               {% endif %}
             </ul>
+            <div class="collapse" id="show_upgrade_but">
+              <a class="badge badge-secondary" data-toggle="collapse"
+                 style="width:200px" href="" role="button" 
+                 onclick="upgrade();">Upgrade the software</a> 
+            </div>
          </div>
       </div>
    </body>

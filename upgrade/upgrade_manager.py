@@ -24,7 +24,6 @@ class UpgradeManager:
         self.state = state
         self.error = None
         self.status = 'Initializing...'
-        self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
 
     # ------------------------------------------------------------------------
