@@ -9,7 +9,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Have we setup the local python environment we need?
-if [[ "$DIR" != "/opt/openagbrain" ]]; then
+if [[ "$DIR" != "/opt/openagbrain/scripts" ]]; then
     echo 'Error: Go pull the source and build packages in /opt/openagbrain
 Exiting.'
     exit 1
