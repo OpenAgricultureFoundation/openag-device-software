@@ -80,6 +80,10 @@ def bnnls(A, b, bound=1, index_map=None):
     x = nnls(A, b)
     rows, cols = A.shape
 
+    # Check if x is empty
+    if len(x) < 1:
+        return x
+
     # Build initial index map
     if index_map == None:
         index_map = list(range(cols))

@@ -1,5 +1,0 @@
-#!/bin/sh
-chdir /opt/openagbrain
-/opt/openagbrain/run.sh &
-sleep 15
-python /opt/openagbrain/scripts/forward_ports.py &

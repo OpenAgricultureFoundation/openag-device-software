@@ -1,73 +1,101 @@
 # Import standard python libraries
-import sys, os, json
+import os, sys, json, threading
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
-
-# Set correct import path
-if cwd.endswith("t6713"):
-    print("Running locally")
-    sys.path.append("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
-
-# Import manager
-from device.peripherals.modules.t6713.manager import T6713Manager
+# Set system path and directory
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
 # Import device utilities
-from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
+from device.utilities.modes import Modes
 
-# Import shared memory
+# Import device state
 from device.state import State
 
-# Set directory for loading files
-if cwd.endswith("t6713"):
-    os.chdir("../../../../")
+# Import simulators
+from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.peripherals.modules.t6713.simulator import T6713Simulator
 
-# Import test config
-device_config = json.load(open("device/peripherals/modules/t6713/tests/config.json"))
+# Import peripheral manager
+from device.peripherals.modules.t6713.manager import T6713Manager
+
+# Load test config
+path = root_dir + "/device/peripherals/modules/t6713/tests/config.json"
+device_config = json.load(open(path))
 peripheral_config = get_peripheral_config(device_config["peripherals"], "T6713-Top")
 
-# Initialize state
-state = State()
 
-
-def test_init():
+def test_init() -> None:
     manager = T6713Manager(
-        name="Test", state=state, config=peripheral_config, simulate=True
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
     )
 
 
-def test_initialize():
-    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
+def test_initialize() -> None:
+    manager = T6713Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
     manager.initialize()
-    assert True
 
 
-def test_setup():
-    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
+def test_setup() -> None:
+    manager = T6713Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.setup()
-    assert True
 
 
-def test_update():
-    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
+def test_update() -> None:
+    manager = T6713Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.update()
-    assert True
 
 
-def test_reset():
-    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
+def test_reset() -> None:
+    manager = T6713Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.reset()
-    assert True
 
 
-def test_shutdown():
-    manager = T6713Manager("Test", state, peripheral_config, simulate=True)
+def test_shutdown() -> None:
+    manager = T6713Manager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
+    manager.initialize()
     manager.shutdown()
-    assert True

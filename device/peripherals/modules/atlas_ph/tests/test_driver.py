@@ -1,60 +1,35 @@
 # Import standard python libraries
-import sys, os
+import os, sys, pytest, threading
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running test from: {}".format(cwd))
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Set correct import path
-if cwd.endswith("atlas_ph"):
-    print("Running test locally")
-    os.chdir("../../../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running test globally")
-else:
-    print("Running tests from invalid location")
-    sys.exit(0)
+# Import mux simulator
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Import driver
+# Import peripheral driver
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 
-def test_init():
-    driver = AtlasPHDriver(name="Test", bus=2, address=0x77, simulate=True)
+def test_init() -> None:
+    driver = AtlasPHDriver(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x77,
+        simulate=True,
+        mux_simulator=True,
+    )
 
 
-def test_read_potential_hydroden():
-    driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)
-    potential_hydrogen, error = driver.read_potential_hydrogen()
-    assert error.exists() == True
-    assert potential_hydrogen == None
-
-
-def test_set_compensation_temperature():
-    driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)
-    error = driver.set_compensation_temperature(temperature=23.6)
-    assert error.exists() == True
-
-
-def test_take_low_point_calibration_reading():
-    driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)
-    error = driver.take_low_point_calibration_reading(4.0)
-    assert error.exists() == True
-
-
-def test_take_mid_point_calibration_reading():
-    driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)
-    error = driver.take_mid_point_calibration_reading(4.0)
-    assert error.exists() == True
-
-
-def test_take_high_point_calibration_reading():
-    driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)
-    error = driver.take_high_point_calibration_reading(10.0)
-    assert error.exists() == True
-
-
-def test_clear_calibration_readings():
-    driver = AtlasPHDriver("Test", 2, 0x77, simulate=True)
-    error = driver.clear_calibration_readings()
-    assert error.exists() == True
+def test_read_ph() -> None:
+    driver = AtlasPHDriver(
+        "Test",
+        i2c_lock=threading.RLock(),
+        bus=2,
+        address=0x77,
+        simulate=True,
+        mux_simulator=True,
+    )
+    ph = driver.read_ph()
+    assert ph == 4.001

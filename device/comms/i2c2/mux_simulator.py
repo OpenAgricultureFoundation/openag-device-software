@@ -9,7 +9,8 @@ from device.comms.i2c2.exceptions import MuxError
 
 
 class MuxSimulator(object):
-    """I2C mux simulator."""
+    """I2C mux simulator. Note connections is a dict because we could have multiple
+    muxes on a device."""
 
     def __init__(self) -> None:
         self.logger = Logger(name="Simulator(Mux)", dunder_name=__name__)
@@ -32,6 +33,8 @@ class MuxSimulator(object):
 
         # Set mux to channel
         self.connections[address] = channel_byte
+
+        self.logger.debug("self.connections = {}".format(self.connections))
 
     def verify(self, address: int, channel: int) -> None:
         """Verifies if mux at address is set to correct channel."""

@@ -17,4 +17,4 @@ htmlcov
 .coverage
 device.txt
 build-deb-pkg-tmp/
-.track
+config/develop

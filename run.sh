@@ -17,7 +17,6 @@ fi
 
 # Activate the python env for this bash process
 source $DIR/venv/bin/activate
-export PYTHONPATH=$DIR/venv/lib
 
 # Pass all these to django as env vars.
 export IOT_PRIVATE_KEY=$DIR/registration/data/rsa_private.pem
@@ -64,5 +63,5 @@ export NO_DEVICE
 export SIMULATE
 
 # Run app
-python3 manage.py runserver 0.0.0.0:80
+python3.6 manage.py runserver 0.0.0.0:80
 

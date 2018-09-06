@@ -1,221 +1,160 @@
 # Import standard python modules
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple, Dict, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.health import Health
-from device.utilities.error import Error
 
 # Import peripheral parent class
-from device.peripherals.classes.peripheral_manager import PeripheralManager
+from device.peripherals.classes.peripheral.manager import PeripheralManager
+from device.peripherals.classes.peripheral.exceptions import DriverError
 
-# Import led array and events
-from device.peripherals.modules.atlas_do.sensor import AtlasDOSensor
+# Import module elements
 from device.peripherals.modules.atlas_do.events import AtlasDOEvents
+from device.peripherals.modules.atlas_do.driver import AtlasDODriver
 
 
-class AtlasDO(PeripheralManager, AtlasDOEvents):
-    """ Manages an Atlas Scientific dissolved oxygen sensor. """
+class AtlasDOManager(PeripheralManager, AtlasDOEvents):  # type: ignore
+    """ Manages an Atlas Scientific dissolved oxygen driver. """
 
     # Initialize variable parameters
-    _temperature_threshold = 0.1  # celcius
-    _prev_temperature = 0
-    _pressure_threshold = 0.1  # kPa
-    _prev_pressure = 0
-    _electrical_conductivity_threshold = 0.1  # mS/cm
-    _prev_electrical_conductivity = 0
+    temperature_threshold = 0.1  # celcius
+    prev_temperature = 0
+    pressure_threshold = 0.1  # kPa
+    prev_pressure = 0
+    ec_threshold = 0.1  # mS/cm
+    prev_ec = 0
 
-    def __init__(self, *args, **kwargs):
-        """ Instantiates manager. Instantiates parent class, and initializes 
-            sensor variable name. """
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initializes manager."""
 
-        # Instantiate parent class
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.dissolved_oxygen_name = self.parameters["variables"]["sensor"][
-            "dissolved_oxygen_mg_l"
-        ]
-        self.temperature_name = self.parameters["variables"]["compensation"][
-            "temperature_celcius"
-        ]
-        self.pressure_name = self.parameters["variables"]["compensation"][
-            "pressure_kpa"
-        ]
-        self.electrical_conductivity_name = self.parameters["variables"][
-            "compensation"
-        ]["electrical_conductivity_ms_cm"]
-
-        # Initialize sensor
-        self.sensor = AtlasDOSensor(
-            name=self.name,
-            bus=self.parameters["communication"]["bus"],
-            mux=int(self.parameters["communication"]["mux"], 16),
-            channel=self.parameters["communication"]["channel"],
-            address=int(self.parameters["communication"]["address"], 16),
-            simulate=self.simulate,
-        )
+        self.do_name = self.variables["sensor"]["do_mg_l"]
+        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
+        self.pressure_name = self.variables["compensation"]["pressure_kpa"]
+        self.ec_name = self.variables["compensation"]["ec_ms_cm"]
 
     @property
-    def dissolved_oxygen(self) -> None:
-        """ Gets dissolved oxygen value. """
-        return self.state.get_peripheral_reported_sensor_value(
-            self.name, self.dissolved_oxygen_name
-        )
+    def do(self) -> Optional[float]:
+        """Gets dissolved oxygen value."""
+        value = self.state.get_peripheral_reported_sensor_value(self.name, self.do_name)
+        if value != None:
+            return float(value)
+        return None
 
-    @dissolved_oxygen.setter
-    def dissolved_oxygen(self, value: float) -> None:
-        """ Sets dissolved oxygen value in shared state. Does not update enironment from calibration mode. """
-        self.state.set_peripheral_reported_sensor_value(
-            self.name, self.dissolved_oxygen_name, value
-        )
+    @do.setter
+    def do(self, value: float) -> None:
+        """Sets dissolved oxygen value in shared state. Does not update enironment from
+        calibration mode."""
+        self.state.set_peripheral_reported_sensor_value(self.name, self.do_name, value)
         if self.mode != Modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
-                self.name, self.dissolved_oxygen_name, value
+                self.name, self.do_name, value
             )
 
     @property
-    def temperature(self) -> None:
-        """ Gets compensation temperature value from shared environment state. """
-        return self.state.get_environment_reported_sensor_value(self.temperature_name)
+    def temperature(self) -> Optional[float]:
+        """Gets compensation temperature value from shared environment state."""
+        value = self.state.get_environment_reported_sensor_value(self.temperature_name)
+        if value != None:
+            return float(value)
+        return None
 
     @property
-    def pressure(self) -> None:
-        """ Gets compensation pressure value from shared environment state. """
-        return self.state.get_environment_reported_sensor_value(self.pressure_name)
+    def pressure(self) -> Optional[float]:
+        """Gets compensation pressure value from shared environment state."""
+        value = self.state.get_environment_reported_sensor_value(self.pressure_name)
+        if value != None:
+            return float(value)
+        return None
 
     @property
-    def electrical_conductivity(self) -> None:
-        """ Gets compensation electrical conductivity value from shared environment state. """
-        return self.state.get_environment_reported_sensor_value(
-            self.electrical_conductivity_name
-        )
+    def ec(self) -> Optional[float]:
+        """Gets compensation EC value from shared environment state."""
+        value = self.state.get_environment_reported_sensor_value(self.ec_name)
+        if value != None:
+            return float(value)
+        return None
 
     def initialize(self) -> None:
-        """ Initializes manager."""
-        self.logger.debug("Initializing")
+        """Initializes manager."""
+        self.logger.info("Initializing")
 
         # Clear reported values
         self.clear_reported_values()
-
-        # Initialize sensor
-        error = self.sensor.probe()
 
         # Initialize health
-        self.health = self.sensor.health.percent
+        self.health = 100.0
 
-        # Check for errors
-        if error.exists():
-            error.report("Manager unable to initialize")
-            self.logger.error(error.summary())
+        # Initialize driver
+        try:
+            self.driver = AtlasDODriver(
+                name=self.name,
+                i2c_lock=self.i2c_lock,
+                bus=self.bus,
+                address=self.address,
+                mux=self.mux,
+                channel=self.channel,
+                simulate=self.simulate,
+                mux_simulator=self.mux_simulator,
+            )
+        except DriverError as e:
+            self.logger.exception("Unable to initialize")
+            self.health = 0.0
             self.mode = Modes.ERROR
-            return
-
-        # Successful initialization!
-        self.logger.debug("Initialized successfully")
 
     def setup(self) -> None:
-        """ Sets up manager. Programs device operation parameters into 
-            sensor driver circuit. """
-        self.logger.debug("Setting up sensor")
+        """Sets up driver."""
+        self.logger.info("Setting up")
 
-        # Setup sensor
-        error = self.sensor.setup()
-
-        # Check for errors:
-        if error.exists():
-            error.report("Manager setup failed")
-            self.logger.error(error.summary())
+        try:
+            self.driver.setup()
+        except DriverError as e:
+            self.logger.exception("Unable to setup")
             self.mode = Modes.ERROR
-            return
-
-        # Successfully setup!
-        self.logger.debug("Successfully setup!")
+            self.health = 0
 
     def update(self) -> None:
-        """ Updates sensor when in normal mode. """
+        """Updates driver."""
+        self.logger.info("Updating")
 
-        # Update compensation temperature if new value
-        if self.new_compensation_temperature():
+        try:
+            # Update compensation temperature if new value
+            if self.new_compensation_temperature():
+                self.driver.set_compensation_temperature(self.temperature)
 
-            # Set compensation temperature
-            error = self.sensor.set_compensation_temperature(self.temperature)
+            # Update compensation pressure if new value
+            if self.new_compensation_pressure():
+                self.driver.set_compensation_pressure(self.pressure)
 
-            # Check for errors
-            if error.exists():
-                error.report("Manager unable to update")
-                self.logger.error(error.summary())
-                self.mode = Modes.ERROR
-                self.health = self.sensor.health.percent
-                return
+            # Update compensation temperature if new value
+            if self.new_compenation_ec():
+                self.driver.set_compensation_ec(self.ec)
 
-        # Update compensation pressure if new value
-        if self.new_compensation_pressure():
+            # Read pH and update health
+            self.do = self.driver.read_do()
+            self.health = 100.0
 
-            # Set compensation temperature
-            error = self.sensor.set_compensation_pressure(self.pressure)
-
-            # Check for errors
-            if error.exists():
-                error.report("Manager unable to update")
-                self.logger.error(error.summary())
-                self.mode = Modes.ERROR
-                self.health = self.sensor.health.percent
-                return
-
-        # Update compensation electrical conductivity if new value
-        if self.new_compensation_electrical_conductivity():
-
-            # Set compensation temperature
-            error = self.sensor.set_compensation_electrical_conductivity(
-                self.electrical_conductivity
-            )
-
-            # Check for errors
-            if error.exists():
-                error.report("Manager unable to update")
-                self.logger.error(error.summary())
-                self.mode = Modes.ERROR
-                self.health = self.sensor.health.percent
-                return
-
-        # Read dissolved oxygen
-        do, error = self.sensor.read_dissolved_oxygen()
-
-        # Check for errors:
-        if error.exists():
-            error.report("Manager unable to update")
-            self.logger.error(error.summary())
+        except DriverError as e:
+            self.logger.error("Unable to update")
             self.mode = Modes.ERROR
-            self.health = self.sensor.health.percent
+            self.health = 0
             return
 
-        # Update ec and health
-        self.health = self.sensor.health.percent
-        self.dissolved_oxygen = do
-
     def reset(self) -> None:
-        """ Resets sensor. """
+        """Resets sensor."""
         self.logger.info("Resetting")
-
-        # Clear reported values
         self.clear_reported_values()
 
-        # Reset sensor
-        self.sensor.reset()
-
-        # Sucessfully reset!
-        self.logger.debug("Successfully reset!")
-
     def shutdown(self) -> None:
-        """ Shuts down sensor. """
-        self.logger.info("Shutting down sensor")
-
-        # Clear reported values
+        """Shutsdown sensor."""
+        self.logger.info("Shutting down")
         self.clear_reported_values()
 
     def new_compensation_temperature(self) -> bool:
-        """ Check if there is a new compensation temperature value. """
+        """Checks if there is a new compensation temperature value."""
 
         # Check if calibrating
         if self.mode == Modes.CALIBRATE:
@@ -225,52 +164,64 @@ class AtlasDO(PeripheralManager, AtlasDOEvents):
         if self.temperature == None:
             return False
 
+        # Check if prev temperature is not none
+        if self.prev_temperature == None:
+            return True
+
         # Check if temperature value sufficiently different
-        if abs(self.temperature - self._prev_temperature) < self._temperature_threshold:
+        delta_t = abs(self.temperature - self.prev_temperature)  # type: ignore
+        if delta_t < self.temperature_threshold:
             return False
 
-        # New compensation temperature exists!
+        # New compensation temperature exists
         return True
 
     def new_compensation_pressure(self) -> bool:
-        """ Check if there is a new compensation pressure value. """
+        """Checks if there is a new compensation pressure value."""
 
         # Check if calibrating
         if self.mode == Modes.CALIBRATE:
             return False
 
-        # Check if compensation temperature exists
+        # Check if compensation pressure exists
         if self.pressure == None:
             return False
 
+        # Check if prev pressure is not none
+        if self.prev_pressure == None:
+            return True
+
         # Check if pressure value sufficiently different
-        if abs(self.pressure - self._prev_pressure) < self._pressure_threshold:
+        delta_p = abs(self.pressure - self.prev_pressure)  # type: ignore
+        if delta_p < self.pressure_threshold:
             return False
 
-        # New compensation pressure exists!
+        # New compensation pressure exists
         return True
 
-    def new_compensation_electrical_conductivity(self) -> bool:
-        """ Check if there is a new compensation electrical conductivity value. """
+    def new_compensation_ec(self) -> bool:
+        """Checks if there is a new compensation electrical conductivity value."""
 
         # Check if calibrating
         if self.mode == Modes.CALIBRATE:
             return False
 
-        # Check if compensation temperature exists
-        if self.electrical_conductivity == None:
+        # Check if compensation ec exists
+        if self.ec == None:
             return False
+
+        # Check if prev ec is not none
+        if self.prev_ec == None:
+            return True
 
         # Check if electrical conductivity value sufficiently different
-        if (
-            abs(self.electrical_conductivity - self._prev_electrical_conductivity)
-            < self._electrical_conductivity_threshold
-        ):
+        delta_e = abs(self.ec - self.prev_ec)  # type: ignore
+        if delta_e < self.ec_threshold:
             return False
 
-        # New compensation electrical conductivity exists!
+        # New compensation electrical conductivity exists
         return True
 
     def clear_reported_values(self) -> None:
-        """ Clears reported values. """
-        self.dissolved_oxygen = None
+        """Clears reported values."""
+        self.do = None

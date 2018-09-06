@@ -61,7 +61,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "electrical_conductivity_ms_cm": "water_electrical_conductivity_ms_cm"
+                        "ec_ms_cm": "water_electrical_conductivity_ms_cm"
                     },
                     "actuator": null,
                     "compensation": {
@@ -87,7 +87,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "potential_hydrogen": "water_potential_hydrogen"
+                        "ph": "water_potential_hydrogen"
                     },
                     "actuator": null,
                     "compensation": {

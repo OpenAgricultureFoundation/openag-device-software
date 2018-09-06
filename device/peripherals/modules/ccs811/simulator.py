@@ -1,17 +1,30 @@
+# Import python types
+from typing import Any, Dict
+
+# Import device utilities
+from device.utilities.bitwise import byte_str
+
+# Import simulator elements
 from device.comms.i2c2.peripheral_simulator import PeripheralSimulator, verify_mux
 
 
-class CCS811Simulator(PeripheralSimulator):
+class CCS811Simulator(PeripheralSimulator):  # type: ignore
     """Simulates communication with sensor."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initializes simulator."""
 
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
-        # self.registers = {0xE7: 0x00}  # user register
+        # Initialize registers
+        self.registers: Dict = {}  # user register
+
+        # # Initialize write and response bytes
+        # EXAMPLE_WRITE_BYTES = bytes([0x00])
+        # EXAMPLE_RESPONSE_BYTES = bytes([0x00, 0x00])
 
         # self.writes = {
-        #     bytes([0xF3]): bytes([0x63, 0x48]),  # temperature
-        #     bytes([0xF5]): bytes([0x9A, 0x55]),  # humidity
-        #     bytes([0xFE]): bytes([]),  # reset
+        #     byte_str(EXAMPLE_WRITE_BYTES): EXAMPLE_RESPONSE_BYTES,
         # }
+        self.writes: Dict = {}

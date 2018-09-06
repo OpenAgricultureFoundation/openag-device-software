@@ -1,56 +1,38 @@
-# from device.peripherals.modules.ccs811.driver import StatusRegister
+# Import driver error base class
+from device.peripherals.classes.peripheral.exceptions import DriverError
 
 
-class DriverError(Exception):
-    """Base class for errors raised by driver."""
-
-    def __init__(self, message: str, logger=None) -> None:
-        self.message = message
-        if logger != None:
-            logger.error(message)
+class StartAppError(DriverError):  # type: ignore
+    message_base = "Unable to start app"
 
 
-class InitError(DriverError):
-    """Exception rasied for initialization errors."""
-    ...
+class HardwareIDError(DriverError):  # type: ignore
+    message_base = "Invalid hardware ID"
 
 
-class SetupError(DriverError):
-    """Exception raised for setup errors."""
-    ...
+class StatusError(DriverError):  # type: ignore
+    message_base = "Device status error"
 
 
-class StatusError(DriverError):
-    """Exception raised for write measurement mode errors."""
-
-    def __init__(self, message: str, status, logger=None) -> None:
-        self.message = message
-        self.status = status
-        if logger != None:
-            logger.error(message)
-            logger.debug(status)
+class ReadAlgorithmDataError(DriverError):  # type: ignore
+    message_base = "Unable to read algorith data"
 
 
-class ReadAlgorithmDataError(DriverError):
-    """Exception raised for read algorithm data errors."""
-    ...
+class ReadRegisterError(DriverError):  # type: ignore
+    message_base = "Unable to read register"
 
 
-class ReadRegisterError(DriverError):
-    """Exception raised for read register errors."""
-    ...
+class WriteRegisterError(DriverError):  # type: ignore
+    message_base = "Unable to write register"
 
 
-class WriteRegisterError(DriverError):
-    """Exception raised for write register errors."""
-    ...
+class WriteMeasurementModeError(DriverError):  # type: ignore
+    message_base = "Unable to write measurement mode"
 
 
-class WriteMeasurementModeError(DriverError):
-    """Exception raised for write measurement mode errors."""
-    ...
+class ResetError(DriverError):  # type: ignore
+    message_base = "Unable to reset"
 
 
-class ResetError(DriverError):
-    """Exception raised for reset errors."""
-    ...
+class WriteEnvironmentDataError(DriverError):  # type: ignore
+    message_base = "Unable to write environment data"

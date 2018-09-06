@@ -17,8 +17,7 @@ fi
 
 # Install any new python modules
 source venv/bin/activate
-export XDG_CACHE_HOME=venv/pip_cache
-pip install -f venv/pip_download -r requirements.txt 
+pip3 install -f venv/pip_download -r requirements.txt 
 
 # Remove all rows in the state table only.
 echo 'Updating database...'
@@ -37,11 +36,10 @@ fi
 
 # Load our models
 echo 'Migrating the django/postgres database...'
-export PYTHONPATH=$TOPDIR/venv/lib
-python3 manage.py migrate
+python3.6 manage.py migrate
 
 # Also need to make our user super again for the django admin
-echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python3.6 manage.py shell
 
 # How to test access to the backend, if you see weird IoT errors:
 # openssl s_client -connect mqtt.googleapis.com:8883
@@ -54,9 +52,17 @@ if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
   echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
 fi
 
-# Remove rc.local and sym link to config/rc.local
+# Remove rc.local
 sudo rm -f /etc/rc.local
-sudo ln -s $TOPDIR/config/rc.local /etc/rc.local
+
+# Sym link to config/rc.local.<run_context>
+if [ ! -f 'config/develop' ]; then
+  sudo ln -s $TOPDIR/config/rc.local.production /etc/rc.local
+else
+  sudo ln -s $TOPDIR/config/rc.local.development /etc/rc.local
+fi
+
+# Reload rc.local daemon
 sudo systemctl daemon-reload
 
 # Start the OpenAg Brain as a service running as rc.local

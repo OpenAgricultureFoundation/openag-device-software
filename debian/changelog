@@ -1,29 +1,5 @@
-openagbrain (0.0-5) stable; urgency=medium
+openagbrain (0.0-6) stable; urgency=medium
 
-  * More pip fun. 
+  * First internal debian package.
 
- -- Rob Baynes <rbaynes@mit.edu>  Fri, 31 Aug 2018 20:07:25 +0000
-
-openagbrain (0.0-4) stable; urgency=medium
-
-  * Cache pip packages. 
-
- -- Rob Baynes <rbaynes@mit.edu>  Fri, 31 Aug 2018 18:03:19 +0000
-
-openagbrain (0.0-3) stable; urgency=medium
-
-  * Dynamically update remote URL in device UI. 
-
- -- Rob Baynes <rbaynes@mit.edu>  Fri, 31 Aug 2018 16:50:28 +0000
-
-openagbrain (0.0-2) stable; urgency=medium
-
-  * Minor config changes for v0.3.0 hardware. 
-
- -- Rob Baynes <rbaynes@mit.edu>  Fri, 31 Aug 2018 14:19:39 +0000
-
-openagbrain (0.0-1) stable; urgency=medium
-
-  * Github v0.1.2 being used as package v0.0.1 to start package release process.
-
- -- rob baynes <rbaynes@mit.edu>  Thu, 23 Aug 2018 19:04:57 +0000
+ -- rob baynes <rbaynes@mit.edu>  Thu, 06 Sep 2018 17:01:41 +0000

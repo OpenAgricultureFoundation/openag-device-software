@@ -1,5 +1,4 @@
 Django==1.11.4
-black==18.6b4
 pytest-cov==2.5.1
 mypy==0.600
 psycopg2-binary==2.7.4

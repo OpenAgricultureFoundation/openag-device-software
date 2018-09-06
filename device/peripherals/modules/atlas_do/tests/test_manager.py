@@ -1,60 +1,97 @@
 # Import standard python libraries
-import sys, os, json
+import os, sys, json, threading
 
-# Import module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.modules.atlas_do.manager import AtlasDO
-except:
-    # ... if running tests from same dir as manger.py
-    os.chdir("../../../../")
-    from device.peripherals.modules.atlas_do.manager import AtlasDO
+# Set system path and directory
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
 # Import device utilities
-from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
+from device.utilities.modes import Modes
 
-# Import shared memory
+# Import device state
 from device.state import State
 
-# Import test config
-device_config = json.load(open("device/peripherals/modules/atlas_do/tests/config.json"))
-peripheral_config = get_peripheral_config(device_config["peripherals"], "AtlasDO-1")
+# Import simulators
+from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Initialize state
-state = State()
+# Import peripheral manager
+from device.peripherals.modules.atlas_do.manager import AtlasDOManager
 
-
-def test_init():
-    manager = AtlasDO(name="Test", state=state, config=peripheral_config, simulate=True)
-
-
-def test_initialize():
-    manager = AtlasDO("Test", state, peripheral_config, simulate=True)
-    manager.initialize()
-    assert True
+# Load test config
+path = root_dir + "/device/peripherals/modules/atlas_do/tests/config.json"
+device_config = json.load(open(path))
+peripheral_config = get_peripheral_config(
+    device_config["peripherals"], "AtlasDO-Reservoir"
+)
 
 
-def test_setup():
-    manager = AtlasDO("Test", state, peripheral_config, simulate=True)
-    manager.setup()
-    assert True
+def test_init() -> None:
+    manager = AtlasDOManager(
+        name="Test",
+        i2c_lock=threading.RLock(),
+        state=State(),
+        config=peripheral_config,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+    )
 
 
-def test_update():
-    manager = AtlasDO("Test", state, peripheral_config, simulate=True)
-    manager.update()
-    assert True
+# def test_initialize() -> None:
+#     manager = AtlasDOManager(
+#         name="Test",
+#         state=State(),
+#         config=peripheral_config,
+#         simulate=True,
+#         mux_simulator=MuxSimulator(),
+#     )
+#     manager.initialize()
 
 
-def test_reset():
-    manager = AtlasDO("Test", state, peripheral_config, simulate=True)
-    manager.reset()
-    assert True
+# def test_setup() -> None:
+#     manager = AtlasDOManager(
+#         name="Test",
+#         state=State(),
+#         config=peripheral_config,
+#         simulate=True,
+#         mux_simulator=MuxSimulator(),
+#     )
+#     manager.initialize()
+#     manager.setup()
 
 
-def test_shutdown():
-    manager = AtlasDO("Test", state, peripheral_config, simulate=True)
-    manager.shutdown()
-    assert True
+# def test_update() -> None:
+#     manager = AtlasDOManager(
+#         name="Test",
+#         state=State(),
+#         config=peripheral_config,
+#         simulate=True,
+#         mux_simulator=MuxSimulator(),
+#     )
+#     manager.initialize()
+#     manager.update()
+
+
+# def test_reset() -> None:
+#     manager = AtlasDOManager(
+#         name="Test",
+#         state=State(),
+#         config=peripheral_config,
+#         simulate=True,
+#         mux_simulator=MuxSimulator(),
+#     )
+#     manager.initialize()
+#     manager.reset()
+
+
+# def test_shutdown() -> None:
+#     manager = AtlasDOManager(
+#         name="Test",
+#         state=State(),
+#         config=peripheral_config,
+#         simulate=True,
+#         mux_simulator=MuxSimulator(),
+#     )
+#     manager.initialize()
+#     manager.shutdown()

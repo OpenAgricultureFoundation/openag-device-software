@@ -1,9 +1,9 @@
 {
-	"name":  "LED Array Test Actuator",
+	"name":  "Light Panel Test Actuator",
 	"version": "1",
-	"uuid": "61996386-5799-4a43-9e53-4c7d0a3c8bf1",
+	"uuid": "...",
 	"module_name": "led_dac5578/manager",
-	"class_name": "LEDManager",
+	"class_name": "LEDDAC5578Manager",
 	"parameters": {
 		"variables": {
 			"sensor": {
@@ -36,9 +36,13 @@
 			}
 		},	
 		"communication": {
-			"devices": [
-				{
-					"bus": {
+			"panels": [
+                {
+                    "name": {
+                    	"type": "string",
+                    	"default": "LP1"
+                    },
+                    "bus": {
 						"type": "integer",
 						"default": 2
 					},
@@ -53,68 +57,190 @@
 					"address": {
 						"type": "integer",
 						"default": "0x47"
+					} ,
+					"active_low": {
+						"type": "bool",
+						"default": false
 					}
 				}
-			]
+            ]
 		}
 	},
 	"channel_configs": [
-	    {
-	        "name": {
-	            "brief": "FR",
-	            "verbose": "Far Red"
-	        },
-	        "channel": {
-	            "hardware": 1,
-	            "software": 6
-	        },
-	        "spectrum_nm_percent": {
-	            "400-499": 20,
-	            "500-599": 80,
-	            "600-699": 20
-	        },
-	        "planar_distance_map": [
-	            {"distance_cm": 5, "ppfd_umol_m2_s": 100},
-	            {"distance_cm": 10, "ppfd_umol_m2_s": 50},
-	            {"distance_cm": 15, "ppfd_umol_m2_s": 25},
-	            {"distance_cm": 20, "ppfd_umol_m2_s": 12}
-	        ],
-	        "output_percent_map": [
+			{
+				"name": {
+					"brief": "FR",
+					"verbose": "Far Red"
+				},
+				"channel": {
+					"hardware": null,
+					"software": 0
+				},
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 0,
+		            "500-599": 0,
+		            "600-700": 12,
+		            "701-780": 88
+	        	},
+				"planar_distance_map": [
+					{"distance_cm": 4, "ppfd_umol_m2_s": 34},
+					{"distance_cm": 10, "ppfd_umol_m2_s": 16},
+					{"distance_cm": 18, "ppfd_umol_m2_s": 8}
+				],
+				"output_percent_map": [
+					{"setpoint_percent": 0, "intensity_percent": 0},
+					{"setpoint_percent": 25, "intensity_percent": 6},
+					{"setpoint_percent": 50, "intensity_percent": 42},
+					{"setpoint_percent": 75, "intensity_percent": 75},
+					{"setpoint_percent": 100, "intensity_percent": 100}
+				]
+		},
+		{
+			"name": {
+				"brief": "R",
+				"verbose": "Red"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 2
+			},
+			"spectrum_nm_percent": {
+	            "380-399": 0,
+	            "400-499": 0,
+	            "500-599": 0,
+	            "600-700": 98,
+	            "701-780": 2
+        	},
+			"planar_distance_map": [
+				{"distance_cm": 4, "ppfd_umol_m2_s": 372},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 227},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 107}
+			],
+			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
-	    },
-	    {
-	        "name": {
-	            "brief": "WW",
-	            "verbose": "Warm White"
-	        },
-	        "channel": {
-	            "hardware": 2,
-	            "software": 7
-	        },
-	        "spectrum_nm_percent": {
-	            "400-499": 20,
-	            "500-599": 60,
-	            "600-699": 20
-	        },
-	        "planar_distance_map": [
-	            {"distance_cm": 5, "ppfd_umol_m2_s": 100},
-	            {"distance_cm": 10, "ppfd_umol_m2_s": 50},
-	            {"distance_cm": 15, "ppfd_umol_m2_s": 25},
-	            {"distance_cm": 20, "ppfd_umol_m2_s": 12}
-	        ],
-	        "output_percent_map": [
+		},
+		{
+			"name": {
+				"brief": "G",
+				"verbose": "Green"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 5
+			},
+			"spectrum_nm_percent": {
+	            "380-399": 0,
+	            "400-499": 10,
+	            "500-599": 89,
+	            "600-700": 1,
+	            "701-780": 0
+        	},
+			"planar_distance_map": [
+				{"distance_cm": 4, "ppfd_umol_m2_s": 130},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 70},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 35}
+			],
+			"output_percent_map": [
 				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 25},
-				{"setpoint_percent": 50, "intensity_percent": 50},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
 				{"setpoint_percent": 75, "intensity_percent": 75},
 				{"setpoint_percent": 100, "intensity_percent": 100}
 			]
-	    }
+		},
+		{
+			"name": {
+				"brief": "B",
+				"verbose": "Blue"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 7
+			},
+			"spectrum_nm_percent": {
+	            "380-399": 0,
+	            "400-499": 99,
+	            "500-599": 1,
+	            "600-700": 0,
+	            "701-780": 0
+        	},
+			"planar_distance_map": [
+				{"distance_cm": 4, "ppfd_umol_m2_s": 261},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 200},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 116}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "CW",
+				"verbose": "Cool White"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 6
+			},
+			"spectrum_nm_percent": {
+	            "380-399": 0,
+	            "400-499": 23,
+	            "500-599": 47,
+	            "600-700": 27,
+	            "701-780": 3
+        	},
+			"planar_distance_map": [
+				{"distance_cm": 4, "ppfd_umol_m2_s": 234},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 178},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 104}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		},
+		{
+			"name": {
+				"brief": "WW",
+				"verbose": "Warm White"
+			},
+			"channel": {
+				"hardware": null,
+				"software": 4
+			},
+			"spectrum_nm_percent": {
+	            "380-399": 0,
+	            "400-499": 8,
+	            "500-599": 38,
+	            "600-700": 49,
+	            "701-780": 5
+        	},
+			"planar_distance_map": [
+				{"distance_cm": 4, "ppfd_umol_m2_s": 504},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 198},
+				{"distance_cm": 18, "ppfd_umol_m2_s": 96}
+			],
+			"output_percent_map": [
+				{"setpoint_percent": 0, "intensity_percent": 0},
+				{"setpoint_percent": 25, "intensity_percent": 6},
+				{"setpoint_percent": 50, "intensity_percent": 42},
+				{"setpoint_percent": 75, "intensity_percent": 75},
+				{"setpoint_percent": 100, "intensity_percent": 100}
+			]
+		}
 	],
 	"events": [
 		{
@@ -159,46 +285,19 @@
 		    "is_manual": true
 		},
 		{
-		    "name": "Fade Concurrently",
+		    "name": "Set Channel",
+		    "description": "Set channel name to intensity percent.",
+		    "value": {
+                "default": "WW, 100",
+                "unit": "ch, %"
+            },
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Fade",
 		    "description": "Fades all channels up/down concurrently.",
 		    "value": null,
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Fade Sequentially",
-		    "description": "Fades all channels up/down sequentially.",
-		    "value": null,
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Turn On Channel",
-		    "description": "Turns on provided channel name.",
-		    "value": {
-		        "default": "CW1",
-		        "unit": "Channel"
-		    },
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Turn Off Channel",
-		    "description": "Turns off provided channel name.",
-		    "value": {
-		        "default": "CW1",
-		        "unit": "Channel"
-		    },
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Fade Channel",
-		    "description": "Fades provided channel name.",
-		    "value": {
-		        "default": "CW1",
-		        "unit": "Channel"
-		    },
 		    "sequence": null,
 		    "is_manual": true
 		}
@@ -208,69 +307,5 @@
 			"sensors": null,
 			"actuators":null
 		}
-	},
-	"channel_samples": [
-		{
-			"name": "Far Red",
-			"data": {
-				"setpoint_percent_calibration": [
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 75, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 50, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 6.25},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 25, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 6.25},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 0},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 0, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 0}
-				],
-				"location_calibation": [
-					{"x_cm": 0, "y_cm": 0, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 5, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 100},
-
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 10, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 50},
-
-					{"x_cm": 0, "y_cm": 0, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 15, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 25},
-
-					{"x_cm": 0, "y_cm": 0, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 0, "y_cm": 0, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 10, "y_cm": 10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": 10, "y_cm": -10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": -10, "y_cm": 10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 650, "width_nm": 10}, "ppfd_umol_m2_s": 12.5},
-					{"x_cm": -10, "y_cm": -10, "z_cm": 20, "setpoint_percent": 100, "wavelength": {"value_nm": 660, "width_nm": 10}, "ppfd_umol_m2_s": 12.5}
-				]
-			}
-		}
-	]
+	}
 }

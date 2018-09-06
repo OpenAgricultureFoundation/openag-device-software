@@ -1,24 +1,30 @@
-# Import standard python libraries
-import os, sys
+# Import standard python modules
+import os, sys, threading
+
+# Import python types
+from typing import Any
 
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import run peripheral parent class
-from device.peripherals.classes.peripheral_runner import PeripheralRunner
-
-# Import device utilities
-from device.utilities.accessors import get_peripheral_config
+from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import driver
 from device.peripherals.modules.sht25.driver import SHT25Driver
 
 
-class DriverRunner(PeripheralRunner):
+class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
 
-    def __init__(self, *args, **kwargs):
+    # Initialize defaults
+    default_device = "edu-v0.1.0"
+    default_name = "SHT25-Top"
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
+
+        # Initialize parent class
         super().__init__(*args, **kwargs)
 
         # Initialize parser
@@ -32,39 +38,34 @@ class DriverRunner(PeripheralRunner):
             "--user-register", action="store_true", help="read user register"
         )
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
-        super().run(*args, **kwargs)
 
-        # Initialize driver optional parameters
-        mux = self.communication.get("mux", None)
-        if mux != None:
-            mux = int(mux, 16)
+        # Run parent class
+        super().run(*args, **kwargs)
 
         # Initialize driver
         self.driver = SHT25Driver(
             name=self.args.name,
-            bus=self.communication["bus"],
-            address=int(self.communication["address"], 16),
-            mux=mux,
-            channel=self.communication.get("channel", None),
+            i2c_lock=threading.RLock(),
+            bus=self.bus,
+            address=self.address,
+            mux=self.mux,
+            channel=self.channel,
         )
 
         # Check if reading temperature
         if self.args.temperature:
-            print("Reading temperature")
             temperature = self.driver.read_temperature()
             print("Temperature: {} C".format(temperature))
 
         # Check if reading humidity
         elif self.args.humidity:
-            print("Reading humidity")
             humidity = self.driver.read_humidity()
             print("Humidity: {} %".format(humidity))
 
         # Check if reading user register
         elif self.args.user_register:
-            print("Reading user register")
             user_register = self.driver.read_user_register()
             print(user_register)
 

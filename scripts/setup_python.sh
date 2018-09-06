@@ -5,13 +5,14 @@ TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOPDIR+=/..
 cd $TOPDIR
 
+mkdir -p logs/peripherals/
+touch app.log connect.log device.log iot.log resource.log upgrade.log
+
 rm -fr venv
-mkdir -p venv/pip_cache
-export XDG_CACHE_HOME=venv/pip_cache
 virtualenv -p python3.6 venv
 source venv/bin/activate
 ./scripts/download_pip_packages.sh
-pip install -f venv/pip_download -r requirements.txt 
+pip3 install -f venv/pip_download -r requirements.txt 
 
 
 echo 'Creating our internal postgres application account...'
@@ -26,13 +27,13 @@ else # we are on OSX
 fi
 
 echo 'Creating the django/postgres database...'
-python manage.py migrate
+python3.6 manage.py migrate
 
 echo 'Creating the django/postgres admin account...'
 #python manage.py createsuperuser
 # The above command is interactive, the one below creates an openag / openag
 # super user account without prompting:
-echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python3.6 manage.py shell
 
 
 # How to list the databases:

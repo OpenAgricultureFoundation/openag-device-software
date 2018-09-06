@@ -5,6 +5,16 @@ if [[ "$OSTYPE" != "linux"* ]]; then
     exit 1
 fi 
 
+# Get the path to THIS script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Have we setup the local python environment we need?
+if [[ "$DIR" != "/opt/openagbrain/scripts" ]]; then
+    echo 'Error: Go pull the source and build packages in /opt/openagbrain
+Exiting.'
+    exit 1
+fi
+
 echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."
 echo ""
 
@@ -59,7 +69,7 @@ tar czvf $TARBALL $VERDIR
 
 # Update the debian/changelog (will open vi)
 cd $VERDIR
-DEBFULLNAME='Rob Baynes' \
+DEBFULLNAME='rob baynes' \
 DEBEMAIL='rbaynes@mit.edu' \
 dch --distribution stable -v $MAJMIN-$PATCH
 
