@@ -52,7 +52,7 @@ cd /opt
 sudo mkdir openagbrain
 sudo chown debian:debian openagbrain
 cd openagbrain
-git pull https://github.com/OpenAgInitiative/openag-device-software .
+git clone https://github.com/OpenAgInitiative/openag-device-software .
 ```
 - Check the last version you released:
 ```
