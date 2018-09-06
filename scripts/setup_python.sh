@@ -5,6 +5,9 @@ TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOPDIR+=/..
 cd $TOPDIR
 
+mkdir -p logs/peripherals/
+touch app.log connect.log device.log iot.log resource.log upgrade.log
+
 rm -fr venv
 virtualenv -p python3.6 venv
 source venv/bin/activate
