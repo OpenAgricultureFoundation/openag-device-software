@@ -1,0 +1,330 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-09-06T09:15:41Z",
+	"name": "Small Hazelnut Heat Stress 1400 PAR",
+	"uuid": "a54674b0-66ce-4ccb-9222-f2cc98d55e5f",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Heat stress trial running over the course of a day ramping light up to 1400 PAR",
+		"verbose": null
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		},
+		{
+			"name": "Zander Auerbach",
+			"email": "zandera@mit.edu",
+			"uuid": "0935948e-e2c9-4db7-902e-6db5922ff0a3"
+		}
+
+	],
+	"cultivars": [
+		{
+			"name": "2.5 Year Old Hazelnut Tree",
+			"uuid": "4b348702-6e23-40ac-aa89-597f06d64a26"
+		}
+	],
+	"cultivation_methods": [
+		{
+			"name": "Soil",
+			"uuid": "dc919f3d-f110-4371-965c-3e89041cecfe"
+		}
+	],
+	"environments": {
+		"light_0": {
+			"name": "Light 0",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 0
+		},
+		"light_67": {
+			"name": "Light 67",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 67
+		},
+		"light_133": {
+			"name": "Light 133",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 133
+		},
+		"light_200": {
+			"name": "Light 200",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 200
+		},
+		"light_267": {
+			"name": "Light 267",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 267
+		},
+		"light_333": {
+			"name": "Light 333",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 333
+		},
+		"light_400": {
+			"name": "Light 400",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 400
+		},
+		"light_467": {
+			"name": "Light 467",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 467
+		},
+		"light_533": {
+			"name": "Light 533",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 533
+		},
+		"light_600": {
+			"name": "Light 600",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 600
+		},
+		"light_667": {
+			"name": "Light 667",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 667
+		},
+		"light_733": {
+			"name": "Light 733",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 733
+		},
+		"light_800": {
+			"name": "Light 800",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 800
+		},
+		"light_867": {
+			"name": "Light 867",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 867
+		},
+		"light_933": {
+			"name": "Light 933",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 933
+		},
+		"light_1000": {
+			"name": "Light 1000",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1000
+		},
+		"light_1067": {
+			"name": "Light 1067",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1067
+		},
+		"light_1133": {
+			"name": "Light 1133",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1133
+		},
+		"light_1200": {
+			"name": "Light 1200",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1200
+		},
+		"light_1267": {
+			"name": "Light 1267",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1267
+		},
+		"light_1333": {
+			"name": "Light 1333",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1333
+		},
+		"light_1400": {
+			"name": "Light 1400",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 1400
+		}
+	},
+	"phases": [
+		{
+			"name": "1 Day Heat Trial",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "7:00",
+					"environment": "light_0",
+					"duration_minutes": 15
+				},
+				{
+					"name": "7:15",
+					"environment": "light_67",
+					"duration_minutes": 15
+				},
+				{
+					"name": "7:30",
+					"environment": "light_133",
+					"duration_minutes": 15
+				},
+				{
+					"name": "7:45",
+					"environment": "light_200",
+					"duration_minutes": 15
+				},
+				{
+					"name": "8:00",
+					"environment": "light_200",
+					"duration_minutes": 15
+				},
+				{
+					"name": "8:15",
+					"environment": "light_267",
+					"duration_minutes": 15
+				},
+				{
+					"name": "8:30",
+					"environment": "light_333",
+					"duration_minutes": 15
+				},
+				{
+					"name": "8:45",
+					"environment": "light_400",
+					"duration_minutes": 15
+				},
+				{
+					"name": "9:00",
+					"environment": "light_400",
+					"duration_minutes": 15
+				},
+				{
+					"name": "9:15",
+					"environment": "light_467",
+					"duration_minutes": 15
+				},
+				{
+					"name": "9:30",
+					"environment": "light_533",
+					"duration_minutes": 15
+				},
+				{
+					"name": "9:45",
+					"environment": "light_600",
+					"duration_minutes": 15
+				},
+				{
+					"name": "10:00",
+					"environment": "light_600",
+					"duration_minutes": 15
+				},
+				{
+					"name": "10:15",
+					"environment": "light_667",
+					"duration_minutes": 15
+				},
+				{
+					"name": "10:30",
+					"environment": "light_733",
+					"duration_minutes": 15
+				},
+				{
+					"name": "10:45",
+					"environment": "light_800",
+					"duration_minutes": 15
+				},
+				{
+					"name": "11:00",
+					"environment": "light_800",
+					"duration_minutes": 15
+				},
+				{
+					"name": "11:15",
+					"environment": "light_867",
+					"duration_minutes": 15
+				},
+				{
+					"name": "11:30",
+					"environment": "light_933",
+					"duration_minutes": 15
+				},
+				{
+					"name": "11:45",
+					"environment": "light_1000",
+					"duration_minutes": 15
+				},
+				{
+					"name": "12:00",
+					"environment": "light_1000",
+					"duration_minutes": 15
+				},
+				{
+					"name": "12:15",
+					"environment": "light_1067",
+					"duration_minutes": 15
+				},
+				{
+					"name": "12:30",
+					"environment": "light_1133",
+					"duration_minutes": 15
+				},
+				{
+					"name": "12:45",
+					"environment": "light_1200",
+					"duration_minutes": 15
+				},
+				{
+					"name": "13:00",
+					"environment": "light_1200",
+					"duration_minutes": 15
+				},
+				{
+					"name": "13:15",
+					"environment": "light_1267",
+					"duration_minutes": 15
+				},
+				{
+					"name": "13:30",
+					"environment": "light_1333",
+					"duration_minutes": 15
+				},
+				{
+					"name": "13:45",
+					"environment": "light_1400",
+					"duration_minutes": 15
+				},
+				{
+					"name": "14:00",
+					"environment": "light_1400",
+					"duration_minutes": 15
+				},
+				{
+					"name": "14:15-14:45",
+					"environment": "light_0",
+					"duration_minutes": 45
+				}
+			]
+		}
+	]
+}

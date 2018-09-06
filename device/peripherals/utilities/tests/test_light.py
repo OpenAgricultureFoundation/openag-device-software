@@ -1,16 +1,16 @@
 # Import standard python libraries
-import sys, numpy
+import os, sys, pytest, json, numpy
 
-# Import module...
-try:
-    # ... if running tests from project root
-    sys.path.append(".")
-    from device.peripherals.utilities import light
-except:
-    # ... if running tests from same dir as light.py
-    sys.path.append("../../../")
-    from device.peripherals.utilities import light
+# Set system path
+root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(root_dir)
+os.chdir(root_dir)
 
+# Import device utilities
+from device.utilities.accessors import get_peripheral_config
+
+# Import peripheral driver
+from device.peripherals.utilities import light
 
 channel_configs = [  # Config from taurus light panel
     {
@@ -243,110 +243,135 @@ def test_calculate_channel_output_vector():
     channel_outputs = light.calculate_channel_output_vector(
         channel_spd_matrix=channel_spd_matrix, desired_spd_vector=desired_spd_vector
     )
-    print("channel_outputs = {}".format(channel_outputs))
 
     assert channel_outputs == [1, 0.75, 0.25, 0.75, 1, 1]
 
 
-# channel_output_intensities_dict = light.dictify_channel_output_vector(
-#     channel_configs=channel_configs,
-#     channel_output_vector=channel_output_intensities_vector,
-# )
-# assert channel_output_intensities_dict == {"FR": 46.0, "WW": 54.0}
+def test_approximate_spd_orion_600_par() -> None:
 
-# channel_output_setpoints_dict = light.convert_channel_output_intensities(
-#     channel_configs=channel_configs,
-#     output_intensities=channel_output_intensities_dict,
-# )
-# assert channel_output_setpoints_dict == {"FR": 34.85, "WW": 40.91}
+    # Load orion channel configs
+    peripheral_setup = json.load(
+        open("device/peripherals/modules/led_dac5578/setups/orion.json")
+    )
+    channel_configs = peripheral_setup["channel_configs"]
 
-# output_spd_vector = light.calculate_output_spd(
-#     channel_spd_matrix=channel_spd_matrix,
-#     channel_output_vector=channel_output_intensities_vector,
-# )
-# assert output_spd_vector == [10.0, 10.0, 34.6, 6.92, 10.0, 10.0]
+    # Set desired parameters
+    distance = 73.0
+    ppfd = 600.0
+    spectrum = {
+        "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
+    }
 
-# output_spd_dict = light.dictify_vector(
-#     vector=output_spd_vector, reference_dict=desired_spd
-# )
-# assert (
-#     output_spd_dict
-#     == {
-#         "400-449": 10.0,
-#         "449-499": 10.0,
-#         "500-549": 34.6,
-#         "550-559": 6.92,
-#         "600-649": 10.0,
-#         "650-699": 10.0,
-#     }
-# )
+    # Approximate spd
+    channel_outputs, output_spectrum, output_ppfd = light.approximate_spd(
+        channel_configs=channel_configs,
+        desired_distance_cm=distance,
+        desired_ppfd_umol_m2_s=ppfd,
+        desired_spectrum_nm_percent=spectrum,
+    )
 
-# output_spectrum_vector, output_ppfd_umol_m2_s = light.deconstruct_spd_vector(
-#     spd_vector=output_spd_vector
-# )
-# assert output_spectrum_vector == [12.27, 12.27, 42.44, 8.49, 12.27, 12.27]
-# assert output_ppfd_umol_m2_s == 81.52
+    # Set expected results
+    expected_channel_outputs = {
+        "FR": 100.0, "CW1": 100.0, "CW2": 100.0, "CW3": 100.0, "CW4": 98.0, "WW": 100.0
+    }
 
-# output_spectrum_dict = light.dictify_vector(
-#     vector=output_spectrum_vector, reference_dict=desired_spd
-# )
-# assert (
-#     output_spectrum_dict
-#     == {
-#         "400-449": 12.27,
-#         "449-499": 12.27,
-#         "500-549": 42.44,
-#         "550-559": 8.49,
-#         "600-649": 12.27,
-#         "650-699": 12.27,
-#     }
-# )
+    expected_output_spectrum = {
+        "380-399": 0.0,
+        "400-499": 19.42,
+        "500-599": 39.5,
+        "600-700": 35.34,
+        "701-780": 5.75,
+    }
+    expected_output_ppfd = 546.3
+
+    # Check results match expectations
+    assert channel_outputs == expected_channel_outputs
+    print(output_spectrum)
+    assert output_spectrum == expected_output_spectrum
+    assert output_ppfd == expected_output_ppfd
 
 
-# def test_approximate_spd():
-#     channel_output_setpoints, output_spectrum_nm_percent, output_ppfd_umol_m2_s = light.approximate_spd(
-#         channel_configs=channel_configs,
-#         desired_distance_cm=desired_distance_cm,
-#         desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
-#         desired_spectrum_nm_percent=desired_spectrum_nm_percent,
-#     )
-#     assert channel_output_setpoints == {"FR": 34.85, "WW": 40.91}
-#     assert (
-#         output_spectrum_nm_percent
-#         == {
-#             "400-449": 12.27,
-#             "449-499": 12.27,
-#             "500-549": 42.44,
-#             "550-559": 8.49,
-#             "600-649": 12.27,
-#             "650-699": 12.27,
-#         }
-#     )
-#     assert output_ppfd_umol_m2_s == 81.52
+def test_approximate_spd_orion_800_par() -> None:
+
+    # Load orion channel configs
+    peripheral_setup = json.load(
+        open("device/peripherals/modules/led_dac5578/setups/orion.json")
+    )
+    channel_configs = peripheral_setup["channel_configs"]
+
+    # Set desired parameters
+    distance = 73.0
+    ppfd = 800.0
+    spectrum = {
+        "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
+    }
+
+    # Approximate spd
+    channel_outputs, output_spectrum, output_ppfd = light.approximate_spd(
+        channel_configs=channel_configs,
+        desired_distance_cm=distance,
+        desired_ppfd_umol_m2_s=ppfd,
+        desired_spectrum_nm_percent=spectrum,
+    )
+
+    # Set expected results
+    expected_channel_outputs = {
+        "FR": 100.0, "CW1": 100.0, "CW2": 100.0, "CW3": 100.0, "CW4": 100.0, "WW": 100.0
+    }
+    expected_output_spectrum = {
+        "380-399": 0.0,
+        "400-499": 19.43,
+        "500-599": 39.5,
+        "600-700": 35.33,
+        "701-780": 5.74,
+    }
+    expected_output_ppfd = 548.52
+
+    # Check results match expectations
+    assert channel_outputs == expected_channel_outputs
+    assert output_spectrum == expected_output_spectrum
+    assert output_ppfd == expected_output_ppfd
 
 
-# def tests_calculate_resultant_spd():
+def test_approximate_spd_orion_1400_par() -> None:
 
-#     desired_spd = light.calculate_desired_spd(
-#         ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
-#         spectrum_nm_percent=desired_spectrum_nm_percent,
-#     )
+    # Load orion channel configs
+    peripheral_setup = json.load(
+        open("device/peripherals/modules/led_dac5578/setups/orion.json")
+    )
+    channel_configs = peripheral_setup["channel_configs"]
 
-#     output_spectrum_nm_percent, output_ppfd_umol_m2_s = light.calculate_resultant_spd(
-#         channel_configs=channel_configs,
-#         reference_spd=desired_spd,
-#         channel_output_setpoints={"FR": 34.85, "WW": 40.91},
-#         distance=desired_distance_cm,
-#     )
-#     assert (
-#         output_spectrum_nm_percent
-#         == {
-#             "400-449": 12.27,
-#             "449-499": 12.27,
-#             "500-549": 42.44,
-#             "550-559": 8.49,
-#             "600-649": 12.27,
-#             "650-699": 12.27,
-#         }
-#     )
-#     assert output_ppfd_umol_m2_s == 81.52
+    # Set desired parameters
+    distance = 30.0
+    ppfd = 1400.0
+    spectrum = {
+        "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
+    }
+
+    # Approximate spd
+    channel_outputs, output_spectrum, output_ppfd = light.approximate_spd(
+        channel_configs=channel_configs,
+        desired_distance_cm=distance,
+        desired_ppfd_umol_m2_s=ppfd,
+        desired_spectrum_nm_percent=spectrum,
+    )
+
+    # assert output_ppfd == 1400
+
+    # # Set expected results
+    # expected_channel_outputs = {
+    #     "FR": 100.0, "CW1": 100.0, "CW2": 100.0, "CW3": 100.0, "CW4": 100.0, "WW": 100.0
+    # }
+    # expected_output_spectrum = {
+    #     "380-399": 0.0,
+    #     "400-499": 19.43,
+    #     "500-599": 39.5,
+    #     "600-700": 35.33,
+    #     "701-780": 5.74,
+    # }
+    # expected_output_ppfd = 548.52
+
+    # # Check results match expectations
+    # assert channel_outputs == expected_channel_outputs
+    # assert output_spectrum == expected_output_spectrum
+    # assert output_ppfd == expected_output_ppfd
