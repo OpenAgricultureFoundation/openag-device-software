@@ -17,6 +17,7 @@ class StateModel(models.Model):
     iot = JSONField()
     resource = JSONField()
     connect = JSONField()
+    upgrade = JSONField()
 
     class Meta:
         verbose_name = "State"
@@ -190,4 +191,6 @@ class ConnectModel(models.Model):
     class Meta:
         verbose_name = "Connect"
         verbose_name_plural = "Connects"
+
+
 

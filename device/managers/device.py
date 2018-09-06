@@ -102,7 +102,7 @@ class DeviceManager:
         # Initialize other managers.
         self.resource = ResourceManager(self.state, self, self.iot)
         self.connect = ConnectManager(self.state, self.iot)
-        self.upgrade = UpgradeManager(self.state, self.iot)
+        self.upgrade = UpgradeManager(self.state)
 
     @property
     def mode(self):

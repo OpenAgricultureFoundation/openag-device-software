@@ -62,7 +62,7 @@
               <a class="nav-link" href="{% url 'connect' %}">Connect</a>
             </li>
             <li {% if 'upgrade' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
+              <a class="nav-link" href="{% url 'upgrade' %}">Upgrade</a>
             </li>
             <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
