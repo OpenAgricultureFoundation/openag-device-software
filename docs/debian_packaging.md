@@ -46,11 +46,11 @@ gpg --armor --export rbaynes@mit.edu > rbaynes@mit.edu.gpg.key
 ### Step 3 
 #### Create the debian package 
 - You have tested this release and run it, right?!?
-- Create a directory and pull the code (MUST use this dir):
+- Create a directory and pull the code (MUST use this dir, and DON'T forget the period at the end of the git command!):
 ```
 cd /opt
 sudo mkdir openagbrain
-sudo chown debian openagbrain
+sudo chown debian:debian openagbrain
 cd openagbrain
 git pull https://github.com/OpenAgInitiative/openag-device-software .
 ```
