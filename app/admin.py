@@ -26,6 +26,7 @@ class StateAdmin(admin.ModelAdmin):
         "iot",
         "resource",
         "connect",
+        "upgrade",
     )
 
 

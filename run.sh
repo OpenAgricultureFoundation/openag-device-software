@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Have we setup the local python environment we need?
 if ! [ -d $DIR/venv ]; then
-    echo 'Error: please run: ./setup_python.sh
+    echo 'Error: please run: ./scripts/setup_python.sh
 Exiting.'
     exit 1
 fi

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "iot",
     "resource",
     "connect",
+    "upgrade",
 ]
 
 MIDDLEWARE = [
@@ -185,6 +186,19 @@ LOGGING = {
             "maxBytes": 5 * 1024 * 1024,
             "backupCount": 1,
         },
+        "upgrade_console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "device_console",
+        },
+        "upgrade_file": {
+            "level": "DEBUG",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": os.path.dirname(BASE_DIR) + "/logs/upgrade.log",
+            "formatter": "device_file",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 1,
+        },
     },
     "loggers": {
         "app": {"handlers": ["app_console", "app_file"], "level": "DEBUG"},
@@ -197,6 +211,7 @@ LOGGING = {
             "handlers": ["resource_console", "resource_file"], "level": "DEBUG"
         },
         "connect": {"handlers": ["connect_console", "connect_file"], "level": "DEBUG"},
+        "upgrade": {"handlers": ["upgrade_console", "upgrade_file"], "level": "DEBUG"},
     },
 }
 

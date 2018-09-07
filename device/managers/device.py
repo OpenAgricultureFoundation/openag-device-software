@@ -26,11 +26,9 @@ from iot.iot_manager import IoTManager
 # Import device simulators
 from device.comms.i2c2.mux_simulator import MuxSimulator
 
-# Import resource manager
 from resource.resource_manager import ResourceManager
-
-# Import connect manager
 from connect.connect_manager import ConnectManager
+from upgrade.upgrade_manager import UpgradeManager
 
 # Import database models
 from app.models import StateModel
@@ -104,6 +102,7 @@ class DeviceManager:
         # Initialize other managers.
         self.resource = ResourceManager(self.state, self, self.iot)
         self.connect = ConnectManager(self.state, self.iot)
+        self.upgrade = UpgradeManager(self.state)
 
     @property
     def mode(self):
@@ -318,6 +317,7 @@ class DeviceManager:
         self.iot.spawn()
         self.resource.spawn()
         self.connect.spawn()
+        self.upgrade.spawn()
 
         # Create peripheral managers and spawn threads
         self.create_peripheral_managers()
@@ -436,6 +436,7 @@ class DeviceManager:
                 iot=json.dumps(self.state.iot),
                 resource=json.dumps(self.state.resource),
                 connect=json.dumps(self.state.connect),
+                upgrade=json.dumps(self.state.upgrade),
             )
         else:
             StateModel.objects.filter(pk=1).update(
@@ -447,6 +448,7 @@ class DeviceManager:
                 iot=json.dumps(self.state.iot),
                 resource=json.dumps(self.state.resource),
                 connect=json.dumps(self.state.connect),
+                upgrade=json.dumps(self.state.upgrade),
             )
 
     def load_local_data_files(self):
