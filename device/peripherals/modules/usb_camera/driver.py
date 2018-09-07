@@ -12,7 +12,6 @@ from device.comms.i2c2.mux_simulator import MuxSimulator
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import usb_device_matches
-from device.utilities.threaded import acquire_lock, release_lock
 
 # Import peripheral modules
 from device.peripherals.common.dac5578.driver import DAC5578Driver
@@ -187,8 +186,7 @@ class USBCameraDriver:
         if self.dac5578 == None:
             return self.capture_image()
 
-        # "Lock camera threads
-        acquire_lock("usb-camera-dac5578")
+        # TODO: Lock camera threads
 
         # Manage 'mux' and capture image
         try:
@@ -198,8 +196,7 @@ class USBCameraDriver:
         except DriverError as e:
             raise CaptureError(logger=self.logger) from e
 
-        # Unlock camera threads
-        release_lock("usb-camera-dac5578")
+        # TODO: Unlock camera threads
 
     def capture_image(self) -> None:
         """Captures an image."""
@@ -208,14 +205,19 @@ class USBCameraDriver:
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
         filename = timestr + "_" + self.name + ".png"
 
-        # Build filepath string
-        filepath = self.directory + filename
+        # Specify filepaths
+        image_path = self.directory + filename
+        base_path = "device/peripherals/modules/usb_camera"
+        dummy_path = "{}/dummy.png".format(base_path)
+        active_path = "{}/active.jpg".format(base_path)
 
         # Check if simulated
         if self.simulate:
-            self.logger.info("Simulating saving image to: {}".format(filepath))
+            self.logger.info(
+                "Simulating capture, saving simulation image to: {}".format(image_path)
+            )
             command = "cp device/peripherals/modules/usb_camera/tests/simulation_image.png {}".format(
-                filepath
+                image_path
             )
             os.system(command)
             return
@@ -227,16 +229,36 @@ class USBCameraDriver:
             raise CaptureImageError(logger=self.logger) from e
 
         # Capture image
-        self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
+
+            # Take 3 low res images to clear out buffer
+            self.logger.debug("Capturing dummy images")
+            command = "fswebcam -d {} -r '320x240' ".format(camera, dummy_path)
+            for i in range(3):
+                os.system(command)
+
+            # Try taking up to 3 real images
+            self.logger.debug("Capturing active image")
             command = "fswebcam -d {} -r {} --png 9 --no-banner --save {}".format(
-                camera, self.resolution, filepath
+                camera, self.resolution, active_path
             )
-            self.logger.debug("command = {}".format(command))
-            os.system(command)
+            valid_image = False
+            for i in range(3):
+                os.system(command)
+                size = os.path.getsize(active_path)
+
+                # Check if image meets minimum size constraint
+                # TODO: Check lighting conditions (if box is dark, images are small)
+                if size > 40000:  # 40kB
+                    valid_image = True
+                    break
+
+            # Check if active image is valid, if so copy to images/ directory
+            if not valid_image:
+                self.logger.warning("Unable to capture a valid image")
+            else:
+                self.logger.info("Captured image, saved to {}".format(image_path))
+                os.rename(active_path, image_path)
+
         except Exception as e:
             raise CaptureImageError(logger=self.logger) from e
-
-        # TODO: Wait for file in destination and do some prelim checks:
-        #  - filesize not too small?
-        #  - all black? all white?
