@@ -239,7 +239,7 @@ class USBCameraDriver:
 
             # Try taking up to 3 real images
             self.logger.debug("Capturing active image")
-            command = "fswebcam -d {} -r {} --png 9 --no-banner --save {}".format(
+            command = "fswebcam -d {} -r {} --png 9 -F 35 --no-banner --save {}".format(
                 camera, self.resolution, active_path
             )
             valid_image = False
@@ -249,7 +249,7 @@ class USBCameraDriver:
 
                 # Check if image meets minimum size constraint
                 # TODO: Check lighting conditions (if box is dark, images are small)
-                if size > 40000:  # 40kB
+                if size > 160000:  # 160kB
                     valid_image = True
                     break
 
