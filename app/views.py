@@ -1,5 +1,5 @@
 # Import standard python modules
-import json, logging
+import os, json, logging
 from operator import itemgetter
 
 # Import django modules
@@ -353,12 +353,8 @@ class Logs(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        logs = [
-            {"name": "SHT25-Top", "entries": ["log line 1", "log line 2"]},
-            {"name": "T6713-Top", "entries": ["t6713 line 1", "t6713 line 2"]},
-        ]
 
-        # Load in config info
+        # Load device config
         if os.path.exists("config/device.txt"):
             with open("config/device.txt") as f:
                 config_name = f.readline().strip()
