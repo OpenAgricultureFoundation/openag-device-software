@@ -86,13 +86,37 @@ class UpgradeUtils:
     @staticmethod
     def update_software():
         """
-        sudo apt-get install -y openagbrain
+        If we call 'sudo apt-get install -y openagbrain' here, inside django,
+        we will create a deadlock where apt can't complete the install because
+        it is run as a child of the process it has to terminate.
+
+        So, let's get hacky:
+        - rm /etc/rc.local (it is a symlink to our install anyway)
+
+        - write a new (temporary) rc.local that contains:
+            #!/bin/sh
+            apt-get install -y openagbrain
+
+        - service rc.local restart
         """
         uv = UpgradeViewer()  # data from the state.upgrade dict and DB
         upgrade = uv.upgrade_dict
         try:
+#debugrob: old
             # update our debian package
-            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
+#            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
+#            subprocess.run(cmd)
+
+            fn = '/etc/rc.local'
+            cmd = ['sudo', 'rm', '-f', fn]
+            subprocess.run(cmd)
+
+            f = open(fn, 'w')
+            f.write('#!/bin/sh\n')
+            f.write('apt-get install -y openagbrain')
+            f.close()
+
+            cmd = ['sudo', 'service', 'rc.local', 'restart']
             subprocess.run(cmd)
 
             upgrade['status'] = 'Up to date.'
@@ -117,6 +141,8 @@ class UpgradeUtils:
         return UpgradeUtils.get_status()
 
         try:
+#debugrob: use Popen and subprocess.DETACHED_PROCESS
+
             # update our debian package
             cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
             subprocess.run(cmd)

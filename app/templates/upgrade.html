@@ -56,6 +56,7 @@
     checkPromise()
       .then(function(checkSuccess) {
         document.getElementById("status").innerHTML = 'Up to date.';
+        $('#check_but').collapse('show');
         return getStatusPromise();
       })
       .catch(function(error) {
