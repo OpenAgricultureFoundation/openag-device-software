@@ -1,6 +1,33 @@
 # Import python modules
-import threading, subprocess, pyudev
+import threading, subprocess, pyudev, numpy
+
+# Import python types
 from typing import Dict, Optional, List, Any
+
+
+def listify_dict(dict_: Dict[str, float]) -> List[float]:
+    """Converts a dict into a list."""
+    list_ = []
+    for key, value in dict_.items():
+        list_.append(value)
+    return list_
+
+
+def vectorize_dict(dict_: Dict[str, float]) -> numpy.ndarray:
+    """Converts a dict into a vector."""
+    list_ = listify_dict(dict_)
+    vector = numpy.array(list_)
+    return vector
+
+
+def matrixify_nested_dict(nested_dict: Dict[str, Dict[str, float]]) -> numpy.ndarray:
+    """Converts a nested dict into a matrix."""
+    nested_list = []
+    for key, dict_ in nested_dict.items():
+        nested_list.append(listify_dict(dict_))
+    raw_matrix = numpy.array(nested_list)
+    matrix = numpy.transpose(raw_matrix)
+    return matrix
 
 
 def set_nested_dict_safely(

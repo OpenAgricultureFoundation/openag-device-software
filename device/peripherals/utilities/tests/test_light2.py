@@ -10,18 +10,124 @@ os.chdir(root_dir)
 from device.utilities.accessors import get_peripheral_config
 
 # Import peripheral driver
-from device.peripherals.utilities import light
+from device.peripherals.utilities import light2 as light
+
+# Load orion properties
+setup = json.load(open("device/peripherals/modules/led_dac5578/setups/orion2.json"))
+properties = setup["properties"]
 
 
-# def test_calculate_desired_spd():
-#     desired_spd = light.calculate_desired_spd(
-#         ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
-#         spectrum_nm_percent=desired_spectrum_nm_percent,
-#     )
-#     expected_spd = {
-#         "380-399": 0, "400-499": 208, "500-599": 176, "600-700": 312, "701-780": 104
+def test_calculate_spd_dict() -> None:
+    intensity = 200
+    spectrum = {"380-399": 0, "400-499": 33, "500-599": 33, "600-700": 34, "701-780": 0}
+    expected = {"380-399": 0, "400-499": 66, "500-599": 66, "600-700": 68, "701-780": 0}
+    spd_dict = light.calculate_spd_dict(intensity, spectrum)
+    assert spd_dict == expected
+
+
+def test_get_intensity_at_distance() -> None:
+    intensity_map = {"0": 200, "5": 150, "10": 100, "15": 50}
+    distance = 10
+    cumulative_intensity = light.get_intensity_at_distance(intensity_map, distance)
+    assert cumulative_intensity == 100
+
+
+def test_build_channel_spd_ndict() -> None:
+    props = {
+        "channels": {
+            "A": {"name": "A", "type": "A", "port": 0},
+            "B1": {"name": "B1", "type": "B", "port": 1},
+            "B2": {"name": "B2", "type": "B", "port": 2},
+        },
+        "intensity_map_cm_umol": {"0": 200, "5": 150, "10": 100, "15": 50},
+        "channel_types": {
+            "A": {
+                "name": "A",
+                "relative_intensity_percent": 20,
+                "spectrum_nm_percent": {
+                    "380-399": 10,
+                    "400-499": 10,
+                    "500-599": 10,
+                    "600-700": 10,
+                    "701-780": 60,
+                },
+                "logic_scaler_percents": {
+                    "0": 0, "25": 12.5, "50": 25, "75": 37.5, "100": 50
+                },
+            },
+            "B": {
+                "name": "B",
+                "relative_intensity_percent": 40,
+                "spectrum_nm_percent": {
+                    "380-399": 20,
+                    "400-499": 20,
+                    "500-599": 20,
+                    "600-700": 20,
+                    "701-780": 20,
+                },
+                "logic_scaler_percents": {
+                    "0": 0, "25": 12.5, "50": 25, "75": 37.5, "100": 50
+                },
+            },
+        },
+    }
+    distance = 10
+    channel_spd_ndict = light.build_channel_spd_ndict(props, distance)
+    expected = {
+        "A": {
+            "380-399": 2.0,
+            "400-499": 2.0,
+            "500-599": 2.0,
+            "600-700": 2.0,
+            "701-780": 12.0,
+        },
+        "B": {
+            "380-399": 16.0,
+            "400-499": 16.0,
+            "500-599": 16.0,
+            "600-700": 16.0,
+            "701-780": 16.0,
+        },
+    }
+    assert channel_spd_ndict == expected
+
+
+def test_approximate_spd_orion_600_par() -> None:
+
+    # Set desired parameters
+    distance = 73.0
+    intensity = 600.0
+    spectrum = {
+        "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
+    }
+
+    # Approximate spd
+    result = light.approximate_spd(properties, distance, intensity, spectrum)
+
+    assert False
+
+
+# Set expected results
+
+
+#     expected_channel_outputs = {
+#         "FR": 100.0, "CW1": 100.0, "CW2": 100.0, "CW3": 100.0, "CW4": 98.0, "WW": 100.0
 #     }
-#     assert desired_spd == expected_spd
+
+#     expected_output_spectrum = {
+#         "380-399": 0.0,
+#         "400-499": 19.42,
+#         "500-599": 39.5,
+#         "600-700": 35.34,
+#         "701-780": 5.75,
+#     }
+#     expected_output_ppfd = 546.3
+
+#     # Check results match expectations
+#     assert channel_outputs == expected_channel_outputs
+#     print(output_spectrum)
+#     assert output_spectrum == expected_output_spectrum
+#     assert output_ppfd == expected_output_ppfd
 
 
 # def test_get_ppfd_at_distance_exact():
@@ -122,52 +228,6 @@ from device.peripherals.utilities import light
 #     )
 
 #     assert channel_outputs == [1, 0.75, 0.25, 0.75, 1, 1]
-
-
-def test_approximate_spd_orion_600_par() -> None:
-
-    # Load orion channel configs
-    peripheral_setup = json.load(
-        open("device/peripherals/modules/led_dac5578/setups/orion.json")
-    )
-    properties = peripheral_setup["properties"]
-
-    # Set desired parameters
-    distance = 73.0
-    intensity = 600.0
-    spectrum = {
-        "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
-    }
-
-    # Approximate spd
-    channel_outputs, output_spectrum, output_intensity = light.approximate_spd(
-        channel_properties=properties,
-        desired_distance=distance,
-        desired_intensity=intensity,
-        desired_spectrum=spectrum,
-    )
-
-    # Set expected results
-
-
-#     expected_channel_outputs = {
-#         "FR": 100.0, "CW1": 100.0, "CW2": 100.0, "CW3": 100.0, "CW4": 98.0, "WW": 100.0
-#     }
-
-#     expected_output_spectrum = {
-#         "380-399": 0.0,
-#         "400-499": 19.42,
-#         "500-599": 39.5,
-#         "600-700": 35.34,
-#         "701-780": 5.75,
-#     }
-#     expected_output_ppfd = 546.3
-
-#     # Check results match expectations
-#     assert channel_outputs == expected_channel_outputs
-#     print(output_spectrum)
-#     assert output_spectrum == expected_output_spectrum
-#     assert output_ppfd == expected_output_ppfd
 
 
 # def test_approximate_spd_orion_800_par() -> None:

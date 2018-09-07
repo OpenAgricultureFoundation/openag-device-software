@@ -65,7 +65,7 @@
 			"CW1": {"name": "Cool White 1", "type": "CW", "port": 4},
 			"CW2": {"name": "Cool White 2", "type": "CW", "port": 2},
 			"CW3": {"name": "Cool White 3", "type": "CW", "port": 0},
-			"CW4": {"name": "Cool White 4", "type": "CW", "port": 7},
+			"CW4": {"name": "Cool White 4", "type": "CW", "port": 7}
 		},
 		"intensity_map_cm_umol": {
 			"0": 1708,
@@ -78,7 +78,7 @@
 			"35": 836,
 			"40": 779,
 			"73": 556,
-			"116": 356,
+			"116": 356
 		},
 		"channel_types": {
 			"FR": {

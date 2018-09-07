@@ -12,7 +12,6 @@ from device.comms.i2c2.mux_simulator import MuxSimulator
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import usb_device_matches
-from device.utilities.threaded import acquire_lock, release_lock
 
 # Import peripheral modules
 from device.peripherals.common.dac5578.driver import DAC5578Driver
@@ -187,8 +186,7 @@ class USBCameraDriver:
         if self.dac5578 == None:
             return self.capture_image()
 
-        # "Lock camera threads
-        acquire_lock("usb-camera-dac5578")
+        # TODO: Lock camera threads
 
         # Manage 'mux' and capture image
         try:
@@ -198,8 +196,7 @@ class USBCameraDriver:
         except DriverError as e:
             raise CaptureError(logger=self.logger) from e
 
-        # Unlock camera threads
-        release_lock("usb-camera-dac5578")
+        # TODO: Unlock camera threads
 
     def capture_image(self) -> None:
         """Captures an image."""
@@ -229,6 +226,13 @@ class USBCameraDriver:
         # Capture image
         self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
+            # Take 3 low res images to clear out buffer
+            path = "device/peripherals/modules/usb_camera/"
+            os.system("fswebcam -r '320x240' dummy_image.png")
+            os.system("fswebcam -r '320x240' dummy_image.png")
+            os.system("fswebcam -r '320x240' dummy_image.png")
+
+            # Take real image
             command = "fswebcam -d {} -r {} --png 9 --no-banner --save {}".format(
                 camera, self.resolution, filepath
             )
