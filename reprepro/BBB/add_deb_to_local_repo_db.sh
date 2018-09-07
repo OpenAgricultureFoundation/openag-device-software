@@ -6,4 +6,6 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
+cp $1 ~/package_archive/
+
 reprepro -Vb . includedeb stretch $1
