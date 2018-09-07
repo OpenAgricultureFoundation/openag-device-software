@@ -312,3 +312,13 @@ class ConnectViewer:
 
     def __init__(self):
         self.connect_dict = Common.get_connect_dict()
+
+
+class UpgradeViewer:
+    upgrade_dict = {}
+
+    def __init__(self):
+        self.upgrade_dict = Common.get_upgrade_dict()
+
+
+

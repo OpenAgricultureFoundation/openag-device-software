@@ -43,6 +43,9 @@ echo "from django.contrib.auth.models import User; User.objects.filter(email='op
 
 # How to test access to the backend, if you see weird IoT errors:
 # openssl s_client -connect mqtt.googleapis.com:8883
+#
+# If the above fails and below works, go change the port in iot_pubsub.py
+# openssl s_client -connect mqtt.googleapis.com:443
 
 # Check if brain root env is exported in venv activate, if not add it
 if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then

@@ -28,6 +28,7 @@ class StateSerializer(serializers.HyperlinkedModelSerializer):
             "iot",
             "resource",
             "connect",
+            "upgrade",
         )
 
 
