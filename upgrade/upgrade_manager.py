@@ -83,7 +83,7 @@ class UpgradeManager:
     # ------------------------------------------------------------------------
     def update(self):
         self.logger.info("Checking for software update")
-        UpgradeUtils.update_dict(self.state)
+        UpgradeUtils.update_dict(self.state.upgrade)
 
 
 

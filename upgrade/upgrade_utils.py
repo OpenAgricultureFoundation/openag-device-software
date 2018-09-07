@@ -21,17 +21,17 @@ class UpgradeUtils:
         status = {}
         try:
             uv = UpgradeViewer()  # data from the state.upgrade dict and DB
-            status = uv.upgrade_dict
+            upgradedict = uv.upgrade_dict
         except:
             pass
-        return status
+        return upgradedict
 
 
     # ------------------------------------------------------------------------
-    # Update our state dict with the software versions.
+    # Update our dict with the software versions.
     # Only call once a day, this will take a few minutes to execute.
     @staticmethod
-    def update_dict(state):
+    def update_dict(upgradedict):
         """
         sudo apt-get update
         apt-cache policy openagbrain
@@ -40,18 +40,21 @@ class UpgradeUtils:
           Candidate: 0.1-2
         """
         try:
-            state.upgrade['status'] = 'Checking for upgrades...'
+            upgradedict['status'] = 'Checking for upgrades...'
 
+            print('debugrob update_dict doing apt-get update')
             # update this machines list of available packages
             cmd = ['sudo', 'apt-get', 'update']
             subprocess.run(cmd)
 
+            print('debugrob update_dict doing apt-cache policy')
             # command and list of args as list of strings
             cmd = ['apt-cache', 'policy', 'openagbrain']
             with subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE) as proc1:
                 output = proc1.stdout.read().decode("utf-8")
                 output += proc1.stderr.read().decode("utf-8")
+                print('debugrob update_dict apt-cache output: {}'.format(output))
                 lines = output.splitlines()
                 installed = ''
                 candidate = ''
@@ -65,16 +68,17 @@ class UpgradeUtils:
                             candidate = tokens[1]
                             break
 
-                state.upgrade['current_version'] = installed
-                state.upgrade['upgrade_version'] = candidate
+                upgradedict['current_version'] = installed
+                upgradedict['upgrade_version'] = candidate
                 # very simple upgrade logic, trust debian package logic
                 if '(none)' == installed or \
                         installed != candidate:
-                    state.upgrade['show_upgrade'] = True
+                    upgradedict['show_upgrade'] = True
 
-            state.upgrade['status'] = 'Up to date.'
-            if state.upgrade.get('show_upgrade', False):
-                state.upgrade['status'] = 'Software upgrade is available.'
+            upgradedict['status'] = 'Up to date.'
+            if upgradedict.get('show_upgrade', False):
+                upgradedict['status'] = 'Software upgrade is available.'
+            print('debugrob update_dict apt-cache done')
 
         except:
             return False
@@ -107,6 +111,7 @@ class UpgradeUtils:
 #            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
 #            subprocess.run(cmd)
 
+            print('debugrob update_software killing rc.local')
             fn = '/etc/rc.local'
             cmd = ['sudo', 'rm', '-f', fn]
             subprocess.run(cmd)
@@ -116,8 +121,10 @@ class UpgradeUtils:
             f.write('apt-get install -y openagbrain')
             f.close()
 
+            print('debugrob update_software restart servie before')
             cmd = ['sudo', 'service', 'rc.local', 'restart']
             subprocess.run(cmd)
+            print('debugrob update_software restart service after')
 
             upgrade['status'] = 'Up to date.'
             upgrade['show_upgrade'] = False
@@ -136,8 +143,10 @@ class UpgradeUtils:
         sudo apt-get install -y openagbrain
         """
         uv = UpgradeViewer()  # data from the state.upgrade dict and DB
-        state = uv.upgrade_dict
-        UpgradeUtils.update_dict(state)
+        upgradedict = uv.upgrade_dict
+        print('debugrob check before update_dict')
+        UpgradeUtils.update_dict(upgradedict)
+        print('debugrob check after update_dict')
         return UpgradeUtils.get_status()
 
 
