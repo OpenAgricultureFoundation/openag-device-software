@@ -23,7 +23,11 @@ class UpgradeManager:
         # Initialize our state
         self.state = state
         self.error = None
-        self.status = 'Initializing...'
+        stat = 'Initializing...'
+        self.status = stat
+        self.state.upgrade['current_version'] = stat
+        self.state.upgrade['upgrade_version'] = stat
+        self.state.upgrade['show_upgrade'] = False
         self._stop_event = threading.Event()  # so we can stop this thread
 
     # ------------------------------------------------------------------------
@@ -72,8 +76,9 @@ class UpgradeManager:
         while True:
             if self.stopped():
                 break
+            time.sleep(30)      # allow time to start the django UI
             self.update()
-            time.sleep(86400)  # idle for one day
+            time.sleep(86400)   # idle for one day
 
     # ------------------------------------------------------------------------
     def update(self):

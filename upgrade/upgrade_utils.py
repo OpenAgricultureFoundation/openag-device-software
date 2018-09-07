@@ -88,12 +88,9 @@ class UpgradeUtils:
         """
         sudo apt-get install -y openagbrain
         """
+        uv = UpgradeViewer()  # data from the state.upgrade dict and DB
+        upgrade = uv.upgrade_dict
         try:
-#debugrob, does this dict > StateModel allow writing?
-            uv = UpgradeViewer()  # data from the state.upgrade dict and DB
-            upgrade = uv.upgrade_dict
-            upgrade["status"] = "Upgrading to latest version..."
-
             # update our debian package
             cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
             subprocess.run(cmd)
@@ -101,8 +98,9 @@ class UpgradeUtils:
             upgrade['status'] = 'Up to date.'
             upgrade['show_upgrade'] = False
 
-        except:
-            return False
-        return True
+        except Exception as e:
+            upgrade['error'] = e
+
+        return upgrade
 
 

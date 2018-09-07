@@ -16,13 +16,14 @@
 
   //--------------------------------------------------------------------------
   function upgrade() {
-    document.getElementById("status").innerHTML = 'Upgrading, this will take a few minutes...';
+    document.getElementById("status").innerHTML = 'Upgrading to latest version, restarting in 2 minutes...';
+    $('#show_upgrade_but').collapse('hide');
     upgradePromise()
       .then(function(upgradeSuccess) {
         document.getElementById("status").innerHTML = 'Up to date.';
       })
       .catch(function(error) {
-        document.getElementById("status").innerHTML = 'Failed.';
+        document.getElementById("status").innerHTML = 'Failed: ' + error;
       })
   }
 
@@ -39,7 +40,7 @@
           resolve(upgradeSuccess)
         },
         error: function(data) {
-          console.log("upgrade failed")
+          console.log("Upgrade failed: " + data)
           reject(data)
         }
       });
