@@ -104,3 +104,29 @@ class UpgradeUtils:
         return upgrade
 
 
+    # ------------------------------------------------------------------------
+    # Check for updates
+    @staticmethod
+    def check():
+        """
+        sudo apt-get install -y openagbrain
+        """
+        uv = UpgradeViewer()  # data from the state.upgrade dict and DB
+        state = uv.upgrade_dict
+        UpgradeUtils.update_dict(state)
+        return UpgradeUtils.get_status()
+
+        try:
+            # update our debian package
+            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
+            subprocess.run(cmd)
+
+            upgrade['status'] = 'Up to date.'
+            upgrade['show_upgrade'] = False
+
+        except Exception as e:
+            upgrade['error'] = e
+
+        return upgrade
+
+

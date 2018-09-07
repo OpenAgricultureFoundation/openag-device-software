@@ -12,6 +12,8 @@
     {% if show_upgrade %}
       $('#show_upgrade_but').collapse('show');
     {% endif %}
+
+    $('#check_but').collapse('show');
   }
 
   //--------------------------------------------------------------------------
@@ -47,6 +49,70 @@
     })
   }
 
+  //--------------------------------------------------------------------------
+  function check() {
+    document.getElementById("status").innerHTML = 'Checking for updates...';
+    $('#check_but').collapse('hide');
+    checkPromise()
+      .then(function(checkSuccess) {
+        document.getElementById("status").innerHTML = 'Up to date.';
+        return getStatusPromise();
+      })
+      .catch(function(error) {
+        document.getElementById("status").innerHTML = 'Failed: ' + error;
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function checkPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/upgradecheck/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var checkSuccess = data;
+          resolve(checkSuccess)
+        },
+        error: function(data) {
+          console.log("Check failed: " + data)
+          reject(data)
+        }
+      });
+    })
+  }
+
+  //--------------------------------------------------------------------------
+  function getStatusPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/upgradestatus/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: "json",
+        success: function(data) {
+
+          document.getElementById("current_version").innerHTML = data['current_version'];
+          document.getElementById("upgrade_version").innerHTML = data['upgrade_version'];
+          if( data['show_upgrade'] ) {
+            $('#show_upgrade_but').collapse('show');
+          } else {
+            $('#show_upgrade_but').collapse('hide');
+          }
+
+          var statusDict = data;
+          resolve(statusDict);
+        },
+        error: function(data) {
+          console.log("Promise Error: getStatus failed");
+          document.getElementById("status").innerHTML = 'Could not get status.';
+          reject(data);
+        }
+      });
+    })
+  }
+
 </script>
 {% endblock %}
 
@@ -69,6 +135,11 @@
               <a class="badge badge-secondary" data-toggle="collapse"
                  style="width:200px" href="" role="button" 
                  onclick="upgrade();">Upgrade the software</a> 
+            </div>
+            <div class="collapse" id="check_but">
+              <a class="badge badge-secondary" data-toggle="collapse"
+                 style="width:200px" href="" role="button" 
+                 onclick="check();">Check for availabe upgrade</a> 
             </div>
          </div>
       </div>

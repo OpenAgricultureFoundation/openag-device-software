@@ -650,9 +650,34 @@ class UpgradeNow(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeNow"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-
         response = UpgradeUtils.update_software()
         logger.info("UpgradeNow response={}".format(response))
+        return Response(response)
+
+
+class UpgradeCheck(viewsets.ViewSet):
+    """REST API to check for upgrades to our debian package. """
+
+    @method_decorator(login_required)
+    def list(self, request):
+        extra = {"console_name": "views.UpgradeCheck"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+        response = UpgradeUtils.check()
+        logger.info("UpgradeCheck response={}".format(response))
+        return Response(response)
+
+
+class UpgradeStatus(viewsets.ViewSet):
+    """REST API to get the current software version status. """
+
+    @method_decorator(login_required)
+    def list(self, request):
+        extra = {"console_name": "views.UpgradeStatus"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+        response = UpgradeUtils.get_status()
+        logger.info("UpgradeStatus response={}".format(response))
         return Response(response)
 
 

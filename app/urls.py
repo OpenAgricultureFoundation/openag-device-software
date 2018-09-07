@@ -87,7 +87,17 @@ router.register(
 router.register(
     r"upgrade",
     views.UpgradeNow,
-    base_name="api-upgrade",
+    base_name="api-upgrade-now",
+)
+router.register(
+    r"upgradecheck",
+    views.UpgradeCheck,
+    base_name="api-upgrade-check",
+)
+router.register(
+    r"upgradestatus",
+    views.UpgradeStatus,
+    base_name="api-upgrade-status",
 )
 
 
