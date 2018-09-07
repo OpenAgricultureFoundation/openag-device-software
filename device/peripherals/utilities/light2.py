@@ -1,6 +1,8 @@
 # Import standard python modules
 import numpy
-from typing import Dict, Tuple
+
+# Import python types
+from typing import Dict, Any, Tuple
 
 # Import device utilities
 from device.utilities import maths
@@ -8,12 +10,12 @@ from device.utilities import maths
 # TODO: Verify spectrums sum to 100%
 
 
-def calculate_desired_spd(ppfd_umol_m2_s, spectrum_nm_percent):
-    """Calculates desired spd."""
-    desired_spd = {}
-    for wavelength_band, percent in spectrum_nm_percent.items():
-        desired_spd[wavelength_band] = ppfd_umol_m2_s * percent / 100.0
-    return desired_spd
+def calculate_spd_dict(intensity: float, spectrum: Dict[str, float]):
+    """Calculates spd dict from intensity and spectrum."""
+    spd_dict = {}
+    for wavelength_band, percent in spectrum.items():
+        spd_dict[wavelength_band] = intensity * percent / 100.0
+    return spd_dict
 
 
 def get_ppfd_at_distance(channel_config, distance):
@@ -22,8 +24,8 @@ def get_ppfd_at_distance(channel_config, distance):
     distance_list = []
     ppfd_list = []
     for entry in planar_distance_map:
-        distance_list.append(entry["distance_cm"])
-        ppfd_list.append(entry["ppfd_umol_m2_s"])
+        distance_list.append(entry["distance"])
+        ppfd_list.append(entry["intensity"])
     ppfd = maths.interpolate(distance_list, ppfd_list, distance)
     return ppfd
 
@@ -73,23 +75,70 @@ def translate_spd(from_spd, to_spd):
     return translated_channel_spd
 
 
-def build_channel_spd_matrix(channel_configs, distance, reference_spd):
-    """Builds channel spectral power distribution matrix from channel configs
-    at distance with spectral bands that match the reference spd."""
+def build_channel_spd_dict(channel_properties, distance, reference_spd):
+    """Builds channel spd dict."""
 
-    channel_spd_matrix = []
-    for channel_config in channel_configs:
+    channel = channel_properties
+
+    channel_spd_list = []
+    for channel_config in channel_properties:
 
         # Get channel intensity and spd
-        ppfd_umol_m2_s = get_ppfd_at_distance(channel_config, distance)
-        channel_spd = channel_config["spectrum_nm_percent"]
+        intensity = get_ppfd_at_distance(channel_config, distance)
+        channel_spd = channel_config["spectrum"]
 
         # Scale channel spd to intensity at distance
         scaled_channel_spd = {}
         for wavelength_band, intensity_percent in channel_spd.items():
-            scaled_channel_spd[wavelength_band] = (
-                ppfd_umol_m2_s * intensity_percent / 100
-            )
+            scaled_channel_spd[wavelength_band] = (intensity * intensity_percent / 100)
+
+        # Translate channel spd to match wavelength bands of desired spd
+        translated_channel_spd = translate_spd(
+            from_spd=scaled_channel_spd, to_spd=reference_spd
+        )
+
+        # Build channel spd vector and append to matrix
+        channel_spd_vector = []
+        for _, intensity in translated_channel_spd.items():
+            channel_spd_vector.append(intensity)
+        channel_spd_list.append(channel_spd_vector)
+
+    # # Check for identical columns in spd matrix and reduce matrix
+    # rem_count = 0
+    # for i1, c1 in enumerate(channel_spd_matrix):
+    #     for i2, c2 in enumerate(channel_spd_matrix[i1 + 1:]):
+    #         if c1 == c2:
+    #             del channel_spd_matrix[i1 + i2 - rem_count]
+    #             rem_count += 1
+
+    #             # Double matching columnn
+    #             for i3 in
+
+    #             print("matrix={}".format(channel_spd_matrix))
+
+    # print("matrix={}".format(channel_spd_matrix))
+
+    # Convert to properly dimensioned numpy array and return
+    channel_spd_matrix = numpy.array(channel_spd_matrix)
+    channel_spd_matrix = numpy.transpose(channel_spd_matrix)
+    return channel_spd_matrix
+
+
+def build_channel_spd_matrix(channel_properties, distance, reference_spd):
+    """Builds channel spd matrix from channel configs
+    at distance with spectral bands that match the reference spd."""
+
+    channel_spd_matrix = []
+    for channel_config in channel_properties:
+
+        # Get channel intensity and spd
+        intensity = get_ppfd_at_distance(channel_config, distance)
+        channel_spd = channel_config["spectrum"]
+
+        # Scale channel spd to intensity at distance
+        scaled_channel_spd = {}
+        for wavelength_band, intensity_percent in channel_spd.items():
+            scaled_channel_spd[wavelength_band] = (intensity * intensity_percent / 100)
 
         # Translate channel spd to match wavelength bands of desired spd
         translated_channel_spd = translate_spd(
@@ -123,24 +172,24 @@ def build_channel_spd_matrix(channel_configs, distance, reference_spd):
     return channel_spd_matrix
 
 
-def build_desired_spd_vector(desired_spectrum_nm_percent, desired_ppfd_umol_m2_s):
+def build_desired_spd_dict_vector(desired_spectrum, desired_intensity):
     """Builds desired spd vector."""
-    desired_spd_vector = []
-    for band, percent in desired_spectrum_nm_percent.items():
-        desired_spd_vector.append(desired_ppfd_umol_m2_s * percent / 100)
-    desired_spd_vector = numpy.array(desired_spd_vector)
-    return desired_spd_vector
+    desired_spd_dict_vector = []
+    for band, percent in desired_spectrum.items():
+        desired_spd_dict_vector.append(desired_intensity * percent / 100)
+    desired_spd_dict_vector = numpy.array(desired_spd_dict_vector)
+    return desired_spd_dict_vector
 
 
-def calculate_channel_output_vector(channel_spd_matrix, desired_spd_vector):
+def calculate_channel_output_vector(channel_spd_matrix, desired_spd_dict_vector):
     """Calculates channel output percents to approximate desired
     spectral power distribution."""
 
     print("channel_spd_matrix = {}".format(channel_spd_matrix.tolist()))
-    print("desired_spd_vector = {}".format(desired_spd_vector.tolist()))
+    print("desired_spd_dict_vector = {}".format(desired_spd_dict_vector.tolist()))
 
     # Calculate channel outputs via bounded non-negative least squares approximation
-    channel_outputs = maths.bnnls(channel_spd_matrix, desired_spd_vector)
+    channel_outputs = maths.bnnls(channel_spd_matrix, desired_spd_dict_vector)
 
     # Create channel output vector
     channel_output_vector = []
@@ -160,10 +209,10 @@ def calculate_output_spd(channel_spd_matrix, channel_output_vector):
     return output_spd
 
 
-def dictify_channel_output_vector(channel_configs, channel_output_vector):
+def dictify_channel_output_vector(channel_properties, channel_output_vector):
     """ Convert channel output vector into its dictionary representation. """
     channel_output_dict = {}
-    for index, channel_config in enumerate(channel_configs):
+    for index, channel_config in enumerate(channel_properties):
         name = channel_config["name"]["brief"]
         channel_output_dict[name] = channel_output_vector[index] * 100.0
     return channel_output_dict
@@ -182,12 +231,12 @@ def convert_channel_output_intensity(output_percent_map, output_intensity):
     return rounded_output_setpoint
 
 
-def convert_channel_output_intensities(channel_configs, output_intensities):
+def convert_channel_output_intensities(channel_properties, output_intensities):
     """ Converts channel output setpoints to channel output intensites from 
         provided channel configs. """
     output_setpoints = {}
     for channel_name, output_intensity in output_intensities.items():
-        for channel_config in channel_configs:
+        for channel_config in channel_properties:
             name = channel_config["name"]["brief"]
             if channel_name == name:
                 output_percent_map = channel_config["output_percent_map"]
@@ -213,12 +262,12 @@ def convert_channel_output_setpoint(output_percent_map, output_setpoint):
     return rounded_output_intensity
 
 
-def convert_channel_output_setpoints(channel_configs, output_setpoints):
+def convert_channel_output_setpoints(channel_properties, output_setpoints):
     """ Converts channel output setpoints to channel output intensites from 
         provided channel configs. """
     output_intensities = {}
     for channel_name, output_setpoint in output_setpoints.items():
-        for channel_config in channel_configs:
+        for channel_config in channel_properties:
             name = channel_config["name"]["brief"]
             if channel_name == name:
                 output_percent_map = channel_config["output_percent_map"]
@@ -267,42 +316,48 @@ def vectorize_dict(dict_):
 
 
 def approximate_spd(
-    channel_configs,
-    desired_distance_cm,
-    desired_ppfd_umol_m2_s,
-    desired_spectrum_nm_percent,
+    channel_properties: Dict[str, Any],
+    desired_distance: float,
+    desired_intensity: float,
+    desired_spectrum: Dict[str, float],
 ):
-    """ Approximates spectral power distribution. """
+    """Approximates spectral power distribution."""
 
-    desired_spd = calculate_desired_spd(
-        ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
-        spectrum_nm_percent=desired_spectrum_nm_percent,
+    desired_spd_dict = calculate_spd_dict(
+        intensity=desired_intensity, spectrum=desired_spectrum
     )
-    # print("desired_spd = {}".format(desired_spd))
+    print("desired_spd_dict = {}".format(desired_spd_dict))
+
+    channel_spd_dict = build_channel_spd_dict(
+        channel_properties=channel_properties,
+        distance=desired_distance,
+        reference_spd=desired_spd_dict,
+    )
+    print("channel_spd_dict = {}".format(channel_spd_dict))
 
     channel_spd_matrix = build_channel_spd_matrix(
-        channel_configs=channel_configs,
-        distance=desired_distance_cm,
-        reference_spd=desired_spd,
+        channel_properties=channel_properties,
+        distance=desired_distance,
+        reference_spd=desired_spd_dict,
     )
-    # print("channel_spd_matrix = {}".format(channel_spd_matrix))
+    print("channel_spd_matrix = {}".format(channel_spd_matrix))
 
-    desired_spd_vector = build_desired_spd_vector(
-        desired_spectrum_nm_percent=desired_spectrum_nm_percent,
-        desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
+    desired_spd_dict_vector = build_desired_spd_dict_vector(
+        desired_spectrum=desired_spectrum, desired_intensity=desired_intensity
     )
 
     channel_output_intensities_vector = calculate_channel_output_vector(
-        channel_spd_matrix=channel_spd_matrix, desired_spd_vector=desired_spd_vector
+        channel_spd_matrix=channel_spd_matrix,
+        desired_spd_dict_vector=desired_spd_dict_vector,
     )
 
     channel_output_intensities_dict = dictify_channel_output_vector(
-        channel_configs=channel_configs,
+        channel_properties=channel_properties,
         channel_output_vector=channel_output_intensities_vector,
     )
 
     channel_output_setpoints_dict = convert_channel_output_intensities(
-        channel_configs=channel_configs,
+        channel_properties=channel_properties,
         output_intensities=channel_output_intensities_dict,
     )
 
@@ -311,29 +366,31 @@ def approximate_spd(
         channel_output_vector=channel_output_intensities_vector,
     )
 
-    output_spectrum_vector, output_ppfd_umol_m2_s = deconstruct_spd_vector(
+    output_spectrum_vector, output_intensity = deconstruct_spd_vector(
         spd_vector=output_spd_vector
     )
 
     output_spectrum_dict = dictify_vector(
-        vector=output_spectrum_vector, reference_dict=desired_spd
+        vector=output_spectrum_vector, reference_dict=desired_spd_dict
     )
 
-    return channel_output_setpoints_dict, output_spectrum_dict, output_ppfd_umol_m2_s
+    return channel_output_setpoints_dict, output_spectrum_dict, output_intensity
 
 
 def calculate_resultant_spd(
-    channel_configs, reference_spd, channel_output_setpoints, distance
+    channel_properties, reference_spd, channel_output_setpoints, distance
 ):
     """ Generates spd from provided channel outputs at distance. Returns 
         spd with the same spectral bands as the reference spd. """
 
     channel_spd_matrix = build_channel_spd_matrix(
-        channel_configs=channel_configs, distance=distance, reference_spd=reference_spd
+        channel_properties=channel_properties,
+        distance=distance,
+        reference_spd=reference_spd,
     )
 
     channel_output_intensities = convert_channel_output_setpoints(
-        channel_configs=channel_configs, output_setpoints=channel_output_setpoints
+        channel_properties=channel_properties, output_setpoints=channel_output_setpoints
     )
 
     channel_output_vector = vectorize_dict(dict_=channel_output_intensities)
@@ -343,7 +400,7 @@ def calculate_resultant_spd(
         channel_output_vector=channel_output_vector,
     )
 
-    output_spectrum_vector, output_ppfd_umol_m2_s = deconstruct_spd_vector(
+    output_spectrum_vector, output_intensity = deconstruct_spd_vector(
         spd_vector=output_spd_vector
     )
 
@@ -351,11 +408,11 @@ def calculate_resultant_spd(
         vector=output_spectrum_vector, reference_dict=reference_spd
     )
 
-    return output_spectrum_dict, output_ppfd_umol_m2_s
+    return output_spectrum_dict, output_intensity
 
 
 def calculate_ulrf_from_percents(
-    channel_configs: Dict[str, str],
+    channel_properties: Dict[str, str],
     channel_power_percents: Dict[str, float],
     distance: float,
 ) -> Tuple[Dict, float, float]:
@@ -364,8 +421,8 @@ def calculate_ulrf_from_percents(
 
     # Get min/max distance for channels
     # TODO: Verify code is being checked to ensure planar distance map is ordered list
-    min_distance = channel_configs[0]["planar_distance_map"][0]["distance_cm"]
-    max_distance = channel_configs[-1]["planar_distance_map"][0]["distance_cm"]
+    min_distance = channel_properties[0]["planar_distance_map"][0]["distance"]
+    max_distance = channel_properties[-1]["planar_distance_map"][0]["distance"]
 
     # Check distance in range, else use extrema
     if distance > max_distance:
@@ -374,11 +431,11 @@ def calculate_ulrf_from_percents(
         distance = min_distance
 
     # Get reference SPD from channel configs
-    reference_spd = channel_configs[0]["spectrum_nm_percent"]
+    reference_spd = channel_properties[0]["spectrum"]
 
     # Calculate resultant spectrum and intensity from channel power percents
     spectrum, intensity = calculate_resultant_spd(
-        channel_configs=channel_configs,
+        channel_properties=channel_properties,
         reference_spd=reference_spd,
         channel_output_setpoints=channel_power_percents,
         distance=distance,
@@ -388,7 +445,7 @@ def calculate_ulrf_from_percents(
 
 
 def calculate_ulrf_from_watts(
-    channel_configs: Dict[str, str],
+    channel_properties: Dict[str, str],
     channel_power_watts: Dict[str, float],
     distance: float,
 ) -> Tuple[Dict, float, float]:
