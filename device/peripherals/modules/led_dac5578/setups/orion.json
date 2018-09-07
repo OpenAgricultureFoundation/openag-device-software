@@ -76,7 +76,15 @@
 	            "701-780": 93
 	        },
 			"planar_distance_map": [
+				{"distance_cm": 0, "ppfd_umol_m2_s": 18},
+				{"distance_cm": 5, "ppfd_umol_m2_s": 17},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 15},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 13},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 11},
+				{"distance_cm": 25, "ppfd_umol_m2_s": 10},
 				{"distance_cm": 30, "ppfd_umol_m2_s": 9},
+				{"distance_cm": 35, "ppfd_umol_m2_s": 9},
+				{"distance_cm": 40, "ppfd_umol_m2_s": 8},
 				{"distance_cm": 73, "ppfd_umol_m2_s": 6},
 				{"distance_cm": 116, "ppfd_umol_m2_s": 4}
 			],
@@ -105,7 +113,15 @@
 	            "701-780": 4
 	        },
 			"planar_distance_map": [
+				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
+				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
+				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
 				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
+				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
+				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
 				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
 				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
 			],
@@ -134,7 +150,15 @@
 	            "701-780": 4
 	        },
 			"planar_distance_map": [
+				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
+				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
+				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
 				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
+				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
+				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
 				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
 				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
 			],
@@ -163,7 +187,15 @@
 	            "701-780": 4
 	        },
 			"planar_distance_map": [
+				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
+				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
+				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
 				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
+				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
+				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
 				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
 				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
 			],
@@ -192,7 +224,15 @@
 	            "701-780": 4
 	        },
 			"planar_distance_map": [
+				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
+				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
+				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
 				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
+				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
+				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
 				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
 				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
 			],
@@ -221,7 +261,15 @@
 	            "701-780": 8
 	        },
 			"planar_distance_map": [
+				{"distance_cm": 0, "ppfd_umol_m2_s": 307},
+				{"distance_cm": 5, "ppfd_umol_m2_s": 284},
+				{"distance_cm": 10, "ppfd_umol_m2_s": 256},
+				{"distance_cm": 15, "ppfd_umol_m2_s": 218},
+				{"distance_cm": 20, "ppfd_umol_m2_s": 187},
+				{"distance_cm": 25, "ppfd_umol_m2_s": 166},
 				{"distance_cm": 30, "ppfd_umol_m2_s": 157},
+				{"distance_cm": 35, "ppfd_umol_m2_s": 150},
+				{"distance_cm": 40, "ppfd_umol_m2_s": 140},
 				{"distance_cm": 73, "ppfd_umol_m2_s": 100},
 				{"distance_cm": 116, "ppfd_umol_m2_s": 64}
 			],
@@ -290,16 +338,6 @@
 		    "name": "Fade",
 		    "description": "Fades all channels up/down concurrently.",
 		    "value": null,
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Calculate ULRF From Percents",
-		    "description": "Calculates universal light recipe format (ULRF) from channel power percents.",
-		    "value": {
-                "default": null,
-                "unit": "nm: %"
-            },
 		    "sequence": null,
 		    "is_manual": true
 		}

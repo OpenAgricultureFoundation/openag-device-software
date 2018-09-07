@@ -74,8 +74,8 @@ def translate_spd(from_spd, to_spd):
 
 
 def build_channel_spd_matrix(channel_configs, distance, reference_spd):
-    """ Builds channel spectral power distribution matrix from channel configs
-        at distance with spectral bands that match the reference spd. """
+    """Builds channel spectral power distribution matrix from channel configs
+    at distance with spectral bands that match the reference spd."""
 
     channel_spd_matrix = []
     for channel_config in channel_configs:
@@ -101,6 +101,21 @@ def build_channel_spd_matrix(channel_configs, distance, reference_spd):
         for _, intensity in translated_channel_spd.items():
             channel_spd_vector.append(intensity)
         channel_spd_matrix.append(channel_spd_vector)
+
+    # # Check for identical columns in spd matrix and reduce matrix
+    # rem_count = 0
+    # for i1, c1 in enumerate(channel_spd_matrix):
+    #     for i2, c2 in enumerate(channel_spd_matrix[i1 + 1:]):
+    #         if c1 == c2:
+    #             del channel_spd_matrix[i1 + i2 - rem_count]
+    #             rem_count += 1
+
+    #             # Double matching columnn
+    #             for i3 in
+
+    #             print("matrix={}".format(channel_spd_matrix))
+
+    # print("matrix={}".format(channel_spd_matrix))
 
     # Convert to properly dimensioned numpy array and return
     channel_spd_matrix = numpy.array(channel_spd_matrix)
@@ -263,12 +278,14 @@ def approximate_spd(
         ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
         spectrum_nm_percent=desired_spectrum_nm_percent,
     )
+    # print("desired_spd = {}".format(desired_spd))
 
     channel_spd_matrix = build_channel_spd_matrix(
         channel_configs=channel_configs,
         distance=desired_distance_cm,
         reference_spd=desired_spd,
     )
+    # print("channel_spd_matrix = {}".format(channel_spd_matrix))
 
     desired_spd_vector = build_desired_spd_vector(
         desired_spectrum_nm_percent=desired_spectrum_nm_percent,

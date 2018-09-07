@@ -342,7 +342,7 @@ def test_approximate_spd_orion_1400_par() -> None:
     channel_configs = peripheral_setup["channel_configs"]
 
     # Set desired parameters
-    distance = 30.0
+    distance = 10.0
     ppfd = 1400.0
     spectrum = {
         "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
@@ -356,7 +356,8 @@ def test_approximate_spd_orion_1400_par() -> None:
         desired_spectrum_nm_percent=spectrum,
     )
 
-    # assert output_ppfd == 1400
+    print(channel_outputs)
+    assert output_ppfd == 1277.76
 
     # # Set expected results
     # expected_channel_outputs = {
