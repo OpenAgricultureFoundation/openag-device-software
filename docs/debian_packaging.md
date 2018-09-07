@@ -117,9 +117,8 @@ tar czvf pkg.tgz conf/ db/ dists/ pool/ rbaynes@mit.edu.gpg.key
 
 ### Step 8 
 #### Upload the package repository to our gcloud storage folder
-This step must be done on a machine with gcloud auth to our account, use Robs mac.
+This step must be done on a machine with gcloud auth to our account, use Robs MIT MBP.
 ```
-scp debian@172.17.2.30:reprepro_test/ReadMe.txt .
 scp debian@172.17.2.30:reprepro_test/pkg.tgz .
 rm -fr conf/ db/ dists/ pool/ rbaynes@mit.edu.gpg.key
 tar xzvf pkg.tgz
