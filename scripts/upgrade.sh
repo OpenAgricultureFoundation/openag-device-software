@@ -23,8 +23,10 @@ pip3 install -f venv/pip_download -r requirements.txt
 echo 'Updating database...'
 if [[ "$OSTYPE" == "linux"* ]]; then
   sudo -u postgres psql openag_brain -c "DELETE FROM app_statemodel;"
+  sudo -u postgres psql openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 1;"
 else # we are on OSX
   psql postgres openag_brain -c "DELETE FROM app_statemodel;"
+  psql postgres openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 1;"
 fi
 
 # If there is no device type configured, make an unspecified one
