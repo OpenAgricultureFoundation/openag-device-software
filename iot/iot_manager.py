@@ -230,11 +230,13 @@ class IoTManager:
                 self.reset()
                 continue
 
-            # Publish device 'about' for a record of versions on this machine.
+            # Publish a record of versions on this machine.
             if not self.sentAboutJson:
                 self.sentAboutJson = True
                 try:
 
+#debugrob: get this from state.upgrade.get('current_version','unknown')
+# remove the config/version.txt file and all refs in the docs and my package building wiki
                     # Get software version
                     with open("config/version.txt") as f:
                         version = f.readline().strip()
