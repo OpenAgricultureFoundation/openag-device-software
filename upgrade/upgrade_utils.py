@@ -122,7 +122,7 @@ class UpgradeUtils:
             subprocess.Popen(cmd)
 
             UpgradeUtils.ref_state.upgrade['status'] = \
-                'Upgrading, will restart in 2 minutes...'
+                'Upgrading, will restart in 5 minutes...'
             UpgradeUtils.ref_state.upgrade['show_upgrade'] = False
 
         except Exception as e:
