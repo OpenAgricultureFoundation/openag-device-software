@@ -88,9 +88,7 @@ class IoTPubSub:
             self._lastConfigVersion = c.last_config_version
         except:
             # or create a DB entry since none exists.
-            IoTConfigModel.objects.create(
-                last_config_version=self._lastConfigVersion
-            )
+            IoTConfigModel.objects.create(last_config_version=self._lastConfigVersion)
 
         # validate our deviceId
         if self.deviceId is None or 0 == len(self.deviceId):
@@ -153,20 +151,17 @@ class IoTPubSub:
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
                         valuesJson += (
-                            "{'name':'%s', 'type':'float', 'value':%s}"
-                            % (vname, val)
+                            "{'name':'%s', 'type':'float', 'value':%s}" % (vname, val)
                         )
 
                     elif isinstance(val, int):
                         valuesJson += (
-                            "{'name':'%s', 'type':'int', 'value':%s}"
-                            % (vname, val)
+                            "{'name':'%s', 'type':'int', 'value':%s}" % (vname, val)
                         )
 
                     else:  # assume str
                         valuesJson += (
-                            "{'name':'%s', 'type':'str', 'value':'%s'}"
-                            % (vname, val)
+                            "{'name':'%s', 'type':'str', 'value':'%s'}" % (vname, val)
                         )
 
                 valuesJson += "]}"
@@ -180,9 +175,7 @@ class IoTPubSub:
             self.mqtt_client.publish(self.mqtt_topic, message_json, qos=1)
 
             self.logger.info(
-                "publishEnvVar: sent '{}' to {}".format(
-                    message_json, self.mqtt_topic
-                )
+                "publishEnvVar: sent '{}' to {}".format(message_json, self.mqtt_topic)
             )
             return True
 
@@ -203,9 +196,7 @@ class IoTPubSub:
                 return False
 
             if None == valuesJsonString or 0 == len(valuesJsonString):
-                self.logger.error(
-                    "publishCommandReply: missing valuesJsonString"
-                )
+                self.logger.error("publishCommandReply: missing valuesJsonString")
                 return False
 
             # publish the command reply as an env. var.
@@ -292,9 +283,7 @@ class IoTPubSub:
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical(
-                "publishBinaryImage: Exception: {}".format(e)
-            )
+            self.logger.critical("publishBinaryImage: Exception: {}".format(e))
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
@@ -310,9 +299,7 @@ class IoTPubSub:
                 return
             self.mqtt_client.loop()
 
-            seconds_since_issue = (
-                datetime.datetime.utcnow() - self.jwt_iat
-            ).seconds
+            seconds_since_issue = (datetime.datetime.utcnow() - self.jwt_iat).seconds
 
             # refresh the JWT if it is about to expire
             if seconds_since_issue > 60 * self.jwt_exp_mins:
@@ -365,8 +352,9 @@ class IoTPubSub:
     def connected(self, value):
         self._connected = value
         if value:
-            self.state_dict[ "connected"
-                ] = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
+            self.state_dict["connected"] = datetime.datetime.utcnow().strftime(
+                "%Y-%m-%d-T%H:%M:%SZ"
+            )
         else:
             self.state_dict["connected"] = "No"
 
@@ -406,7 +394,7 @@ class IoTPubSub:
         cloud_region = None
         ca_certs = None
         mqtt_bridge_hostname = "mqtt.googleapis.com"
-        mqtt_bridge_port = 8883  # clould also be 443
+        mqtt_bridge_port = 443  # clould also be 8883
         jwt_expires_minutes = 20
 
     # --------------------------------------------------------------------------
@@ -421,38 +409,32 @@ class IoTPubSub:
 
         args.project_id = os.environ.get("GCLOUD_PROJECT")
         if args.project_id is None:
-            msg = "iot_pubsub: get_env_vars: "\
-                "Missing GCLOUD_PROJECT environment variable."
+            msg = "iot_pubsub: get_env_vars: " "Missing GCLOUD_PROJECT environment variable."
             self.killOurselves(msg)
 
         args.cloud_region = os.environ.get("GCLOUD_REGION")
         if args.cloud_region is None:
-            msg = "iot_pubsub: get_env_vars: "\
-                "Missing GCLOUD_REGION environment variable."
+            msg = "iot_pubsub: get_env_vars: " "Missing GCLOUD_REGION environment variable."
             self.killOurselves(msg)
 
         args.registry_id = os.environ.get("GCLOUD_DEV_REG")
         if args.registry_id is None:
-            msg = "iot_pubsub: get_env_vars: "\
-                "Missing GCLOUD_DEV_REG environment variable."
+            msg = "iot_pubsub: get_env_vars: " "Missing GCLOUD_DEV_REG environment variable."
             self.killOurselves(msg)
 
         args.device_id = os.environ.get("DEVICE_ID")
         if args.device_id is None:
-            msg = "iot_pubsub: get_env_vars: "\
-                "Missing DEVICE_ID environment variable."
+            msg = "iot_pubsub: get_env_vars: " "Missing DEVICE_ID environment variable."
             self.killOurselves(msg)
 
         args.private_key_file = os.environ.get("IOT_PRIVATE_KEY")
         if args.private_key_file is None:
-            msg = "iot_pubsub: get_env_vars: "\
-                "Missing IOT_PRIVATE_KEY environment variable."
+            msg = "iot_pubsub: get_env_vars: " "Missing IOT_PRIVATE_KEY environment variable."
             self.killOurselves(msg)
 
         args.ca_certs = os.environ.get("CA_CERTS")
         if args.ca_certs is None:
-            msg = "iot_pubsub: get_env_vars: "\
-                "Missing CA_CERTS environment variable."
+            msg = "iot_pubsub: get_env_vars: " "Missing CA_CERTS environment variable."
             self.killOurselves(msg)
 
         return args
@@ -510,15 +492,11 @@ class IoTPubSub:
         """
         try:
             if not validDictKey(d, self.COMMANDS):
-                self.logger.error(
-                    "Message is missing %s key." % self.COMMANDS
-                )
+                self.logger.error("Message is missing %s key." % self.COMMANDS)
                 return
 
             if not validDictKey(d, self.MESSAGEID):
-                self.logger.error(
-                    "Message is missing %s key." % self.MESSAGEID
-                )
+                self.logger.error("Message is missing %s key." % self.MESSAGEID)
                 return
 
             # unpack an array of commands from the dict
@@ -598,7 +576,7 @@ def on_disconnect(unused_client, ref_self, rc):
     ref_self.connected = False
     ref_self.logger.debug("on_disconnect: {}".format(error_str(rc)))
     ref_self.state_dict["error"] = error_str(rc)
-    ref_self.killOurselves('IoT disconnected')
+    ref_self.killOurselves("IoT disconnected")
 
 
 # ------------------------------------------------------------------------------
@@ -642,9 +620,7 @@ def on_message(unused_client, ref_self, message):
         if "lastConfigVersion" in payloadDict:
             messageVersion = int(payloadDict["lastConfigVersion"])
     except Exception as e:
-        ref_self.logger.debug(
-            "on_message: Exception parsing payload: {}".format(e)
-        )
+        ref_self.logger.debug("on_message: Exception parsing payload: {}".format(e))
         return
 
     # The broker will keep sending config messages everytime we connect.
@@ -705,9 +681,7 @@ def getMQTTclient(
     # password field is used to transmit a JWT to authorize the device.
     client.username_pw_set(
         username="unused",
-        password=create_jwt(
-            ref_self, project_id, private_key_file, algorithm
-        ),
+        password=create_jwt(ref_self, project_id, private_key_file, algorithm),
     )
 
     # Enable SSL/TLS support.
