@@ -27,3 +27,11 @@ def test_matrixify_nested_dict() -> None:
     expected = numpy.array([[1, 3], [2, 4]])
     matrix = accessors.matrixify_nested_dict(ndict)
     assert matrix.tolist() == expected.tolist()
+
+
+def test_dictify_list() -> None:
+    list_ = [1, 2, 3]
+    reference_dict = {"a": 4, "b": 5, "c": 6}
+    expected = {"a": 1, "b": 2, "c": 3}
+    dict_ = accessors.dictify_list(list_, reference_dict)
+    assert dict_ == expected

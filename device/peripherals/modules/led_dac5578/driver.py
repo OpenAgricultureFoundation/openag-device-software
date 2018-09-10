@@ -33,6 +33,38 @@ from device.peripherals.modules.led_dac5578.exceptions import (
 )
 
 
+# TODO: Might want to scale outputs here, instead of utilities/light.py
+
+# def scale_channel_logic(
+#     channel_logic_list: List[float], logic_scaler: Dict[str, float]
+# ) -> List[float]:
+#     """Scales channel logic to setpoints."""
+
+#     # Build interpolation lists
+#     logic_list = []
+#     setpoint_list = []
+#     for logic, setpoint in logic_scaler.items():
+#         logic_list.append(float(logic))
+#         setpoint_list.append(float(setpoint))
+
+#     # Build channel setpoint list
+#     channel_setpoint_list = []
+#     for channel_logic in channel_logic_list:
+#         channel_setpoint = maths.interpolate(logic_list, setpoint_list, channel_logic)
+#         channel_setpoint_list.append(channel_setpoint)
+
+#     # Successfully built channel setpoint list
+#     return channel_setpoint_list
+
+
+# def test_scale_channel_logic() -> None:
+#     channel_logic_list = [0, 37.5, 62.5, 87.5, 100]
+#     logic_scaler = {"0": 0, "25": 10, "50": 30, "75": 60, "100": 90}
+#     expected = [0, 20, 45, 75, 90]
+#     channel_setpoint_list = light.scale_channel_logic(channel_logic_list, logic_scaler)
+#     assert channel_setpoint_list == expected
+
+
 class LEDDAC5578Panel(object):
     """An led panel controlled by a dac5578."""
 

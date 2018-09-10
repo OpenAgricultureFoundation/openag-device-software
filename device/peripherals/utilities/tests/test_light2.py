@@ -92,42 +92,94 @@ def test_build_channel_spd_ndict() -> None:
     assert channel_spd_ndict == expected
 
 
-def test_approximate_spd_orion_600_par() -> None:
+def test_calculate_output_spd() -> None:
+    channel_spd_matrix = numpy.array([[1, 2], [3, 4]])
+    channel_output_vector = [1, 0.5]
+    expected = [2, 5]
+    output_spd_list = light.calculate_output_spd(
+        channel_spd_matrix, channel_output_vector
+    )
+    assert output_spd_list == expected
 
-    # Set desired parameters
-    distance = 73.0
-    intensity = 600.0
+
+def test_deconstruct_spd() -> None:
+    spd_list = [40, 60, 100]
+    expected_spectrum_list = [20, 30, 50]
+    expected_intensity = 200
+    spectrum_list, intensity = light.deconstruct_spd(spd_list)
+    assert spectrum_list == expected_spectrum_list
+    assert intensity == expected_intensity
+
+
+def test_approximate_spd_orion_1600_par() -> None:
+    distance = 4.0
+    intensity = 1600.0
     spectrum = {
         "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
     }
+    expected_setpoints = {"FR": 100, "CW": 100, "WW": 85.7}
+    expected_spd = [0.0, 280.013, 574.049, 519.122, 84.71]
+    expected_spectrum = {
+        "380-399": 0.0,
+        "400-499": 19.21,
+        "500-599": 39.38,
+        "600-700": 35.61,
+        "701-780": 5.81,
+    }
+    expected_intensity = 1457.89
 
-    # Approximate spd
     result = light.approximate_spd(properties, distance, intensity, spectrum)
+    assert result[0] == expected_setpoints
+    assert result[1] == expected_spectrum
+    assert result[2] == expected_intensity
 
     assert False
 
 
-# Set expected results
-
-
-#     expected_channel_outputs = {
-#         "FR": 100.0, "CW1": 100.0, "CW2": 100.0, "CW3": 100.0, "CW4": 98.0, "WW": 100.0
-#     }
-
-#     expected_output_spectrum = {
-#         "380-399": 0.0,
-#         "400-499": 19.42,
-#         "500-599": 39.5,
-#         "600-700": 35.34,
-#         "701-780": 5.75,
-#     }
-#     expected_output_ppfd = 546.3
-
-#     # Check results match expectations
-#     assert channel_outputs == expected_channel_outputs
-#     print(output_spectrum)
-#     assert output_spectrum == expected_output_spectrum
-#     assert output_ppfd == expected_output_ppfd
+def test_calculate_ulrf_from_percents() -> None:
+    props = {
+        "channels": {
+            "A": {"name": "A", "type": "A", "port": 0},
+            "B1": {"name": "B1", "type": "B", "port": 1},
+            "B2": {"name": "B2", "type": "B", "port": 2},
+        },
+        "intensity_map_cm_umol": {"0": 200, "5": 150, "10": 100, "15": 50},
+        "channel_types": {
+            "A": {
+                "name": "A",
+                "relative_intensity_percent": 20,
+                "spectrum_nm_percent": {
+                    "380-399": 10,
+                    "400-499": 10,
+                    "500-599": 10,
+                    "600-700": 10,
+                    "701-780": 60,
+                },
+                "logic_scaler_percents": {
+                    "0": 0, "25": 12.5, "50": 25, "75": 37.5, "100": 50
+                },
+            },
+            "B": {
+                "name": "B",
+                "relative_intensity_percent": 40,
+                "spectrum_nm_percent": {
+                    "380-399": 20,
+                    "400-499": 20,
+                    "500-599": 20,
+                    "600-700": 20,
+                    "701-780": 20,
+                },
+                "logic_scaler_percents": {
+                    "0": 0, "25": 12.5, "50": 25, "75": 37.5, "100": 50
+                },
+            },
+        },
+    }
+    desired_distance = 10
+    setpoints = {"FR": 100, "CW": 100, "WW": 85.7}
+    spectrum, intensity, distance = light.calculate_ulrf_from_percents(
+        props, setpoints, desired_distance
+    )
 
 
 # def test_get_ppfd_at_distance_exact():

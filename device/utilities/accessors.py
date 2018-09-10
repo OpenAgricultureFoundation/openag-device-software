@@ -30,6 +30,14 @@ def matrixify_nested_dict(nested_dict: Dict[str, Dict[str, float]]) -> numpy.nda
     return matrix
 
 
+def dictify_list(list_: List[Any], reference_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert a list into a dictionary."""
+    dict_ = {}
+    for index, key in enumerate(reference_dict):
+        dict_[key] = list_[index]
+    return dict_
+
+
 def set_nested_dict_safely(
     nested_dict: Dict, keys: List, value: str, lock: threading.Lock
 ) -> None:

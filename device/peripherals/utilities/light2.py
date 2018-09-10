@@ -20,47 +20,30 @@ def approximate_spd(
     # Get desired spd vector (i.e. `b` in Ax=b)
     desired_spd_dict = calculate_spd_dict(des_intensity, des_spectrum)
     desired_spd_vector = accessors.vectorize_dict(desired_spd_dict)
-    print("b = {}".format(desired_spd_vector))
 
     # Get channel spd matrix (i.e. `A` in Ax=b)
     raw_channel_spd_ndict = build_channel_spd_ndict(channel_properties, des_distance)
     channel_spd_ndict = translate_spd_ndict(raw_channel_spd_ndict, desired_spd_dict)
     channel_spd_matrix = accessors.matrixify_nested_dict(channel_spd_ndict)
-    print("A = {}".format(channel_spd_matrix))
 
-    # Get channel logic vector (i.e `x` in Ax=b) with bounded non-negative least-squares approximation
-    channel_logic_vector = maths.bnnls(channel_spd_matrix, desired_spd_vector)
-    print("x = {}".format(channel_logic_vector))
+    # Get channel setpoints (i.e `x` in Ax=b)
+    channel_setpoint_vector = solve_setpoints(channel_spd_matrix, desired_spd_vector)
+    channel_setpoint_list = []
+    for setpoint in channel_setpoint_vector:
+        channel_setpoint_list.append(setpoint * 100)
+    channel_types = channel_properties.get("channel_types", {})
+    channel_setpoint_dict = accessors.dictify_list(channel_setpoint_list, channel_types)
 
-    # channel_output_intensities_vector = calculate_channel_output_vector(
-    #     channel_spd_matrix=channel_spd_matrix,
-    #     desired_spd_dict_vector=desired_spd_dict_vector,
-    # )
+    #
 
-    # channel_output_intensities_dict = dictify_channel_output_vector(
-    #     channel_properties=channel_properties,
-    #     channel_output_vector=channel_output_intensities_vector,
-    # )
+    # Get output spd, spectrum, and intensity
+    output_spd_list = calculate_output_spd(channel_spd_matrix, channel_setpoint_vector)
+    output_spectrum_list, output_intensity = deconstruct_spd(output_spd_list)
+    output_spectrum_dict = accessors.dictify_list(
+        output_spectrum_list, desired_spd_dict
+    )
 
-    # channel_output_setpoints_dict = convert_channel_output_intensities(
-    #     channel_properties=channel_properties,
-    #     output_intensities=channel_output_intensities_dict,
-    # )
-
-    # output_spd_vector = calculate_output_spd(
-    #     channel_spd_matrix=channel_spd_matrix,
-    #     channel_output_vector=channel_output_intensities_vector,
-    # )
-
-    # output_spectrum_vector, output_intensity = deconstruct_spd_vector(
-    #     spd_vector=output_spd_vector
-    # )
-
-    # output_spectrum_dict = dictify_vector(
-    #     vector=output_spectrum_vector, reference_dict=desired_spd_dict
-    # )
-
-    # return channel_output_setpoints_dict, output_spectrum_dict, output_intensity
+    return channel_setpoint_dict, output_spectrum_dict, output_intensity
 
 
 def calculate_spd_dict(intensity: float, spectrum: Dict[str, float]):
@@ -188,30 +171,77 @@ def discretize_spd_dict(spd_dict: Dict[str, float]) -> Dict[str, float]:
     return discretized_spd_dict
 
 
-# def solve_channel_logic_vector(
-#     channel_spd_matrix: numpy.ndarray, desired_spd_vector: numpy.ndarray
-# ) -> numpy.ndarray:
-#     """Solves for channel logic vector."""
-
-#     # Use bounded non-negative least squares approximation
-#     channel_logic_vector = maths.bnnls(channel_spd_matrix, desired_spd_vector)
-
-#     # Create channel output vector
-#     channel_output_vector = []
-#     for channel_output in channel_outputs:
-#         channel_output_vector.append(round(channel_output, 2))
-
-#     # Return channel output vector
-#     return channel_output_vector
+def solve_setpoints(
+    channel_spd_matrix: numpy.ndarray, desired_spd_vector: numpy.ndarray
+) -> List[float]:
+    """Solves for channel setpoints with a bounded non-negative least squares solver."""
+    raw_setpoint_list = maths.bnnls(channel_spd_matrix, desired_spd_vector)
+    setpoint_list = []
+    for setpoint in raw_setpoint_list:
+        setpoint_list.append(round(setpoint, 3))
+    return setpoint_list
 
 
-def calculate_output_spd(channel_spd_matrix, channel_output_vector):
-    """ Calculates ouput spectral power distribution. """
+def calculate_output_spd(
+    channel_spd_matrix: numpy.ndarray, channel_output_vector: List[float]
+) -> List[float]:
+    """Calculates ouput spectral power distribution."""
     raw_output_spd = channel_spd_matrix.dot(channel_output_vector)
     output_spd = []
     for element in raw_output_spd:
         output_spd.append(round(element, 3))
     return output_spd
+
+
+def deconstruct_spd(spd_list: List[float]) -> Tuple[List[float], float]:
+    """Deconstructs spd into spectrum and intensity."""
+    intensity = sum(spd_list)
+    rounded_intensity = float("{:.2f}".format(intensity))
+    spectrum_list = []
+    for element in spd_list:
+        if intensity != 0:
+            value = float(element) / intensity * 100.0
+        else:
+            value = 0
+        rounded_value = float("{:.2f}".format(value))
+        spectrum_list.append(rounded_value)
+    return spectrum_list, rounded_intensity
+
+
+def calculate_ulrf_from_percents(
+    channel_properties: Dict[str, str],
+    channel_setpoints: Dict[str, float],
+    distance: float,
+) -> Tuple[Dict, float, float]:
+    """Calculates universal light recipe format (ULRF) for provided channel 
+    configuration, channel power percents, and illumination distance."""
+
+    # Get min/max distance for channels
+    # TODO: Verify code is being checked to ensure planar distance map is ordered list
+    min_distance = channel_properties[0]["intensity_map_cm_umol"][0]["distance"]
+    max_distance = channel_properties[-1]["intensity_map_cm_umol"][0]["distance"]
+
+    # Check distance in range, else use extrema
+    if distance > max_distance:
+        distance = max_distance
+    if distance < min_distance:
+        distance = min_distance
+
+    # Get reference SPD from channel configs
+    channel_types = channel_properties.get("channel_types", {})
+    key = channel_types.keys()[0]
+    channel_type = channel_type.get(key, {})
+    reference_spectrum = channel_type.get("spectrum_nm_percent", {})
+
+    # Calculate resultant spectrum and intensity from channel power percents
+    spectrum, intensity = calculate_resultant_spd(
+        channel_properties=channel_properties,
+        reference_spd=reference_spectrum,
+        channel_output_setpoints=channel_setpoints,
+        distance=distance,
+    )
+
+    return spectrum, intensity, distance
 
 
 def dictify_channel_output_vector(channel_properties, channel_output_vector):
@@ -268,8 +298,8 @@ def convert_channel_output_setpoint(output_percent_map, output_setpoint):
 
 
 def convert_channel_output_setpoints(channel_properties, output_setpoints):
-    """ Converts channel output setpoints to channel output intensites from 
-        provided channel configs. """
+    """Converts channel output setpoints to channel output intensites from 
+    provided channel configs."""
     output_intensities = {}
     for channel_name, output_setpoint in output_setpoints.items():
         for channel_config in channel_properties:
@@ -283,22 +313,6 @@ def convert_channel_output_setpoints(channel_properties, output_setpoints):
                 output_intensities[channel_name] = output_intensity
                 break
     return output_intensities
-
-
-def deconstruct_spd_vector(spd_vector):
-    """ Deconstructs vector, returns normalized vector with intensity. """
-    intensity = sum(spd_vector)
-    rounded_intensity = float("{:.2f}".format(intensity))
-    new_spd_vector = []
-    for element in spd_vector:
-        if intensity != 0:
-            value = float(element) / intensity * 100.0
-        else:
-            value = 0
-        rounded_value = float("{:.2f}".format(value))
-        new_spd_vector.append(rounded_value)
-
-    return new_spd_vector, rounded_intensity
 
 
 def calculate_resultant_spd(
@@ -319,13 +333,13 @@ def calculate_resultant_spd(
 
     channel_output_vector = vectorize_dict(dict_=channel_output_intensities)
 
-    output_spd_vector = calculate_output_spd(
+    output_spd_list = calculate_output_spd(
         channel_spd_matrix=channel_spd_matrix,
         channel_output_vector=channel_output_vector,
     )
 
-    output_spectrum_vector, output_intensity = deconstruct_spd_vector(
-        spd_vector=output_spd_vector
+    output_spectrum_vector, output_intensity = deconstruct_spd(
+        spd_vector=output_spd_list
     )
 
     output_spectrum_dict = dictify_vector(
@@ -333,46 +347,3 @@ def calculate_resultant_spd(
     )
 
     return output_spectrum_dict, output_intensity
-
-
-def calculate_ulrf_from_percents(
-    channel_properties: Dict[str, str],
-    channel_power_percents: Dict[str, float],
-    distance: float,
-) -> Tuple[Dict, float, float]:
-    """Calculates universal light recipe format (ULRF) for provided channel 
-    configuration, channel power percents, and illumination distance."""
-
-    # Get min/max distance for channels
-    # TODO: Verify code is being checked to ensure planar distance map is ordered list
-    min_distance = channel_properties[0]["planar_distance_map"][0]["distance"]
-    max_distance = channel_properties[-1]["planar_distance_map"][0]["distance"]
-
-    # Check distance in range, else use extrema
-    if distance > max_distance:
-        distance = max_distance
-    if distance < min_distance:
-        distance = min_distance
-
-    # Get reference SPD from channel configs
-    reference_spd = channel_properties[0]["spectrum"]
-
-    # Calculate resultant spectrum and intensity from channel power percents
-    spectrum, intensity = calculate_resultant_spd(
-        channel_properties=channel_properties,
-        reference_spd=reference_spd,
-        channel_output_setpoints=channel_power_percents,
-        distance=distance,
-    )
-
-    return spectrum, intensity, distance
-
-
-def calculate_ulrf_from_watts(
-    channel_properties: Dict[str, str],
-    channel_power_watts: Dict[str, float],
-    distance: float,
-) -> Tuple[Dict, float, float]:
-    """Calculates universal light recipe format (ULRF) for provided channel 
-    configuration, channel power watts, and illumination distance."""
-    raise NotImplementedError
