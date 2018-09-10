@@ -239,7 +239,7 @@ class USBCameraDriver:
 
             # Try taking up to 3 real images
             self.logger.debug("Capturing active image")
-            command = "fswebcam -d {} -r {} --png 9 -F 35 --no-banner --save {}".format(
+            command = "fswebcam -d {} -r {} --png 9 -F 10 --no-banner --save {}".format(
                 camera, self.resolution, active_path
             )
             valid_image = False
@@ -255,7 +255,8 @@ class USBCameraDriver:
 
             # Check if active image is valid, if so copy to images/ directory
             if not valid_image:
-                self.logger.warning("Unable to capture a valid image")
+                self.logger.warning("Unable to capture a valid image, saving anyway")
+                os.rename(active_path, image_path)
             else:
                 self.logger.info("Captured image, saved to {}".format(image_path))
                 os.rename(active_path, image_path)
