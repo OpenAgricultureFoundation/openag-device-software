@@ -22,6 +22,7 @@ class UpgradeManager:
         """ Class constructor """
         # Initialize our state
         self.state = state
+        UpgradeUtils.save_state(state)
         self.error = None
         stat = 'Initializing...'
         self.status = stat
@@ -83,7 +84,7 @@ class UpgradeManager:
     # ------------------------------------------------------------------------
     def update(self):
         self.logger.info("Checking for software update")
-        UpgradeUtils.update_dict(self.state)
+        UpgradeUtils.update_dict()
 
 
 

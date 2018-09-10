@@ -9,29 +9,32 @@ import urllib.request
 import uuid
 
 from app.viewers import UpgradeViewer
+from device.state import State
 
 
 class UpgradeUtils:
     """ Utilities to upgrade this apt package. """
 
+    # class variable to hold a reference to the state.upgrade dict
+    ref_state = State()
+
+    # --------------------------------------------------------------------------
+    # Saves a reference to the state as a static class var.
+    @staticmethod
+    def save_state(state):
+        UpgradeUtils.ref_state = state
+
     # --------------------------------------------------------------------------
     # Return a dict of all the fields we display on the Django Upgrade tab.
     @staticmethod
     def get_status():
-        status = {}
-        try:
-            uv = UpgradeViewer()  # data from the state.upgrade dict and DB
-            status = uv.upgrade_dict
-        except:
-            pass
-        return status
-
+        return UpgradeUtils.ref_state.upgrade
 
     # ------------------------------------------------------------------------
-    # Update our state dict with the software versions.
+    # Update our dict with the software versions.
     # Only call once a day, this will take a few minutes to execute.
     @staticmethod
-    def update_dict(state):
+    def update_dict():
         """
         sudo apt-get update
         apt-cache policy openagbrain
@@ -40,7 +43,8 @@ class UpgradeUtils:
           Candidate: 0.1-2
         """
         try:
-            state.upgrade['status'] = 'Checking for upgrades...'
+            UpgradeUtils.ref_state.upgrade['status'] = \
+                'Checking for upgrades...'
 
             # update this machines list of available packages
             cmd = ['sudo', 'apt-get', 'update']
@@ -65,20 +69,22 @@ class UpgradeUtils:
                             candidate = tokens[1]
                             break
 
-                state.upgrade['current_version'] = installed
-                state.upgrade['upgrade_version'] = candidate
+                UpgradeUtils.ref_state.upgrade['current_version'] = installed
+                UpgradeUtils.ref_state.upgrade['upgrade_version'] = candidate
                 # very simple upgrade logic, trust debian package logic
                 if '(none)' == installed or \
                         installed != candidate:
-                    state.upgrade['show_upgrade'] = True
+                    UpgradeUtils.ref_state.upgrade['show_upgrade'] = True
 
-            state.upgrade['status'] = 'Up to date.'
-            if state.upgrade.get('show_upgrade', False):
-                state.upgrade['status'] = 'Software upgrade is available.'
+            UpgradeUtils.ref_state.upgrade['status'] = 'Up to date.'
+            if UpgradeUtils.ref_state.upgrade.get('show_upgrade', False):
+                UpgradeUtils.ref_state.upgrade['status'] = \
+                    'Software upgrade is available.'
 
         except:
             return False
         return True
+
 
 
     # ------------------------------------------------------------------------
@@ -86,47 +92,50 @@ class UpgradeUtils:
     @staticmethod
     def update_software():
         """
-        sudo apt-get install -y openagbrain
-        """
-        uv = UpgradeViewer()  # data from the state.upgrade dict and DB
-        upgrade = uv.upgrade_dict
-        try:
-            # update our debian package
-            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
-            subprocess.run(cmd)
+        If we call 'sudo apt-get install -y openagbrain' here, inside django,
+        we will create a deadlock where apt can't complete the install because
+        it is run as a child of the process it has to terminate.
 
-            upgrade['status'] = 'Up to date.'
-            upgrade['show_upgrade'] = False
+        So, let's get creative:
+
+        0. This logic assumes django is being run as root with sudo or 
+           from the rc.local service.  It also assumes that 'apt-get update'
+           has already been run and we know there is an update available.
+
+        1. Write file /tmp/openagbrain-at-commands with contents:
+            systemctl stop rc.local
+            apt-get install -y openagbrain
+
+        2. Create an 'at' job which runs the above commands in a minute:
+            at -f /tmp/openagbrain-at-commands now + 1 minute
+        """
+        try:
+            fn = '/tmp/openagbrain-at-commands'
+            f = open(fn, 'w')
+            f.write('systemctl stop rc.local\n')
+            f.write('apt-get install -y openagbrain\n')
+            f.close()
+
+            # update our debian package
+            cmd = ['at', '-f', '/tmp/openagbrain-at-commands', \
+                   'now', '+', '1', 'minute']
+            subprocess.Popen(cmd)
+
+            UpgradeUtils.ref_state.upgrade['status'] = \
+                'Upgrading, will restart in 5 minutes...'
+            UpgradeUtils.ref_state.upgrade['show_upgrade'] = False
 
         except Exception as e:
-            upgrade['error'] = e
+            UpgradeUtils.ref_state.upgrade['error'] = e
 
-        return upgrade
+        return UpgradeUtils.ref_state.upgrade
 
 
     # ------------------------------------------------------------------------
     # Check for updates
     @staticmethod
     def check():
-        """
-        sudo apt-get install -y openagbrain
-        """
-        uv = UpgradeViewer()  # data from the state.upgrade dict and DB
-        state = uv.upgrade_dict
-        UpgradeUtils.update_dict(state)
+        UpgradeUtils.update_dict()
         return UpgradeUtils.get_status()
-
-        try:
-            # update our debian package
-            cmd = ['sudo', 'apt-get', 'install', '-y', 'openagbrain']
-            subprocess.run(cmd)
-
-            upgrade['status'] = 'Up to date.'
-            upgrade['show_upgrade'] = False
-
-        except Exception as e:
-            upgrade['error'] = e
-
-        return upgrade
 
 
