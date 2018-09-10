@@ -230,29 +230,17 @@ class IoTManager:
                 self.reset()
                 continue
 
-            # Publish a record of versions on this machine.
+            # Publish a boot message
             if not self.sentAboutJson:
                 self.sentAboutJson = True
                 try:
-
-#debugrob: get this from state.upgrade.get('current_version','unknown')
-# remove the config/version.txt file and all refs in the docs and my package building wiki
-                    # Get software version
-                    with open("config/version.txt") as f:
-                        version = f.readline().strip()
-
                     # Get device config
                     device = None
                     if os.path.exists("config/device.txt"):
                         with open("config/device.txt") as f:
                             device = f.readline().strip()
 
-                    # Create about dict
-                    about_dict = {
-                        "VERSION": version, "DEVICE": device, "IP": self.get_IP()
-                    }
-
-                    # Publish about dict
+                    about_dict = { "DEVICE": device, "IP": self.get_IP() }
                     about_json = json.dumps(about_dict)
                     self.iot.publishCommandReply("boot", about_json)
 
@@ -268,17 +256,21 @@ class IoTManager:
                 try:
                     self.last_status = datetime.datetime.utcnow()
                     status_dict = {}
-                    status_dict["timestamp"] = time.strftime("%FT%XZ", time.gmtime())
+                    status_dict["timestamp"] = \
+                        time.strftime("%FT%XZ", time.gmtime())
                     status_dict["IP"] = self.get_IP()
 
-                    status_dict["status"] = self.state.resource["status"]
-                    status_dict["internet_connection"] = self.state.resource[
-                        "internet_connection"
-                    ]
-                    status_dict["memory_available"] = self.state.resource["free_memory"]
-                    status_dict["disk_available"] = self.state.resource[
-                        "available_disk_space"
-                    ]
+                    # get the current version from the upgrade state
+                    status_dict["version"] = \
+                        state.upgrade.get('current_version','unknown')
+
+                    status_dict["status"] = self.state.resource.get("status",'')
+                    status_dict["internet_connection"] = \
+                        self.state.resource["internet_connection"]
+                    status_dict["memory_available"] = \
+                        self.state.resource["free_memory"]
+                    status_dict["disk_available"] = \
+                        self.state.resource["available_disk_space"]
 
                     status_dict["iot_status"] = self.state.iot["connected"]
                     status_dict["iot_received_message_count"] = self.state.iot[
