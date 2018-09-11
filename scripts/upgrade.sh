@@ -58,7 +58,7 @@ fi
 sudo rm -f /etc/rc.local
 
 # Sym link to config/rc.local.<run_context>
-if [ ! -f 'config/develop' ]; then
+if [ ! -f '$TOPDIR/config/develop' ]; then
   sudo ln -s $TOPDIR/config/rc.local.production /etc/rc.local
 else
   sudo ln -s $TOPDIR/config/rc.local.development /etc/rc.local

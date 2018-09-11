@@ -33,6 +33,12 @@ if [ -f $DEVICE_ID_FILE ]; then
 fi
 
 
+# Turn on debug logging if we are in developer mode
+if [ ! -f '$TOPDIR/config/develop' ]; then
+    export OPENAG_LOG_LEVEL=DEBUG
+fi
+
+
 # Initialize command line arg default values
 NO_DEVICE="false"
 SIMULATE="false"
