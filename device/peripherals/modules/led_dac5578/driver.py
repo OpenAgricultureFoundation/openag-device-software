@@ -6,6 +6,7 @@ from typing import NamedTuple, Optional, Tuple, Dict, Any, List
 
 # Import device utilities
 from device.utilities.logger import Logger
+from device.utilities import maths
 
 # Import mux simulator
 from device.comms.i2c2.mux_simulator import MuxSimulator
@@ -34,27 +35,6 @@ from device.peripherals.modules.led_dac5578.exceptions import (
 
 
 # TODO: Might want to scale outputs here, instead of utilities/light.py...or pass to DAC
-
-# def scale_channel_logic(
-#     channel_logic_list: List[float], logic_scaler: Dict[str, float]
-# ) -> List[float]:
-#     """Scales channel logic to setpoints."""
-
-#     # Build interpolation lists
-#     logic_list = []
-#     setpoint_list = []
-#     for logic, setpoint in logic_scaler.items():
-#         logic_list.append(float(logic))
-#         setpoint_list.append(float(setpoint))
-
-#     # Build channel setpoint list
-#     channel_setpoint_list = []
-#     for channel_logic in channel_logic_list:
-#         channel_setpoint = maths.interpolate(logic_list, setpoint_list, channel_logic)
-#         channel_setpoint_list.append(channel_setpoint)
-
-#     # Successfully built channel setpoint list
-#     return channel_setpoint_list
 
 
 # def test_scale_channel_logic() -> None:
@@ -153,6 +133,7 @@ class LEDDAC5578Driver:
 
         # Parse panel properties
         self.channels = self.panel_properties.get("channels")
+        self.logic_map = self.panel_properties.get("logic_scaler_percents")
 
         # Initialze num expected panels
         self.num_expected_panels = len(panel_configs)
@@ -182,6 +163,7 @@ class LEDDAC5578Driver:
         self.logger.debug("Turning on")
         channel_outputs = self.build_channel_outputs(100)
         self.set_outputs(channel_outputs)
+
         return channel_outputs
 
     def turn_off(self) -> Dict[str, float]:
@@ -266,16 +248,21 @@ class LEDDAC5578Driver:
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         for panel in active_panels:
 
-            # Check if panel is active low
+            # Scale setpoints
+            scaled_outputs = self.scale_outputs(converted_outputs)
+
+            # Adjust logic ouput by checking if panel is active low
             if panel.active_low:
                 self.logger.debug("panel is active low")
-                converted_outputs_copy = converted_outputs.copy()
-                for key in converted_outputs_copy.keys():
-                    converted_outputs_copy[key] = 100 - converted_outputs_copy[key]
+                logic_outputs = scaled_outputs.copy()
+                for key in logic_outputs.keys():
+                    logic_outputs[key] = 100 - logic_outputs[key]
+            else:
+                logic_outputs = scaled_outputs
 
             # Set outputs on panel
             try:
-                panel.driver.write_outputs(converted_outputs_copy)  # type: ignore
+                panel.driver.write_outputs(logic_outputs)  # type: ignore
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True
@@ -306,6 +293,9 @@ class LEDDAC5578Driver:
         # Set output on each active panel
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         for panel in active_panels:
+
+            # Scale setpoint
+            percent = self.scale_output(percent)
 
             # Check if panel is active low
             if panel.active_low:
@@ -342,3 +332,38 @@ class LEDDAC5578Driver:
             channel_outputs[key] = value
         self.logger.debug("channel outputs = {}".format(channel_outputs))
         return channel_outputs
+
+    def scale_outputs(self, outputs: Dict) -> Dict:
+        """Scales setpoint (light intensity %) to ouput logic (dac signal %)"""
+
+        # Build interpolation lists
+        logic_list = []
+        setpoint_list = []
+        for logic, setpoint in self.logic_map.items():
+            logic_list.append(float(logic))
+            setpoint_list.append(float(setpoint))
+
+        # Get scaled setpoints
+        scaled_outputs = {}
+        for key, output in outputs.items():
+            scaled_output = maths.interpolate(logic_list, setpoint_list, output)
+            scaled_outputs[key] = scaled_output
+
+        # Successfully scaled outputs
+        return scaled_outputs
+
+    def scale_output(self, output: float) -> float:
+        """Scales setpoint (light intensity %) to ouput logic (dac signal %)"""
+
+        # Build interpolation lists
+        logic_list = []
+        setpoint_list = []
+        for logic, setpoint in self.logic_map.items():
+            logic_list.append(float(logic))
+            setpoint_list.append(float(setpoint))
+
+        # Build channel setpoint list
+        scaled_output = maths.interpolate(logic_list, setpoint_list, output)
+
+        # Successfully built channel setpoint list
+        return scaled_output

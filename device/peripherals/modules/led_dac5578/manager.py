@@ -328,6 +328,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
 
     def update_reported_variables(self) -> None:
         """Updates reported variables."""
+        self.logger.debug("Updating reported variables")
 
         # Get previously used distance or default setup distance as average of min
         # and max calibrated distances
