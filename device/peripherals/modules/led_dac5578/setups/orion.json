@@ -58,230 +58,71 @@
 			]
 		}
 	},
-	"channel_configs": [
-		{
-			"name": {
-				"brief": "FR",
-				"verbose": "Far Red"
-			},
-			"channel": {
-				"hardware": 1,
-				"software": 6
-			},
-			"spectrum_nm_percent": {
-	            "380-399": 0,
-	            "400-499": 0,
-	            "500-599": 0,
-	            "600-700": 7,
-	            "701-780": 93
-	        },
-			"planar_distance_map": [
-				{"distance_cm": 0, "ppfd_umol_m2_s": 18},
-				{"distance_cm": 5, "ppfd_umol_m2_s": 17},
-				{"distance_cm": 10, "ppfd_umol_m2_s": 15},
-				{"distance_cm": 15, "ppfd_umol_m2_s": 13},
-				{"distance_cm": 20, "ppfd_umol_m2_s": 11},
-				{"distance_cm": 25, "ppfd_umol_m2_s": 10},
-				{"distance_cm": 30, "ppfd_umol_m2_s": 9},
-				{"distance_cm": 35, "ppfd_umol_m2_s": 9},
-				{"distance_cm": 40, "ppfd_umol_m2_s": 8},
-				{"distance_cm": 73, "ppfd_umol_m2_s": 6},
-				{"distance_cm": 116, "ppfd_umol_m2_s": 4}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 6},
-				{"setpoint_percent": 50, "intensity_percent": 42},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
+	"properties": {
+		"channels": {
+			"FR": {"name": "Far Red", "type": "FR", "port": 6},
+			"WW": {"name": "Warm White", "type": "WW", "port": 5},
+			"CW1": {"name": "Cool White 1", "type": "CW", "port": 4},
+			"CW2": {"name": "Cool White 2", "type": "CW", "port": 2},
+			"CW3": {"name": "Cool White 3", "type": "CW", "port": 0},
+			"CW4": {"name": "Cool White 4", "type": "CW", "port": 7}
 		},
-		{
-			"name": {
-				"brief": "CW1",
-				"verbose": "Cool White #1"
-			},
-			"channel": {
-				"hardware": 2,
-				"software": 4
-			},
-			"spectrum_nm_percent": {
-	            "380-399": 0,
-	            "400-499": 22,
-	            "500-599": 41,
-	            "600-700": 32,
-	            "701-780": 4
-	        },
-			"planar_distance_map": [
-				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
-				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
-				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
-				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
-				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
-				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
-				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
-				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
-				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
-				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
-				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 6},
-				{"setpoint_percent": 50, "intensity_percent": 42},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
+		"intensity_map_cm_umol": {
+			"0": 1708,
+			"5": 1577,
+			"10": 1425,
+			"15": 1214,
+			"20": 1037,
+			"25": 923,
+			"30": 875,
+			"35": 836,
+			"40": 779,
+			"73": 556,
+			"116": 356
 		},
-		{
-			"name": {
-				"brief": "CW2",
-				"verbose": "Cool White #2"
-			},
-			"channel": {
-				"hardware": 3,
-				"software": 2
-			},
-			"spectrum_nm_percent": {
-	            "380-399": 0,
-	            "400-499": 22,
-	            "500-599": 41,
-	            "600-700": 32,
-	            "701-780": 4
-	        },
-			"planar_distance_map": [
-				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
-				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
-				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
-				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
-				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
-				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
-				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
-				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
-				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
-				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
-				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 6},
-				{"setpoint_percent": 50, "intensity_percent": 42},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
+		"logic_scaler_percents": {
+        	"0": 0,
+        	"25": 6,
+        	"50": 42,
+        	"75": 75,
+        	"100": 100
 		},
-		{
-			"name": {
-				"brief": "CW3",
-				"verbose": "Cool White #3"
-			},
-			"channel": {
-				"hardware": 4,
-				"software": 0
-			},
-			"spectrum_nm_percent": {
-	            "380-399": 0,
-	            "400-499": 22,
-	            "500-599": 41,
-	            "600-700": 32,
-	            "701-780": 4
+		"channel_types": {
+			"FR": {
+				"name": "Far Red",
+				"relative_intensity_percent": 1,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 0,
+		            "500-599": 0,
+		            "600-700": 7,
+		            "701-780": 93
+		        }
 	        },
-			"planar_distance_map": [
-				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
-				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
-				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
-				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
-				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
-				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
-				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
-				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
-				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
-				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
-				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 6},
-				{"setpoint_percent": 50, "intensity_percent": 42},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
-		},
-		{
-			"name": {
-				"brief": "CW4",
-				"verbose": "Cool White #4"
-			},
-			"channel": {
-				"hardware": 4,
-				"software": 7
-			},
-			"spectrum_nm_percent": {
-	            "380-399": 0,
-	            "400-499": 22,
-	            "500-599": 41,
-	            "600-700": 32,
-	            "701-780": 4
+			"CW": {
+				"name": "Cool White",
+				"relative_intensity_percent": 21.25,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 22,
+		            "500-599": 41,
+		            "600-700": 32,
+		            "701-780": 4
+		        }
 	        },
-			"planar_distance_map": [
-				{"distance_cm": 0, "ppfd_umol_m2_s": 346},
-				{"distance_cm": 5, "ppfd_umol_m2_s": 319},
-				{"distance_cm": 10, "ppfd_umol_m2_s": 288},
-				{"distance_cm": 15, "ppfd_umol_m2_s": 246},
-				{"distance_cm": 20, "ppfd_umol_m2_s": 210},
-				{"distance_cm": 25, "ppfd_umol_m2_s": 187},
-				{"distance_cm": 30, "ppfd_umol_m2_s": 177},
-				{"distance_cm": 35, "ppfd_umol_m2_s": 169},
-				{"distance_cm": 40, "ppfd_umol_m2_s": 158},
-				{"distance_cm": 73, "ppfd_umol_m2_s": 112},
-				{"distance_cm": 116, "ppfd_umol_m2_s": 72}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 6},
-				{"setpoint_percent": 50, "intensity_percent": 42},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
-		},
-		{
-			"name": {
-				"brief": "WW",
-				"verbose": "Warm White"
-			},
-			"channel": {
-				"hardware": 6,
-				"software": 5
-			},
-			"spectrum_nm_percent": {
-	            "380-399": 0,
-	            "400-499": 8,
-	            "500-599": 33,
-	            "600-700": 50,
-	            "701-780": 8
-	        },
-			"planar_distance_map": [
-				{"distance_cm": 0, "ppfd_umol_m2_s": 307},
-				{"distance_cm": 5, "ppfd_umol_m2_s": 284},
-				{"distance_cm": 10, "ppfd_umol_m2_s": 256},
-				{"distance_cm": 15, "ppfd_umol_m2_s": 218},
-				{"distance_cm": 20, "ppfd_umol_m2_s": 187},
-				{"distance_cm": 25, "ppfd_umol_m2_s": 166},
-				{"distance_cm": 30, "ppfd_umol_m2_s": 157},
-				{"distance_cm": 35, "ppfd_umol_m2_s": 150},
-				{"distance_cm": 40, "ppfd_umol_m2_s": 140},
-				{"distance_cm": 73, "ppfd_umol_m2_s": 100},
-				{"distance_cm": 116, "ppfd_umol_m2_s": 64}
-			],
-			"output_percent_map": [
-				{"setpoint_percent": 0, "intensity_percent": 0},
-				{"setpoint_percent": 25, "intensity_percent": 6},
-				{"setpoint_percent": 50, "intensity_percent": 42},
-				{"setpoint_percent": 75, "intensity_percent": 75},
-				{"setpoint_percent": 100, "intensity_percent": 100}
-			]
+			"WW": {
+				"name": "Warm White",
+				"relative_intensity_percent": 18,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 8,
+		            "500-599": 33,
+		            "600-700": 50,
+		            "701-780": 8
+		        }
+			}
 		}
-	],
+	},
 	"events": [
 		{
 		    "name": "Reset",
