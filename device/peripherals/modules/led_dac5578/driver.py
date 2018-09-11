@@ -204,7 +204,7 @@ class LEDDAC5578Driver:
             try:
                 self.set_outputs(channel_outputs)
             except Exception as e:
-                self.logger.exception("Unable to set output on {}".format(panel.name))
+                self.logger.exception("Unable to set outputs on {}".format(panel.name))
 
         # Check at least one panel is still active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
@@ -250,6 +250,7 @@ class LEDDAC5578Driver:
 
             # Scale setpoints
             scaled_outputs = self.scale_outputs(converted_outputs)
+            # scaled_outputs = converted_outputs
 
             # Adjust logic ouput by checking if panel is active low
             if panel.active_low:
@@ -346,7 +347,7 @@ class LEDDAC5578Driver:
         # Get scaled setpoints
         scaled_outputs = {}
         for key, output in outputs.items():
-            scaled_output = maths.interpolate(logic_list, setpoint_list, output)
+            scaled_output = maths.interpolate(setpoint_list, logic_list, output)
             scaled_outputs[key] = scaled_output
 
         # Successfully scaled outputs
@@ -363,7 +364,7 @@ class LEDDAC5578Driver:
             setpoint_list.append(float(setpoint))
 
         # Build channel setpoint list
-        scaled_output = maths.interpolate(logic_list, setpoint_list, output)
+        scaled_output = maths.interpolate(setpoint_list, logic_list, output)
 
         # Successfully built channel setpoint list
         return scaled_output
