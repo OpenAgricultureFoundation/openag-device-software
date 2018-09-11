@@ -176,17 +176,22 @@ class ConnectUtils:
 
     # ------------------------------------------------------------------------
     # Get the URL for remote access to the device UI.
+    # 1712EW004671.serveo.net
     @staticmethod
     def get_remote_UI_URL():
+        if not ConnectUtils.is_bbb():
+            return "This is not a beaglebone"
         try:
+            # Get this BBB's serial number
+            serial = 'oops'
+            cmd = ['scripts/get_BBB_SN.sh']
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE) as proc1:
+                output = proc1.stdout.read().decode("utf-8")
+                output += proc1.stderr.read().decode("utf-8")
+                serial = output.strip()
 
-            # Get mac address
-            mac_addr = hex(uuid.getnode()).replace("0x", "")
-
-            # Build subdomain
-            subdomain = ".".join(mac_addr[i:i + 2] for i in range(0, 11, 2))
-
-            return "http://{}.serveo.net/".format(subdomain)
+            return "http://{}.serveo.net/".format(serial)
         except:
             pass
         return ''

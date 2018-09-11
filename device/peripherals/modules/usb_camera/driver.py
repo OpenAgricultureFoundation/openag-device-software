@@ -205,14 +205,19 @@ class USBCameraDriver:
         timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
         filename = timestr + "_" + self.name + ".png"
 
-        # Build filepath string
-        filepath = self.directory + filename
+        # Specify filepaths
+        image_path = self.directory + filename
+        base_path = "device/peripherals/modules/usb_camera"
+        dummy_path = "{}/dummy.png".format(base_path)
+        active_path = "{}/active.jpg".format(base_path)
 
         # Check if simulated
         if self.simulate:
-            self.logger.info("Simulating saving image to: {}".format(filepath))
+            self.logger.info(
+                "Simulating capture, saving simulation image to: {}".format(image_path)
+            )
             command = "cp device/peripherals/modules/usb_camera/tests/simulation_image.png {}".format(
-                filepath
+                image_path
             )
             os.system(command)
             return
@@ -224,23 +229,36 @@ class USBCameraDriver:
             raise CaptureImageError(logger=self.logger) from e
 
         # Capture image
-        self.logger.info("Capturing image from: {} to: {}".format(camera, filepath))
         try:
             # Take 3 low res images to clear out buffer
-            path = "device/peripherals/modules/usb_camera/"
-            os.system("fswebcam -r '320x240' dummy_image.png")
-            os.system("fswebcam -r '320x240' dummy_image.png")
-            os.system("fswebcam -r '320x240' dummy_image.png")
+            self.logger.debug("Capturing dummy images")
+            command = "fswebcam -d {} -r '320x240' ".format(camera, dummy_path)
+            for i in range(3):
+                os.system(command)
 
-            # Take real image
-            command = "fswebcam -d {} -r {} --png 9 --no-banner --save {}".format(
-                camera, self.resolution, filepath
+            # Try taking up to 3 real images
+            self.logger.debug("Capturing active image")
+            command = "fswebcam -d {} -r {} --png 9 -F 10 --no-banner --save {}".format(
+                camera, self.resolution, active_path
             )
-            self.logger.debug("command = {}".format(command))
-            os.system(command)
+            valid_image = False
+            for i in range(3):
+                os.system(command)
+                size = os.path.getsize(active_path)
+
+                # Check if image meets minimum size constraint
+                # TODO: Check lighting conditions (if box is dark, images are small)
+                if size > 160000:  # 160kB
+                    valid_image = True
+                    break
+
+            # Check if active image is valid, if so copy to images/ directory
+            if not valid_image:
+                self.logger.warning("Unable to capture a valid image, saving anyway")
+                os.rename(active_path, image_path)
+            else:
+                self.logger.info("Captured image, saved to {}".format(image_path))
+                os.rename(active_path, image_path)
+
         except Exception as e:
             raise CaptureImageError(logger=self.logger) from e
-
-        # TODO: Wait for file in destination and do some prelim checks:
-        #  - filesize not too small?
-        #  - all black? all white?

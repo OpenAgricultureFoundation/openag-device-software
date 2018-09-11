@@ -284,9 +284,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         # Set spectral power distribution from desired values
         try:
             result = self.driver.set_spd(
-                desired_distance_cm=self.desired_distance,
-                desired_intensity_umol_m2_s=self.desired_intensity,
-                desired_spectrum_nm_percent=self.desired_spectrum,
+                self.desired_distance, self.desired_intensity, self.desired_spectrum
             )
             self.health = 100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
         except DriverError as e:

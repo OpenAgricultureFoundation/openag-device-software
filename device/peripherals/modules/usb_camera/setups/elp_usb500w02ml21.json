@@ -43,6 +43,6 @@
 	"properties": {
 		"vendor_id": "0x05A3",
 		"product_id": "0x9520",
-		"resolution": "640x480"
+		"resolution": "1280x1024"
 	}
 }

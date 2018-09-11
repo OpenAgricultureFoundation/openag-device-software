@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Have we setup the local python environment we need?
 if ! [ -d $DIR/venv ]; then
-    echo 'Error: please run: ./setup_python.sh
+    echo 'Error: please run: ./scripts/setup_python.sh
 Exiting.'
     exit 1
 fi
@@ -30,6 +30,12 @@ export GCLOUD_DEV_REG=device-registry
 DEVICE_ID_FILE=$DIR/registration/data/device_id.bash
 if [ -f $DEVICE_ID_FILE ]; then
     source $DEVICE_ID_FILE
+fi
+
+
+# Turn on debug logging if we are in developer mode
+if [ ! -f '$TOPDIR/config/develop' ]; then
+    export OPENAG_LOG_LEVEL=DEBUG
 fi
 
 

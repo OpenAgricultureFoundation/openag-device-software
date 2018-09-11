@@ -202,11 +202,11 @@ class LEDDAC5578Driver:
 
         # Approximate spectral power distribution
         try:
-            channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s = light.approximate_spd(
-                panel_properties=self.panel_properties,
-                desired_distance=desired_distance,
-                desired_intensity=desired_intensity,
-                desired_spectrum=desired_spectrum,
+            channel_outputs, output_spectrum, output_intensity = light.approximate_spd(
+                self.panel_properties,
+                desired_distance,
+                desired_intensity,
+                desired_spectrum,
             )
         except Exception as e:
             message = "approximate spd failed"
@@ -233,10 +233,10 @@ class LEDDAC5578Driver:
         # Successfully set channel outputs
         self.logger.debug(
             "Successfully set spd, output: channels={}, spectrum={}, ppfd={}umol/m2/s".format(
-                channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s
+                channel_outputs, output_spectrum, output_intensity
             )
         )
-        return (channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s)
+        return (channel_outputs, output_spectrum, output_intensity)
 
     def set_outputs(self, outputs: dict) -> None:
         """Sets outputs on dac. Converts channel names to channel numbers 

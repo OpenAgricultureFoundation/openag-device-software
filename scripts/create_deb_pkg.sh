@@ -10,10 +10,39 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Have we setup the local python environment we need?
 if [[ "$DIR" != "/opt/openagbrain/scripts" ]]; then
-    echo 'Error: Go pull the source and build packages in /opt/openagbrain
+    echo ''
+    echo 'Error: Go pull the source in /opt/openagbrain and try again.
 Exiting.'
+    echo ''
     exit 1
 fi
+
+# Have we setup the local python environment we need?
+if ! [ -d $DIR/../venv ]; then
+    echo ''
+    echo 'Error: please run: ./scripts/setup_python.sh
+Exiting.'
+    echo ''
+    exit 1
+fi
+
+# Have we downloaded the packages we need?
+echo ''
+echo 'Have you run the download_pip_packages.sh script?'
+if ! [ -d $DIR/../venv/pip_download ]; then
+    echo 'No, you havent, please run: ./scripts/download_pip_packages.sh
+Exiting.'
+    echo ''
+    exit 1
+fi
+echo ''
+
+# Install any new python modules
+echo 'Installing any new python modules into the virtual env we package...'
+echo ''
+source venv/bin/activate
+pip3 install -f venv/pip_download -r requirements.txt 
+
 
 echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."
 echo ""

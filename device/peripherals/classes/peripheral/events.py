@@ -49,7 +49,9 @@ class PeripheralEvents:
         self.logger.debug("Processing reset event")
 
         # Check sensor is in acceptible mode
-        modes = [Modes.NORMAL, Modes.ERROR, Modes.CALIBRATE, Modes.SHUTDOWN]
+        modes = [
+            Modes.NORMAL, Modes.ERROR, Modes.CALIBRATE, Modes.SHUTDOWN, Modes.MANUAL
+        ]
         if self.mode not in modes:
             message = "Unable to reset peripheral from {} mode!".format(self.mode)
             self.logger.info(message)

@@ -1,5 +1,5 @@
-openagbrain (0.0-6) stable; urgency=medium
+openagbrain (0.1-2) stable; urgency=medium
 
-  * First internal debian package.
+  * Ready for testers. 
 
- -- rob baynes <rbaynes@mit.edu>  Thu, 06 Sep 2018 17:01:41 +0000
+ -- rob baynes <rbaynes@mit.edu>  Fri, 07 Sep 2018 20:29:49 +0000

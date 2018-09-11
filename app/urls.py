@@ -51,7 +51,9 @@ router.register(
     base_name="api-peripheral-setups",
 )
 router.register(
-    r"variables/sensor", views.SensorVariableViewSet, base_name="api-sensor-variables"
+    r"variables/sensor", 
+    views.SensorVariableViewSet, 
+    base_name="api-sensor-variables"
 )
 router.register(
     r"variables/actuator",
@@ -59,9 +61,14 @@ router.register(
     base_name="api-actuator-variables",
 )
 router.register(
-    r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
+    r"connect/status", 
+    views.ConnectGetStatus, 
+    base_name="api-connect-status"
 )
-router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
+router.register(
+    r"connect/joinwifi", 
+    views.ConnectJoinWifi, 
+    base_name="api-join-wifi")
 router.register(
     r"connect/deletewifis",
     views.ConnectDeleteWifis,
@@ -76,6 +83,21 @@ router.register(
     r"connect/deleteiotreg",
     views.ConnectDeleteIoTreg,
     base_name="api-connect-deleteiotreg",
+)
+router.register(
+    r"upgrade",
+    views.UpgradeNow,
+    base_name="api-upgrade-now",
+)
+router.register(
+    r"upgradecheck",
+    views.UpgradeCheck,
+    base_name="api-upgrade-check",
+)
+router.register(
+    r"upgradestatus",
+    views.UpgradeStatus,
+    base_name="api-upgrade-status",
 )
 
 
@@ -123,6 +145,7 @@ urlpatterns = [
     url(r"^iot/$", views.IoT.as_view(), name="iot"),
     url(r"^resource/$", views.Resource.as_view(), name="resource"),
     url(r"^connect/$", views.Connect.as_view(), name="connect"),
+    url(r"^upgrade/$", views.Upgrade.as_view(), name="upgrade"),
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),

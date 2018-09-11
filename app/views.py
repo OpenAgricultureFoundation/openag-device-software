@@ -1,5 +1,5 @@
 # Import standard python modules
-import json, logging
+import os, json, logging
 from operator import itemgetter
 
 # Import django modules
@@ -70,6 +70,7 @@ from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
 from connect.connect_utils import ConnectUtils
+from upgrade.upgrade_utils import UpgradeUtils
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
@@ -353,12 +354,8 @@ class Logs(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        logs = [
-            {"name": "SHT25-Top", "entries": ["log line 1", "log line 2"]},
-            {"name": "T6713-Top", "entries": ["t6713 line 1", "t6713 line 2"]},
-        ]
 
-        # Load in config info
+        # Load device config
         if os.path.exists("config/device.txt"):
             with open("config/device.txt") as f:
                 config_name = f.readline().strip()
@@ -623,6 +620,64 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
 
         response = ConnectUtils.delete_iot_registration()
         logger.info("ConnectDeleteIoTreg response={}".format(response))
+        return Response(response)
+
+
+class Upgrade(APIView):
+    """UI page fields for ConnectManager."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "upgrade.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        extra = {"console_name": "views.Update"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = UpgradeUtils.get_status()
+        logger.info("Upgrade status response={}".format(response))
+        return Response(response)
+
+
+class UpgradeNow(viewsets.ViewSet):
+    """REST API to upgrade our debian package.
+    This class extends the ViewSet (not ModelViewSet) because it
+    dynamically gets its data and the Model gets data from the DB."""
+
+    @method_decorator(login_required)
+    def list(self, request):
+        extra = {"console_name": "views.UpgradeNow"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+        response = UpgradeUtils.update_software()
+        logger.info("UpgradeNow response={}".format(response))
+        return Response(response)
+
+
+class UpgradeCheck(viewsets.ViewSet):
+    """REST API to check for upgrades to our debian package. """
+
+    @method_decorator(login_required)
+    def list(self, request):
+        extra = {"console_name": "views.UpgradeCheck"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+        response = UpgradeUtils.check()
+        logger.info("UpgradeCheck response={}".format(response))
+        return Response(response)
+
+
+class UpgradeStatus(viewsets.ViewSet):
+    """REST API to get the current software version status. """
+
+    @method_decorator(login_required)
+    def list(self, request):
+        extra = {"console_name": "views.UpgradeStatus"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+        response = UpgradeUtils.get_status()
+        logger.info("UpgradeStatus response={}".format(response))
         return Response(response)
 
 

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block javascript %}
+<script>
+  //--------------------------------------------------------------------------
+  window.onload = function() {
+
+    document.getElementById("status").innerHTML = "{{status}}";
+    document.getElementById("current_version").innerHTML = "{{current_version}}";
+    document.getElementById("upgrade_version").innerHTML = "{{upgrade_version}}";
+
+    {% if show_upgrade %}
+      $('#show_upgrade_but').collapse('show');
+      $('#check_but').collapse('hide');
+    {% else %}
+      $('#check_but').collapse('show');
+    {% endif %}
+  }
+
+  //--------------------------------------------------------------------------
+  function upgrade() {
+    document.getElementById("status").innerHTML = 'Upgrading to latest version, restarting in 2 minutes...';
+    $('#show_upgrade_but').collapse('hide');
+    upgradePromise()
+      .then(function(upgradeSuccess) {
+        document.getElementById("status").innerHTML = upgradeSuccess;
+      })
+      .catch(function(error) {
+        document.getElementById("status").innerHTML = 'Failed: ' + error;
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function upgradePromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/upgrade/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var upgradeSuccess = data['status'];
+          resolve(upgradeSuccess)
+        },
+        error: function(data) {
+          console.log("Upgrade failed: " + data['error'])
+          reject(data)
+        }
+      });
+    })
+  }
+
+  //--------------------------------------------------------------------------
+  function check() {
+    document.getElementById("status").innerHTML = 'Checking for updates, this will take 2 minutes...';
+    $('#check_but').collapse('hide');
+    checkPromise()
+      .then(function(checkSuccess) {
+        document.getElementById("status").innerHTML = checkSuccess;
+        $('#check_but').collapse('show');
+        return getStatusPromise();
+      })
+      .catch(function(error) {
+        document.getElementById("status").innerHTML = 'Failed: ' + error;
+      })
+  }
+
+  //--------------------------------------------------------------------------
+  function checkPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/upgradecheck/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: 'json',
+        success: function(data) {
+          var checkSuccess = data['status'];
+          resolve(checkSuccess)
+        },
+        error: function(data) {
+          console.log("Check failed: " + data['error'])
+          reject(data)
+        }
+      });
+    })
+  }
+
+  //--------------------------------------------------------------------------
+  function getStatusPromise() {
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/upgradestatus/",
+        type: "GET",
+        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+        dataType: "json",
+        success: function(data) {
+
+          document.getElementById("current_version").innerHTML = data['current_version'];
+          document.getElementById("upgrade_version").innerHTML = data['upgrade_version'];
+          if( data['show_upgrade'] ) {
+            $('#show_upgrade_but').collapse('show');
+            $('#check_but').collapse('hide');
+          } else {
+            $('#show_upgrade_but').collapse('hide');
+            $('#check_but').collapse('show');
+          }
+
+          var statusDict = data;
+          resolve(statusDict);
+        },
+        error: function(data) {
+          console.log("Promise Error: getStatus failed");
+          document.getElementById("status").innerHTML = 'Could not get status.';
+          reject(data);
+        }
+      });
+    })
+  }
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<html>
+   <body>
+      <div class="upgrade">
+        <h2>Software Upgrade</h2>
+         <div class="card">
+            <ul>
+              <li><b>Status:</b> <span id="status"></span>
+              <li><b>Current Software Version:</b> <span id="current_version"></span>
+              <li><b>Available Software Upgrade to Version:</b> <span id="upgrade_version"></span>
+              {% if error != None %}
+              <li><b>Error:</b> {{ error }}
+              {% endif %}
+            </ul>
+            <div class="collapse" id="show_upgrade_but">
+              <a class="badge badge-secondary" data-toggle="collapse"
+                 style="width:200px" href="" role="button" 
+                 onclick="upgrade();">Upgrade the software</a> 
+            </div>
+            <div class="collapse" id="check_but">
+              <a class="badge badge-secondary" data-toggle="collapse"
+                 style="width:200px" href="" role="button" 
+                 onclick="check();">Check for availabe upgrade</a> 
+            </div>
+         </div>
+      </div>
+   </body>
+</html>
+{% endblock %}

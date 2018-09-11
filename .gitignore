@@ -18,3 +18,5 @@ htmlcov
 device.txt
 build-deb-pkg-tmp/
 config/develop
+dummy.png
+active.png

@@ -35,6 +35,7 @@ cp -R app/ \
   resource/ \
   scripts/ \
   tests/ \
+  upgrade/ \
   venv/ \
   $DEST
 

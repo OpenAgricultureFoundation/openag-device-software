@@ -23,8 +23,10 @@ pip3 install -f venv/pip_download -r requirements.txt
 echo 'Updating database...'
 if [[ "$OSTYPE" == "linux"* ]]; then
   sudo -u postgres psql openag_brain -c "DELETE FROM app_statemodel;"
+  sudo -u postgres psql openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 1;"
 else # we are on OSX
   psql postgres openag_brain -c "DELETE FROM app_statemodel;"
+  psql postgres openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 1;"
 fi
 
 # If there is no device type configured, make an unspecified one
@@ -43,6 +45,9 @@ echo "from django.contrib.auth.models import User; User.objects.filter(email='op
 
 # How to test access to the backend, if you see weird IoT errors:
 # openssl s_client -connect mqtt.googleapis.com:8883
+#
+# If the above fails and below works, go change the port in iot_pubsub.py
+# openssl s_client -connect mqtt.googleapis.com:443
 
 # Check if brain root env is exported in venv activate, if not add it
 if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
@@ -53,7 +58,7 @@ fi
 sudo rm -f /etc/rc.local
 
 # Sym link to config/rc.local.<run_context>
-if [ ! -f 'config/develop' ]; then
+if [ ! -f '$TOPDIR/config/develop' ]; then
   sudo ln -s $TOPDIR/config/rc.local.production /etc/rc.local
 else
   sudo ln -s $TOPDIR/config/rc.local.development /etc/rc.local

@@ -38,9 +38,8 @@ connmanctl enable wifi > /dev/null 2>&1
 
 # We must restart autossh, otherwise serveo.net won't let us back in.
 sleep 4
-sudo killall -s 9 autossh > /dev/null 2>&1
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-python $DIR/forward_ports.py > /dev/null 2>&1
+$DIR/forward_ports.sh
  
 #connmanctl services
 #ifconfig wlan0
