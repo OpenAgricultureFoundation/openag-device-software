@@ -10,7 +10,17 @@ url=$serial.serveo.net
 # Check if site is up every 5 minutes else restart forwarding service
 while true; do
 
-	# Check if site is up
+	# Check if we can connect outbound (and DNS works)
+    ping -c 1 mit.edu > /dev/null 2>&1
+	if [ "$?" -eq 0 ]
+	then
+		echo 'Network is up.'	
+	else
+		echo 'Network is down, restarting connman.'	
+        sudo service connman restart > /dev/null 2>&1
+    fi
+
+	# Check if serveo is up
 	wget --server-response --spider $url > /dev/null 2>&1
 	if [ "$?" -eq 0 ]
 	then
