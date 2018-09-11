@@ -128,6 +128,10 @@ class LEDDAC5578Panel(object):
 class LEDDAC5578Driver:
     """Driver for array of led panels controlled by a dac5578."""
 
+    # Initialize var defaults
+    num_active_panels = 0
+    num_expected_panels = 1
+
     def __init__(
         self,
         name: str,
@@ -147,6 +151,9 @@ class LEDDAC5578Driver:
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
 
+        # Initialze num expected panels
+        self.num_expected_panels = len(panel_configs)
+
         # Initialize panels
         self.panels: List[LEDDAC5578Panel] = []
         for config in panel_configs:
@@ -158,13 +165,13 @@ class LEDDAC5578Driver:
 
         # Check at least one panel is still active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
+        self.num_active_panels = len(active_panels)
+        if self.num_active_panels < 1:
             raise NoActivePanelsError(logger=self.logger)
 
         # Successfully initialized
-        length = len(active_panels)
-        message = "Successfully initialized with {} active panels".format(length)
-        message2 = ", expected {}.".format(len(panel_configs))
+        message = "Successfully initialized with {} ".format(self.num_active_panels)
+        message2 = "active panels, expected {}".format(self.num_expected_panels)
         self.logger.debug(message + message2)
 
     def turn_on(self) -> Dict[str, float]:
@@ -251,7 +258,8 @@ class LEDDAC5578Driver:
 
         # Check at least one panel is active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
+        self.num_active_panels = len(active_panels)
+        if self.num_active_panels < 1:
             raise NoActivePanelsError(logger=self.logger)
 
         # Set outputs on each active panel
@@ -274,7 +282,8 @@ class LEDDAC5578Driver:
 
         # Check at least one panel is still active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
+        self.num_active_panels = len(active_panels)
+        if self.num_active_panels < 1:
             message = "failed when setting outputs"
             raise NoActivePanelsError(message=message, logger=self.logger)
 
@@ -311,7 +320,8 @@ class LEDDAC5578Driver:
 
         # Check at least one panel is still active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
+        self.num_active_panels = len(active_panels)
+        if self.num_active_panels < 1:
             message = "failed when setting output"
             raise NoActivePanelsError(message=message, logger=self.logger)
 
