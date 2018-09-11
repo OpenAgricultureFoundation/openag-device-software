@@ -1,0 +1,53 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-09-11T16:45:41Z",
+	"name": "Test Taurus 800 umol @10cm",
+	"uuid": "9106a349-3ddb-462a-92ee-dd38df3f8233",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Test if taurus light panel can hit 800 umol at 10cm",
+		"verbose": ""
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Scarlet Kale",
+			"uuid": "d6d76ff9-b12e-47bb-8e83-f872c7870856"
+		}
+	],
+	"cultivation_methods": [
+		{
+			"name": "Shallow Water Culture",
+			"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"day": {
+			"name": "Day",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 28.01, "500-599": 26.9, "600-700": 41.13, "701-780": 3.96},
+			"light_ppfd_umol_m2_s": 800,
+			"light_illumination_distance_cm": 10
+		}
+	},
+	"phases": [
+		{
+			"name": "Day",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "day",
+					"duration_hours": 12
+				}
+			]
+		}
+	]
+}

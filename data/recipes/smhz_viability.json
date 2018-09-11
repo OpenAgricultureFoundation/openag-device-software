@@ -43,367 +43,367 @@
 	"environments": {
 		"light_0": {
 			"name": "Light 0",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 0
 		},
 		"light_10": {
 			"name": "Light 10",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 10
 		},
 		"light_20": {
 			"name": "Light 20",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 20
 		},
 		"light_30": {
 			"name": "Light 30",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 30
 		},
 		"light_40": {
 			"name": "Light 40",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 40
 		},
 		"light_50": {
 			"name": "Light 50",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 50
 		},
 		"light_60": {
 			"name": "Light 60",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 60
 		},
 		"light_70": {
 			"name": "Light 70",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 70
 		},
 		"light_80": {
 			"name": "Light 80",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 80
 		},
 		"light_90": {
 			"name": "Light 90",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 90
 		},
 		"light_100": {
 			"name": "Light 100",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 100
 		},
 		"light_110": {
 			"name": "Light 110",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 110
 		},
 		"light_120": {
 			"name": "Light 120",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 120
 		},
 		"light_130": {
 			"name": "Light 130",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 130
 		},
 		"light_140": {
 			"name": "Light 140",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 140
 		},
 		"light_150": {
 			"name": "Light 150",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 150
 		},
 		"light_160": {
 			"name": "Light 160",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 160
 		},
 		"light_170": {
 			"name": "Light 170",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 170
 		},
 		"light_180": {
 			"name": "Light 180",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 180
 		},
 		"light_190": {
 			"name": "Light 190",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 190
 		},
 		"light_200": {
 			"name": "Light 200",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 200
 		},
 		"light_210": {
 			"name": "Light 210",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 210
 		},
 		"light_220": {
 			"name": "Light 220",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 220
 		},
 		"light_230": {
 			"name": "Light 230",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 230
 		},
 		"light_240": {
 			"name": "Light 240",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 240
 		},
 		"light_250": {
 			"name": "Light 250",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 250
 		},
 		"light_260": {
 			"name": "Light 260",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 260
 		},
 		"light_270": {
 			"name": "Light 270",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 270
 		},
 		"light_280": {
 			"name": "Light 280",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 280
 		},
 		"light_290": {
 			"name": "Light 290",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 290
 		},
 		"light_300": {
 			"name": "Light 300",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 300
 		},
 		"light_310": {
 			"name": "Light 310",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 310
 		},
 		"light_320": {
 			"name": "Light 320",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 320
 		},
 		"light_330": {
 			"name": "Light 330",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 330
 		},
 		"light_340": {
 			"name": "Light 340",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 340
 		},
 		"light_350": {
 			"name": "Light 350",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 350
 		},
 		"light_360": {
 			"name": "Light 360",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 360
 		},
 		"light_370": {
 			"name": "Light 370",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 370
 		},
 		"light_380": {
 			"name": "Light 380",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 380
 		},
 		"light_390": {
 			"name": "Light 390",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 390
 		},
 		"light_400": {
 			"name": "Light 400",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 400
 		},
 		"light_410": {
 			"name": "Light 410",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 410
 		},
 		"light_420": {
 			"name": "Light 420",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 420
 		},
 		"light_430": {
 			"name": "Light 430",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 430
 		},
 		"light_440": {
 			"name": "Light 440",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 440
 		},
 		"light_450": {
 			"name": "Light 450",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 450
 		},
 		"light_460": {
 			"name": "Light 460",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 460
 		},
 		"light_470": {
 			"name": "Light 470",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 470
 		},
 		"light_480": {
 			"name": "Light 480",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 480
 		},
 		"light_490": {
 			"name": "Light 490",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 490
 		},
 		"light_500": {
 			"name": "Light 500",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 500
 		},
 		"light_510": {
 			"name": "Light 510",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 510
 		},
 		"light_520": {
 			"name": "Light 520",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 520
 		},
 		"light_530": {
 			"name": "Light 530",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 530
 		},
 		"light_540": {
 			"name": "Light 540",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 540
 		},
 		"light_550": {
 			"name": "Light 550",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 550
 		},
 		"light_560": {
 			"name": "Light 560",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 560
 		},
 		"light_570": {
 			"name": "Light 570",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 570
 		},
 		"light_580": {
 			"name": "Light 580",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 580
 		},
 		"light_590": {
 			"name": "Light 590",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 590
 		},
 		"light_600": {
 			"name": "Light 600",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 600
 		}

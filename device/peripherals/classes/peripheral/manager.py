@@ -95,9 +95,9 @@ class PeripheralManager:
         return None
 
     @health.setter
-    def health(self, value: dict) -> None:
+    def health(self, value: float) -> None:
         """ Sets health value in shared state. """
-        self.state.set_peripheral_value(self.name, "health", value)
+        self.state.set_peripheral_value(self.name, "health", round(value, 2))
 
     # TODO: Use state functions on remaining properties
 

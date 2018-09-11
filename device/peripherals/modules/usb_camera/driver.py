@@ -230,7 +230,6 @@ class USBCameraDriver:
 
         # Capture image
         try:
-
             # Take 3 low res images to clear out buffer
             self.logger.debug("Capturing dummy images")
             command = "fswebcam -d {} -r '320x240' ".format(camera, dummy_path)

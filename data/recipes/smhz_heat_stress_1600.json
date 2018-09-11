@@ -2,12 +2,12 @@
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-09-06T09:15:41Z",
-	"name": "Small Hazelnut Heat Stress 1400 PAR",
+	"name": "Small Hazelnut Heat Stress 1600 PAR",
 	"uuid": "a54674b0-66ce-4ccb-9222-f2cc98d55e5f",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
 	"description": {
-		"brief": "Heat stress trial running over the course of a day ramping light up to 1400 PAR",
+		"brief": "Heat stress trial running over the course of a day ramping light up to 1600 PAR",
 		"verbose": null
 	},
 	"authors": [
@@ -38,135 +38,153 @@
 	"environments": {
 		"light_0": {
 			"name": "Light 0",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 0
 		},
 		"light_67": {
 			"name": "Light 67",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 67
 		},
 		"light_133": {
 			"name": "Light 133",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 133
 		},
 		"light_200": {
 			"name": "Light 200",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 200
 		},
 		"light_267": {
 			"name": "Light 267",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 267
 		},
 		"light_333": {
 			"name": "Light 333",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 333
 		},
 		"light_400": {
 			"name": "Light 400",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 400
 		},
 		"light_467": {
 			"name": "Light 467",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 467
 		},
 		"light_533": {
 			"name": "Light 533",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 533
 		},
 		"light_600": {
 			"name": "Light 600",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 600
 		},
 		"light_667": {
 			"name": "Light 667",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 667
 		},
 		"light_733": {
 			"name": "Light 733",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 733
 		},
 		"light_800": {
 			"name": "Light 800",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 800
 		},
 		"light_867": {
 			"name": "Light 867",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 867
 		},
 		"light_933": {
 			"name": "Light 933",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 933
 		},
 		"light_1000": {
 			"name": "Light 1000",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1000
 		},
 		"light_1067": {
 			"name": "Light 1067",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1067
 		},
 		"light_1133": {
 			"name": "Light 1133",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1133
 		},
 		"light_1200": {
 			"name": "Light 1200",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1200
 		},
 		"light_1267": {
 			"name": "Light 1267",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1267
 		},
 		"light_1333": {
 			"name": "Light 1333",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1333
 		},
 		"light_1400": {
 			"name": "Light 1400",
-			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14},
-			"light_illumination_distance_cm": 10,
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
 			"light_ppfd_umol_m2_s": 1400
+		},
+		"light_1467": {
+			"name": "Light 1467",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
+			"light_ppfd_umol_m2_s": 1467
+		},
+		"light_1533": {
+			"name": "Light 1533",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
+			"light_ppfd_umol_m2_s": 1533
+		},
+		"light_1600": {
+			"name": "Light 1600",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 19.56, "500-599": 39.61, "600-700": 35.22, "701-780": 5.6},
+			"light_illumination_distance_cm": 4,
+			"light_ppfd_umol_m2_s": 1600
 		}
 	},
 	"phases": [
@@ -320,7 +338,27 @@
 					"duration_minutes": 15
 				},
 				{
-					"name": "14:15-14:45",
+					"name": "14:15",
+					"environment": "light_1467",
+					"duration_minutes": 15
+				},
+				{
+					"name": "14:30",
+					"environment": "light_1533",
+					"duration_minutes": 15
+				},
+				{
+					"name": "14:45",
+					"environment": "light_1600",
+					"duration_minutes": 15
+				},
+				{
+					"name": "15:00",
+					"environment": "light_1600",
+					"duration_minutes": 15
+				},
+				{
+					"name": "15:15-15:45",
 					"environment": "light_0",
 					"duration_minutes": 45
 				}
