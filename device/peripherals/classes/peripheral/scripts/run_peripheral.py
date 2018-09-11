@@ -7,9 +7,6 @@ from typing import List
 # Set system path
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
-# Import device comms
-from device.comms.i2c import I2C
-
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
 
