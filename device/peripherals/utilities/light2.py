@@ -34,8 +34,6 @@ def approximate_spd(
     channel_types = channel_properties.get("channel_types", {})
     channel_setpoint_dict = accessors.dictify_list(channel_setpoint_list, channel_types)
 
-    #
-
     # Get output spd, spectrum, and intensity
     output_spd_list = calculate_output_spd(channel_spd_matrix, channel_setpoint_vector)
     output_spectrum_list, output_intensity = deconstruct_spd(output_spd_list)
@@ -43,7 +41,16 @@ def approximate_spd(
         output_spectrum_list, desired_spd_dict
     )
 
-    return channel_setpoint_dict, output_spectrum_dict, output_intensity
+    # Map channel setpoints from channel types to channel instances
+    mapped_channel_setpoint_dict = {}
+    channels = channel_properties.get("channels", {})
+    for channel_name, channel_entry in channels.items():
+        key = channel_entry.get("type")
+        setpoint = channel_setpoint_dict.get(key, 0)
+        mapped_channel_setpoint_dict[channel_name] = setpoint
+
+    # Successfully approximated spectral power distribution
+    return mapped_channel_setpoint_dict, output_spectrum_dict, output_intensity
 
 
 def calculate_spd_dict(intensity: float, spectrum: Dict[str, float]):
@@ -217,9 +224,15 @@ def calculate_ulrf_from_percents(
     configuration, channel power percents, and illumination distance."""
 
     # Get min/max distance for channels
-    # TODO: Verify code is being checked to ensure planar distance map is ordered list
-    min_distance = channel_properties[0]["intensity_map_cm_umol"][0]["distance"]
-    max_distance = channel_properties[-1]["intensity_map_cm_umol"][0]["distance"]
+    intensity_map = channel_properties.get("intensity_map_cm_umol", {})
+    distance_list = []
+    intensity_list = []
+    for distance_, intensity in intensity_map.items():
+        distance_list.append(float(distance_))
+        intensity_list.append(intensity)
+
+    min_distance = min(distance_list)
+    max_distance = max(distance_list)
 
     # Check distance in range, else use extrema
     if distance > max_distance:
@@ -229,121 +242,63 @@ def calculate_ulrf_from_percents(
 
     # Get reference SPD from channel configs
     channel_types = channel_properties.get("channel_types", {})
-    key = channel_types.keys()[0]
-    channel_type = channel_type.get(key, {})
-    reference_spectrum = channel_type.get("spectrum_nm_percent", {})
+    for channel_key, channel_dict in channel_types.items():
+        reference_spectrum = channel_dict.get("spectrum_nm_percent", {})
+        break
 
     # Calculate resultant spectrum and intensity from channel power percents
     spectrum, intensity = calculate_resultant_spd(
-        channel_properties=channel_properties,
-        reference_spd=reference_spectrum,
-        channel_output_setpoints=channel_setpoints,
-        distance=distance,
+        channel_properties, reference_spectrum, channel_setpoints, distance
     )
 
     return spectrum, intensity, distance
 
 
-def dictify_channel_output_vector(channel_properties, channel_output_vector):
-    """ Convert channel output vector into its dictionary representation. """
-    channel_output_dict = {}
-    for index, channel_config in enumerate(channel_properties):
-        name = channel_config["name"]["brief"]
-        channel_output_dict[name] = channel_output_vector[index] * 100.0
-    return channel_output_dict
-
-
-def convert_channel_output_intensity(output_percent_map, output_intensity):
-    """ Converts output setpoint to output intensity from 
-        provided output percent map. """
-    intensity_list = []
-    setpoint_list = []
-    for entry in output_percent_map:
-        intensity_list.append(entry["intensity_percent"])
-        setpoint_list.append(entry["setpoint_percent"])
-    output_setpoint = maths.interpolate(intensity_list, setpoint_list, output_intensity)
-    rounded_output_setpoint = float("{:.2f}".format(output_setpoint))
-    return rounded_output_setpoint
-
-
-def convert_channel_output_intensities(channel_properties, output_intensities):
-    """ Converts channel output setpoints to channel output intensites from 
-        provided channel configs. """
-    output_setpoints = {}
-    for channel_name, output_intensity in output_intensities.items():
-        for channel_config in channel_properties:
-            name = channel_config["name"]["brief"]
-            if channel_name == name:
-                output_percent_map = channel_config["output_percent_map"]
-                output_setpoint = convert_channel_output_intensity(
-                    output_percent_map=output_percent_map,
-                    output_intensity=output_intensity,
-                )
-                output_setpoints[channel_name] = output_setpoint
-                break
-    return output_setpoints
-
-
-def convert_channel_output_setpoint(output_percent_map, output_setpoint):
-    """ Converts output setpoint to output intensity from 
-        provided output percent map. """
-    intensity_list = []
-    setpoint_list = []
-    for entry in output_percent_map:
-        intensity_list.append(entry["intensity_percent"])
-        setpoint_list.append(entry["setpoint_percent"])
-    output_intensity = maths.interpolate(setpoint_list, intensity_list, output_setpoint)
-    rounded_output_intensity = float("{:.2f}".format(output_intensity))
-    return rounded_output_intensity
-
-
-def convert_channel_output_setpoints(channel_properties, output_setpoints):
-    """Converts channel output setpoints to channel output intensites from 
-    provided channel configs."""
-    output_intensities = {}
-    for channel_name, output_setpoint in output_setpoints.items():
-        for channel_config in channel_properties:
-            name = channel_config["name"]["brief"]
-            if channel_name == name:
-                output_percent_map = channel_config["output_percent_map"]
-                output_intensity = convert_channel_output_setpoint(
-                    output_percent_map=output_percent_map,
-                    output_setpoint=output_setpoint,
-                )
-                output_intensities[channel_name] = output_intensity
-                break
-    return output_intensities
-
-
 def calculate_resultant_spd(
-    channel_properties, reference_spd, channel_output_setpoints, distance
-):
-    """ Generates spd from provided channel outputs at distance. Returns 
-        spd with the same spectral bands as the reference spd. """
+    channel_properties: Dict[str, Any],
+    reference_spd_dict: Dict[str, float],
+    channel_setpoint_dict: Dict[str, float],
+    distance: float,
+) -> Tuple[Dict[str, float], float]:
+    """Calculates spd from provided channel outputs at distance. Returns 
+    spd with the same spectral bands as the reference spd."""
 
-    channel_spd_matrix = build_channel_spd_matrix(
-        channel_properties=channel_properties,
-        distance=distance,
-        reference_spd=reference_spd,
+    # Parse channel properties
+    channels = channel_properties.get("channels", {})
+
+    # Get channel spd matrix
+    raw_channel_spd_ndict = build_channel_spd_ndict(channel_properties, distance)
+    channel_spd_ndict = translate_spd_ndict(raw_channel_spd_ndict, reference_spd_dict)
+    channel_spd_matrix = accessors.matrixify_nested_dict(channel_spd_ndict)
+    print(channel_spd_matrix)
+
+    # Factorize setpoint types
+    factorized_channel_setpoint_dict = {}
+    for channel_name, setpoint in channel_setpoint_dict.items():
+        channel_dict = channels.get(channel_name, {})
+        channel_type = channel_dict.get("type", "Error")
+        if channel_type in factorized_channel_setpoint_dict:
+            factorized_channel_setpoint_dict[channel_type] += setpoint
+        else:
+            factorized_channel_setpoint_dict[channel_type] = setpoint
+    print(factorized_channel_setpoint_dict)
+
+    # Get channel setpoint vector
+    channel_setpoint_list = accessors.listify_dict(factorized_channel_setpoint_dict)
+    channel_setpoint_vector = []
+    for setpoint_percent in channel_setpoint_list:
+        setpoint_decimal = setpoint_percent / 100.0
+        channel_setpoint_vector.append(setpoint_decimal)
+    print(channel_setpoint_vector)
+
+    # Get output spd, spectrum, and intensity
+    output_spd_list = calculate_output_spd(channel_spd_matrix, channel_setpoint_vector)
+    output_spectrum_list, output_intensity = deconstruct_spd(output_spd_list)
+    output_spectrum_dict = accessors.dictify_list(
+        output_spectrum_list, reference_spd_dict
     )
-
-    channel_output_intensities = convert_channel_output_setpoints(
-        channel_properties=channel_properties, output_setpoints=channel_output_setpoints
-    )
-
-    channel_output_vector = vectorize_dict(dict_=channel_output_intensities)
-
-    output_spd_list = calculate_output_spd(
-        channel_spd_matrix=channel_spd_matrix,
-        channel_output_vector=channel_output_vector,
-    )
-
-    output_spectrum_vector, output_intensity = deconstruct_spd(
-        spd_vector=output_spd_list
-    )
-
-    output_spectrum_dict = dictify_vector(
-        vector=output_spectrum_vector, reference_dict=reference_spd
-    )
+    print("output_spd_list = {}".format(output_spd_list))
+    print(output_intensity)
+    print(output_spectrum_dict)
 
     return output_spectrum_dict, output_intensity

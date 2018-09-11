@@ -117,8 +117,9 @@ def test_approximate_spd_orion_1600_par() -> None:
     spectrum = {
         "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
     }
-    expected_setpoints = {"FR": 100, "CW": 100, "WW": 85.7}
-    expected_spd = [0.0, 280.013, 574.049, 519.122, 84.71]
+    expected_setpoints = {
+        "FR": 100, "CW1": 100, "CW2": 100, "CW3": 100, "CW4": 100, "WW": 85.7
+    }
     expected_spectrum = {
         "380-399": 0.0,
         "400-499": 19.21,
@@ -133,10 +134,8 @@ def test_approximate_spd_orion_1600_par() -> None:
     assert result[1] == expected_spectrum
     assert result[2] == expected_intensity
 
-    assert False
 
-
-def test_calculate_ulrf_from_percents() -> None:
+def test_calculate_resultant_spd_weak_code_test_fix() -> None:
     props = {
         "channels": {
             "A": {"name": "A", "type": "A", "port": 0},
@@ -147,21 +146,7 @@ def test_calculate_ulrf_from_percents() -> None:
         "channel_types": {
             "A": {
                 "name": "A",
-                "relative_intensity_percent": 20,
-                "spectrum_nm_percent": {
-                    "380-399": 10,
-                    "400-499": 10,
-                    "500-599": 10,
-                    "600-700": 10,
-                    "701-780": 60,
-                },
-                "logic_scaler_percents": {
-                    "0": 0, "25": 12.5, "50": 25, "75": 37.5, "100": 50
-                },
-            },
-            "B": {
-                "name": "B",
-                "relative_intensity_percent": 40,
+                "relative_intensity_percent": 50,
                 "spectrum_nm_percent": {
                     "380-399": 20,
                     "400-499": 20,
@@ -169,17 +154,57 @@ def test_calculate_ulrf_from_percents() -> None:
                     "600-700": 20,
                     "701-780": 20,
                 },
-                "logic_scaler_percents": {
-                    "0": 0, "25": 12.5, "50": 25, "75": 37.5, "100": 50
+            },
+            "B": {
+                "name": "B",
+                "relative_intensity_percent": 25,
+                "spectrum_nm_percent": {
+                    "380-399": 20,
+                    "400-499": 20,
+                    "500-599": 20,
+                    "600-700": 20,
+                    "701-780": 20,
                 },
             },
         },
     }
-    desired_distance = 10
-    setpoints = {"FR": 100, "CW": 100, "WW": 85.7}
-    spectrum, intensity, distance = light.calculate_ulrf_from_percents(
-        props, setpoints, desired_distance
+    distance = 0
+    channel_spd_ndict = light.build_channel_spd_ndict(props, distance)
+    setpoints = {"A": 100, "B1": 100, "B2": 100}
+    reference_spectrum = {
+        "380-399": 2.0, "400-499": 2.0, "500-599": 2.0, "600-700": 2.0, "701-780": 12.0
+    }
+    expected_spectrum = {
+        "380-399": 20, "400-499": 20, "500-599": 20, "600-700": 20, "701-780": 20
+    }
+    expected_intensity = 100
+
+    spectrum, intensity = light.calculate_resultant_spd(
+        props, reference_spectrum, setpoints, distance
     )
+
+    assert spectrum == expected_spectrum
+    assert intensity == expected_intensity
+
+
+# def test_calculate_ulrf_orion_1600_par() -> None:
+#     desired_distance = 4
+#     setpoints = {"FR": 100, "CW1": 100, "CW2": 100, "CW3": 100, "CW4": 100, "WW": 100}
+#     expected_spectrum = {
+#         "380-399": 0.0,
+#         "400-499": 15.64,
+#         "500-599": 37.47,
+#         "600-700": 40.45,
+#         "701-780": 6.45,
+#     }
+#     expected_intensity = 2507.88
+#     expected_distance = 4
+#     spectrum, intensity, distance = light.calculate_ulrf_from_percents(
+#         properties, setpoints, desired_distance
+#     )
+#     assert spectrum == expected_spectrum
+#     assert intensity == expected_intensity
+#     assert distance == expected_distance
 
 
 # def test_get_ppfd_at_distance_exact():
