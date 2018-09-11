@@ -262,7 +262,7 @@ class IoTManager:
 
                     # get the current version from the upgrade state
                     status_dict["version"] = \
-                        state.upgrade.get('current_version','unknown')
+                        self.state.upgrade.get('current_version','unknown')
 
                     status_dict["status"] = self.state.resource.get("status",'')
                     status_dict["internet_connection"] = \
