@@ -113,29 +113,29 @@ def test_deconstruct_spd() -> None:
 
 def test_approximate_spd_orion_1600_par() -> None:
     distance = 4.0
-    intensity = 1600.0
-    spectrum = {
-        "380-399": 0, "400-499": 18, "500-599": 32, "600-700": 36, "701-780": 14
-    }
-    expected_setpoints = {
-        "FR": 100, "CW1": 100, "CW2": 100, "CW3": 100, "CW4": 100, "WW": 85.7
-    }
-    expected_spectrum = {
+    desired_intensity = 1600.0
+    desired_spectrum = {
         "380-399": 0.0,
-        "400-499": 19.21,
-        "500-599": 39.38,
-        "600-700": 35.61,
-        "701-780": 5.81,
+        "400-499": 19.56,
+        "500-599": 39.61,
+        "600-700": 35.22,
+        "701-780": 5.6,
     }
-    expected_intensity = 1457.89
+    expected_spectrum = desired_spectrum
+    expected_intensity = 1599.59
+    expected_setpoints = {
+        "FR": 96.6, "WW": 96.9, "CW1": 96.9, "CW2": 96.9, "CW3": 96.9, "CW4": 96.9
+    }
+    setpoints, spectrum, intensity = light.approximate_spd(
+        properties, distance, desired_intensity, desired_spectrum
+    )
+    print(intensity, setpoints, spectrum)
+    assert setpoints == expected_setpoints
+    assert spectrum == expected_spectrum
+    assert intensity == expected_intensity
 
-    result = light.approximate_spd(properties, distance, intensity, spectrum)
-    assert result[0] == expected_setpoints
-    assert result[1] == expected_spectrum
-    assert result[2] == expected_intensity
 
-
-def test_calculate_resultant_spd_weak_code_test_fix() -> None:
+def test_calculate_resultant_spd() -> None:
     props = {
         "channels": {
             "A": {"name": "A", "type": "A", "port": 0},
@@ -168,7 +168,7 @@ def test_calculate_resultant_spd_weak_code_test_fix() -> None:
             },
         },
     }
-    distance = 0
+    distance = 10
     channel_spd_ndict = light.build_channel_spd_ndict(props, distance)
     setpoints = {"A": 100, "B1": 100, "B2": 100}
     reference_spectrum = {
@@ -182,29 +182,28 @@ def test_calculate_resultant_spd_weak_code_test_fix() -> None:
     spectrum, intensity = light.calculate_resultant_spd(
         props, reference_spectrum, setpoints, distance
     )
-
     assert spectrum == expected_spectrum
     assert intensity == expected_intensity
 
 
-# def test_calculate_ulrf_orion_1600_par() -> None:
-#     desired_distance = 4
-#     setpoints = {"FR": 100, "CW1": 100, "CW2": 100, "CW3": 100, "CW4": 100, "WW": 100}
-#     expected_spectrum = {
-#         "380-399": 0.0,
-#         "400-499": 15.64,
-#         "500-599": 37.47,
-#         "600-700": 40.45,
-#         "701-780": 6.45,
-#     }
-#     expected_intensity = 2507.88
-#     expected_distance = 4
-#     spectrum, intensity, distance = light.calculate_ulrf_from_percents(
-#         properties, setpoints, desired_distance
-#     )
-#     assert spectrum == expected_spectrum
-#     assert intensity == expected_intensity
-#     assert distance == expected_distance
+def test_calculate_ulrf_orion_1600_par() -> None:
+    desired_distance = 4
+    setpoints = {"FR": 100, "CW1": 100, "CW2": 100, "CW3": 100, "CW4": 100, "WW": 100}
+    expected_spectrum = {
+        "380-399": 0.0,
+        "400-499": 19.56,
+        "500-599": 39.61,
+        "600-700": 35.22,
+        "701-780": 5.6,
+    }
+    expected_intensity = 1650.81
+    expected_distance = 4
+    spectrum, intensity, distance = light.calculate_ulrf_from_percents(
+        properties, setpoints, desired_distance
+    )
+    assert spectrum == expected_spectrum
+    assert intensity == expected_intensity
+    assert distance == expected_distance
 
 
 # def test_get_ppfd_at_distance_exact():

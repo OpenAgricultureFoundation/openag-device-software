@@ -47,7 +47,7 @@ def approximate_spd(
     for channel_name, channel_entry in channels.items():
         key = channel_entry.get("type")
         setpoint = channel_setpoint_dict.get(key, 0)
-        mapped_channel_setpoint_dict[channel_name] = setpoint
+        mapped_channel_setpoint_dict[channel_name] = round(setpoint, 2)
 
     # Successfully approximated spectral power distribution
     return mapped_channel_setpoint_dict, output_spectrum_dict, output_intensity
@@ -272,15 +272,21 @@ def calculate_resultant_spd(
     channel_spd_matrix = accessors.matrixify_nested_dict(channel_spd_ndict)
     print(channel_spd_matrix)
 
-    # Factorize setpoint types
+    # Factorize setpoint types. The type setpoint is the average of all instance setpoints
     factorized_channel_setpoint_dict = {}
+    count = {}
     for channel_name, setpoint in channel_setpoint_dict.items():
         channel_dict = channels.get(channel_name, {})
         channel_type = channel_dict.get("type", "Error")
         if channel_type in factorized_channel_setpoint_dict:
-            factorized_channel_setpoint_dict[channel_type] += setpoint
+            prev_setpoint = factorized_channel_setpoint_dict[channel_type]
+            weighted_prev_setpoint = prev_setpoint * count[channel_type]
+            count[channel_type] += 1
+            new_setpoint = (weighted_prev_setpoint + setpoint) / count[channel_type]
+            factorized_channel_setpoint_dict[channel_type] = new_setpoint
         else:
             factorized_channel_setpoint_dict[channel_type] = setpoint
+            count[channel_type] = 1
     print(factorized_channel_setpoint_dict)
 
     # Get channel setpoint vector
