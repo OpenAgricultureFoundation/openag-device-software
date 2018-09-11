@@ -1,7 +1,7 @@
 {
 	"name":  "Light Array Orion Actuator",
 	"version": "1",
-	"uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+	"uuid": "a7e7f858-f836-4a56-a743-5bed62258319",
 	"module_name": "led_dac5578.manager",
 	"class_name": "LEDDAC5578Manager",
 	"parameters": {
