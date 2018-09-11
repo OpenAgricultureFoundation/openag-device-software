@@ -33,7 +33,7 @@ from device.peripherals.modules.led_dac5578.exceptions import (
 )
 
 
-# TODO: Might want to scale outputs here, instead of utilities/light.py
+# TODO: Might want to scale outputs here, instead of utilities/light.py...or pass to DAC
 
 # def scale_channel_logic(
 #     channel_logic_list: List[float], logic_scaler: Dict[str, float]
@@ -161,6 +161,11 @@ class LEDDAC5578Driver:
         if len(active_panels) < 1:
             raise NoActivePanelsError(logger=self.logger)
 
+        # Successfully initialized
+        message = "Successfully initialized with {} active panels".format(active_panels)
+        message2 = ", expected {}.".format(len(panel_configs))
+        self.logger.debug(message + message2)
+
     def turn_on(self) -> Dict[str, float]:
         """Turns on leds."""
         self.logger.debug("Turning on")
@@ -254,13 +259,14 @@ class LEDDAC5578Driver:
 
             # Check if panel is active low
             if panel.active_low:
-                converted_outputs = converted_outputs.copy()
-                for key in converted_outputs.keys():
-                    converted_outputs[key] = 100 - converted_outputs[key]
+                self.logger.debug("panel is active low")
+                converted_outputs_copy = converted_outputs.copy()
+                for key in converted_outputs_copy.keys():
+                    converted_outputs_copy[key] = 100 - converted_outputs_copy[key]
 
             # Set outputs on panel
             try:
-                panel.driver.write_outputs(converted_outputs)  # type: ignore
+                panel.driver.write_outputs(converted_outputs_copy)  # type: ignore
             except Exception as e:
                 self.logger.exception("Unable to set output on `{}`".format(panel.name))
                 panel.is_shutdown = True
@@ -319,8 +325,10 @@ class LEDDAC5578Driver:
 
     def build_channel_outputs(self, value: float) -> Dict[str, float]:
         """Build channel outputs. Sets each channel to provided value."""
+        self.logger.debug("Building channel outputs")
         channel_outputs = {}
         for channel_config in self.channel_configs:
             name = channel_config["name"]["brief"]  # type: ignore
             channel_outputs[name] = value
+        self.logger.debug("channel outputs = {}".format(channel_outputs))
         return channel_outputs
