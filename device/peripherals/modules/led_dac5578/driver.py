@@ -162,7 +162,8 @@ class LEDDAC5578Driver:
             raise NoActivePanelsError(logger=self.logger)
 
         # Successfully initialized
-        message = "Successfully initialized with {} active panels".format(active_panels)
+        length = len(active_panels)
+        message = "Successfully initialized with {} active panels".format(length)
         message2 = ", expected {}.".format(len(panel_configs))
         self.logger.debug(message + message2)
 
