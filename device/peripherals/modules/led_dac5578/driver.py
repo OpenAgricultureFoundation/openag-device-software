@@ -136,7 +136,7 @@ class LEDDAC5578Driver:
         self,
         name: str,
         panel_configs: List[Dict[str, Any]],
-        channel_configs: Dict[str, Any],
+        panel_properties: Dict[str, Any],
         i2c_lock: threading.Lock,
         simulate: bool = False,
         mux_simulator: Optional[MuxSimulator] = None,
@@ -144,12 +144,15 @@ class LEDDAC5578Driver:
         """Initializes driver."""
 
         # Initialize driver parameters
-        self.channel_configs = channel_configs
+        self.panel_properties = panel_properties
         self.i2c_lock = i2c_lock
         self.simulate = simulate
 
         # Initialize logger
         self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+
+        # Parse panel properties
+        self.channels = self.panel_properties.get("channels")
 
         # Initialze num expected panels
         self.num_expected_panels = len(panel_configs)
@@ -189,24 +192,21 @@ class LEDDAC5578Driver:
         return channel_outputs
 
     def set_spd(
-        self,
-        desired_distance_cm: float,
-        desired_ppfd_umol_m2_s: float,
-        desired_spectrum_nm_percent: Dict,
+        self, desired_distance: float, desired_intensity: float, desired_spectrum: Dict
     ) -> Tuple[Optional[Dict], Optional[Dict], Optional[Dict]]:
         """Sets spectral power distribution."""
         message = "Setting spd, distance={}cm, ppfd={}umol/m2/s, spectrum={}".format(
-            desired_distance_cm, desired_ppfd_umol_m2_s, desired_spectrum_nm_percent
+            desired_distance, desired_intensity, desired_spectrum
         )
         self.logger.debug(message)
 
         # Approximate spectral power distribution
         try:
             channel_outputs, output_spectrum_nm_percent, output_ppfd_umol_m2_s = light.approximate_spd(
-                channel_configs=self.channel_configs,
-                desired_distance_cm=desired_distance_cm,
-                desired_ppfd_umol_m2_s=desired_ppfd_umol_m2_s,
-                desired_spectrum_nm_percent=desired_spectrum_nm_percent,
+                panel_properties=self.panel_properties,
+                desired_distance=desired_distance,
+                desired_intensity=desired_intensity,
+                desired_spectrum=desired_spectrum,
             )
         except Exception as e:
             message = "approximate spd failed"
@@ -327,19 +327,18 @@ class LEDDAC5578Driver:
 
     def get_channel_number(self, channel_name: str) -> int:
         """Gets channel number from channel name."""
-        for channel_config in self.channel_configs:
-            if channel_config["name"]["brief"] == channel_name:  # type: ignore
-                channel = channel_config["channel"]  # type: ignore
-                channel_number = int(channel["software"])  # type: ignore
-                return channel_number
-        raise InvalidChannelNameError(message=channel_name, logger=self.logger)
+        try:
+            channel_dict = self.channels[channel_name]
+            channel_number = channel_dict.get("port", -1)
+            return int(channel_number)
+        except KeyError:
+            raise InvalidChannelNameError(message=channel_name, logger=self.logger)
 
     def build_channel_outputs(self, value: float) -> Dict[str, float]:
         """Build channel outputs. Sets each channel to provided value."""
         self.logger.debug("Building channel outputs")
         channel_outputs = {}
-        for channel_config in self.channel_configs:
-            name = channel_config["name"]["brief"]  # type: ignore
-            channel_outputs[name] = value
+        for key in self.channels.keys():
+            channel_outputs[key] = value
         self.logger.debug("channel outputs = {}".format(channel_outputs))
         return channel_outputs
