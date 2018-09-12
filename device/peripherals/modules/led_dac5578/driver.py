@@ -225,6 +225,15 @@ class LEDDAC5578Driver:
         then sets outputs on dac."""
         self.logger.debug("Setting outputs: {}".format(outputs))
 
+        # Check at least one panel is active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        self.num_active_panels = len(active_panels)
+        if self.num_active_panels < 1:
+            raise NoActivePanelsError(logger=self.logger)
+        self.logger.debug(
+            "Setting outputs on {} active panels".format(self.num_active_panels)
+        )
+
         # Convert channel names to channel numbers
         converted_outputs = {}
         for name, percent in outputs.items():
@@ -238,23 +247,20 @@ class LEDDAC5578Driver:
             # Append to converted outputs
             converted_outputs[number] = percent
 
-        # Check at least one panel is active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        self.num_active_panels = len(active_panels)
-        if self.num_active_panels < 1:
-            raise NoActivePanelsError(logger=self.logger)
-
         # Set outputs on each active panel
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        for panel in active_panels:
+        # active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        # for panel in active_panels:
+
+        # TODO: Change this back to only active panels
+
+        # Try to set outputs on all panels
+        for panel in self.panels:
 
             # Scale setpoints
             scaled_outputs = self.scale_outputs(converted_outputs)
-            # scaled_outputs = converted_outputs
 
             # Adjust logic ouput by checking if panel is active low
             if panel.active_low:
-                self.logger.debug("panel is active low")
                 logic_outputs = scaled_outputs.copy()
                 for key in logic_outputs.keys():
                     logic_outputs[key] = 100 - logic_outputs[key]
@@ -280,20 +286,28 @@ class LEDDAC5578Driver:
         then sets output on dac."""
         self.logger.debug("Setting ch {}: {}".format(channel_name, percent))
 
+        # Check at least one panel is active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            raise NoActivePanelsError(logger=self.logger)
+        self.logger.debug(
+            "Setting output on {} active panels".format(self.num_active_panels)
+        )
+
         # Convert channel name to channel number
         try:
             channel_number = self.get_channel_number(channel_name)
         except Exception as e:
             raise SetOutputError(logger=self.logger) from e
 
-        # Check at least one panel is active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
-            raise NoActivePanelsError(logger=self.logger)
-
         # Set output on each active panel
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        for panel in active_panels:
+        # active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        # for panel in active_panels:
+
+        # TODO: Change this back to only active panels
+
+        # Set output on all panels
+        for panel in self.panels:
 
             # Scale setpoint
             percent = self.scale_output(percent)
