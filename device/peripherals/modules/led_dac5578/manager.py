@@ -283,8 +283,8 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         # Check for panel re-initialization
         reinit_delta = time.time() - self.prev_reinit_time
         if reinit_delta > self.reinit_interval:
-            for panel in self.panels:
-                if not panel.is_active:
+            for panel in self.driver.panels:
+                if panel == None:
                     try:
                         message = "Re-initializing panel `{}`".format(panel.name)
                         self.logger.debug(message)
