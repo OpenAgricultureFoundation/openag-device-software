@@ -254,8 +254,7 @@ class USBCameraDriver:
 
             # Check if active image is valid, if so copy to images/ directory
             if not valid_image:
-                self.logger.warning("Unable to capture a valid image, saving anyway")
-                os.rename(active_path, image_path)
+                self.logger.warning("Unable to capture a valid image")
             else:
                 self.logger.info("Captured image, saved to {}".format(image_path))
                 os.rename(active_path, image_path)
