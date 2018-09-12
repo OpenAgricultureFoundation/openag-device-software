@@ -41,37 +41,37 @@
 		}
 	],
 	"environments": {
-		"light_morning_1": {
+		"morning_1": {
 			"name": "Light Morning 1",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
 			"light_illumination_distance_cm": 30,
 			"light_ppfd_umol_m2_s": 300
 		},
-		"light_morning_2": {
+		"morning_2": {
 			"name": "Light Morning 2",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
 			"light_illumination_distance_cm": 30,
 			"light_ppfd_umol_m2_s": 600
 		},
-		"light_afternoon": {
+		"afternoon": {
 			"name": "Light Afternoon",
 			"light_spectrum_nm_percent": {"380-399": 10, "400-499": 30, "500-599": 30, "600-700": 30, "701-780": 10},
 			"light_illumination_distance_cm": 73,
 			"light_ppfd_umol_m2_s": 900
 		},
-		"light_evening_1": {
+		"evening_1": {
 			"name": "Light Evening 1",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
 			"light_illumination_distance_cm": 30,
 			"light_ppfd_umol_m2_s": 600
 		},
-		"light_evening_2": {
+		"evening_2": {
 			"name": "Light Evening 2",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
 			"light_illumination_distance_cm": 30,
 			"light_ppfd_umol_m2_s": 300
 		},
-		"light_night": {
+		"night": {
 			"name": "Light Night",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
 			"light_illumination_distance_cm": 30,
@@ -95,7 +95,7 @@
 				},
 				{
 					"name": "Afternoon",
-					"environment": "morning_1",
+					"environment": "afternoon",
 					"duration_minutes": 1
 				},
 				{
