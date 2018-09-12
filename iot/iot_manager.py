@@ -240,7 +240,11 @@ class IoTManager:
                         with open("config/device.txt") as f:
                             device = f.readline().strip()
 
-                    about_dict = { "DEVICE": device, "IP": self.get_IP() }
+                    about_dict = { 
+                        "package_version": 
+                            self.state.upgrade.get('current_version','unknown'),
+                        "device_config": device, 
+                        "IP": self.get_IP() }
                     about_json = json.dumps(about_dict)
                     self.iot.publishCommandReply("boot", about_json)
 
@@ -261,8 +265,14 @@ class IoTManager:
                     status_dict["IP"] = self.get_IP()
 
                     # get the current version from the upgrade state
-                    status_dict["version"] = \
+                    status_dict["package_version"] = \
                         self.state.upgrade.get('current_version','unknown')
+
+                    device = None
+                    if os.path.exists("config/device.txt"):
+                        with open("config/device.txt") as f:
+                            device = f.readline().strip()
+                    status_dict["device_config"] = device
 
                     status_dict["status"] = self.state.resource.get("status",'')
                     status_dict["internet_connection"] = \
