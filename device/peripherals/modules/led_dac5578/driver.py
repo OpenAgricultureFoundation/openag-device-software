@@ -236,8 +236,12 @@ class LEDDAC5578Driver:
             # Set outputs on panel
             try:
                 panel.driver.write_outputs(logic_outputs)  # type: ignore
+            except AttributeError:
+                message = "Unable to set outputs on `{}`".format(panel.name)
+                self.logger.error(message + ", panel not initialized")
             except Exception as e:
-                self.logger.exception("Unable to set output on `{}`".format(panel.name))
+                message = "Unable to set outputs on `{}`".format(panel.name)
+                self.logger.exception(message)
                 panel.is_shutdown = True
 
         # Check at least one panel is still active
@@ -278,8 +282,12 @@ class LEDDAC5578Driver:
             # Set output on panel
             try:
                 panel.driver.write_output(channel_number, percent)  # type: ignore
+            except AttributeError:
+                message = "Unable to set output on `{}`".format(panel.name)
+                self.logger.error(message + ", panel not initialized")
             except Exception as e:
-                self.logger.exception("Unable to set output on `{}`".format(panel.name))
+                message = "Unable to set output on `{}`".format(panel.name)
+                self.logger.exception(message)
                 panel.is_shutdown = True
 
         # Check at least one panel is still active
