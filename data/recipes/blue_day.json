@@ -37,7 +37,7 @@
 	"environments": {
 		"blue_day": {
 			"name": "Blue Day",
-			"light_spectrum_nm_percent": {"400-449": 50, "450-499": 50, "500-549": 0, "550-559": 0, "600-649": 0, "650-699": 0},
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10
 		}

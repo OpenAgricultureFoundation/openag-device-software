@@ -38,6 +38,8 @@
 		"standard_day": {
 			"name": "Standard Day",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 28.01, "500-599": 26.9, "600-700": 41.13, "701-780": 3.96},
+
+
 			"light_ppfd_umol_m2_s": 800,
 			"light_illumination_distance_cm": 10,
 			"air_temperature_celcius": 22
