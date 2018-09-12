@@ -125,9 +125,11 @@ LOGGING = {
         },
         "app_file": {
             "level": os.getenv('OPENAG_LOG_LEVEL', 'WARNING'),
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.dirname(BASE_DIR) + "/logs/app.log",
             "formatter": "standard_file",
+            "maxBytes": 200 * 1024,
+            "backupCount": 1,
         },
         "device_console": {
             "level": os.getenv('OPENAG_LOG_LEVEL', 'WARNING'),
@@ -139,7 +141,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.dirname(BASE_DIR) + "/logs/device.log",
             "formatter": "device_file",
-            "maxBytes": 5 * 1024 * 1024,
+            "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
         "peripheral_files": {
@@ -157,7 +159,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.dirname(BASE_DIR) + "/logs/iot.log",
             "formatter": "device_file",
-            "maxBytes": 5 * 1024 * 1024,
+            "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
         "resource_console": {
@@ -170,7 +172,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.dirname(BASE_DIR) + "/logs/resource.log",
             "formatter": "device_file",
-            "maxBytes": 5 * 1024 * 1024,
+            "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
         "connect_console": {
@@ -183,7 +185,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.dirname(BASE_DIR) + "/logs/connect.log",
             "formatter": "device_file",
-            "maxBytes": 5 * 1024 * 1024,
+            "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
         "upgrade_console": {
@@ -196,7 +198,7 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.dirname(BASE_DIR) + "/logs/upgrade.log",
             "formatter": "device_file",
-            "maxBytes": 5 * 1024 * 1024,
+            "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
     },

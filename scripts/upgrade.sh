@@ -66,6 +66,10 @@ else
   sudo ln -s $TOPDIR/config/rc.local.development /etc/rc.local
 fi
 
+# Install a new system log config file, to avoid filling the disk
+sudo cp $TOPDIR/config/rsyslog /etc/logrotate.d/
+sudo service rsyslog restart
+
 # Reload rc.local daemon
 sudo systemctl daemon-reload
 
