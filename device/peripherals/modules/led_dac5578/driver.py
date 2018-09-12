@@ -34,17 +34,6 @@ from device.peripherals.modules.led_dac5578.exceptions import (
 )
 
 
-# TODO: Might want to scale outputs here, instead of utilities/light.py...or pass to DAC
-
-
-# def test_scale_channel_logic() -> None:
-#     channel_logic_list = [0, 37.5, 62.5, 87.5, 100]
-#     logic_scaler = {"0": 0, "25": 10, "50": 30, "75": 60, "100": 90}
-#     expected = [0, 20, 45, 75, 90]
-#     channel_setpoint_list = light.scale_channel_logic(channel_logic_list, logic_scaler)
-#     assert channel_setpoint_list == expected
-
-
 class LEDDAC5578Panel(object):
     """An led panel controlled by a dac5578."""
 
@@ -194,30 +183,14 @@ class LEDDAC5578Driver:
             message = "approximate spd failed"
             raise SetSPDError(message=message, logger=self.logger) from e
 
-        # Check at least one panel is active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
-            raise NoActivePanelsError(logger=self.logger)
-
-        # Set outputs on each active panel
-        for panel in active_panels:
-            try:
-                self.set_outputs(channel_outputs)
-            except Exception as e:
-                self.logger.exception("Unable to set outputs on {}".format(panel.name))
-
-        # Check at least one panel is still active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
-            message = "failed when setting spd"
-            raise NoActivePanelsError(message=message, logger=self.logger)
+        # Set outputs
+        self.set_outputs(channel_outputs)
 
         # Successfully set channel outputs
-        self.logger.debug(
-            "Successfully set spd, output: channels={}, spectrum={}, ppfd={}umol/m2/s".format(
-                channel_outputs, output_spectrum, output_intensity
-            )
+        message = "Successfully set spd, output: channels={}, spectrum={}, intensity={}umol/m2/s".format(
+            channel_outputs, output_spectrum, output_intensity
         )
+        self.logger.debug(message)
         return (channel_outputs, output_spectrum, output_intensity)
 
     def set_outputs(self, outputs: dict) -> None:
@@ -230,9 +203,8 @@ class LEDDAC5578Driver:
         self.num_active_panels = len(active_panels)
         if self.num_active_panels < 1:
             raise NoActivePanelsError(logger=self.logger)
-        self.logger.debug(
-            "Setting outputs on {} active panels".format(self.num_active_panels)
-        )
+        message = "Setting outputs on {} active panels".format(self.num_active_panels)
+        self.logger.debug(message)
 
         # Convert channel names to channel numbers
         converted_outputs = {}
@@ -246,12 +218,6 @@ class LEDDAC5578Driver:
 
             # Append to converted outputs
             converted_outputs[number] = percent
-
-        # Set outputs on each active panel
-        # active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        # for panel in active_panels:
-
-        # TODO: Change this back to only active panels
 
         # Try to set outputs on all panels
         for panel in self.panels:
@@ -290,21 +256,14 @@ class LEDDAC5578Driver:
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         if len(active_panels) < 1:
             raise NoActivePanelsError(logger=self.logger)
-        self.logger.debug(
-            "Setting output on {} active panels".format(self.num_active_panels)
-        )
+        message = "Setting output on {} active panels".format(self.num_active_panels)
+        self.logger.debug(message)
 
         # Convert channel name to channel number
         try:
             channel_number = self.get_channel_number(channel_name)
         except Exception as e:
             raise SetOutputError(logger=self.logger) from e
-
-        # Set output on each active panel
-        # active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        # for panel in active_panels:
-
-        # TODO: Change this back to only active panels
 
         # Set output on all panels
         for panel in self.panels:
