@@ -93,7 +93,7 @@ class I2C(object):
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3)
     def write(
-        self, bytes_: bytes, retry: bool = False, disable_mux: bool = False
+        self, bytes_: bytes, retry: bool = True, disable_mux: bool = False
     ) -> None:
         """Writes byte list to device. Converts byte list to byte array then
         sends bytes. Returns error message."""
@@ -104,7 +104,7 @@ class I2C(object):
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3)
     def read(
-        self, num_bytes: int, retry: bool = False, disable_mux: bool = False
+        self, num_bytes: int, retry: bool = True, disable_mux: bool = False
     ) -> bytes:
         """Reads num bytes from device. Returns byte array."""
         with self.i2c_lock:
@@ -116,7 +116,7 @@ class I2C(object):
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3)
     def read_register(
-        self, register: int, retry: bool = False, disable_mux: bool = False
+        self, register: int, retry: bool = True, disable_mux: bool = False
     ) -> int:
         """Reads byte stored in register at address."""
         with self.i2c_lock:
@@ -126,7 +126,7 @@ class I2C(object):
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3)
     def write_register(
-        self, register: int, value: int, retry: bool = False, disable_mux: bool = False
+        self, register: int, value: int, retry: bool = True, disable_mux: bool = False
     ) -> None:
         with self.i2c_lock:
             self.manage_mux("write register", disable_mux)
@@ -137,7 +137,7 @@ class I2C(object):
             self.io.write_register(self.address, register, value)
 
     @retry(MuxError, tries=5, delay=0.2, backoff=3)
-    def set_mux(self, mux: int, channel: int, retry: bool = False) -> None:
+    def set_mux(self, mux: int, channel: int, retry: bool = True) -> None:
         """Sets mux to channel"""
         with self.i2c_lock:
             channel_byte = 0x01 << channel

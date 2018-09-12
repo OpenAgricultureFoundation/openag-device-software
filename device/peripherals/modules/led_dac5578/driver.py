@@ -34,17 +34,6 @@ from device.peripherals.modules.led_dac5578.exceptions import (
 )
 
 
-# TODO: Might want to scale outputs here, instead of utilities/light.py...or pass to DAC
-
-
-# def test_scale_channel_logic() -> None:
-#     channel_logic_list = [0, 37.5, 62.5, 87.5, 100]
-#     logic_scaler = {"0": 0, "25": 10, "50": 30, "75": 60, "100": 90}
-#     expected = [0, 20, 45, 75, 90]
-#     channel_setpoint_list = light.scale_channel_logic(channel_logic_list, logic_scaler)
-#     assert channel_setpoint_list == expected
-
-
 class LEDDAC5578Panel(object):
     """An led panel controlled by a dac5578."""
 
@@ -194,36 +183,28 @@ class LEDDAC5578Driver:
             message = "approximate spd failed"
             raise SetSPDError(message=message, logger=self.logger) from e
 
-        # Check at least one panel is active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
-            raise NoActivePanelsError(logger=self.logger)
-
-        # Set outputs on each active panel
-        for panel in active_panels:
-            try:
-                self.set_outputs(channel_outputs)
-            except Exception as e:
-                self.logger.exception("Unable to set outputs on {}".format(panel.name))
-
-        # Check at least one panel is still active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
-            message = "failed when setting spd"
-            raise NoActivePanelsError(message=message, logger=self.logger)
+        # Set outputs
+        self.set_outputs(channel_outputs)
 
         # Successfully set channel outputs
-        self.logger.debug(
-            "Successfully set spd, output: channels={}, spectrum={}, ppfd={}umol/m2/s".format(
-                channel_outputs, output_spectrum, output_intensity
-            )
+        message = "Successfully set spd, output: channels={}, spectrum={}, intensity={}umol/m2/s".format(
+            channel_outputs, output_spectrum, output_intensity
         )
+        self.logger.debug(message)
         return (channel_outputs, output_spectrum, output_intensity)
 
     def set_outputs(self, outputs: dict) -> None:
         """Sets outputs on dac. Converts channel names to channel numbers 
         then sets outputs on dac."""
         self.logger.debug("Setting outputs: {}".format(outputs))
+
+        # Check at least one panel is active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        self.num_active_panels = len(active_panels)
+        if self.num_active_panels < 1:
+            raise NoActivePanelsError(logger=self.logger)
+        message = "Setting outputs on {} active panels".format(self.num_active_panels)
+        self.logger.debug(message)
 
         # Convert channel names to channel numbers
         converted_outputs = {}
@@ -238,23 +219,14 @@ class LEDDAC5578Driver:
             # Append to converted outputs
             converted_outputs[number] = percent
 
-        # Check at least one panel is active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        self.num_active_panels = len(active_panels)
-        if self.num_active_panels < 1:
-            raise NoActivePanelsError(logger=self.logger)
-
-        # Set outputs on each active panel
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        for panel in active_panels:
+        # Try to set outputs on all panels
+        for panel in self.panels:
 
             # Scale setpoints
             scaled_outputs = self.scale_outputs(converted_outputs)
-            # scaled_outputs = converted_outputs
 
             # Adjust logic ouput by checking if panel is active low
             if panel.active_low:
-                self.logger.debug("panel is active low")
                 logic_outputs = scaled_outputs.copy()
                 for key in logic_outputs.keys():
                     logic_outputs[key] = 100 - logic_outputs[key]
@@ -264,8 +236,12 @@ class LEDDAC5578Driver:
             # Set outputs on panel
             try:
                 panel.driver.write_outputs(logic_outputs)  # type: ignore
+            except AttributeError:
+                message = "Unable to set outputs on `{}`".format(panel.name)
+                self.logger.error(message + ", panel not initialized")
             except Exception as e:
-                self.logger.exception("Unable to set output on `{}`".format(panel.name))
+                message = "Unable to set outputs on `{}`".format(panel.name)
+                self.logger.exception(message)
                 panel.is_shutdown = True
 
         # Check at least one panel is still active
@@ -280,20 +256,21 @@ class LEDDAC5578Driver:
         then sets output on dac."""
         self.logger.debug("Setting ch {}: {}".format(channel_name, percent))
 
+        # Check at least one panel is active
+        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
+        if len(active_panels) < 1:
+            raise NoActivePanelsError(logger=self.logger)
+        message = "Setting output on {} active panels".format(self.num_active_panels)
+        self.logger.debug(message)
+
         # Convert channel name to channel number
         try:
             channel_number = self.get_channel_number(channel_name)
         except Exception as e:
             raise SetOutputError(logger=self.logger) from e
 
-        # Check at least one panel is active
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        if len(active_panels) < 1:
-            raise NoActivePanelsError(logger=self.logger)
-
-        # Set output on each active panel
-        active_panels = [panel for panel in self.panels if not panel.is_shutdown]
-        for panel in active_panels:
+        # Set output on all panels
+        for panel in self.panels:
 
             # Scale setpoint
             percent = self.scale_output(percent)
@@ -305,8 +282,12 @@ class LEDDAC5578Driver:
             # Set output on panel
             try:
                 panel.driver.write_output(channel_number, percent)  # type: ignore
+            except AttributeError:
+                message = "Unable to set output on `{}`".format(panel.name)
+                self.logger.error(message + ", panel not initialized")
             except Exception as e:
-                self.logger.exception("Unable to set output on `{}`".format(panel.name))
+                message = "Unable to set output on `{}`".format(panel.name)
+                self.logger.exception(message)
                 panel.is_shutdown = True
 
         # Check at least one panel is still active

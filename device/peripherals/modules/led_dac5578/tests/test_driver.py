@@ -74,3 +74,11 @@ def test_set_spd() -> None:
         "380-399": 0, "400-499": 26, "500-599": 22, "600-700": 39, "701-780": 13
     }
     driver.set_spd(distance, ppfd, spectrum)
+
+
+# def test_scale_channel_logic() -> None:
+#     channel_logic_list = [0, 37.5, 62.5, 87.5, 100]
+#     logic_scaler = {"0": 0, "25": 10, "50": 30, "75": 60, "100": 90}
+#     expected = [0, 20, 45, 75, 90]
+#     channel_setpoint_list = light.scale_channel_logic(channel_logic_list, logic_scaler)
+#     assert channel_setpoint_list == expected

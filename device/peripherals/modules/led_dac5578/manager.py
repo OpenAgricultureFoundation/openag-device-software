@@ -26,7 +26,9 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
     prev_desired_spectrum: Optional[Dict[str, float]] = None
     prev_desired_distance: Optional[float] = None
     prev_pulse_time: float = 0
-    pulse_interval: float = 30  # seconds -> every 10 minutes
+    pulse_interval: float = 300  # seconds -> every 5 minutes
+    prev_reinit_time: float = 0
+    reinit_interval: float = 300  # seconds -> every 5 minutes
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialize light driver."""
@@ -272,10 +274,25 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
             pulse_delta = time.time() - self.prev_pulse_time
             if pulse_delta > self.pulse_interval:
                 pulse_required = True
+            self.prev_pulse_time = time.time()
 
         # Only require update on pulse timeout if all desired values exist
         if pulse_required and all_desired_values_exist:
             update_required = True
+
+        # Check for panel re-initialization
+        reinit_delta = time.time() - self.prev_reinit_time
+        if reinit_delta > self.reinit_interval:
+            for panel in self.panels:
+                if not panel.is_active:
+                    try:
+                        message = "Re-initializing panel `{}`".format(panel.name)
+                        self.logger.debug(message)
+                        panel.initialize()
+                    except Exception as e:
+                        message = "Unable to re-initialize panel {}".format(panel.name)
+                        self.logger.exception(message)
+            self.pre_reinit_time = time.time()
 
         # Check if update is required
         if not update_required:
