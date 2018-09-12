@@ -1,3 +1,10 @@
+openagbrain (0.1-5) stable; urgency=medium
+
+  * Fix dynamic debug logging check.
+  * Publish device config with heartbeat/status.
+
+ -- rob baynes <rbaynes@mit.edu>  Wed, 12 Sep 2018 16:18:38 +0000
+
 openagbrain (0.1-4) stable; urgency=medium
 
   * More reliable network connections.
