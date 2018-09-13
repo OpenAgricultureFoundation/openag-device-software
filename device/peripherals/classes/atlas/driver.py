@@ -143,7 +143,7 @@ class AtlasDriver:
             self.logger.debug("Reading response")
             data = self.i2c.read(num_bytes)
         except Exception as e:
-            raise ReadResponseError(logger=self.logger)
+            raise ReadResponseError(logger=self.logger) from e
 
         # Format response code
         response_code = int(data[0])
