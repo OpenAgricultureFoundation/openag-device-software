@@ -264,7 +264,7 @@ class AtlasDriver:
         """Enables led."""
         self.logger.info("Enabling led")
         try:
-            self.process_command("L,1", process_seconds=0.9, retry=retry)
+            self.process_command("L,1", process_seconds=1.8, retry=retry)
         except Exception as e:
             raise EnableLEDError(logger=self.logger) from e
 
@@ -272,7 +272,7 @@ class AtlasDriver:
         """Disables led."""
         self.logger.info("Disabling led")
         try:
-            self.process_command("L,0", process_seconds=0.9, retry=retry)
+            self.process_command("L,0", process_seconds=1.8, retry=retry)
         except Exception as e:
             raise DisableLEDError(logger=self.logger) from e
 
