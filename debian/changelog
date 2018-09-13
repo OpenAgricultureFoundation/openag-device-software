@@ -1,3 +1,10 @@
+openagbrain (0.1-6) stable; urgency=medium
+
+  * Tune system and app logging to limit sizes and backups. 
+  * Updated light driver (HZ).
+
+ -- rob baynes <rbaynes@mit.edu>  Thu, 13 Sep 2018 10:41:26 +0000
+
 openagbrain (0.1-5) stable; urgency=medium
 
   * Fix dynamic debug logging check.
