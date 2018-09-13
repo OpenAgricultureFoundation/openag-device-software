@@ -79,7 +79,7 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
         # Get potential hydrogen reading from hardware
         # Assumed potential hydrogen is only enabled output
         try:
-            response = self.process_command("R", process_seconds=1.2, retry=retry)
+            response = self.process_command("R", process_seconds=2.4, retry=retry)
         except Exception as e:
             raise ReadPHError(logger=self.logger) from e
 
