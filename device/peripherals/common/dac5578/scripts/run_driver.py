@@ -33,7 +33,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize parser
         self.parser.add_argument("--panel-name", type=str, help="specify panel name")
         self.parser.add_argument("--channel", type=int, help="set channel (0-7)")
-        self.parser.add_argument("--percent", type=int, help="set output (0-100%)")
+        self.parser.add_argument("--percent", type=int, help="set output (0-100)")
         self.parser.add_argument("--high", action="store_true", help="set output high")
         self.parser.add_argument("--low", action="store_true", help="set output low")
         self.parser.add_argument("--fade", action="store_true", help="fade low-high")

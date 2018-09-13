@@ -311,6 +311,7 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
             return
 
         # Update reported values
+        self.logger.debug("self.spectrum = {}".format(self.spectrum))
         self.channel_setpoints = result[0]
         self.spectrum = result[1]
         self.intensity = result[2]
@@ -380,3 +381,4 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
             self.channel_setpoints,
             self.distance,
         )
+        self.logger.debug("self.spectrum = {}".format(self.spectrum))

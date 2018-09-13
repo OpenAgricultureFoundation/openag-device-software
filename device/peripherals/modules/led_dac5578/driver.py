@@ -122,7 +122,7 @@ class LEDDAC5578Driver:
 
         # Parse panel properties
         self.channels = self.panel_properties.get("channels")
-        self.logic_map = self.panel_properties.get("logic_scaler_percents")
+        self.dac_map = self.panel_properties.get("dac_map")
 
         # Initialze num expected panels
         self.num_expected_panels = len(panel_configs)
@@ -193,10 +193,10 @@ class LEDDAC5578Driver:
         self.logger.debug(message)
         return (channel_outputs, output_spectrum, output_intensity)
 
-    def set_outputs(self, outputs: dict) -> None:
-        """Sets outputs on dac. Converts channel names to channel numbers 
-        then sets outputs on dac."""
-        self.logger.debug("Setting outputs: {}".format(outputs))
+    def set_outputs(self, par_setpoints: dict) -> None:
+        """Sets outputs on light panels. Converts channel names to channel numbers, 
+        translates par setpoints to dac setpoints, then sets dac."""
+        self.logger.debug("Setting outputs: {}".format(par_setpoints))
 
         # Check at least one panel is active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
@@ -208,7 +208,7 @@ class LEDDAC5578Driver:
 
         # Convert channel names to channel numbers
         converted_outputs = {}
-        for name, percent in outputs.items():
+        for name, percent in par_setpoints.items():
 
             # Convert channel name to channel number
             try:
@@ -223,19 +223,11 @@ class LEDDAC5578Driver:
         for panel in self.panels:
 
             # Scale setpoints
-            scaled_outputs = self.scale_outputs(converted_outputs)
-
-            # Adjust logic ouput by checking if panel is active low
-            if panel.active_low:
-                logic_outputs = scaled_outputs.copy()
-                for key in logic_outputs.keys():
-                    logic_outputs[key] = 100 - logic_outputs[key]
-            else:
-                logic_outputs = scaled_outputs
+            dac_setpoints = self.translate_setpoints(converted_outputs)
 
             # Set outputs on panel
             try:
-                panel.driver.write_outputs(logic_outputs)  # type: ignore
+                panel.driver.write_outputs(dac_setpoints)  # type: ignore
             except AttributeError:
                 message = "Unable to set outputs on `{}`".format(panel.name)
                 self.logger.error(message + ", panel not initialized")
@@ -251,10 +243,10 @@ class LEDDAC5578Driver:
             message = "failed when setting outputs"
             raise NoActivePanelsError(message=message, logger=self.logger)
 
-    def set_output(self, channel_name: str, percent: float) -> None:
-        """Sets output on each panel. Converts channel name to channel number 
-        then sets output on dac."""
-        self.logger.debug("Setting ch {}: {}".format(channel_name, percent))
+    def set_output(self, channel_name: str, par_setpoint: float) -> None:
+        """Sets output on light panels. Converts channel name to channel number, 
+        translates par setpoint to dac setpoint, then sets dac."""
+        self.logger.debug("Setting ch {}: {}".format(channel_name, par_setpoint))
 
         # Check at least one panel is active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
@@ -273,15 +265,11 @@ class LEDDAC5578Driver:
         for panel in self.panels:
 
             # Scale setpoint
-            percent = self.scale_output(percent)
-
-            # Check if panel is active low
-            if panel.active_low:
-                percent = 100 - percent
+            dac_setpoint = self.translate_setpoint(par_setpoint)
 
             # Set output on panel
             try:
-                panel.driver.write_output(channel_number, percent)  # type: ignore
+                panel.driver.write_output(channel_number, dac_setpoint)  # type: ignore
             except AttributeError:
                 message = "Unable to set output on `{}`".format(panel.name)
                 self.logger.error(message + ", panel not initialized")
@@ -315,37 +303,37 @@ class LEDDAC5578Driver:
         self.logger.debug("channel outputs = {}".format(channel_outputs))
         return channel_outputs
 
-    def scale_outputs(self, outputs: Dict) -> Dict:
-        """Scales setpoint (light intensity %) to ouput logic (dac signal %)"""
+    def translate_setpoints(self, par_setpoints: Dict) -> Dict:
+        """Translates par setpoints to dac setpoints."""
 
         # Build interpolation lists
-        logic_list = []
-        setpoint_list = []
-        for logic, setpoint in self.logic_map.items():
-            logic_list.append(float(logic))
-            setpoint_list.append(float(setpoint))
+        dac_list = []
+        par_list = []
+        for dac_percent, par_percent in self.dac_map.items():
+            dac_list.append(float(dac_percent))
+            par_list.append(float(par_percent))
 
-        # Get scaled setpoints
-        scaled_outputs = {}
-        for key, output in outputs.items():
-            scaled_output = maths.interpolate(setpoint_list, logic_list, output)
-            scaled_outputs[key] = scaled_output
+        # Get dac setpoints
+        dac_setpoints = {}
+        for key, par_setpoint in par_setpoints.items():
+            dac_setpoint = maths.interpolate(par_list, dac_list, par_setpoint)
+            dac_setpoints[key] = dac_setpoint
 
-        # Successfully scaled outputs
-        return scaled_outputs
+        # Successfully translated dac setpoints
+        return dac_setpoints
 
-    def scale_output(self, output: float) -> float:
-        """Scales setpoint (light intensity %) to ouput logic (dac signal %)"""
+    def translate_setpoint(self, par_setpoint: float) -> float:
+        """Translates par setpoint to dac setpoint."""
 
         # Build interpolation lists
-        logic_list = []
-        setpoint_list = []
-        for logic, setpoint in self.logic_map.items():
-            logic_list.append(float(logic))
-            setpoint_list.append(float(setpoint))
+        dac_list = []
+        par_list = []
+        for dac_percent, par_percent in self.dac_map.items():
+            dac_list.append(float(dac_percent))
+            par_list.append(float(par_percent))
 
-        # Build channel setpoint list
-        scaled_output = maths.interpolate(setpoint_list, logic_list, output)
+        # Get dac setpint
+        dac_setpoint = maths.interpolate(par_list, dac_list, par_setpoint)
 
-        # Successfully built channel setpoint list
-        return scaled_output
+        # Successfully translated dac setpoint
+        return dac_setpoint

@@ -21,15 +21,15 @@ device_config = json.load(open(base_path + "config.json"))
 peripheral_config = get_peripheral_config(device_config["peripherals"], "LEDPanel-1")
 panel_configs = peripheral_config["parameters"]["communication"]["panels"]
 peripheral_setup = json.load(open(base_path + "setup.json"))
-channel_configs = peripheral_setup["channel_configs"]
+panel_properties = peripheral_setup["properties"]
 
 
 def test_init() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
-        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
-        channel_configs=channel_configs,
+        panel_properties=panel_properties,
+        i2c_lock=threading.RLock(),
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
@@ -38,9 +38,9 @@ def test_init() -> None:
 def test_turn_on() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
-        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
-        channel_configs=channel_configs,
+        panel_properties=panel_properties,
+        i2c_lock=threading.RLock(),
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
@@ -50,9 +50,9 @@ def test_turn_on() -> None:
 def test_turn_off() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
-        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
-        channel_configs=channel_configs,
+        panel_properties=panel_properties,
+        i2c_lock=threading.RLock(),
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
@@ -62,9 +62,9 @@ def test_turn_off() -> None:
 def test_set_spd() -> None:
     driver = LEDDAC5578Driver(
         name="Test",
-        i2c_lock=threading.RLock(),
         panel_configs=panel_configs,
-        channel_configs=channel_configs,
+        panel_properties=panel_properties,
+        i2c_lock=threading.RLock(),
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
@@ -74,11 +74,3 @@ def test_set_spd() -> None:
         "380-399": 0, "400-499": 26, "500-599": 22, "600-700": 39, "701-780": 13
     }
     driver.set_spd(distance, ppfd, spectrum)
-
-
-# def test_scale_channel_logic() -> None:
-#     channel_logic_list = [0, 37.5, 62.5, 87.5, 100]
-#     logic_scaler = {"0": 0, "25": 10, "50": 30, "75": 60, "100": 90}
-#     expected = [0, 20, 45, 75, 90]
-#     channel_setpoint_list = light.scale_channel_logic(channel_logic_list, logic_scaler)
-#     assert channel_setpoint_list == expected
