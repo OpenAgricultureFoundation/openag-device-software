@@ -1,0 +1,58 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-09-13T16:45:41Z",
+	"name": "Green@10cm@100umol",
+	"uuid": "f3ac0473-49eb-40bc-adec-5e88b139faf0",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Provides test lighting conditions for 12 hours.",
+		"verbose": "Provides test lighting conditions for 12 hours."
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		},
+		{
+			"name": "Rob Baynes",
+			"email": "rbaynes@mit.edu",
+			"uuid": "4b9572c9-5d89-4341-ad16-91d1c92d3830"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Scarlet Kale",
+			"uuid": "d6d76ff9-b12e-47bb-8e83-f872c7870856"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"day": {
+			"name": "Day",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 100.0, "600-700": 0.0, "701-780": 0.0},
+			"light_ppfd_umol_m2_s": 100,
+			"light_illumination_distance_cm": 10
+		}
+	},
+	"phases": [
+		{
+			"name": "Day",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "day",
+					"duration_hours": 12
+				}
+			]
+		}
+	]
+}
