@@ -34,7 +34,7 @@ fi
 
 
 # Turn on debug logging if we are in developer mode
-if [ -f $TOPDIR/config/develop ]; then
+if [ -f $DIR/config/develop ]; then
     export OPENAG_LOG_LEVEL=DEBUG
 fi
 

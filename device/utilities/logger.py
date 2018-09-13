@@ -100,7 +100,7 @@ class PeripheralFileHandler(logging.Handler):
             self.file_handlers[name] = logging.handlers.RotatingFileHandler(
                 filename=filename,
                 mode="a",
-                maxBytes=5 * 1024 * 1024,
+                maxBytes=200 * 1024,
                 backupCount=1,
                 encoding=None,
                 delay=0,
