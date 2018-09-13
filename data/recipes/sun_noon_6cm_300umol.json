@@ -1,14 +1,14 @@
 {
 	"format": "openag-phased-environment-v1",
 	"version": "1",
-	"creation_timestamp_utc": "2018-03-30T16:45:41Z",
-	"name": "Green Day",
-	"uuid": "8b913dbf-d24f-435d-a885-e2b725dac147",
+	"creation_timestamp_utc": "2018-09-13T16:45:41Z",
+	"name": "SunNoon@6cm@300umol",
+	"uuid": "e14a7552-c25d-4cf2-9962-5148605dbfca",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
 	"description": {
-		"brief": "Provides green lighting conditions for 12 hours.",
-		"verbose": "Sets a green spectrum at 100W at 10cm for 12 hours."
+		"brief": "Provides test lighting conditions for 12 hours.",
+		"verbose": "Provides test lighting conditions for 12 hours."
 	},
 	"authors": [
 		{
@@ -35,21 +35,21 @@
 		}
 	],
 	"environments": {
-		"green_day": {
-			"name": "Green Day",
-			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 100.0, "600-700": 0.0, "701-780": 0.0},
+		"day": {
+			"name": "Day",
+			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
 			"light_ppfd_umol_m2_s": 300,
-			"light_illumination_distance_cm": 10
+			"light_illumination_distance_cm": 6
 		}
 	},
 	"phases": [
 		{
-			"name": "Green Day",
+			"name": "Day",
 			"repeat": 1,
 			"cycles": [
 				{
-					"name": "Green Day",
-					"environment": "green_day",
+					"name": "Day",
+					"environment": "day",
 					"duration_hours": 12
 				}
 			]

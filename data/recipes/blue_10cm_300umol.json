@@ -1,14 +1,14 @@
 {
 	"format": "openag-phased-environment-v1",
 	"version": "1",
-	"creation_timestamp_utc": "2018-03-30T16:45:41Z",
-	"name": "Blue Day",
-	"uuid": "6ee0ad3e-3816-4094-85de-f482fb9063da",
+	"creation_timestamp_utc": "2018-09-13T16:45:41Z",
+	"name": "Blue@10cm@300umol",
+	"uuid": "19a39c0b-b072-4c7a-8764-195bf21c4a7a",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
 	"description": {
-		"brief": "Provides blue lighting conditions for 12 hours.",
-		"verbose": "Sets a blue spectrum at 100W at 10cm for 12 hours."
+		"brief": "Provides test lighting conditions for 12 hours.",
+		"verbose": "Provides test lighting conditions for 12 hours."
 	},
 	"authors": [
 		{
@@ -35,8 +35,8 @@
 		}
 	],
 	"environments": {
-		"blue_day": {
-			"name": "Blue Day",
+		"day": {
+			"name": "Day",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10
@@ -44,12 +44,12 @@
 	},
 	"phases": [
 		{
-			"name": "Blue Day",
+			"name": "Day",
 			"repeat": 1,
 			"cycles": [
 				{
-					"name": "Blue Day",
-					"environment": "blue_day",
+					"name": "Day",
+					"environment": "day",
 					"duration_hours": 12
 				}
 			]
