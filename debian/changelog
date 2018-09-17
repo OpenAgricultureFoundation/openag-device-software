@@ -1,3 +1,11 @@
+openagbrain (0.1-8) stable; urgency=medium
+
+  * Fix logging.
+  * Change link text for H.
+  * upgrade.sh needs to reset iot count to zero.
+
+ -- rob baynes <rbaynes@mit.edu>  Mon, 17 Sep 2018 16:16:42 +0000
+
 openagbrain (0.1-7) stable; urgency=medium
 
   * Updated light driver (EDU).
