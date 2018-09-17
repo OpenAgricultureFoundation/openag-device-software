@@ -1,14 +1,37 @@
-# Light Calibration
+# Light Overview
 The light control software is one of the more complex modules in the codebase and warrants explanation beyond in-line comments to convey the ideas as clearly and fully as possible.
 
 ## Contents
 1. [Background](#background)
 	1. Hardware Agnostic
+	2. Heater Example
+	3. Lighting Intro
+	4. Light Field Modelling
+	5. Spectral Power Distribution
+	6. Photosynthetically Active Radiation
+	7. SPD = Spectrum * Intensity
+	8. Illumination Distance
+	9. Illumination Distance Considerations
+	10. Illumination Distance Approximation
+	11. Universal Light Recipe Format
 2. Modelling
-	1. ...
+	1. ULRF -> Setpoints
+	2. Ax=b
+	3. Example Problem
+	4. Solving Ax=b
+	5. Example Soltion
+	6. Setpoint Caveats
+	7. Shortcomings of Ordinary Least Squares Approximatio
+	8. Redundant Channels
 3. Calibration
+	1. Overview
+	2. Distance Map
+	3. Channel Spectrum & Intensity
+	4. DAC Map
+	5. Verification
 4. Data
-
+	1. Taurus [PDF](taurus_calibration_verfification.pdf) | [XLSX](taurus_calibration_verfification.xlsx)
+	2. Orion
 
 ## Background
 This is an in-depth overview of the relavent considerations used when developing the lighting model and resulting recipe format.
@@ -63,7 +86,7 @@ This is the specifics on how we model light sources and solve for individual cha
 ### ULRF -> Setpoints
 Currently our light panels have multiple channels each with a different color LED (Far Red, Red, Green, Blue, Warm White, Cool White). By varrying the power to each channel, we can approximate the desired light field in the box. The big question is how do we solve for these channel `setpoints.` 
 
-### Ax = b
+### Ax=b
 We solve this by modelling each channel of the light panel and computing its SPD at the desired distance. Each channel SPD can be considered a vector and by using channel SPDs as the columns in a matrix we can reduce the problem to the fundamental problem of linear algebra, Ax=b, solve for x.
 ```
 A = Channel SPD Matrix
@@ -178,4 +201,3 @@ To perform the following computations we need the following:
 *Procedure:* Compare reported and measured for 3 spectrums, 3 distances, and 3 intensities that are likely to be used in normal operation.
 
 *Questions:* Does the algorithmically reported intensity and spectrum match the measured intensity and spectrum for multiple spectrums, intensities, and distances? How well?
-

@@ -1,8 +1,8 @@
 {
-	"name":  "Light Array Orion Actuator",
+	"name":  "Light Panel Taurus Actuator (Legacy)",
 	"version": "1",
-	"uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
-	"module_name": "led_dac5578.manager",
+	"uuid": "52247eac-f22b-4b20-ad51-9a3d387325f1",
+	"module_name": "led_dac5578/manager",
 	"class_name": "LEDDAC5578Manager",
 	"parameters": {
 		"variables": {
@@ -27,16 +27,16 @@
 				}
 			},
 			"actuator": {
-				"channel_output_percents": {
+				"channel_setpoint_percents": {
 					"name": {
 						"type": "string",
-						"default": "light_channel_output_percents"
+						"default": "light_channel_setpoint_percents"
 					}
 				}
 			}
 		},	
 		"communication": {
-			"panels": [
+			"devices": [
 				{
 					"bus": {
 						"type": "integer",
@@ -60,66 +60,109 @@
 	},
 	"properties": {
 		"channels": {
-			"FR": {"name": "Far Red", "type": "FR", "port": 6},
-			"WW": {"name": "Warm White", "type": "WW", "port": 5},
-			"CW1": {"name": "Cool White 1", "type": "CW", "port": 4},
-			"CW2": {"name": "Cool White 2", "type": "CW", "port": 2},
-			"CW3": {"name": "Cool White 3", "type": "CW", "port": 0},
-			"CW4": {"name": "Cool White 4", "type": "CW", "port": 7}
+			"FR": {"name": "Far Red", "type": "FR", "port": 0},
+			"R": {"name": "Red", "type": "R", "port": 2},
+			"G": {"name": "Green", "type": "G", "port": 5},
+			"B": {"name": "Blue", "type": "B", "port": 7},
+			"CW": {"name": "Cool White", "type": "CW", "port": 6},
+			"WW": {"name": "Warm White", "type": "WW", "port": 4}
 		},
 		"intensity_map_cm_umol": {
-			"0": 1708,
-			"5": 1577,
-			"10": 1425,
-			"15": 1214,
-			"20": 1037,
-			"25": 923,
-			"30": 875,
-			"35": 836,
-			"40": 779,
-			"73": 556,
-			"116": 356
+			"2": 1615,
+			"6": 1437,
+			"10": 1115,
+			"14": 860,
+			"18": 662
 		},
 		"dac_map": {
-        	"0": 0,
-        	"25": 6,
-        	"50": 42,
-        	"75": 75,
-        	"100": 100
+        	"0": 100,
+        	"5": 100,
+        	"10": 94.4,
+        	"15": 88.2,
+        	"20": 82,
+        	"25": 76.2,
+        	"30": 69.7,
+        	"35": 63,
+        	"40": 56.1,
+        	"45": 49.7,
+        	"50": 42.5,
+        	"55": 35.3,
+        	"60": 28,
+        	"65": 21,
+        	"70": 13.2,
+        	"75": 5.3,
+        	"80": 0,
+        	"85": 0,
+        	"90": 0,
+        	"95": 0,
+        	"100": 0
 		},
 		"channel_types": {
 			"FR": {
 				"name": "Far Red",
-				"relative_intensity_percent": 1,
-				"spectrum_nm_percent": {
+				"relative_intensity_percent": 1.8,
+		        "spectrum_nm_percent": {
 		            "380-399": 0,
 		            "400-499": 0,
 		            "500-599": 0,
-		            "600-700": 7,
-		            "701-780": 93
-		        }
+		            "600-700": 10.7,
+		            "701-780": 89.3
+	        	}
+	        },
+	        "R": {
+				"name": "Red",
+				"relative_intensity_percent": 25.0,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 0,
+		            "500-599": 0.3,
+		            "600-700": 97.7,
+		            "701-780": 2
+	        	}
+	        },
+	        "G": {
+				"name": "Green",
+				"relative_intensity_percent": 8.9,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 14,
+		            "500-599": 85.1,
+		            "600-700": 0.9,
+		            "701-780": 0
+	        	}
+	        },
+	        "B": {
+				"name": "Blue",
+				"relative_intensity_percent": 19.9,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 99.2,
+		            "500-599": 0.8,
+		            "600-700": 0,
+		            "701-780": 0
+	        	}
 	        },
 			"CW": {
 				"name": "Cool White",
-				"relative_intensity_percent": 21.25,
+				"relative_intensity_percent": 22.6,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
-		            "400-499": 22,
-		            "500-599": 41,
-		            "600-700": 32,
-		            "701-780": 4
-		        }
+		            "400-499": 23.5,
+		            "500-599": 47,
+		            "600-700": 26.7,
+		            "701-780": 2.8
+	        	}
 	        },
 			"WW": {
 				"name": "Warm White",
-				"relative_intensity_percent": 18,
+				"relative_intensity_percent": 21.8,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
-		            "400-499": 8,
-		            "500-599": 33,
-		            "600-700": 50,
-		            "701-780": 8
-		        }
+		            "400-499": 8.3,
+		            "500-599": 38.4,
+		            "600-700": 48.2,
+		            "701-780": 5.1
+	        	}
 			}
 		}
 	},

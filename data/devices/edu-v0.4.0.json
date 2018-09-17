@@ -10,7 +10,7 @@
             "parameters": {
                "setup": {
                     "name": "LED Panel Taurus Actuator",
-                    "file_name": "led_dac5578/setups/taurus"
+                    "file_name": "led_dac5578/setups/taurus-v2"
                 },
                 "variables": {
                     "sensor": {
