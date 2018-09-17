@@ -117,6 +117,7 @@ class EventManager:
             self.state.peripherals[recipient_name]["request"] = request
 
             # Wait for response
+            # This system is fragile....rework concept
             start_time = time.time()
             while self.state.peripherals[recipient_name]["response"] == None:
                 # Check for timeout
