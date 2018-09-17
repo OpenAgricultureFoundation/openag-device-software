@@ -96,7 +96,12 @@ DATABASES = {
     }
 }
 
-LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "DEBUG")
+# If you touch config/develop, this env var will be set to DEBUG in run.sh
+LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "WARNING")
+
+# We don't want much console output, because when run from the rc.local service,
+# it will fill /var/log/syslog too quickly.
+CONSOLE_LOG_LEVEL = "ERROR" 
 
 LOGGING = {
     "version": 1,
@@ -121,7 +126,7 @@ LOGGING = {
     },
     "handlers": {
         "app_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "standard_console",
         },
@@ -134,7 +139,7 @@ LOGGING = {
             "backupCount": 1,
         },
         "device_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "device_console",
         },
@@ -152,7 +157,7 @@ LOGGING = {
             "formatter": "device_file",
         },
         "iot_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "device_console",
         },
@@ -165,7 +170,7 @@ LOGGING = {
             "backupCount": 1,
         },
         "resource_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "device_console",
         },
@@ -178,7 +183,7 @@ LOGGING = {
             "backupCount": 1,
         },
         "connect_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "device_console",
         },
@@ -191,7 +196,7 @@ LOGGING = {
             "backupCount": 1,
         },
         "upgrade_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "device_console",
         },
@@ -207,19 +212,16 @@ LOGGING = {
     "loggers": {
         "app": {"handlers": ["app_console", "app_file"], "level": LOG_LEVEL},
         "device": {
-            "handlers": ["device_console", "device_file", "peripheral_files"],
-            "level": LOG_LEVEL,
-        },
-        "iot": {"handlers": ["iot_console", "iot_file"], "level": LOG_LEVEL},
-        "resource": {
-            "handlers": ["resource_console", "resource_file"], "level": LOG_LEVEL
-        },
-        "connect": {
-            "handlers": ["connect_console", "connect_file"], "level": LOG_LEVEL
-        },
-        "upgrade": {
-            "handlers": ["upgrade_console", "upgrade_file"], "level": LOG_LEVEL
-        },
+            "handlers": ["device_console", "device_file", "peripheral_files"], 
+                "level": LOG_LEVEL},
+        "iot": {"handlers": ["iot_console", "iot_file"], 
+            "level": LOG_LEVEL},
+        "resource": { "handlers": ["resource_console", "resource_file"], 
+            "level": LOG_LEVEL},
+        "connect": { "handlers": ["connect_console", "connect_file"], 
+            "level": LOG_LEVEL},
+        "upgrade": { "handlers": ["upgrade_console", "upgrade_file"], 
+            "level": LOG_LEVEL},
     },
 }
 

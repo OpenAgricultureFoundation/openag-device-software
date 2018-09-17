@@ -162,7 +162,7 @@
       .then(function(registerIoTSuccess) {
         document.getElementById("reg_iot_status").innerHTML = 'Verifying...';
 
-        document.getElementById("verification_code").innerHTML = 'Please click here to add this device to your OpenAg cloud user account';
+        document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
         document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + registerIoTSuccess;
       
         return getStatusPromise();
