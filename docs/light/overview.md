@@ -3,34 +3,34 @@ The light control software is one of the more complex modules in the codebase an
 
 ## Contents
 1. [Background](#background)
-	1. Hardware Agnostic
-	2. Heater Example
-	3. Lighting Intro
-	4. Light Field Modelling
-	5. Spectral Power Distribution
-	6. Photosynthetically Active Radiation
-	7. SPD = Spectrum * Intensity
-	8. Illumination Distance
-	9. Illumination Distance Considerations
-	10. Illumination Distance Approximation
-	11. Universal Light Recipe Format
-2. Modelling
-	1. ULRF -> Setpoints
-	2. Ax=b
-	3. Example Problem
-	4. Solving Ax=b
-	5. Example Soltion
-	6. Setpoint Caveats
-	7. Shortcomings of Ordinary Least Squares Approximatio
-	8. Redundant Channels
-3. Calibration
-	1. Overview
-	2. Distance Map
-	3. Channel Spectrum & Intensity
-	4. DAC Map
-	5. Verification
+	1. [Hardware Agnostic](#hardware-agnostic)
+	2. [Heater Example](#heater-example)
+	3. [Lighting Intro](#lighting-intro)
+	4. [Light Field Modelling](#light-field-modelling)
+	5. [Spectral Power Distribution](#spectral-power-distribution-spd)
+	6. [Photosynthetically Active Radiation](#photosyntheticall-active-radiation-par)
+	7. [SPD = Spectrum * Intensity](#spd-spectrum-intensity)
+	8. [Illumination Distance](#illumination-distance)
+	9. [Illumination Distance Considerations](#illumination-distance-considerations)
+	10. [Illumination Distance Approximation](#illumination-distance-approximation)
+	11. [Universal Light Recipe Format](#universal-light-recipe-format-ulrf)
+2. [Modelling](#modelling)
+	1. [ULRF -> Setpoints](#ulrf-setpoints)
+	2. [Ax=b](#axb)
+	3. [Example Problem](#example-problem)
+	4. [Solving Ax=b](#solving-axb)
+	5. [Example Soltion](#example-solution)
+	6. [Setpoint Caveats](#setpoint-caveats)
+	7. [Shortcomings of Ordinary Least Squares Approximation](#shortcomings-of-ordinary-least-squares-approximation)
+	8. [Redundant Channels](#redundant-channels)
+3. [Calibration](#calibration)
+	1. [Overview](#overview)
+	2. [Distance Map](#distance-map)
+	3. [Channel Spectrum & Intensity](#channel-spectrum-intensity)
+	4. [DAC Map](#dac-map)
+	5. [Verification](#verification)
 4. Data
-	1. Taurus [PDF](taurus_calibration_verfification.pdf) | [XLSX](taurus_calibration_verfification.xlsx)
+	1. Taurus [PDF](docs/light/taurus_calibration_verfification.pdf) | [XLSX](docs/light/taurus_calibration_verfification.xlsx)
 	2. Orion
 
 ## Background
