@@ -8,14 +8,14 @@ The light control software is one of the more complex modules in the codebase an
 	3. [Lighting Intro](#lighting-intro)
 	4. [Light Field Modelling](#light-field-modelling)
 	5. [Spectral Power Distribution](#spectral-power-distribution-spd)
-	6. [Photosynthetically Active Radiation](#photosyntheticall-active-radiation-par)
-	7. [SPD = Spectrum * Intensity](#spd-spectrum-intensity)
+	6. [Photosynthetically Active Radiation](#photosynthetically-active-radiation-par)
+	7. [SPD = Spectrum * Intensity](#spd-is-spectrum-times-intensity)
 	8. [Illumination Distance](#illumination-distance)
 	9. [Illumination Distance Considerations](#illumination-distance-considerations)
 	10. [Illumination Distance Approximation](#illumination-distance-approximation)
 	11. [Universal Light Recipe Format](#universal-light-recipe-format-ulrf)
 2. [Modelling](#modelling)
-	1. [ULRF -> Setpoints](#ulrf-setpoints)
+	1. [ULRF -> Setpoints](#ulrf-to-setpoints)
 	2. [Ax=b](#axb)
 	3. [Example Problem](#example-problem)
 	4. [Solving Ax=b](#solving-axb)
@@ -26,11 +26,11 @@ The light control software is one of the more complex modules in the codebase an
 3. [Calibration](#calibration)
 	1. [Overview](#overview)
 	2. [Distance Map](#distance-map)
-	3. [Channel Spectrum & Intensity](#channel-spectrum-intensity)
+	3. [Channel Spectrum & Intensity](#channel-spectrum-and-intensity)
 	4. [DAC Map](#dac-map)
 	5. [Verification](#verification)
 4. Data
-	1. Taurus [PDF](docs/light/taurus_calibration_verfification.pdf) | [XLSX](docs/light/taurus_calibration_verfification.xlsx)
+	1. Taurus [PDF](taurus_calibration_verification.pdf) | [XLSX](taurus_calibration_verification.xlsx)
 	2. Orion
 
 ## Background
@@ -54,7 +54,7 @@ The next logical question is, "What is the equivalent unit to a BTU for the ligh
 ### Photosynthetically Active Radiation (PAR)
 In the plant cultivation context, the relevant spectral region is that of `photosynthetically active radiation`, or PAR for short. The PAR spectral region, or band of wavelengths, is between 400-700 nanometers. This band is considered the PAR band because it corresponds to the wavelenghths that photosynthetic organisms are able to use in the process of photosynthesis.
 
-### SPD = Spectrum * Intensity
+### SPD is Spectrum times Intensity
 Spectral power distributions can be deconstructed into two parts: 1. Spectrum 2. Intensity. The spectrum is the normalized SPD (i.e. 0-100%) and the intensity is the magnitude of the SPD. So, by multiplying the spectrum by the intensity will result in the SPD.
 
 ### Illumination Distance
@@ -83,7 +83,7 @@ Light ppfd is effectively intensity but has a slightly more correct variable nam
 ## Modelling
 This is the specifics on how we model light sources and solve for individual channel outputs from the ULRF.
 
-### ULRF -> Setpoints
+### ULRF to Setpoints
 Currently our light panels have multiple channels each with a different color LED (Far Red, Red, Green, Blue, Warm White, Cool White). By varrying the power to each channel, we can approximate the desired light field in the box. The big question is how do we solve for these channel `setpoints.` 
 
 ### Ax=b
@@ -153,10 +153,10 @@ x = [25 0  0] # percent
 ```
 The solution can be interpreted as follows: "To realize the desired SPD requires the red channel to be at 25% intensity, green at 0% intensity, and blue at 0% intensity"
 
-### Sepoint Caveats
+### Setpoint Caveats
 The setpoints from solving Ax=b refer to the channel light output intensity. In an ideal context the intensity sent to the light channel would correspond 1:1 but that is not a fair assumption. Depending on the hardware circuitry setting the LED controller intensity, usually a voltage output from a digital to analog converter (DAC) to a current regulator does not correspond perfectly to the output light intensity. As a result there is a final translation that must happen to map the "PAR" setpoint to the "DAC" setpoint.
 
-## Shortcomings of Ordinary Least Squares Approximation
+### Shortcomings of Ordinary Least Squares Approximation
 Ordinary least squares approximation solvers operate in math land and yield a few un-realizable setpoints in hardware land. The two main problems are 1. Setpoints cannot be negative -- we cannot take light away. 2. Setpoints cannot be more than 100% -- we cannot have more than 100% light output.
 
 To solve these, we use a non-negative LSQ for (1) and a bounded LSQ for (2) resulting in the final solver we use which is a bounded non-negative least squares approximation (BNNLS).
@@ -181,7 +181,7 @@ To perform the following computations we need the following:
 
 *Questions:* Is the spectrum consistent across illumination distances? Is there a distinct point where the spectrum becomes inconsistent?
 
-### Channel Spectrum & Intensity
+### Channel Spectrum and Intensity
 *Objective:* Determine the spectrum and relative intensity for each light channel type.
 
 *Procedure:* At a fixed distance from a single panel where the overall spectrum is consistent (reference distance calibration test) and total PAR output highest, at the center of the panel, with all other lights off, cycling through channel types, where for each channel type all channels of that type are powered fully, measure total and segmented PAR (umol).
