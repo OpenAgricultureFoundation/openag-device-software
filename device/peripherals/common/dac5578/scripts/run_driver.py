@@ -45,11 +45,8 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Run parent class
         super().run(*args, **kwargs)
 
-        # Check is dac is used in led panel
+        # Check if dac is used in led panel
         if "panels" in self.communication:
-
-            # Default to using first panel in communication list
-            self.communication = self.communication["panels"][0]
 
             # Check if panel name is specified
             if self.args.panel_name != None:
@@ -69,6 +66,9 @@ class DriverRunner(RunnerBase):  # type: ignore
                             self.args.panel_name
                         )
                     )
+            else:
+                # Default to using first panel in communication list
+                self.communication = self.communication["panels"][0]
 
         # Initialize driver optional mux parameter
         mux = self.communication.get("mux", None)
