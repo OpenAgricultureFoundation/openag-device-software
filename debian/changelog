@@ -1,3 +1,11 @@
+openagbrain (0.1-7) stable; urgency=medium
+
+  * Updated light driver (EDU).
+  * Fix logging.
+  * Atlas timing update.
+
+ -- rob baynes <rbaynes@mit.edu>  Thu, 13 Sep 2018 21:24:39 +0000
+
 openagbrain (0.1-6) stable; urgency=medium
 
   * Tune system and app logging to limit sizes and backups. 
