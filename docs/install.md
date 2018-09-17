@@ -18,17 +18,17 @@ git clone https://github.com/OpenAgInitiative/openag-device-software.git
 cd openag-device-software
 ```
 
-### Run install script
+### Run the install script
 ```
-sudo ./install.sh
+./scripts/install.sh
 ```
 
 ## Set up a Python Environment and create our database
 ```
-./setup_python.sh
+./scripts/setup_python.sh
 ```
 
-### Run software
+### Run the software
 ```
 ./run.sh
 ./run.sh --simulate # to run w/simulated hardware

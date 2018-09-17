@@ -2,6 +2,7 @@
 
 ## Controlling the brain when it is run from /etc/rc.local
 ```
+cd
 sudo service rc.local start
 systemctl status rc-local.service
 ```
@@ -27,11 +28,6 @@ screen -t ngrok -S ngrok
 ### Copy ngrok forwarding link
 ```
 Looks something like: http://ad80951c.ngrok.io
-```
-
-### Detatch from screen session
-```
-ctrl + a, d
 ```
 
 ## Run brain
@@ -67,20 +63,5 @@ Something like: http://ad80951c.ngrok.io
 screen -d brain
 ```
 
-### Detatch from brain
-```
-ctrl + a, d
-```
-
-### Re-attach to ngrok
-```
-screen -d ngrok
-```
-
-### Detatch from ngrok
-```
-ctrl + a, d
-```
-
 ## Next steps
-[Contributing](contributing.md)
+See [Contributing](contributing.md)
