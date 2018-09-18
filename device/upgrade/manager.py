@@ -3,7 +3,7 @@ import logging
 import threading
 import time
 import platform
-from upgrade.upgrade_utils import UpgradeUtils
+from device.upgrade.utilities import UpgradeUtilities
 
 
 class UpgradeManager:
@@ -22,13 +22,13 @@ class UpgradeManager:
         """ Class constructor """
         # Initialize our state
         self.state = state
-        UpgradeUtils.save_state(state)
+        UpgradeUtilities.save_state(state)
         self.error = None
-        stat = 'Initializing...'
+        stat = "Initializing..."
         self.status = stat
-        self.state.upgrade['current_version'] = stat
-        self.state.upgrade['upgrade_version'] = stat
-        self.state.upgrade['show_upgrade'] = False
+        self.state.upgrade["current_version"] = stat
+        self.state.upgrade["upgrade_version"] = stat
+        self.state.upgrade["show_upgrade"] = False
         self._stop_event = threading.Event()  # so we can stop this thread
 
     # ------------------------------------------------------------------------
@@ -48,7 +48,7 @@ class UpgradeManager:
     @property
     def status(self):
         """ Gets status value. """
-        return self.state.upgrade["status"] 
+        return self.state.upgrade["status"]
 
     @status.setter
     def status(self, value):
@@ -77,14 +77,11 @@ class UpgradeManager:
         while True:
             if self.stopped():
                 break
-            time.sleep(30)      # allow time to start the django UI
+            time.sleep(30)  # allow time to start the django UI
             self.update()
-            time.sleep(86400)   # idle for one day
+            time.sleep(86400)  # idle for one day
 
     # ------------------------------------------------------------------------
     def update(self):
         self.logger.info("Checking for software update")
-        UpgradeUtils.update_dict()
-
-
-
+        UpgradeUtilities.update_dict()

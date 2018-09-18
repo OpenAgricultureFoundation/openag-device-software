@@ -3,7 +3,7 @@ import logging
 import threading
 import time
 import platform
-from connect.connect_utils import ConnectUtils
+from device.connect.utilities import ConnectUtilities
 
 
 class ConnectManager:
@@ -23,16 +23,16 @@ class ConnectManager:
         # Initialize our state
         self.state = state
         self.error = None
-        self.status = 'Initializing...'
+        self.status = "Initializing..."
         self.ref_iot_manager = ref_iot_manager
         self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
 
         # this never changes, so only get once
-        self.state.connect["is_bbb"] = ConnectUtils.is_bbb()
+        self.state.connect["is_bbb"] = ConnectUtilities.is_bbb()
 
         # initialize this
-        self.state.connect["device_UI"] = ConnectUtils.get_remote_UI_URL()
+        self.state.connect["device_UI"] = ConnectUtilities.get_remote_UI_URL()
 
     # ------------------------------------------------------------------------
     @property
@@ -82,7 +82,7 @@ class ConnectManager:
             if self.stopped():
                 break
             self.update()
-            if ConnectUtils.valid_internet_connection():
+            if ConnectUtilities.valid_internet_connection():
                 time.sleep(300)  # idle for 5 min
             else:
                 time.sleep(5)  # fast idle until we get connected
@@ -90,22 +90,21 @@ class ConnectManager:
     # ------------------------------------------------------------------------
     def update(self):
         # these may change, so get new values every loop
-        self.state.connect["valid_internet_connection"] = \
-            ConnectUtils.valid_internet_connection()
-        self.state.connect['is_wifi_bbb'] = ConnectUtils.is_wifi_bbb()
-        self.state.connect["wifis"] = ConnectUtils.get_wifis()
-        self.state.connect["IP"] = ConnectUtils.get_IP()
-        self.state.connect["is_registered_with_IoT"] = \
-            ConnectUtils.is_registered_with_IoT()
-        self.state.connect["device_id"] = \
-            ConnectUtils.get_device_id()
-        self.state.connect["iot_connection"] = \
-            self.state.iot["connected"]  # the IoTManager already does this
+        self.state.connect[
+            "valid_internet_connection"
+        ] = ConnectUtilities.valid_internet_connection()
+        self.state.connect["is_wifi_bbb"] = ConnectUtilities.is_wifi_bbb()
+        self.state.connect["wifis"] = ConnectUtilities.get_wifis()
+        self.state.connect["IP"] = ConnectUtilities.get_IP()
+        self.state.connect[
+            "is_registered_with_IoT"
+        ] = ConnectUtilities.is_registered_with_IoT()
+        self.state.connect["device_id"] = ConnectUtilities.get_device_id()
+        self.state.connect["iot_connection"] = self.state.iot[
+            "connected"
+        ]  # the IoTManager already does this
 
-        if ConnectUtils.valid_internet_connection():
-            self.status = 'Connected'
+        if ConnectUtilities.valid_internet_connection():
+            self.status = "Connected"
         else:
-            self.status = 'Not Connected'
-
-
-
+            self.status = "Not Connected"

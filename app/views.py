@@ -69,8 +69,8 @@ from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
-from connect.connect_utils import ConnectUtils
-from upgrade.upgrade_utils import UpgradeUtils
+from device.connect.utilities import ConnectUtilities
+from device.upgrade.utilities import UpgradeUtilities
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
@@ -528,7 +528,7 @@ class Connect(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.get_status()
+        response = ConnectUtilities.get_status()
         logger.info("Connect response={}".format(response))
         return Response(response)
 
@@ -544,7 +544,7 @@ class ConnectGetStatus(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.get_status()
+        response = ConnectUtilities.get_status()
         logger.info("ConnectGetStatus response={}".format(response))
         return Response(response)
 
@@ -572,7 +572,7 @@ class ConnectJoinWifi(viewsets.ViewSet):
         password = reqd["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        success = ConnectUtils.join_wifi(wifi, password)
+        success = ConnectUtilities.join_wifi(wifi, password)
         response = {"success": success}
         logger.info("ConnectJoinWifi response={}".format(response))
         return Response(response)
@@ -588,7 +588,7 @@ class ConnectDeleteWifis(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.delete_wifi_connections()
+        response = ConnectUtilities.delete_wifi_connections()
         logger.info("ConnectDeleteWifis response={}".format(response))
         return Response(response)
 
@@ -603,7 +603,7 @@ class ConnectRegisterIoT(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.register_iot()
+        response = ConnectUtilities.register_iot()
         logger.info("ConnectRegisterIoT response={}".format(response))
         return Response(response)
 
@@ -618,7 +618,7 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.delete_iot_registration()
+        response = ConnectUtilities.delete_iot_registration()
         logger.info("ConnectDeleteIoTreg response={}".format(response))
         return Response(response)
 
@@ -635,7 +635,7 @@ class Upgrade(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = UpgradeUtils.get_status()
+        response = UpgradeUtilities.get_status()
         logger.info("Upgrade status response={}".format(response))
         return Response(response)
 
@@ -650,7 +650,7 @@ class UpgradeNow(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeNow"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtils.update_software()
+        response = UpgradeUtilities.update_software()
         logger.info("UpgradeNow response={}".format(response))
         return Response(response)
 
@@ -663,7 +663,7 @@ class UpgradeCheck(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeCheck"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtils.check()
+        response = UpgradeUtilities.check()
         logger.info("UpgradeCheck response={}".format(response))
         return Response(response)
 
@@ -676,7 +676,7 @@ class UpgradeStatus(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeStatus"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtils.get_status()
+        response = UpgradeUtilities.get_status()
         logger.info("UpgradeStatus response={}".format(response))
         return Response(response)
 

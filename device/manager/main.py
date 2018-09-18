@@ -5,28 +5,26 @@ import logging, time, json, threading, os, sys, glob, uuid
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+# Import json validators
+from jsonschema import validate
+
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import set_nested_dict_safely
 
-# Import json validators
-from jsonschema import validate
-
-# Import shared memory
+# Import device state
 from device.state import State
 
 # Import device managers
 from device.recipe.manager import RecipeManager
 from device.event.manager import EventManager
-
-from resource.resource_manager import ResourceManager
-from connect.connect_manager import ConnectManager
-from upgrade.upgrade_manager import UpgradeManager
-from iot.iot_manager import IoTManager
+from device.resource.manager import ResourceManager
+from device.iot.manager import IoTManager
+from device.connect.manager import ConnectManager
+from device.upgrade.manager import UpgradeManager
 
 # Import device simulators
 from device.comms.i2c2.mux_simulator import MuxSimulator
-
 
 # Import database models
 from app.models import StateModel

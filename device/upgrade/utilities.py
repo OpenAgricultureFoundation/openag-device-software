@@ -12,7 +12,7 @@ from app.viewers import UpgradeViewer
 from device.state import State
 
 
-class UpgradeUtils:
+class UpgradeUtilities:
     """ Utilities to upgrade this apt package. """
 
     # class variable to hold a reference to the state.upgrade dict
@@ -22,13 +22,13 @@ class UpgradeUtils:
     # Saves a reference to the state as a static class var.
     @staticmethod
     def save_state(state):
-        UpgradeUtils.ref_state = state
+        UpgradeUtilities.ref_state = state
 
     # --------------------------------------------------------------------------
     # Return a dict of all the fields we display on the Django Upgrade tab.
     @staticmethod
     def get_status():
-        return UpgradeUtils.ref_state.upgrade
+        return UpgradeUtilities.ref_state.upgrade
 
     # ------------------------------------------------------------------------
     # Update our dict with the software versions.
@@ -43,49 +43,47 @@ class UpgradeUtils:
           Candidate: 0.1-2
         """
         try:
-            UpgradeUtils.ref_state.upgrade['status'] = \
-                'Checking for upgrades...'
+            UpgradeUtilities.ref_state.upgrade["status"] = "Checking for upgrades..."
 
             # update this machines list of available packages
-            cmd = ['sudo', 'apt-get', 'update']
+            cmd = ["sudo", "apt-get", "update"]
             subprocess.run(cmd)
 
             # command and list of args as list of strings
-            cmd = ['apt-cache', 'policy', 'openagbrain']
-            with subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE) as proc1:
+            cmd = ["apt-cache", "policy", "openagbrain"]
+            with subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ) as proc1:
                 output = proc1.stdout.read().decode("utf-8")
                 output += proc1.stderr.read().decode("utf-8")
                 lines = output.splitlines()
-                installed = ''
-                candidate = ''
+                installed = ""
+                candidate = ""
                 for line in lines:
                     tokens = line.split()
                     for token in tokens:
-                        if token.startswith('Installed:'):
+                        if token.startswith("Installed:"):
                             installed = tokens[1]
                             break
-                        elif token.startswith('Candidate:'):
+                        elif token.startswith("Candidate:"):
                             candidate = tokens[1]
                             break
 
-                UpgradeUtils.ref_state.upgrade['current_version'] = installed
-                UpgradeUtils.ref_state.upgrade['upgrade_version'] = candidate
+                UpgradeUtilities.ref_state.upgrade["current_version"] = installed
+                UpgradeUtilities.ref_state.upgrade["upgrade_version"] = candidate
                 # very simple upgrade logic, trust debian package logic
-                if '(none)' == installed or \
-                        installed != candidate:
-                    UpgradeUtils.ref_state.upgrade['show_upgrade'] = True
+                if "(none)" == installed or installed != candidate:
+                    UpgradeUtilities.ref_state.upgrade["show_upgrade"] = True
 
-            UpgradeUtils.ref_state.upgrade['status'] = 'Up to date.'
-            if UpgradeUtils.ref_state.upgrade.get('show_upgrade', False):
-                UpgradeUtils.ref_state.upgrade['status'] = \
-                    'Software upgrade is available.'
+            UpgradeUtilities.ref_state.upgrade["status"] = "Up to date."
+            if UpgradeUtilities.ref_state.upgrade.get("show_upgrade", False):
+                UpgradeUtilities.ref_state.upgrade[
+                    "status"
+                ] = "Software upgrade is available."
 
         except:
             return False
         return True
-
-
 
     # ------------------------------------------------------------------------
     # Update our debian package with the latest version available.
@@ -110,32 +108,31 @@ class UpgradeUtils:
             at -f /tmp/openagbrain-at-commands now + 1 minute
         """
         try:
-            fn = '/tmp/openagbrain-at-commands'
-            f = open(fn, 'w')
-            f.write('systemctl stop rc.local\n')
-            f.write('apt-get install -y openagbrain\n')
+            fn = "/tmp/openagbrain-at-commands"
+            f = open(fn, "w")
+            f.write("systemctl stop rc.local\n")
+            f.write("apt-get install -y openagbrain\n")
             f.close()
 
             # update our debian package
-            cmd = ['at', '-f', '/tmp/openagbrain-at-commands', \
-                   'now', '+', '1', 'minute']
+            cmd = [
+                "at", "-f", "/tmp/openagbrain-at-commands", "now", "+", "1", "minute"
+            ]
             subprocess.Popen(cmd)
 
-            UpgradeUtils.ref_state.upgrade['status'] = \
-                'Upgrading, will restart in 5 minutes...'
-            UpgradeUtils.ref_state.upgrade['show_upgrade'] = False
+            UpgradeUtilities.ref_state.upgrade[
+                "status"
+            ] = "Upgrading, will restart in 5 minutes..."
+            UpgradeUtilities.ref_state.upgrade["show_upgrade"] = False
 
         except Exception as e:
-            UpgradeUtils.ref_state.upgrade['error'] = e
+            UpgradeUtilities.ref_state.upgrade["error"] = e
 
-        return UpgradeUtils.ref_state.upgrade
-
+        return UpgradeUtilities.ref_state.upgrade
 
     # ------------------------------------------------------------------------
     # Check for updates
     @staticmethod
     def check():
-        UpgradeUtils.update_dict()
-        return UpgradeUtils.get_status()
-
-
+        UpgradeUtilities.update_dict()
+        return UpgradeUtilities.get_status()

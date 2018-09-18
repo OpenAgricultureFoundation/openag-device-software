@@ -42,10 +42,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "app",
     "device",
-    "iot",
-    "resource",
-    "connect",
-    "upgrade",
+    "device.iot",
+    "device.resource",
+    "device.connect",
+    "device.upgrade",
 ]
 
 MIDDLEWARE = [
