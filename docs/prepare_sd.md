@@ -29,6 +29,10 @@ Back to [Part 1: Purchase Beaglebone Black + SD Card](purchase_bbb.md)...or...Fo
   sudo pip install --upgrade virtualenv
   sudo apt-get install -y openssl libffi-dev libssl-dev
 
+  wget https://packagecloud.io/install/repositories/quan/beaglebone-stretch/script.deb.sh
+  sudo bash script.deb.sh
+  sudo apt-get install -y python3.6-minimal python3.6-dev
+
   sudo chmod 777 /var/lib/connman/
 
   sudo service apache2 stop
