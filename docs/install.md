@@ -1,39 +1,45 @@
 # Installation Instructions
 
-## Device
-### Get os onto device
+## For developers:
+
+### Supported Operating Systems:
 ```
 Currently tested:
  - Beaglebone black | Stretch IoT | Debian 9.3
  - Should work on most *nix systems (OSX and Ubuntu are our development platforms)
 ```
 
-### Clone repo
+### Clone repo:
 ```
+cd ~
 git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
 
-### Go to repo directory
+### Go to repo directory:
 ```
-cd openag-device-software
-```
-
-### Run install script
-```
-sudo ./install.sh
+cd ~/openag-device-software
 ```
 
-## Set up a Python Environment and create our database
+### Run the scripts:
 ```
-./setup_python.sh
+./scripts/install.sh
+./scripts/setup_python.sh
+./scripts/upgrade.sh
 ```
 
-### Run software
+### Run the software in simulation mode (no I2C devices required):
 ```
-./run.sh
-./run.sh --simulate # to run w/simulated hardware
-./run.sh --no-device # to only run app (useful to manipulate data in admin console)
+./simulate.sh
 ```
+
+
+## To just install (or upgrade to) the latest debian package:
+```
+sudo apt-get update
+sudo apt-get install -y openagbrain
+dpkg -s openagbrain
+```
+
 
 ## Next steps
-See [Running Instructions](running.md)
+See [Detailed Running Instructions](running.md)

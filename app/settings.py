@@ -98,7 +98,12 @@ DATABASES = {
     }
 }
 
-LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "DEBUG")
+# Set log level
+# If you touch data/config/develop, this env var will be set to DEBUG in run.sh
+LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "WARNING")
+CONSOLE_LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "ERROR")
+
+# Set log directory
 LOG_DIR = os.path.dirname(BASE_DIR) + "/data/logs/"
 
 # Make sure log directory exists
@@ -129,12 +134,12 @@ LOGGING = {
     },
     "handlers": {
         "app_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "app_console",
         },
         "device_console": {
-            "level": LOG_LEVEL,
+            "level": CONSOLE_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "device_console",
         },
