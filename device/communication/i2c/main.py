@@ -3,11 +3,16 @@ import fcntl, io, time, logging, struct, threading
 from typing import Optional, List
 
 # # Import package elements
-from device.comms.i2c2.device_io import DeviceIO
-from device.comms.i2c2.utilities import make_i2c_rdwr_data
-from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
-from device.comms.i2c2.mux_simulator import MuxSimulator
-from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
+from device.communication.i2c.device_io import DeviceIO
+from device.communication.i2c.utilities import make_i2c_rdwr_data
+from device.communication.i2c.peripheral_simulator import PeripheralSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
+from device.communication.i2c.exceptions import (
+    InitError,
+    WriteError,
+    ReadError,
+    MuxError,
+)
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -40,9 +45,11 @@ class I2C(object):
         self.mux = mux
         self.channel = channel
 
-        # Initialize logger instance
-        logger_name = "I2C({})".format(self.name)
-        self.logger = Logger(name=logger_name, dunder_name=__name__)
+        # Initialize logger
+        logname = "I2C({})".format(self.name)
+        extra = {"console_name": logname, "file_name": logname}
+        logger = logging.getLogger("i2c")
+        self.logger = logging.LoggerAdapter(logger, extra)
         self.logger.debug("Initializing communication")
 
         # Verify mux config

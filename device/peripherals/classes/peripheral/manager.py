@@ -9,7 +9,7 @@ from device.utilities.modes import Modes
 from device.utilities.logger import Logger
 
 # Import device comms
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import device state
 from device.state import State

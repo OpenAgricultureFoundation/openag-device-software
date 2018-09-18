@@ -16,8 +16,8 @@ else:
     sys.exit(0)
 
 # Import i2c comms
-from device.comms.i2c2.main import I2C
-from device.comms.i2c2.exceptions import InitError
+from device.communication.i2c.main import I2C
+from device.communication.i2c.exceptions import InitError
 
 # Enable logging output
 logging.basicConfig(level=logging.DEBUG)

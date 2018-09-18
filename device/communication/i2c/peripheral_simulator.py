@@ -1,4 +1,7 @@
 # Import standard python modules
+import logging
+
+# Import python types
 from typing import Optional, Dict, Type, TypeVar, Callable, Any, cast
 from types import TracebackType
 
@@ -7,8 +10,13 @@ from device.utilities.logger import Logger
 from device.utilities.bitwise import byte_str
 
 # Import i2c package elements
-from device.comms.i2c2.exceptions import InitError, WriteError, ReadError, MuxError
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.exceptions import (
+    InitError,
+    WriteError,
+    ReadError,
+    MuxError,
+)
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Initialize type checking variables
 F = TypeVar("F", bound=Callable[..., Any])
@@ -60,7 +68,11 @@ class PeripheralSimulator:
         self.mux_simulator = mux_simulator
 
         # Initialize logger
-        self.logger = Logger(name="Simulator({})".format(name), dunder_name=__name__)
+        logname = "Simulator({})".format(name)
+        extra = {"console_name": logname, "file_name": logname}
+        logger = logging.getLogger("i2c")
+        self.logger = logging.LoggerAdapter(logger, extra)
+        self.logger.debug("Initializing simulator")
 
         # Initialize buffer
         self.buffer: bytearray = bytearray([])  # mutable bytes

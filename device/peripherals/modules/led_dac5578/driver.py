@@ -9,7 +9,7 @@ from device.utilities.logger import Logger
 from device.utilities import maths
 
 # Import mux simulator
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral utilities
 from device.peripherals.utilities import light

@@ -167,6 +167,14 @@ LOGGING = {
             "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
+        "i2c_file": {
+            "level": LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR + "i2c.log",
+            "formatter": "device_file",
+            "maxBytes": 200 * 1024,
+            "backupCount": 1,
+        },
         "iot_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
@@ -209,6 +217,7 @@ LOGGING = {
             "handlers": ["device_console", "peripheral_files"], "level": LOG_LEVEL
         },
         "event": {"handlers": ["device_console", "event_file"], "level": LOG_LEVEL},
+        "i2c": {"handlers": ["device_console", "i2c_file"], "level": LOG_LEVEL},
         "iot": {"handlers": ["device_console", "iot_file"], "level": LOG_LEVEL},
         "resource": {
             "handlers": ["device_console", "resource_file"], "level": LOG_LEVEL

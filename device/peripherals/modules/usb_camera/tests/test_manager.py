@@ -14,7 +14,7 @@ from device.utilities.modes import Modes
 from device.state import State
 
 # Import mux simulator
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral manager
 from device.peripherals.modules.usb_camera.manager import USBCameraManager

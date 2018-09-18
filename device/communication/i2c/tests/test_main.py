@@ -3,10 +3,10 @@ import pytest, logging
 from unittest import TestCase
 
 # Import i2c elements
-from device.comms.i2c2.main import I2C
-from device.comms.i2c2.exceptions import ReadError, WriteError
-from device.comms.i2c2.mux_simulator import MuxSimulator
-from device.comms.i2c2.peripheral_simulator import PeripheralSimulator
+from device.communication.i2c.main import I2C
+from device.communication.i2c.exceptions import ReadError, WriteError
+from device.communication.i2c.mux_simulator import MuxSimulator
+from device.communication.i2c.peripheral_simulator import PeripheralSimulator
 
 # Enable logging output
 logging.basicConfig(level=logging.DEBUG)
@@ -30,7 +30,9 @@ def test_write_unknown():
 
 
 def test_write_read():
+
     class CustomPeripheralSimulator(PeripheralSimulator):
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.writes = {bytes([0x01]): bytes([0x02])}
@@ -60,7 +62,9 @@ def test_write_read_register():
 
 
 def test_read_custom_register():
+
     class CustomPeripheralSimulator(PeripheralSimulator):
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 

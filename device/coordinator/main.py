@@ -24,7 +24,7 @@ from device.connect.manager import ConnectManager
 from device.upgrade.manager import UpgradeManager
 
 # Import device simulators
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import database models
 from app.models import StateModel

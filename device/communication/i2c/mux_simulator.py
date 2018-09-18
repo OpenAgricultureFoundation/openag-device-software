@@ -1,23 +1,33 @@
 # Import standard python modules
+import logging
+
+# Import python types
 from typing import Optional, Dict
 
 # Import device utilities
 from device.utilities.logger import Logger
 
 # Import i2c package elements
-from device.comms.i2c2.exceptions import MuxError
+from device.communication.i2c.exceptions import MuxError
 
 
 class MuxSimulator(object):
     """I2C mux simulator. Note connections is a dict because we could have multiple
     muxes on a device."""
 
-    def __init__(self) -> None:
-        self.logger = Logger(name="Simulator(Mux)", dunder_name=__name__)
+    # Initialize logger
+    logname = "Simulator(Mux)"
+    extra = {"console_name": logname, "file_name": logname}
+    logger = logging.getLogger("i2c")
+    logger = logging.LoggerAdapter(logger, extra)
 
     # Initialize mux parameters
     valid_channel_bytes = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
     connections: Dict[int, int] = {}
+
+    def __init__(self) -> None:
+        """Initializes mux simulator."""
+        self.logger.debug("Initializing simulator")
 
     def set(self, address: int, channel_byte: int) -> None:
         """Sets mux at address to channel."""
@@ -33,8 +43,6 @@ class MuxSimulator(object):
 
         # Set mux to channel
         self.connections[address] = channel_byte
-
-        self.logger.debug("self.connections = {}".format(self.connections))
 
     def verify(self, address: int, channel: int) -> None:
         """Verifies if mux at address is set to correct channel."""
