@@ -1,66 +1,19 @@
-# Running Instructions
+# Detailed Running Instructions
 
-## Controlling the brain when it is run from /etc/rc.local
+## Stopping the brain when it is run from /etc/rc.local
 ```
-cd
-sudo service rc.local start
+sudo service rc.local stop
 systemctl status rc-local.service
 ```
 
-### Install ngrok
-```
-wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-arm.zip
-unzip ngrok-stable-linux-arm.zip
-```
-Note: above link is for arm based systems, get alternative download links from ngrok website
-
-## Run ngrok
-### Start a screen session for ngrok
-```
-screen -t ngrok -S ngrok
-```
-
-### Set ngrok http forwarding of port 8000
-```
-./ngrok http 8000
-```
-
-### Copy ngrok forwarding link
-```
-Looks something like: http://ad80951c.ngrok.io
-```
-
-## Run brain
-### Start a brain session for ngrok
-```
-screen -t brain -S brain
-```
-
-### Run the brain on the beaglebone (see note below if on other platforms)
+## Directly run the brain on the beaglebone for developing (see note below if on other platforms)
 ```
 ./run.sh
 ```
 
-### If you are not on a beablebone, you may want simulate the I2C bus.  (if you are on Linux or OSX doing development).  Use this command in place of the one above.
+## If you are not on a beaglebone, you may want simulate the I2C bus.  (if you are on Linux or OSX doing development).  Use this command in place of the one above.
 ```
 ./simulation.sh
-```
-
-### Detatch from screen session
-```
-ctrl + a, d
-```
-
-## View UI
-```
-Go to ngrok forwarding link
-Something like: http://ad80951c.ngrok.io
-```
-
-## Re-attach to screens
-### Re-attach to brain
-```
-screen -d brain
 ```
 
 ## Next steps

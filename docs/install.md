@@ -1,39 +1,34 @@
-# Installation Instructions
+# Installation Instructions for developing / contributing
 
-## Device
-### Get os onto device
+### Supported Operating Systems:
 ```
 Currently tested:
  - Beaglebone black | Stretch IoT | Debian 9.3
  - Should work on most *nix systems (OSX and Ubuntu are our development platforms)
 ```
 
-### Clone repo
+### Clone repo:
 ```
+cd ~
 git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
 
-### Go to repo directory
+### Go to repo directory:
 ```
-cd openag-device-software
+cd ~/openag-device-software
 ```
 
-### Run the install script
+### Run the scripts:
 ```
 ./scripts/install.sh
-```
-
-## Set up a Python Environment and create our database
-```
 ./scripts/setup_python.sh
+./scripts/upgrade.sh
 ```
 
-### Run the software
+### Run the software in simulation mode (no I2C devices required):
 ```
-./run.sh
-./run.sh --simulate # to run w/simulated hardware
-./run.sh --no-device # to only run app (useful to manipulate data in admin console)
+./simulate.sh
 ```
 
 ## Next steps
-See [Running Instructions](running.md)
+See [Detailed Running Instructions](running.md)
