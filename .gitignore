@@ -8,7 +8,7 @@ __pycache__/
 *.mypy_cache*
 *.cache*
 .pytest_cache/
-registration/data/
+data/registration
 images/
 about.json
 .idea

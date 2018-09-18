@@ -11,14 +11,16 @@ import uuid
 from app.viewers import ConnectViewer
 from app.viewers import IoTViewer
 
+REG_DATA_DIR = "data/registration/"
+
 
 class ConnectUtilities:
-    """ Utilities to connect to the internet and IoT. """
+    """Utilities to connect to the internet and IoT."""
 
-    # --------------------------------------------------------------------------
-    # Return a dict of all the fields we display on the Django Connect tab.
     @staticmethod
     def get_status():
+        """Returns a dict of all the fields we display on the Django Connect tab."""
+
         status = {}
         try:
             cv = ConnectViewer()  # data from the state.connect dict and DB
@@ -52,22 +54,20 @@ class ConnectUtilities:
             pass
         return status
 
-    # --------------------------------------------------------------------------
-    # Do we have a valid internet connection and DNS?0
     @staticmethod
     def valid_internet_connection():
+        """Checks if we have a valid internet connection and DNS?0"""
         try:
             urllib.request.urlopen("http://google.com")
             return True
         except:
             return False
 
-    # ------------------------------------------------------------------------
-    # Returns True if this is a Beaglebone.
     @staticmethod
     def is_bbb():
+        """Checks if current device is a beaglebone."""
         try:
-            # command and list of args as list of string
+            # Command and list of args as list of string
             cmd = ["cat", "/etc/dogtag"]
             with subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -80,10 +80,9 @@ class ConnectUtilities:
             pass
         return False
 
-    # ------------------------------------------------------------------------
-    # Return the list of local wifis.
     @staticmethod
     def get_wifis():
+        """Gets a list of local wifis."""
         wifis = []
         all_wifis = ConnectUtilities.get_all_wifis()
         if 0 == len(all_wifis):
@@ -95,10 +94,9 @@ class ConnectUtilities:
                 wifis.append({"ssid": wifi["ssid"], "service": wifi["service"]})
         return wifis
 
-    # ------------------------------------------------------------------------
-    # Join the specified wifi access point.
     @staticmethod
     def join_wifi(wifi, password):
+        """Joins specified wifi access point."""
         result = False
         if not ConnectUtilities.is_bbb():
             return result
@@ -113,26 +111,25 @@ class ConnectUtilities:
                 output = proc1.stdout.read().decode("utf-8")
                 output += proc1.stderr.read().decode("utf-8")
                 result = True
-                time.sleep(5)  # time for networking stack to init
+                time.sleep(5)  # Time for networking stack to init
         except:
             pass
         return result
 
-    # ------------------------------------------------------------------------
-    # Delete all wifi connections.
     @staticmethod
     def delete_wifi_connections():
+        """Deletes all wifi connections."""
         if not ConnectUtilities.is_bbb():
             return False
         try:
-            # first we must disconnect from any active wifis
+            # First we must disconnect from any active wifis
             all_wifis = ConnectUtilities.get_all_wifis()
             for wifi in all_wifis:
                 if wifi["connected"]:
                     cmd = ["connmanctl", "disconnect", wifi["service"]]
                     subprocess.run(cmd)
 
-            # now we can remove all wifi configuration
+            # Now we can remove all wifi configuration
             cmd = ["scripts/delete_all_wifi_connections.sh"]
             with subprocess.run(cmd):
                 return True
@@ -140,14 +137,13 @@ class ConnectUtilities:
             pass
         return False
 
-    # ------------------------------------------------------------------------
-    # Returns True if this BBB is a wifi model.
     @staticmethod
     def is_wifi_bbb():
+        """Checks if bbb is a wifi model."""
         if not ConnectUtilities.is_bbb():
             return False
         try:
-            # command and list of args as list of string
+            # Command and list of args as list of string
             cmd = ["ifconfig", "wlan0"]
             with subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -160,10 +156,9 @@ class ConnectUtilities:
             pass
         return False
 
-    # ------------------------------------------------------------------------
-    # Returns the IP address of the active interface.
     @staticmethod
     def get_IP():
+        """Gets IP address of the active interface."""
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
@@ -172,11 +167,10 @@ class ConnectUtilities:
             pass
         return ""
 
-    # ------------------------------------------------------------------------
-    # Get the URL for remote access to the device UI.
-    # 1712EW004671.serveo.net
     @staticmethod
     def get_remote_UI_URL():
+        """Get the URL for remote access to the device UI e.g. 1712EW004671.serveo.net"""
+
         if not ConnectUtilities.is_bbb():
             return "This is not a beaglebone"
         try:
@@ -195,50 +189,46 @@ class ConnectUtilities:
             pass
         return ""
 
-    # ------------------------------------------------------------------------
-    # Returns True if there is a valid IoT registration.
     @staticmethod
     def is_registered_with_IoT():
+        """Checks if IoT registration is valid."""
         if (
-            os.path.exists("registration/data/device_id.bash")
-            and os.path.exists("registration/data/roots.pem")
-            and os.path.exists("registration/data/rsa_cert.pem")
-            and os.path.exists("registration/data/rsa_private.pem")
+            os.path.exists(REG_DATA_DIR + "device_id.bash")
+            and os.path.exists(REG_DATA_DIR + "roots.pem")
+            and os.path.exists(REG_DATA_DIR + "rsa_cert.pem")
+            and os.path.exists(REG_DATA_DIR + "rsa_private.pem")
         ):
             return True
         return False
 
-    # ------------------------------------------------------------------------
-    # Returns the device ID string.
     @staticmethod
     def get_device_id():
+        """Gets device ID string."""
         if not ConnectUtilities.is_registered_with_IoT():
             return None
         return ConnectUtilities.get_device_id_from_file()
 
-    # ------------------------------------------------------------------------
-    # Returns the device ID string, with no other logic.
     @staticmethod
     def get_device_id_from_file():
+        """Gets device ID string, with no other logic."""
         try:
-            f = open("registration/data/device_id.bash")
-            contents = f.read()
-            index = contents.find("=")
-            devid = contents[index + 1:]
-            return devid.rstrip()
+            with open(REG_DATA_DIR + "device_id.bash") as f:
+                contents = f.read()
+                index = contents.find("=")
+                devid = contents[index + 1:]
+                return devid.rstrip()
         except:
             pass
         return None
 
-    # ------------------------------------------------------------------------
-    # For internal use.  Return the list of local wifis.
     @staticmethod
     def get_all_wifis():
+        """Gets a list of all local wifis."""
         wifis = []
         if not ConnectUtilities.is_bbb():
             return wifis
         try:
-            # command and list of args as list of strings
+            # Command and list of args as list of strings
             cmd = ["scripts/get_wifis.sh"]
             with subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -284,38 +274,35 @@ class ConnectUtilities:
             pass
         return wifis
 
-    # ------------------------------------------------------------------------
-    # Delete the IoT registration.
     @staticmethod
     def delete_iot_registration():
+        """Deletes IoT registration data."""
         try:
             # remove the IoT config dir
-            cmd = ["rm", "-fr", "registration/data/"]
+            cmd = ["rm", "-fr", REG_DATA_DIR]
             with subprocess.run(cmd):
                 return True
         except:
             pass
         return False
 
-    # ------------------------------------------------------------------------
-    # Register this machine with IoT.
-    # Returns the registration verification code for success or None.
     @staticmethod
     def register_iot():
+        """Registers device with IoT. Returns registration verification code for success 
+        or None."""
         if not ConnectUtilities.valid_internet_connection():
             return None
         try:
-            reg_dir = "registration/data"
-            cmd = ["mkdir", "-p", reg_dir]
+            cmd = ["mkdir", "-p", REG_DATA_DIR]
             subprocess.run(cmd)
 
             cmd = [
-                "registration/one_time_key_creation_and_iot_device_registration.sh",
-                reg_dir,
+                "scripts/one_time_key_creation_and_iot_device_registration.sh",
+                REG_DATA_DIR,
             ]
             subprocess.run(cmd)
 
-            fn = reg_dir + "/verification_code.txt"
+            fn = REG_DATA_DIR + "verification_code.txt"
             verification_code = open(fn).read()
             os.remove(fn)
             return verification_code
