@@ -218,13 +218,14 @@ class IoTManager:
                 continue
 
             # Publish a boot message
+            DEVICE_CONFIG_PATH = "data/config/device.txt"
             if not self.sentAboutJson:
                 self.sentAboutJson = True
                 try:
                     # Get device config
                     device = None
-                    if os.path.exists("config/device.txt"):
-                        with open("config/device.txt") as f:
+                    if os.path.exists(DEVICE_CONFIG_PATH):
+                        with open(DEVICE_CONFIG_PATH) as f:
                             device = f.readline().strip()
 
                     about_dict = {
@@ -258,8 +259,8 @@ class IoTManager:
                     )
 
                     device = None
-                    if os.path.exists("config/device.txt"):
-                        with open("config/device.txt") as f:
+                    if os.path.exists(DEVICE_CONFIG_PATH):
+                        with open(DEVICE_CONFIG_PATH) as f:
                             device = f.readline().strip()
                     status_dict["device_config"] = device
 

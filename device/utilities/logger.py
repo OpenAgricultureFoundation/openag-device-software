@@ -77,8 +77,9 @@ class PeripheralFileHandler(logging.Handler):
         super().__init__(*args, **kwargs)
 
         # Load device config
-        if os.path.exists("config/device.txt"):
-            with open("config/device.txt") as f:
+        DEVICE_CONFIG_PATH = "data/config/device.txt"
+        if os.path.exists(DEVICE_CONFIG_PATH):
+            with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()
         else:
             config_name = "unspecified"

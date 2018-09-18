@@ -30,7 +30,7 @@ else # we are on OSX
 fi
 
 # If there is no device type configured, make an unspecified one
-DEV_FILE='config/device.txt'
+DEV_FILE='data/config/device.txt'
 if [ ! -f $DEV_FILE ]; then
   # No file, so create one
   echo "unspecified" > $DEV_FILE
@@ -57,17 +57,18 @@ fi
 # Remove rc.local
 sudo rm -f /etc/rc.local
 
-# Sym link to config/rc.local.<run_context>
-if [ ! -f $TOPDIR/config/develop ]; then
+# Sym link to data/config/rc.local.<run_context>
+DEVICE_CONFIG_PATH=$TOPDIR/data/config
+if [ ! -f $DEVICE_CONFIG_PATH/develop ]; then
   echo "Sym linking rc.local.production"
-  sudo ln -s $TOPDIR/config/rc.local.production /etc/rc.local
+  sudo ln -s $DEVICE_CONFIG_PATH/rc.local.production /etc/rc.local
 else
   echo "Sym linking rc.local.development"
-  sudo ln -s $TOPDIR/config/rc.local.development /etc/rc.local
+  sudo ln -s $DEVICE_CONFIG_PATH/rc.local.development /etc/rc.local
 fi
 
 # Install a new system log config file, to avoid filling the disk
-sudo cp $TOPDIR/config/rsyslog /etc/logrotate.d/
+sudo cp $DEVICE_CONFIG_PATH/rsyslog /etc/logrotate.d/
 sudo service rsyslog restart
 
 # Reload rc.local daemon

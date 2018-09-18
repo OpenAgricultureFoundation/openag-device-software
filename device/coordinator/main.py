@@ -265,16 +265,19 @@ class DeviceCoordinator:
         self.logger.info("Entered CONFIG")
 
         # Check device config specifier file exists in repo
+        DEVICE_CONFIG_PATH = "data/config/device.txt"
         try:
-            with open("config/device.txt") as f:
+            with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()
         except:
-            message = "Unable to read config/device.txt, using unspecified config"
+            message = "Unable to read {}, using unspecified config".format(
+                DEVICE_CONFIG_PATH
+            )
             self.logger.warning(message)
             config_name = "unspecified"
 
             # Write `unspecified` to device.txt
-            with open("config/device.txt", "w") as f:
+            with open(DEVICE_CONFIG_PATH, "w") as f:
                 f.write("{}\n".format(config_name))
 
         # Load device config
@@ -1053,8 +1056,8 @@ class DeviceCoordinator:
             self.response = {"status": 400, "message": message}
             return
 
-        # Write config filename to to config/device
-        with open("config/device.txt", "w") as f:
+        # Write config filename to to device config path
+        with open(DEVICE_CONFIG_PATH, "w") as f:
             f.write(config_filename + "\n")
 
         # Transition to config mode
