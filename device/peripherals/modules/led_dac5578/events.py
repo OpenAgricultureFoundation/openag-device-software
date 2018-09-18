@@ -6,7 +6,6 @@ from typing import Optional, List, Dict, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.error import Error
 
 # Import peripheral event mixin
 from device.peripherals.classes.peripheral.events import PeripheralEvents

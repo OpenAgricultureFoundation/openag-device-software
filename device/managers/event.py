@@ -10,19 +10,20 @@ from app.models import EventModel
 
 
 class EventManager:
-    """ Manages events. """
+    """Manages events."""
 
-    _timeout = 10  # seconds
+    # Initialize vars
+    timeout = 10  # seconds
 
     # Initialize logger
-    extra = {"console_name": "Device", "file_name": "device"}
+    extra = {"console_name": "Event", "file_name": "event"}
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
     def __init__(self, state):
         """ Initialize event handler. """
         self.state = state
-        self._stop_event = threading.Event()  # so we can stop this thread
+        self.stop_event = threading.Event()  # so we can stop this thread
 
     def spawn(self, delay=None):
         """ Spawns event thread. """
@@ -31,13 +32,13 @@ class EventManager:
         self.thread.start()
 
     def stop(self):
-        self._stop_event.set()
+        self.stop_event.set()
 
     def stopped(self):
-        return self._stop_event.is_set()
+        return self.stop_event.is_set()
 
     def run(self):
-        """ Runs event manager. """
+        """Runs event manager."""
         self.logger.info("Spawning event thread")
         while True:
             if self.stopped():
@@ -80,9 +81,9 @@ class EventManager:
             while self.state.device["response"] == None:
                 # Check for timeout
                 start_time = time.time()
-                if time.time() - start_time > self._timeout:
+                if time.time() - start_time > self.timeout:
                     message = "Request did not process within {} seconds".format(
-                        self._timeout
+                        self.timeout
                     )
                     self.logger.critical(message)
                     response = {"status": 500, "message": message}
@@ -120,11 +121,12 @@ class EventManager:
             # This system is fragile....rework concept
             start_time = time.time()
             while self.state.peripherals[recipient_name]["response"] == None:
+
                 # Check for timeout
                 start_time = time.time()
-                if time.time() - start_time > self._timeout:
+                if time.time() - start_time > self.timeout:
                     message = "Request did not process within {} seconds".format(
-                        self._timeout
+                        self.timeout
                     )
                     self.logger.critical(message)
                     response = {"status": 500, "message": message}
@@ -134,7 +136,6 @@ class EventManager:
                 time.sleep(0.1)
 
             # Return response
-
             response = self.state.peripherals[recipient_name]["response"]
             self.logger.debug("Returning response: {}".format(response))
             self.state.peripherals[recipient_name]["response"] = None

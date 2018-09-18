@@ -7,7 +7,6 @@ from django.dispatch import receiver
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.errors import Errors
 from device.utilities.accessors import set_nested_dict_safely
 
 # Import json validators
@@ -58,8 +57,6 @@ class DeviceManager:
     _error = None
 
     # Initialize state object, `state` serves as shared memory between threads
-    # Note: Thread should be locked whenever writing to `state` object to
-    # avoid memory corruption.
     state = State()
 
     # Initialize environment state dict
@@ -91,7 +88,7 @@ class DeviceManager:
     def __init__(self):
         """ Initializes device. """
         self.mode = Modes.INIT
-        self.error = Errors.NONE
+        self.error = "None"
 
         # Initialize the IoT communications manager object.
         # Pass in a ref. to this instance (self) so we can call the
@@ -106,12 +103,12 @@ class DeviceManager:
 
     @property
     def mode(self):
-        """ Gets mode. """
+        """Gets mode."""
         return self._mode
 
     @mode.setter
     def mode(self, value):
-        """ Safely updates mode in state object. """
+        """Safely updates mode in state object """
         self._mode = value
         with self.state.lock:
             self.state.device["mode"] = value
@@ -307,9 +304,8 @@ class DeviceManager:
         controller threads, waits for all threads to initialize then 
         transitions to NORMAL."""
         self.logger.info("Entered SETUP")
-        self.logger.debug(
-            "state.device.config_uuid = {}".format(self.state.device["config_uuid"])
-        )
+        config_uuid = self.state.device["config_uuid"]
+        self.logger.debug("state.device.config_uuid = {}".format(config_uuid))
 
         # Spawn the threads this object controls
         self.recipe.spawn()
@@ -335,9 +331,9 @@ class DeviceManager:
         self.mode = Modes.NORMAL
 
     def run_normal_mode(self):
-        """ Runs normal operation mode. Updates device state summary and 
-            stores device state in database, waits for new config command then
-            transitions to CONFIG. Transitions to ERROR on error."""
+        """Runs normal operation mode. Updates device state summary and stores device 
+        state in database, waits for new config command then transitions to CONFIG. 
+        Transitions to ERROR on error."""
         self.logger.info("Entered NORMAL")
 
         while True:
@@ -382,7 +378,7 @@ class DeviceManager:
         self.stop_controller_threads()
 
         # Load config into stored state
-        self.error = Errors.NONE
+        self.error = "None"
 
         # Transition to CONFIG
         self.mode = Modes.CONFIG
@@ -400,7 +396,7 @@ class DeviceManager:
         self.iot.stop()
 
         # Clear errors
-        self.error = Errors.NONE
+        self.error = "None"
 
         # Transition to INIT
         self.mode = Modes.INIT
@@ -478,10 +474,8 @@ class DeviceManager:
             existing entries. """
         self.logger.debug("Loading sensor variables file")
 
-        # Get sensor variables
+        # Load sensor variables and schema
         sensor_variables = json.load(open("data/variables/sensor_variables.json"))
-
-        # Get sensor variables schema
         sensor_variables_schema = json.load(open("data/schemas/sensor_variables.json"))
 
         # Validate sensor variables with schema
@@ -499,21 +493,19 @@ class DeviceManager:
             existing entries. """
         self.logger.debug("Loading actuator variables file")
 
-        # Get sensor variables
+        # Load actuator variables and schema
         actuator_variables = json.load(open("data/variables/actuator_variables.json"))
-
-        # Get sensor variables schema
         actuator_variables_schema = json.load(
             open("data/schemas/actuator_variables.json")
         )
 
-        # Validate sensor variables with schema
+        # Validate actuator variables with schema
         validate(actuator_variables, actuator_variables_schema)
 
-        # Delete sensor variables tables
+        # Delete actuator variables tables
         ActuatorVariableModel.objects.all().delete()
 
-        # Create sensor variables table
+        # Create actuator variables table
         for actuator_variable in actuator_variables:
             ActuatorVariableModel.objects.create(json=json.dumps(actuator_variable))
 
@@ -522,10 +514,8 @@ class DeviceManager:
             existing entries."""
         self.logger.debug("Loading cultivars file")
 
-        # Get cultivars
+        # Load cultivars and schema
         cultivars = json.load(open("data/cultivations/cultivars.json"))
-
-        # Get cultivars schema
         cultivars_schema = json.load(open("data/schemas/cultivars.json"))
 
         # Validate cultivars with schema
@@ -543,12 +533,10 @@ class DeviceManager:
             existing entries. """
         self.logger.debug("Loading cultivation methods file")
 
-        # Get cultivation methods
+        # Load cultivation methods and schema
         cultivation_methods = json.load(
             open("data/cultivations/cultivation_methods.json")
         )
-
-        # Get cultivation methods schema
         cultivation_methods_schema = json.load(
             open("data/schemas/cultivation_methods.json")
         )

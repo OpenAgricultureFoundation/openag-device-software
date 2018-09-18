@@ -6,7 +6,6 @@ from typing import Dict, Optional
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.errors import Errors
 from device.utilities.logger import Logger
 
 # Import device comms
@@ -56,7 +55,7 @@ class PeripheralManager:
 
         # Initialize modes and errors
         self.mode = Modes.INIT
-        self.error = Errors.NONE
+        self.error = "None"
 
         # Load config parameters
         self.parameters = self.config["parameters"]

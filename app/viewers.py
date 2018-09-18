@@ -31,7 +31,7 @@ class EventViewer:
 
         # Create event in database
         try:
-            event = EventModel.objects.create(recipient=recipient, request=request_)
+            event = EventModel.objects.create(recipient, request_)
         except Exception as e:
             message = "Unable to create event in database: {}".format(e)
             return message, 500
@@ -319,6 +319,3 @@ class UpgradeViewer:
 
     def __init__(self):
         self.upgrade_dict = Common.get_upgrade_dict()
-
-
-

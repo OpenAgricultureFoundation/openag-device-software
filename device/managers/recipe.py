@@ -3,7 +3,6 @@ import logging, time, threading, os, sys, datetime, json
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.errors import Errors
 
 # Import device parsers
 from device.parsers import RecipeParser
@@ -32,7 +31,7 @@ class RecipeManager:
         """ Initializes recipe handler """
         self.state = state
         self.mode = Modes.INIT
-        self.error = Errors.NONE
+        self.error = "None"
         self._stop_event = threading.Event()  # so we can stop this thread
 
     @property
@@ -385,7 +384,7 @@ class RecipeManager:
             elif self.mode == Modes.RESET:
                 self.run_reset_mode()
             else:
-                self.error = Errors.INVALID_MODE
+                self.error = "Invalid mode"
                 self.logger.critial("Invalid state machine mode")
                 time.sleep(0.1)
 
@@ -393,7 +392,7 @@ class RecipeManager:
         """ Runs initialization mode. Transitions to stored recipe mode 
             or NORECIPE if no stored mode. """
         self.logger.info("Entered INIT")
-        self.error = Errors.NONE
+        self.error = "None"
 
         # Transition to recipe stored mode
         if (
@@ -604,7 +603,7 @@ class RecipeManager:
         self.logger.info("Entered RESET")
 
         # Clear error
-        self.error = Errors.NONE
+        self.error = "None"
 
         # Transition to INIT
         self.mode = Modes.INIT
