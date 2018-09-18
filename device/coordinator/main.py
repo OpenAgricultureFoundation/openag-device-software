@@ -39,14 +39,14 @@ from app.models import PeripheralSetupModel
 from app.models import DeviceConfigModel
 
 
-class DeviceManager:
+class DeviceCoordinator:
     """Manages device state machine thread that spawns child threads to run 
     recipes, read sensors, set actuators, manage control loops, sync data, 
     and manage external events."""
 
     # Initialize logger
-    extra = {"console_name": "Device", "file_name": "Device"}
-    logger = logging.getLogger(__name__)
+    extra = {"console_name": "Coordinator", "file_name": "Coordinator"}
+    logger = logging.getLogger("coordinator")
     logger = logging.LoggerAdapter(logger, extra)
 
     # Initialize device mode and error
@@ -83,7 +83,10 @@ class DeviceManager:
     controller_managers = None
 
     def __init__(self):
-        """ Initializes device. """
+        """Initializes coordinator."""
+        self.logger.debug("Initializing coordinator")
+
+        # Initialize mode and error
         self.mode = Modes.INIT
         self.error = "None"
 

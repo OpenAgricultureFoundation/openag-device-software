@@ -7,7 +7,7 @@ from device.upgrade.utilities import UpgradeUtilities
 
 
 class UpgradeManager:
-    """ Manage software upgrades. """
+    """Manage software upgrades."""
 
     # Initialize logger
     extra = {"console_name": "UpgradeManager", "file_name": "upgrade"}
@@ -19,8 +19,10 @@ class UpgradeManager:
 
     # ------------------------------------------------------------------------
     def __init__(self, state):
-        """ Class constructor """
-        # Initialize our state
+        """Initializes upgrade manager."""
+        self.logger.debug("Initializing manager")
+
+        # Initialize state
         self.state = state
         UpgradeUtilities.save_state(state)
         self.error = None

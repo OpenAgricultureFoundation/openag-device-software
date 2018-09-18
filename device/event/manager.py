@@ -16,12 +16,15 @@ class EventManager:
     timeout = 10  # seconds
 
     # Initialize logger
-    extra = {"console_name": "Event", "file_name": "event"}
-    logger = logging.getLogger(__name__)
+    extra = {"console_name": "Event", "file_name": "Event"}
+    logger = logging.getLogger("event")
     logger = logging.LoggerAdapter(logger, extra)
 
     def __init__(self, state):
-        """ Initialize event handler. """
+        """Initialize event manager."""
+        self.logger.debug("Initializing manager")
+
+        # Initialize state and stop event
         self.state = state
         self.stop_event = threading.Event()  # so we can stop this thread
 

@@ -27,8 +27,10 @@ class ResourceManager:
 
     # --------------------------------------------------------------------------
     def __init__(self, state, ref_device_manager, ref_iot_manager):
-        """ Class constructor """
-        # Initialize our state
+        """Initializes manager."""
+        self.logger.debug("Initializing manager")
+
+        # Initialize state
         self.state = state
         self.connected = False
         self.error = None
@@ -175,8 +177,8 @@ class ResourceManager:
         """
         Delete image files.
         """
-        self._delete_files('images/*.png')
-        self._delete_files('images/stored/*.png')
+        self._delete_files("images/*.png")
+        self._delete_files("images/stored/*.png")
 
     # --------------------------------------------------------------------------
     def clean_up_database(self):
@@ -240,11 +242,14 @@ class ResourceManager:
 
         fd_val = free_disk[0:-1]
         fm_val = free_memory[0:-1]
-        self.logger.debug('\n{}, {}, {}, {}'.format( \
-            "free disk={}".format(free_disk), \
-            "free memory={}".format(free_memory), \
-            "DB size={}".format(database_size), \
-            "internet connection={}".format(self.connected)))
+        self.logger.debug(
+            "\n{}, {}, {}, {}".format(
+                "free disk={}".format(free_disk),
+                "free memory={}".format(free_memory),
+                "DB size={}".format(database_size),
+                "internet connection={}".format(self.connected),
+            )
+        )
 
         # detect low memory and disk space
         low_resources = False

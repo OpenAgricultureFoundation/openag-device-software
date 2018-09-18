@@ -1,21 +1,8 @@
-# Import python modules
-import copy
-import glob
-import json
-import logging
-import os
-import shutil
-import sys
-import threading
-import datetime
-import time
-import traceback
-import ast
-import socket
+# Import standard python modules
+import copy, glob, json, logging, os, shutil, sys, threading, datetime, time, traceback, ast, socket
 
 # Import device utilities
 from device.utilities.accessors import get_nested_dict_safely
-
 
 # Import the IoT communications class
 from device.iot.pubsub import IoTPubSub

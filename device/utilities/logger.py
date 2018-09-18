@@ -2,7 +2,7 @@ import logging, sys, json, os
 
 
 class Logger:
-    """ Manages logging. Ensures descriptive logs in normal runtime 
+    """ Manages logging. Ensures descriptive logs in normal runtime
         environment and in testing environment. """
 
     def __init__(self, name: str, dunder_name: str) -> None:
@@ -14,7 +14,7 @@ class Logger:
 
     def debug(self, message: str) -> None:
         """ Reports standard logging debug message if in normal runtime
-            environment. If in test environment, prepends message with 
+            environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
             self.logger.debug(self.name + ": " + str(message))
@@ -23,7 +23,7 @@ class Logger:
 
     def info(self, message: str) -> None:
         """ Reports standard info debug message if in normal runtime
-            environment. If in test environment, prepends message with 
+            environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
             self.logger.info(self.name + ": " + str(message))
@@ -32,7 +32,7 @@ class Logger:
 
     def warning(self, message: str) -> None:
         """ Reports standard logging warning message if in normal runtime
-            environment. If in test environment, prepends message with 
+            environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
             self.logger.warning(self.name + ": " + str(message))
@@ -41,7 +41,7 @@ class Logger:
 
     def error(self, message: str) -> None:
         """ Reports standard logging error message if in normal runtime
-            environment. If in test environment, prepends message with 
+            environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
             self.logger.error(self.name + ": " + str(message))
@@ -50,7 +50,7 @@ class Logger:
 
     def critical(self, message: str) -> None:
         """ Reports standard logging critical message if in normal runtime
-            environment. If in test environment, prepends message with 
+            environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
             self.logger.critical(self.name + ": " + str(message))
@@ -59,7 +59,7 @@ class Logger:
 
     def exception(self, message: str) -> None:
         """ Reports standard logging exception message if in normal runtime
-            environment. If in test environment, prepends message with 
+            environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
             self.logger.exception(self.name + ": " + str(message))
@@ -68,10 +68,10 @@ class Logger:
 
 
 class PeripheralFileHandler(logging.Handler):
-    """ Splits each peripheral thread into its own log file. """
+    """Splits each peripheral thread into its own log file."""
 
     def __init__(self, *args, **kwargs):
-        """ Initializes peripheral file handler. """
+        """Initializes peripheral file handler."""
 
         # Inherit functions from handler
         super().__init__(*args, **kwargs)
@@ -87,16 +87,21 @@ class PeripheralFileHandler(logging.Handler):
         # Get peripheral configs
         peripheral_configs = device_config["peripherals"]
 
+        # Make sure log directory exists
+        LOG_DIR = "data/logs/peripherals/"
+        if not os.path.exists(LOG_DIR):
+            os.makedirs(LOG_DIR)
+
         # Clear out old peripheral logs
-        for file in os.listdir("logs/peripherals/"):
+        for file in os.listdir(LOG_DIR):
             if file.endswith(".log") or file.endswith(".log.1"):
-                os.remove("logs/peripherals/" + file)
+                os.remove(LOG_DIR + file)
 
         # Initialize peripheral file handlers
         self.file_handlers = {}
         for peripheral_config in peripheral_configs:
             name = peripheral_config["name"]
-            filename = "logs/peripherals/" + name + ".log"
+            filename = LOG_DIR + name + ".log"
             self.file_handlers[name] = logging.handlers.RotatingFileHandler(
                 filename=filename,
                 mode="a",

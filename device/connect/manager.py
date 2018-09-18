@@ -19,7 +19,9 @@ class ConnectManager:
 
     # ------------------------------------------------------------------------
     def __init__(self, state, ref_iot_manager):
-        """ Class constructor """
+        """Initializes connect manager."""
+        self.logger.debug("Initializing manager")
+
         # Initialize our state
         self.state = state
         self.error = None

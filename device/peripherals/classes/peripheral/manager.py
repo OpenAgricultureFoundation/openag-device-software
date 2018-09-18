@@ -51,7 +51,10 @@ class PeripheralManager:
         self.mux_simulator = mux_simulator
 
         # Initialize logger
-        self.logger = Logger(name="Manager({})".format(self.name), dunder_name=__name__)
+        logname = "Manager({})".format(self.name)
+        extra = {"console_name": logname, "file_name": logname}
+        logger = logging.getLogger("peripherals")
+        self.logger = logging.LoggerAdapter(logger, extra)
 
         # Initialize modes and errors
         self.mode = Modes.INIT
