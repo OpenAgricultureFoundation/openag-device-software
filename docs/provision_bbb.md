@@ -9,9 +9,9 @@ Back to [Part 3: Flash Image onto BBB](flash_bbb.md)...or...Forward to [Part 5: 
    ssh debian@beaglebone.local
    # Password: openag12
    ```
-3. Get MAC Address
+3. Get BBB Serial Number
    ```
-   python scripts/get_mac.py
+   ./scripts/get_BBB_SN.sh 
    ```
 4. Get WIFI Access Point ID
    ```
@@ -19,12 +19,12 @@ Back to [Part 3: Flash Image onto BBB](flash_bbb.md)...or...Forward to [Part 5: 
    ```
 5. Create label in the following format
    ```
-   MAC: <MAC ADDR>
+   BBB: <BBB S/N>
    WIFI: <WIFI CODE>
    ```
    Example:
     ```
-   MAC: 92:64:AE:5B:D9:4C
+   BBB: 1712EW003727
    WIFI: 46D8
    ```
 6. Print out and stick to the back of the beaglebone
