@@ -9,39 +9,34 @@ import urllib.request
 import uuid
 
 from app.viewers import UpgradeViewer
-from device.state import State
+from device.state.main import State
 
 
 class UpgradeUtilities:
     """ Utilities to upgrade this apt package. """
 
-    # class variable to hold a reference to the state.upgrade dict
+    # Class variable to hold a reference to the state.upgrade dict
     ref_state = State()
 
-    # --------------------------------------------------------------------------
-    # Saves a reference to the state as a static class var.
     @staticmethod
     def save_state(state):
+        """Saves a reference to the state as a static class var."""
         UpgradeUtilities.ref_state = state
 
-    # --------------------------------------------------------------------------
-    # Return a dict of all the fields we display on the Django Upgrade tab.
     @staticmethod
     def get_status():
+        """Returns a dict of all the fields we display on the Django Upgrade tab."""
         return UpgradeUtilities.ref_state.upgrade
 
-    # ------------------------------------------------------------------------
-    # Update our dict with the software versions.
-    # Only call once a day, this will take a few minutes to execute.
     @staticmethod
     def update_dict():
-        """
-        sudo apt-get update
-        apt-cache policy openagbrain
-        openagbrain:
-          Installed: (none)
-          Candidate: 0.1-2
-        """
+        """ Updates our dict with the software versions. Only call once a day, this will 
+        take a few minutes to execute. Example call:
+            sudo apt-get update
+            apt-cache policy openagbrain
+            openagbrain:
+              Installed: (none)
+              Candidate: 0.1-2"""
         try:
             UpgradeUtilities.ref_state.upgrade["status"] = "Checking for upgrades..."
 
@@ -85,11 +80,10 @@ class UpgradeUtilities:
             return False
         return True
 
-    # ------------------------------------------------------------------------
-    # Update our debian package with the latest version available.
     @staticmethod
     def update_software():
-        """
+        """Update our debian package with the latest version available.
+
         If we call 'sudo apt-get install -y openagbrain' here, inside django,
         we will create a deadlock where apt can't complete the install because
         it is run as a child of the process it has to terminate.
@@ -105,8 +99,7 @@ class UpgradeUtilities:
             apt-get install -y openagbrain
 
         2. Create an 'at' job which runs the above commands in a minute:
-            at -f /tmp/openagbrain-at-commands now + 1 minute
-        """
+            at -f /tmp/openagbrain-at-commands now + 1 minute"""
         try:
             fn = "/tmp/openagbrain-at-commands"
             f = open(fn, "w")
@@ -130,9 +123,8 @@ class UpgradeUtilities:
 
         return UpgradeUtilities.ref_state.upgrade
 
-    # ------------------------------------------------------------------------
-    # Check for updates
     @staticmethod
     def check():
+        """Checks for software updates."""
         UpgradeUtilities.update_dict()
         return UpgradeUtilities.get_status()

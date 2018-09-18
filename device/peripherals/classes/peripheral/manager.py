@@ -12,7 +12,7 @@ from device.utilities.logger import Logger
 from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import device state
-from device.state import State
+from device.state.main import State
 
 
 class PeripheralManager:

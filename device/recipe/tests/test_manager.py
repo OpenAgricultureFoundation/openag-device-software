@@ -3,7 +3,7 @@ from device.managers.recipe import RecipeManager
 from device.managers.device import DeviceManager
 from device.utilities.modes import Modes
 from device.utilities.errors import Errors
-from device.state import State
+from device.state.main import State
 
 
 def make_a_state():
@@ -12,27 +12,19 @@ def make_a_state():
         "sensor": {"desired": {}, "reported": {}},
         "actuator": {"desired": {}, "reported": {}},
         "reported_sensor_stats": {
-        "individual": {
-                "instantaneous": {},
-                "average": {}
-            },
-            "group": {
-                "instantaneous": {},
-                "average": {}
-            }
-        }
+            "individual": {"instantaneous": {}, "average": {}},
+            "group": {"instantaneous": {}, "average": {}},
+        },
     }
     state.recipe = {
-        "recipe_uuid": None,
-        "start_timestamp_minutes": None,
-        "last_update_minute": None
+        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
     }
     return state
 
 
 def test_recipe_manager_initial_state():
     state = make_a_state()
-    rm = RecipeManager( state )
+    rm = RecipeManager(state)
     assert rm.mode == Modes.INIT
     assert rm.error == Errors.NONE
     assert rm.commanded_mode == None
@@ -58,15 +50,15 @@ def test_recipe_manager_initial_state():
 
 
 def test_recipe_manager_state_machine():
-    # enable simulation mode, since our CI test systems won't have I2C 
-    os.environ['SIMULATE'] = "true"
+    # enable simulation mode, since our CI test systems won't have I2C
+    os.environ["SIMULATE"] = "true"
 
     # load the test recipe file into the postgres openag_brain DB.
     dm = DeviceManager()
     dm.load_recipe_files()
 
     state = make_a_state()
-    rm = RecipeManager( state )
+    rm = RecipeManager(state)
     rm.run_init_mode()
     assert rm.mode == Modes.NORECIPE
 
@@ -76,7 +68,7 @@ def test_recipe_manager_state_machine():
     assert rm.mode == Modes.START
 
     # set a TEST recipe UUID so we have something to load
-    rm.commanded_recipe_uuid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+    rm.commanded_recipe_uuid = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
     rm.run_start_mode()
     assert rm.mode == Modes.QUEUED
     assert rm.commanded_recipe_uuid == None
@@ -92,7 +84,6 @@ def test_recipe_manager_state_machine():
     assert rm.commanded_mode == Modes.NONE
     assert rm.mode == Modes.STOP
     assert rm.last_update_minute == 0
-    assert rm.current_phase == 'p1'
-    assert rm.current_cycle == 'Day'
-    assert rm.current_environment_name == 'Day'
-
+    assert rm.current_phase == "p1"
+    assert rm.current_cycle == "Day"
+    assert rm.current_environment_name == "Day"

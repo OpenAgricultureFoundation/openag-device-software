@@ -13,7 +13,7 @@ from device.utilities.modes import Modes
 from device.utilities.accessors import set_nested_dict_safely
 
 # Import device state
-from device.state import State
+from device.state.main import State
 
 # Import device managers
 from device.recipe.manager import RecipeManager
@@ -51,7 +51,6 @@ class DeviceCoordinator:
 
     # Initialize device mode and error
     _mode = None
-    _error = None
 
     # Initialize state object, `state` serves as shared memory between threads
     state = State()
@@ -88,7 +87,6 @@ class DeviceCoordinator:
 
         # Initialize mode and error
         self.mode = Modes.INIT
-        self.error = "None"
 
         # Initialize the IoT communications manager object.
         # Pass in a ref. to this instance (self) so we can call the
@@ -154,18 +152,6 @@ class DeviceCoordinator:
         """ Safely updates response in state object. """
         with self.state.lock:
             self.state.device["response"] = value
-
-    @property
-    def error(self):
-        """ Gets device error. """
-        return self._error
-
-    @error.setter
-    def error(self, value):
-        """ Safely updates error in shared state. """
-        self._error = value
-        with self.state.lock:
-            self.state.device["error"] = value
 
     @property
     def config_uuid(self):
@@ -381,7 +367,6 @@ class DeviceCoordinator:
         self.stop_controller_threads()
 
         # Load config into stored state
-        self.error = "None"
 
         # Transition to CONFIG
         self.mode = Modes.CONFIG
@@ -397,9 +382,6 @@ class DeviceCoordinator:
         self.recipe.stop()
         self.event.stop()
         self.iot.stop()
-
-        # Clear errors
-        self.error = "None"
 
         # Transition to INIT
         self.mode = Modes.INIT

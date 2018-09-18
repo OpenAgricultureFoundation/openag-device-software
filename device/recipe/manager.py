@@ -22,7 +22,6 @@ class RecipeManager:
 
     # Initialize mode & error variables
     _mode = None
-    _error = None
 
     # Initialize thread object
     thread = None
@@ -31,20 +30,7 @@ class RecipeManager:
         """ Initializes recipe handler """
         self.state = state
         self.mode = Modes.INIT
-        self.error = "None"
         self._stop_event = threading.Event()  # so we can stop this thread
-
-    @property
-    def error(self):
-        """ Gets error value. Keep this local? """
-        return self._error
-
-    @error.setter
-    def error(self, value):
-        """ Safely updates recipe error in shared state. """
-        self._error = value
-        with self.state.lock:
-            self.state.recipe["error"] = value
 
     @property
     def mode(self):
@@ -392,7 +378,6 @@ class RecipeManager:
         """ Runs initialization mode. Transitions to stored recipe mode 
             or NORECIPE if no stored mode. """
         self.logger.info("Entered INIT")
-        self.error = "None"
 
         # Transition to recipe stored mode
         if (
@@ -464,10 +449,7 @@ class RecipeManager:
             self.mode = Modes.QUEUED
         except:
             self.logger.exception("Unable to start recipe")
-            self.mode = (
-                Modes.NORECIPE
-            )  # Todo: should probably make this error and break out reset to ui..but a bit kludgieee
-            self.error = "Unable to start recipe"
+            self.mode = Modes.NORECIPE
 
     def run_queued_mode(self):
         """ Runs queued mode. Waits for recipe start timestamp to be greater than
@@ -601,9 +583,6 @@ class RecipeManager:
     def run_reset_mode(self):
         """ Runs reset mode. Clears error state then transitions to INIT. """
         self.logger.info("Entered RESET")
-
-        # Clear error
-        self.error = "None"
 
         # Transition to INIT
         self.mode = Modes.INIT
