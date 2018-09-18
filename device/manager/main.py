@@ -16,18 +16,17 @@ from jsonschema import validate
 from device.state import State
 
 # Import device managers
-from device.managers.recipe import RecipeManager
-from device.managers.event import EventManager
+from device.recipe.manager import RecipeManager
+from device.event.manager import EventManager
 
-# Import IoT communications (to the backend) manager
+from resource.resource_manager import ResourceManager
+from connect.connect_manager import ConnectManager
+from upgrade.upgrade_manager import UpgradeManager
 from iot.iot_manager import IoTManager
 
 # Import device simulators
 from device.comms.i2c2.mux_simulator import MuxSimulator
 
-from resource.resource_manager import ResourceManager
-from connect.connect_manager import ConnectManager
-from upgrade.upgrade_manager import UpgradeManager
 
 # Import database models
 from app.models import StateModel
@@ -43,9 +42,9 @@ from app.models import DeviceConfigModel
 
 
 class DeviceManager:
-    """ Manages device state machine thread that spawns child threads to run 
-        recipes, read sensors, set actuators, manage control loops, sync data, 
-        and manage external events. """
+    """Manages device state machine thread that spawns child threads to run 
+    recipes, read sensors, set actuators, manage control loops, sync data, 
+    and manage external events."""
 
     # Initialize logger
     extra = {"console_name": "Device", "file_name": "Device"}

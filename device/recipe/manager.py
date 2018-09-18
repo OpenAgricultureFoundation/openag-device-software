@@ -5,7 +5,7 @@ import logging, time, threading, os, sys, datetime, json
 from device.utilities.modes import Modes
 
 # Import device parsers
-from device.parsers import RecipeParser
+from device.recipe.parser import RecipeParser
 
 # Import database models
 from app.models import RecipeModel

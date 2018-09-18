@@ -16,7 +16,12 @@ from device.utilities.events import EventRequests
 
 class EventViewer:
 
+    extra = {"console_name": "Event Viewer", "file_name": "event_viewer"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
     def create(self, request):
+        self.logger.debug("Creating event with request: {}".format(request))
 
         # Get request parameters
         try:
@@ -30,8 +35,13 @@ class EventViewer:
             return message, 400
 
         # Create event in database
+        self.logger.debug(
+            "Creating event in database, recipient={}, request={}".format(
+                recipient, request_
+            )
+        )
         try:
-            event = EventModel.objects.create(recipient, request_)
+            event = EventModel.objects.create(recipient=recipient, request=request_)
         except Exception as e:
             message = "Unable to create event in database: {}".format(e)
             return message, 500
