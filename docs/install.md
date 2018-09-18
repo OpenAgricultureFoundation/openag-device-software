@@ -1,4 +1,6 @@
-# Installation Instructions for developing / contributing
+# Installation Instructions
+
+## For developers:
 
 ### Supported Operating Systems:
 ```
@@ -29,6 +31,15 @@ cd ~/openag-device-software
 ```
 ./simulate.sh
 ```
+
+
+## To just install (or upgrade to) the latest debian package:
+```
+sudo apt-get update
+sudo apt-get install -y openagbrain
+dpkg -s openagbrain
+```
+
 
 ## Next steps
 See [Detailed Running Instructions](running.md)
