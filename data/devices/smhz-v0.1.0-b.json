@@ -11,7 +11,7 @@
             "parameters": {
                "setup": {
                     "name": "LEDDAC5578 Array Orion Actuator",
-                    "file_name": "led_dac5578/setups/orion"
+                    "file_name": "led_dac5578/setups/orion-v1"
                 },
                 "variables": {
                     "sensor": {
