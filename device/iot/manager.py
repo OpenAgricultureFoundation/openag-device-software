@@ -9,6 +9,9 @@ from device.iot.pubsub import IoTPubSub
 from device.connect.utilities import ConnectUtilities
 
 
+IMAGE_DIR = "data/images/"
+
+
 class IoTManager:
     """Manages IoT communications to the Google cloud backend MQTT service."""
 
@@ -27,7 +30,6 @@ class IoTManager:
     last_status = datetime.datetime.utcnow()
     status_publish_freq_secs = 300
 
-    # --------------------------------------------------------------------------
     def __init__(self, state, ref_device_manager):
         """ Class constructor """
         self.iot = None
@@ -45,7 +47,6 @@ class IoTManager:
         self._stop_event = threading.Event()  # so we can stop this thread
         self.reset()
 
-    # --------------------------------------------------------------------------
     def reset(self):
         try:
             # pass in the callback that receives commands
@@ -57,13 +58,11 @@ class IoTManager:
             self.logger.error("Couldn't create IoT connection: {}".format(e))
             # traceback.print_tb( exc_traceback, file=sys.stdout )
 
-    # --------------------------------------------------------------------------
     def killIoTPubSub(self, msg):
         self.iot = None
         self.error = msg
         self.logger.error("Killing IoTPubSub: {}".format(msg))
 
-    # --------------------------------------------------------------------------
     def command_received(self, command, arg0, arg1):
         """Process commands received from the backend (UI).
             This is a callback that is called by the IoTPubSub class when this
@@ -112,7 +111,6 @@ class IoTManager:
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
-    # --------------------------------------------------------------------------
     @property
     def error(self):
         """ Gets error value. """
@@ -125,7 +123,6 @@ class IoTManager:
         with threading.Lock():
             self.state.iot["error"] = value
 
-    # --------------------------------------------------------------------------
     @property
     def connected(self):
         if self.iot is None:
@@ -138,30 +135,25 @@ class IoTManager:
             return
         self.iot.connected = value
 
-    # --------------------------------------------------------------------------
     def publishMessage(name, msg_json):
         """ Send a command reply. """
         if self.iot is None:
             return
         self.iot.publishCommandReply(name, msg_json)
 
-    # --------------------------------------------------------------------------
     def spawn(self):
         self.logger.info("Spawning IoT thread")
         self.thread = threading.Thread(target=self.thread_proc)
         self.thread.daemon = True
         self.thread.start()
 
-    # --------------------------------------------------------------------------
     def stop(self):
         self.logger.info("Stopping IoT thread")
         self._stop_event.set()
 
-    # --------------------------------------------------------------------------
     def stopped(self):
         return self._stop_event.is_set()
 
-    # --------------------------------------------------------------------------
     def publish(self):
         if self.iot is None:
             return
@@ -186,7 +178,6 @@ class IoTManager:
                 self.prev_vars[var] = copy.deepcopy(vars_dict[var])
                 self.iot.publishEnvVar(var, vars_dict[var])
 
-    # --------------------------------------------------------------------------
     def get_IP(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
@@ -197,7 +188,6 @@ class IoTManager:
         s.close()
         return IP
 
-    # --------------------------------------------------------------------------
     def thread_proc(self):
         while True:
 
@@ -314,7 +304,7 @@ class IoTManager:
 
             # check for images to publish
             try:
-                image_file_list = glob.glob("images/*.png")
+                image_file_list = glob.glob(IMAGE_DIR + "*.png")
                 for image_file in image_file_list:
 
                     # Is this file open by a process? (fswebcam)
@@ -345,16 +335,14 @@ class IoTManager:
                     self.iot.publishBinaryImage(camera_name, "png", file_bytes)
 
                     # Check if stored directory exists, if not create it
-                    if not os.path.isdir("images/stored"):
-                        os.mkdir("images/stored")
+                    if not os.path.isdir(IMAGE_DIR + "stored"):
+                        os.mkdir(IMAGE_DIR + "stored")
 
-                    # Move image from /images once processed
-                    stored_image_file = image_file.replace("images", "images/stored")
+                    # Move image from image directory once processed
+                    stored_image_file = image_file.replace(
+                        IMAGE_DIR, IMAGE_DIR + "stored"
+                    )
                     shutil.move(image_file, stored_image_file)
-
-                    # TODO: Check for external storage device for images
-                    # Need to think through how this will interact with
-                    # on-device UI image display...how does find images
 
             except Exception as e:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -364,14 +352,12 @@ class IoTManager:
             # idle for a bit
             time.sleep(1)
 
-    # --------------------------------------------------------------------------
     def clean_up_images(self):
-        """ If we are not registered for a long time, the camera peripheral
-            will still be taking pictures every hour by default.  So to avoid
-            filling up the small disk, we remove any images that build up.
-        """
+        """If we are not registered for a long time, the camera peripheral will still 
+        be taking pictures every hour by default.  So to avoid filling up the small 
+        disk, we remove any images that build up."""
         try:
-            image_file_list = glob.glob("images/*.png")
+            image_file_list = glob.glob(IMAGE_DIR + "*.png")
             for image_file in image_file_list:
                 # Is this file open by a process? (fswebcam)
                 if 0 == os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file)):

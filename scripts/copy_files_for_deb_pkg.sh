@@ -50,7 +50,7 @@ cp __init__.py \
   $DEST
 
 # Make some empty directories we will use:
-mkdir -p $DEST/images
+mkdir -p $DEST/data/images
 mkdir -p $DEST/logs/peripherals
 
 # Clean up any files that might be in a working / configured install that we 

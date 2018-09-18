@@ -24,6 +24,8 @@ from device.peripherals.modules.usb_camera.exceptions import (
     CaptureImageError,
 )
 
+IMAGE_DIR = "data/images/"
+
 
 class USBCameraDriver:
     """Driver for a usb camera."""
@@ -57,7 +59,7 @@ class USBCameraDriver:
             self.logger.info("Simulating driver")
             self.directory = "device/peripherals/modules/usb_camera/tests/images/"
         else:
-            self.directory = "images/"
+            self.directory = IMAGE_DIR
 
         # Check directory exists else create it
         if not os.path.exists(self.directory):

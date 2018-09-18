@@ -1,21 +1,18 @@
 # Import python modules
-import glob
-import logging
-import os
-import subprocess
-import sys
-import threading
-import time
-import urllib.request
+import os, sys, glob, logging, subprocess, threading, time, urllib.request
 
+# Import django modules
 from django.db import connection  # so we can do raw sql queries
 
+# Import app models
 from app.models import EnvironmentModel
 from app.models import EventModel
 
+IMAGE_DIR = "data/images/"
+
 
 class ResourceManager:
-    """ Manages critical resources: disk space and database capacity. """
+    """Manages critical resources: disk space and database capacity."""
 
     # Initialize logger
     extra = {"console_name": "ResourceManager", "file_name": "resource"}
@@ -25,7 +22,6 @@ class ResourceManager:
     # Place holder for thread object.
     thread = None
 
-    # --------------------------------------------------------------------------
     def __init__(self, state, ref_device_manager, ref_iot_manager):
         """Initializes manager."""
         self.logger.debug("Initializing manager")
@@ -39,7 +35,6 @@ class ResourceManager:
         self.update()
         self._stop_event = threading.Event()  # so we can stop this thread
 
-    # --------------------------------------------------------------------------
     @property
     def error(self):
         """ Gets error value. """
@@ -52,7 +47,6 @@ class ResourceManager:
         with threading.Lock():
             self.state.resource["error"] = value
 
-    # --------------------------------------------------------------------------
     @property
     def status(self):
         """ Gets status value. """
@@ -65,7 +59,6 @@ class ResourceManager:
         with threading.Lock():
             self.state.resource["status"] = value
 
-    # --------------------------------------------------------------------------
     @property
     def connected(self):
         return self._connected
@@ -74,23 +67,19 @@ class ResourceManager:
     def connected(self, value):
         self._connected = value
 
-    # --------------------------------------------------------------------------
     def spawn(self):
         self.logger.info("Spawning resource manager thread")
         self.thread = threading.Thread(target=self.thread_proc)
         self.thread.daemon = True
         self.thread.start()
 
-    # --------------------------------------------------------------------------
     def stop(self):
         self.logger.info("Stopping resource manager thread")
         self._stop_event.set()
 
-    # --------------------------------------------------------------------------
     def stopped(self):
         return self._stop_event.is_set()
 
-    # --------------------------------------------------------------------------
     def get_available_disk_space(self):
         """
         Return the amount of free disk space on Debian and OSX.
@@ -126,7 +115,6 @@ class ResourceManager:
 
         return available_disk_space
 
-    # --------------------------------------------------------------------------
     def get_free_memory(self):
         """
         Return a string showing the amount of free RAM in 'M'egabytes on
@@ -161,9 +149,7 @@ class ResourceManager:
 
         return free_memory
 
-    # --------------------------------------------------------------------------
-    # private
-    def _delete_files(self, path):
+    def delete_files(self, path):
         try:
             imageFileList = glob.glob(path)
             for imageFile in imageFileList:
@@ -172,19 +158,13 @@ class ResourceManager:
         except Exception as e:
             self.logger.error(e)
 
-    # --------------------------------------------------------------------------
     def clean_up_disk(self):
-        """
-        Delete image files.
-        """
-        self._delete_files("images/*.png")
-        self._delete_files("images/stored/*.png")
+        """Delete image files."""
+        self.delete_files(IMAGE_DIR + "*.png")
+        self.delete_files(IMAGE_DIR + "stored/*.png")
 
-    # --------------------------------------------------------------------------
     def clean_up_database(self):
-        """
-        Delete all but the most recent 50 events and environments from database.
-        """
+        """Delete all but the most recent 50 events and environments from database."""
         try:
             # clean out the events
             qs = EventModel.objects.all()  # query set of all items
@@ -211,7 +191,6 @@ class ResourceManager:
         except Exception as e:
             self.logger.error(e)
 
-    # --------------------------------------------------------------------------
     def get_database_size(self):
         ret = ""
         # must use single quotes within the sql query, not double.
@@ -226,7 +205,6 @@ class ResourceManager:
             ret = ""
         return ret
 
-    # --------------------------------------------------------------------------
     def update(self):
         free_disk = self.get_available_disk_space()
         free_memory = self.get_free_memory()
@@ -280,7 +258,6 @@ class ResourceManager:
             self.clean_up_disk()
             self.clean_up_database()
 
-    # --------------------------------------------------------------------------
     def valid_internet_connection(self):
         try:
             urllib.request.urlopen("http://google.com")
@@ -288,7 +265,6 @@ class ResourceManager:
         except:
             return False
 
-    # --------------------------------------------------------------------------
     def thread_proc(self):
         disconnected = True
         while True:

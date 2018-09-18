@@ -47,8 +47,7 @@
                     "sensor": null,
                     "actuator": null
                 },
-                "communication": null,
-                "directory": "images/"
+                "communication": null
             }
         }
     ],
