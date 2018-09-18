@@ -1,4 +1,4 @@
-# OpenAg Device Software
+# OpenAg™ Device Software
 Software for running controlled grow environments on embedded linux devices (e.g. Raspberry Pi, Beaglebone, etc.). The two main parts of the code base are the device threads and on-device app. The device threads coordinate recipes, control loops, and peripheral (sensor/actuator) interactions. The on-device django-based app coordinates the interations with the on-device database and hosts the local device UI (a.k.a. developer UI) + local device API. There is also an MQTT-based iot manager for communication with the OpenAg cloud.
 
 ## Installation
