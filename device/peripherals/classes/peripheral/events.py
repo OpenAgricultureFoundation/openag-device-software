@@ -24,10 +24,10 @@ class PeripheralEvents:
         try:
             request_type = request["type"]
         except KeyError as e:
-            self.logger.exception("Invalid request parameters")
-            self.response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
-            }
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.exception(message)
+            self.response = {"status": 400, "message": message}
+            return
 
         # Process general event requests
         if request_type == "Reset":

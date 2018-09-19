@@ -76,20 +76,28 @@ class PeripheralFileHandler(logging.Handler):
         # Inherit functions from handler
         super().__init__(*args, **kwargs)
 
+        # Get project root dir
+        ROOT_DIR = os.environ.get("OPENAG_BRAIN_ROOT")
+        if ROOT_DIR != None:
+            ROOT_DIR += "/"
+        else:
+            ROOT_DIR = ""
+
         # Load device config
-        DEVICE_CONFIG_PATH = "data/config/device.txt"
+        DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
         if os.path.exists(DEVICE_CONFIG_PATH):
             with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()
         else:
             config_name = "unspecified"
-        device_config = json.load(open("data/devices/{}.json".format(config_name)))
+        path = ROOT_DIR + "data/devices/{}.json".format(config_name)
+        device_config = json.load(open(path))
 
         # Get peripheral configs
         peripheral_configs = device_config["peripherals"]
 
         # Make sure log directory exists
-        LOG_DIR = "data/logs/peripherals/"
+        LOG_DIR = ROOT_DIR + "data/logs/peripherals/"
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
 

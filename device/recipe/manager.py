@@ -11,13 +11,27 @@ from device.recipe.parser import RecipeParser
 from app.models import RecipeModel
 from app.models import RecipeTransitionModel
 
+# Import recipe modules
+from device.recipe.events import RecipeEvents
 
-class RecipeManager:
-    """ Manages recipe state machine. """
+
+class RecipeManager(RecipeEvents):
+    """Manages recipe state machine thread."""
+
+    # Define valid transition table
+    transitions = {
+        Modes.NORECIPE: [Modes.START],
+        Modes.START: [Modes.QUEUED],
+        Modes.QUEUED: [Modes.NORMAL, Modes.STOP],
+        Modes.NORMAL: [Modes.PAUSE, Modes.STOP],
+        Modes.PAUSE: [Modes.START],
+        Modes.STOP: [Modes.NORECIPE],
+        Modes.ERROR: [Modes.RESET],
+    }
 
     # Initialize logger
     extra = {"console_name": "Recipe", "file_name": "Recipe"}
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger("recipe")
     logger = logging.LoggerAdapter(logger, extra)
 
     # Initialize mode & error variables
@@ -27,15 +41,15 @@ class RecipeManager:
     thread = None
 
     def __init__(self, state):
-        """ Initializes recipe handler """
+        """Initializes recipe manager."""
         self.state = state
         self.mode = Modes.INIT
-        self._stop_event = threading.Event()  # so we can stop this thread
+        self.stop_event = threading.Event()  # so we can stop this thread
 
     @property
     def mode(self):
-        """ Gets mode value. Important to keep this local so all
-            state transitions only occur from within thread. """
+        """Gets mode value. Important to keep this local so all
+        state transitions only occur from within thread."""
         return self._mode
 
     @mode.setter
@@ -44,20 +58,6 @@ class RecipeManager:
         self._mode = value
         with self.state.lock:
             self.state.recipe["mode"] = value
-
-    @property
-    def commanded_mode(self):
-        """ Gets commanded mode from shared state. """
-        if "commanded_mode" in self.state.recipe:
-            return self.state.recipe["commanded_mode"]
-        else:
-            return None
-
-    @commanded_mode.setter
-    def commanded_mode(self, value):
-        """ Safely updates commanded mode in shared state. """
-        with self.state.lock:
-            self.state.recipe["commanded_mode"] = value
 
     @property
     def stored_mode(self):
@@ -86,20 +86,6 @@ class RecipeManager:
         """ Safely updates recipe uuid in shared state. """
         with self.state.lock:
             self.state.recipe["recipe_uuid"] = value
-
-    @property
-    def commanded_recipe_uuid(self):
-        """ Gets commanded recipe uuid from shared state. """
-        if "commanded_recipe_uuid" in self.state.recipe:
-            return self.state.recipe["commanded_recipe_uuid"]
-        else:
-            return None
-
-    @commanded_recipe_uuid.setter
-    def commanded_recipe_uuid(self, value):
-        """ Safely updates commanded recipe uuid in shared state. """
-        with self.state.lock:
-            self.state.recipe["commanded_recipe_uuid"] = value
 
     @property
     def recipe_name(self):
@@ -150,23 +136,8 @@ class RecipeManager:
             self.state.recipe["start_datestring"] = start_datestring
 
     @property
-    def commanded_start_timestamp_minutes(self):
-        """ Gets the recipe's commanded mode from shared state. """
-        if "commanded_start_timestamp_minutes" in self.state.recipe:
-            return self.state.recipe["commanded_start_timestamp_minutes"]
-        else:
-            return None
-
-    @commanded_start_timestamp_minutes.setter
-    def commanded_start_timestamp_minutes(self, value):
-        """ Safely updates commanded_start_timestamp_minutes 
-            in shared state. """
-        with self.state.lock:
-            self.state.recipe["commanded_start_timestamp_minutes"] = value
-
-    @property
     def start_datestring(self):
-        """ Gets start datestring value from shared state. """
+        """Gets start datestring value from shared state."""
         if "start_datestring" in self.state.recipe:
             return self.state.recipe["start_datestring"]
         else:
@@ -338,17 +309,21 @@ class RecipeManager:
         self.thread.start()
 
     def stop(self):
-        self._stop_event.set()
+        self.stop_event.set()
 
     def stopped(self):
-        return self._stop_event.is_set()
+        return self.stop_event.is_set()
 
-    def run_state_machine(self):
-        """ Runs recipe state machine. """
+    def run_state_machine(self) -> None:
+        """Runs recipe state machine."""
         while True:
+
+            # Check for thread stop event..
+            # TODO: this shouldnt be here...
             if self.stopped():
                 break
 
+            # Check for mode transitions
             if self.mode == Modes.INIT:
                 self.run_init_mode()
             if self.mode == Modes.NORECIPE:
@@ -370,52 +345,51 @@ class RecipeManager:
             elif self.mode == Modes.RESET:
                 self.run_reset_mode()
             else:
-                self.error = "Invalid mode"
                 self.logger.critial("Invalid state machine mode")
                 time.sleep(0.1)
 
-    def run_init_mode(self):
-        """ Runs initialization mode. Transitions to stored recipe mode 
-            or NORECIPE if no stored mode. """
+    def run_init_mode(self) -> None:
+        """Runs initialization mode. Transitions to stored recipe mode or NORECIPE if 
+        no stored mode."""
         self.logger.info("Entered INIT")
 
-        # Transition to recipe stored mode
-        if (
-            "stored_mode" in self.state.recipe
-            and self.state.recipe["stored_mode"] != None
-        ):
-            self.mode = self.state.recipe["stored_mode"]
+        # Check for stored mode
+        mode = self.state.recipe.get("stored_mode")
+        if mode != None:
+            self.logger.debug("Returning to stored mode: {}".format(mode))
+            self.mode = mode
         else:
             self.mode = Modes.NORECIPE
 
     def run_norecipe_mode(self):
-        """ Runs no recipe mode. Waits for start command then 
-            transitions to START. """
+        """Runs no recipe mode. Waits for start command then transitions to START."""
         self.logger.info("Entered NORECIPE")
 
         # Clear state
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
 
-        # Wait for start command
+        # Loop forever
         while True:
-            if self.commanded_mode == Modes.START:
-                self.mode = self.commanded_mode
-                self.commanded_mode = Modes.NONE
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.mode != Modes.NORECIPE:
                 break
-            time.sleep(0.1)  # 100ms
+
+            # Update every 100ms
+            time.sleep(0.1)
 
     def run_start_mode(self):
-        """ Runs start mode. Loads commanded recipe uuid into shared state, 
-            retrieves recipe json from recipe table, generates recipe 
-            transitions, stores them in the recipe transition table, extracts
-            recipe duration and start time then transitions to QUEUED. """
+        """Runs start mode. Loads commanded recipe uuid into shared state, 
+        retrieves recipe json from recipe table, generates recipe 
+        transitions, stores them in the recipe transition table, extracts
+        recipe duration and start time then transitions to QUEUED."""
+
         try:
             self.logger.info("Entered START")
-
-            # Load commanded recipe uuid into shared state
-            self.recipe_uuid = self.commanded_recipe_uuid
-            self.commanded_recipe_uuid = None
 
             # Get recipe json from recipe uuid
             recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).json
@@ -435,25 +409,16 @@ class RecipeManager:
             self.recipe_name = recipe_dict["name"]
             self.logger.info("Started: {}".format(self.recipe_name))
 
-            # Load recipe start time, if not set, start recipe immediately
-            if self.commanded_start_timestamp_minutes != None:
-                self.start_timestamp_minutes = self.commanded_start_timestamp_minutes
-                self.commanded_start_timestamp_minutes = None
-            else:
-                self.start_timestamp_minutes = self.current_timestamp_minutes
-
-            # Clear commanded mode
-            self.commanded_mode = None
-
             # Transition to QUEUED
             self.mode = Modes.QUEUED
-        except:
-            self.logger.exception("Unable to start recipe")
+        except Exception as e:
+            message = "Unable to start recipe, unhandled exception {}".format(e)
+            self.logger.critical(message)
             self.mode = Modes.NORECIPE
 
     def run_queued_mode(self):
-        """ Runs queued mode. Waits for recipe start timestamp to be greater than
-        or equal to current timestamp then transitions to NORMAL. """
+        """Runs queued mode. Waits for recipe start timestamp to be greater than
+        or equal to current timestamp then transitions to NORMAL."""
         self.logger.info("Entered QUEUED")
 
         # Initialize time counter
@@ -462,7 +427,7 @@ class RecipeManager:
         # Loop forever
         while True:
 
-            # Check for transition to NORMAL
+            # Check if recipe is ready to run
             if self.current_timestamp_minutes >= self.start_timestamp_minutes:
                 self.mode = Modes.NORMAL
                 break
@@ -481,11 +446,11 @@ class RecipeManager:
                 prev_time_seconds = time.time()
                 self.logger.debug("Starting recipe in {} minutes".format(delay_minutes))
 
-            # Check for transition to STOP
-            if self.commanded_mode == Modes.STOP:
-                self.logger.info("Received request to transition from NORMAL to STOP")
-                self.mode = self.commanded_mode
-                self.commanded_mode = Modes.NONE
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.mode != Modes.QUEUED:
                 break
 
             # Update every 100ms
@@ -499,61 +464,54 @@ class RecipeManager:
         # Update recipe environment on first entry
         self.update_recipe_environment()
 
+        # Loop forever
         while True:
+
             # Update recipe and environment states every minute
             if self.new_minute():
                 self.update_recipe_environment()
 
-            # Check for transition to PAUSE
-            if self.commanded_mode == Modes.PAUSE:
-                self.logger.info("Received request to transition from NORMAL to PAUSE")
-                self.mode = self.commanded_mode
-                self.commanded_mode = Modes.NONE
-                break
-
-            # Check for transition to STOP
-            if self.commanded_mode == Modes.STOP:
-                self.logger.info("Received request to transition from NORMAL to STOP")
-                self.mode = self.commanded_mode
-                self.commanded_mode = Modes.NONE
-                break
-
+            # Check for recipe end
             if self.current_phase == "End" and self.current_cycle == "End":
                 self.logger.info("Recipe is over, so transition from NORMAL to STOP")
                 self.mode = Modes.STOP
                 break
 
-            # Update thread every 100ms
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.mode != Modes.NORMAL:
+                break
+
+            # Update every 100ms
             time.sleep(0.1)
 
     def run_pause_mode(self):
-        """ Runs pause mode. Clears recipe and desired sensor state, waits 
-            for resume or stop command"""
+        """Runs pause mode. Clears recipe and desired sensor state, waits 
+        for resume or stop command."""
         self.logger.info("Entered PAUSE")
 
         # Clear recipe and desired sensor state
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
 
+        # Loop forever
         while True:
-            # Check for transition to NORMAL
-            if self.commanded_mode == Modes.NORMAL:
-                self.mode = self.commanded_mode
-                self.commanded_mode = Modes.NONE
-                break
 
-            # Check for transition to STOP
-            if self.commanded_mode == Modes.STOP:
-                self.mode = self.commanded_mode
-                self.commanded_mode = Modes.NONE
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.mode != Modes.PAUSE:
                 break
 
             # Update every 100ms
-            time.sleep(0.1)  # 100ms
+            time.sleep(0.1)
 
     def run_stop_mode(self):
-        """ Runs stop mode. Clears recipe and desired sensor state, signals 
-            end of recipe, then transitions to NORECIPE. """
+        """Runs stop mode. Clears recipe and desired sensor state, signals 
+        end of recipe, then transitions to NORECIPE."""
         self.logger.info("Entered STOP")
 
         # Clear recipe and desired sensor states
@@ -564,31 +522,36 @@ class RecipeManager:
         self.mode = Modes.NORECIPE
 
     def run_error_mode(self):
-        """ Runs error mode. Clears recipe state and desired sensor state,
-            waits for reset mode command then transitions to RESET. """
+        """Runs error mode. Clears recipe state and desired sensor state,
+        waits for reset mode command then transitions to RESET."""
         self.logger.info("Entered ERROR")
 
         # Clear recipe and desired sensor states
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
 
-        # Wait for reset mode command
+        # Loop forever
         while True:
-            if self.commanded_mode == Modes.RESET:
-                self.mode == self.commanded_mode
-                self.commanded_mode = Modes.NONE
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.mode != Modes.ERROR:
                 break
-            time.sleep(0.1)  # 100ms
+
+            # Update every 100ms
+            time.sleep(0.1)
 
     def run_reset_mode(self):
-        """ Runs reset mode. Clears error state then transitions to INIT. """
+        """Runs reset mode. Clears error state then transitions to INIT."""
         self.logger.info("Entered RESET")
 
         # Transition to INIT
         self.mode = Modes.INIT
 
-    def get_recipe_environment(self, minute):
-        """ Gets environment object from database for provided minute. """
+    def get_recipe_environment(self, minute: int):
+        """Gets environment object from database for provided minute."""
         return (
             RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
                 "-minute"
@@ -596,7 +559,7 @@ class RecipeManager:
         )
 
     def store_recipe_transitions(self, recipe_transitions):
-        """ Stores recipe transitions in database. """
+        """Stores recipe transitions in database."""
 
         # Clear recipe transition table in database
         RecipeTransitionModel.objects.all().delete()
@@ -630,7 +593,7 @@ class RecipeManager:
                 self.state.environment["sensor"]["desired"][variable] = None
 
     def clear_recipe_state(self):
-        """ Sets recipe state to null values """
+        """Sets recipe state to null values."""
         self.recipe_name = None
         self.recipe_uuid = None
         self.duration_minutes = None
@@ -640,9 +603,10 @@ class RecipeManager:
         self.current_cycle = None
         self.current_environment_name = None
         self.current_environment_state = {}
+        self.stored_mode = None
 
     def new_minute(self):
-        """ Check if system clock is on a new minute. """
+        """Check if system clock is on a new minute."""
         current_minute = self.current_timestamp_minutes - self.start_timestamp_minutes
         last_update_minute = self.state.recipe["last_update_minute"]
         if current_minute > last_update_minute:
@@ -651,7 +615,7 @@ class RecipeManager:
             return False
 
     def get_duration_string(self, duration_minutes):
-        """ Converts duration in minutes to duration day-hour-minute string. """
+        """Converts duration in minutes to duration day-hour-minute string."""
         days = int(float(duration_minutes) / (60 * 24))
         hours = int((float(duration_minutes) - days * 60 * 24) / 60)
         minutes = duration_minutes - days * 60 * 24 - hours * 60
@@ -659,11 +623,8 @@ class RecipeManager:
         return string
 
     def set_desired_sensor_values(self, environment_dict):
-        """ Sets desired sensor values from provided environment dict. """
+        """Sets desired sensor values from provided environment dict."""
         with self.state.lock:
             for variable in environment_dict:
-                self.state.environment["sensor"]["desired"][
-                    variable
-                ] = environment_dict[
-                    variable
-                ]
+                value = environment_dict[variable]
+                self.state.environment["sensor"]["desired"][variable] = value

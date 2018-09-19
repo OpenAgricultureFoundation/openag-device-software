@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 
 class Router(routers.DefaultRouter):
+
     def get_api_root_view(self, api_urls=None):
         """
         Return a basic root view.
@@ -44,7 +45,7 @@ class Router(routers.DefaultRouter):
                         continue
 
                 # Add APIView endpoints
-                endpoints = ["recipe/stop", "recipe/{pk}/start/"]
+                endpoints = ["recipe/stop", "recipe/{uuid}/start/"]
                 base = ret["state"].split("api", 1)[0] + "api/"
                 for endpoint in endpoints:
                     ret[endpoint] = base + endpoint

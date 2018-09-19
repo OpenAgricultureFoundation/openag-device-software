@@ -3,6 +3,8 @@
 {% block javascript %}
 <script>
 
+  $('#datetimepicker1').datetimepicker();
+
   function createDeviceEvent(event_name, event_id) {
      /* Creates peripheral event. */
      console.log("Creating device event: " + event_name)
@@ -74,33 +76,20 @@
 
       console.log(timestamp)
       
-      // Create recipient and request dicts
-      recipient =  {
-          "type": "Device",
-          "name": null};
-      request = {
-          "type": "Start Recipe",
-          "uuid": uuid,
-          "timestamp": timestamp,
-        };
-
-       console.log(request)
-
       // Send create event request to endpoint
       $.ajax({
-          url: "/api/event/",
+          url: "/api/recipe/" + uuid + "/start/",
           type: "POST",
           data: {
             "csrfmiddlewaretoken": "{{ csrf_token }}",
-            "recipient": JSON.stringify(recipient),
-            "request": JSON.stringify(request)
+            "timestamp": timestamp
           },
           dataType: 'json',
           success: function(data) {
             console.log("Event request succeeded")
 
             // Get response message
-            message = data.message
+            message = data
             alert(message);
             location.reload();
           },
@@ -108,35 +97,47 @@
             console.log("Event request failed")
 
             // Get response message
-            response_dict = JSON.parse(data.responseText)
-            message = response_dict["message"]
+            message = JSON.parse(data.responseText)
             alert(message);
           }
       }); 
    }
 
-   $('#datetimepicker1').datetimepicker();
 
-   // TODO not used
-   // function stop_recipe() {
-   //   $.ajax({
-   //     url: '/api/recipe/stop/',
-   //     type: "POST",
-   //     data: {
-   //       'csrfmiddlewaretoken': '{{ csrf_token }}'},
-   //     dataType: 'json',
-   //     success: function(data) {
-   //         alert(data.message)
-   //     },
-   //     error: function(data) {
-   //         alert(data.responseText)
-   //     },
-   //     complete: function(data) {
-   //         // TODO: Reload on when recipe name changes
-   //         location.reload();
-   //     }
-   //   });
-   // }
+   function stopRecipe() {
+      /* Stops a recipe. */
+      console.log("Stopping recipe")
+
+      // Send stop request to endpoint
+      $.ajax({
+          url: "/api/recipe/stop/",
+          type: "POST",
+          data: {
+            "csrfmiddlewaretoken": "{{ csrf_token }}"
+          },
+          dataType: 'json',
+          success: function(data) {
+            console.log("Stop recipe succeeded")
+
+            // Get response message
+            message = data
+            alert(message);
+            location.reload();
+          },
+          error: function(data) {
+            console.log("Stop recipe failed")
+
+            // Get response message
+            message = JSON.parse(data.responseText)
+            // message = response_dict["message"]
+            alert(message);
+          }
+      }); 
+   }
+
+   
+
+
    
    // TODO not used
    // function start_recipe() {
@@ -241,8 +242,8 @@
             <!-- <button class="btn" type="button" onClick="createDeviceEvent('Start Recipe', 'recipe_uuid')"><i class="icon-share"></i> Start Recipe </button> -->
 
             {% else %}
-            <!-- <button class="btn" type="button" onClick="stop_recipe()"><i class="icon-share"></i> Stop Recipe </button> -->
-            <button class="btn" type="button" onClick="createDeviceEvent('Stop Recipe', null)"><i class="icon-share"></i> Stop Recipe </button>
+            <button class="btn" type="button" onClick="stopRecipe()"><i class="icon-share"></i> Stop Recipe </button>
+            <!-- <button class="btn" type="button" onClick="createDeviceEvent('Stop Recipe', null)"><i class="icon-share"></i> Stop Recipe </button> -->
             {% endif %}
          </div>
       </div>

@@ -1,26 +1,34 @@
 # Import python modules
 import logging, time, threading, json, os, sys
 
-# Import device utilities
-from device.utilities.events import EventRequests
-from device.utilities.events import EventResponses
+# Import python types
+from typing import Dict, Any, Union
+
+# Import device state
+from device.state.main import State
 
 # Import database models
 from app.models import EventModel
 
 
-class EventManager:
-    """Manages events."""
+class EventManager(object):
+    """Manages events. Once thread is spawned, polls event table in database every 
+    50 ms to check for latest entry without a response as an signifier for a new 
+    request. Upon new request, forwards request to recipient (e.g. device coordinator, 
+    specific peripheral, etc.) and wait for response with timeout."""
+
+    # TODO: Use django signal for async db deltas instead of polling? What happens
+    # with multiple quick requests?
 
     # Initialize vars
     timeout = 10  # seconds
 
     # Initialize logger
     extra = {"console_name": "Event", "file_name": "Event"}
-    logger = logging.getLogger("event")
-    logger = logging.LoggerAdapter(logger, extra)
+    logger_raw = logging.getLogger("event")
+    logger = logging.LoggerAdapter(logger_raw, extra)
 
-    def __init__(self, state):
+    def __init__(self, state: State) -> None:
         """Initialize event manager."""
         self.logger.debug("Initializing manager")
 
@@ -28,24 +36,26 @@ class EventManager:
         self.state = state
         self.stop_event = threading.Event()  # so we can stop this thread
 
-    def spawn(self, delay=None):
-        """ Spawns event thread. """
+    def spawn(self) -> None:
+        """Spawns event thread."""
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.thread.start()
 
-    def stop(self):
+    def stop(self) -> None:
+        """Stops thread."""
         self.stop_event.set()
 
-    def stopped(self):
+    def stopped(self) -> bool:
+        """Gets thread stop status."""
         return self.stop_event.is_set()
 
-    def run(self):
+    def run(self) -> None:
         """Runs event manager."""
         self.logger.info("Spawning event thread")
+
+        # Loop forever
         while True:
-            if self.stopped():
-                break
 
             # Check for new event to process
             if EventModel.objects.filter(response=None).exists():
@@ -53,98 +63,117 @@ class EventManager:
                 event.response = self.process(event.recipient, event.request)
                 event.save()
 
-            # Update every 100ms
-            time.sleep(0.1)
+            # Check for thread stop
+            if self.stopped():
+                break
 
-    def process(self, recipient, request):
-        """ Processes request to recipient, returns response. """
-        self.logger.debug("Processing new event request")
+            # Update every 50ms
+            time.sleep(0.05)
+
+    def process(
+        self, recipient: Dict[str, str], request: Dict[str, Any]
+    ) -> Dict[str, Union[str, int]]:
+        """Processes request to recipient, returns response."""
 
         # Get request parameters
         try:
             recipient_type = recipient["type"]
             recipient_name = recipient["name"]
         except KeyError as e:
-            self.logger.exception("Unable to get request parameters")
-            response = {
-                "status": 400,
-                "message": "Unable to get request parameters: {}".format(e),
-            }
+            message = "Unable to get request parameters: {}".format(e)
+            self.logger.exception(message)
+            return {"status": 400, "message": message}
 
         # Process device requests
         if recipient_type == "Device":
-            self.logger.debug("Processing device event request")
-            # Clear device response
-            self.state.device["response"] = None
+            self.logger.debug("Processing device event request: {}".format(request))
 
-            # Send request to device
-            self.state.device["request"] = request
+            # Clear device response and send request to device
+            # TODO: Put this lock into state and access dict via decorators
+            with self.state.lock:
+                self.state.device["response"] = None
+                self.state.device["request"] = request
 
             # Wait for response
-            while self.state.device["response"] == None:
-                # Check for timeout
-                start_time = time.time()
-                if time.time() - start_time > self.timeout:
-                    message = "Request did not process within {} seconds".format(
-                        self.timeout
+            start_time = time.time()
+            while True:
+
+                # Check for response
+                response = self.state.device["response"]
+                if response != None:
+                    delta = time.time() - start_time
+                    message = "Received response after {:.2F} seconds: {}".format(
+                        delta, response
                     )
+                    self.logger.debug(message)
+
+                    # Verify response is valid
+                    try:
+                        status = response["status"]
+                        message = response["message"]
+                        return {"status": status, "message": message}
+                    except KeyError as e:
+                        message = "Received invalid response"
+                        self.logger.exception(message)
+                        return {"status": 500, "message": message}
+
+                # Check for timeout
+                if time.time() - start_time > self.timeout:
+                    message = "Request timed out after {} seconds".format(self.timeout)
                     self.logger.critical(message)
-                    response = {"status": 500, "message": message}
-                    return response
+                    resp = {"status": 500, "message": message}
+                    self.logger.debug("Returning response: {}".format(resp))
+                    return resp
 
-                # Update every 100ms
-                time.sleep(0.1)
-
-            # Return response
-            response = self.state.device["response"]
-            self.state.device["response"] = None
-            return response
+                # Update every 50ms
+                time.sleep(0.05)
 
         # Process peripheral requests
         elif recipient_type == "Peripheral":
-            self.logger.debug("Processing peripheral event request")
+            self.logger.debug("Processing peripheral event request: {}".format(request))
 
             # Check if recipient exists
             if recipient_name not in self.state.peripherals:
-                response = {
-                    "status": 400,
-                    "message": "Peripheral recipient `{}` does not exist".format(
-                        recipient_name
-                    ),
-                }
-                return response
+                message = "Unknown peripheral recipient `{}`".format(recipient_name)
+                self.logger.debug(message)
+                return {"status": 400, "message": message}
 
-            # Clear peripheral response
-            self.state.peripherals[recipient_name]["response"] = None
-
-            # Send reqeust to peripheral
-            self.state.peripherals[recipient_name]["request"] = request
+            # Clear peripheral response and send request to peripheral
+            # TODO: Put this lock into state and access dict via decorators
+            with self.state.lock:
+                self.state.peripherals[recipient_name]["response"] = None
+                self.state.peripherals[recipient_name]["request"] = request
 
             # Wait for response
-            # This system is fragile....rework concept
             start_time = time.time()
-            while self.state.peripherals[recipient_name]["response"] == None:
+            while True:
+
+                # Check for response
+                response = self.state.peripherals[recipient_name]["response"]
+                if response != None:
+                    self.logger.debug("Received response: {}".format(response))
+
+                    # Verify response is valid
+                    try:
+                        status = response["status"]
+                        message = response["message"]
+                        return {"status": status, "message": message}
+                    except KeyError as e:
+                        message = "Received invalid response"
+                        self.logger.exception(message)
+                        return {"status": 500, "message": message}
 
                 # Check for timeout
-                start_time = time.time()
                 if time.time() - start_time > self.timeout:
-                    message = "Request did not process within {} seconds".format(
-                        self.timeout
-                    )
+                    message = "Request timed out after {} seconds".format(self.timeout)
                     self.logger.critical(message)
-                    response = {"status": 500, "message": message}
-                    return response
+                    return {"status": 500, "message": message}
 
-                # Update every 100ms
-                time.sleep(0.1)
-
-            # Return response
-            response = self.state.peripherals[recipient_name]["response"]
-            self.logger.debug("Returning response: {}".format(response))
-            self.state.peripherals[recipient_name]["response"] = None
-            return response
+                # Update every 50ms
+                time.sleep(0.05)
 
         else:
             # Return response
-            response = {"status": 400, "message": "Unknown recipient"}
-            return response
+            message = "Unable to process request for recipient: {}".format(recipient)
+            self.logger.debug(message)
+            return {"status": 400, "message": "Unknown recipient type"}

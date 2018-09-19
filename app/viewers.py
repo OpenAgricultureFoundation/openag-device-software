@@ -2,16 +2,22 @@
 import json as json_
 import time, logging
 
+# Import python types
+from typing import Dict, Tuple, Any
+
 # Import common app funcitons
 from app.common import Common
-from app.models import CultivarModel
-from app.models import CultivationMethodModel
+
+# Import app models
+from app.models import CultivarModel, CultivationMethodModel, RecipeModel
 
 # Import app models
 from app.models import EventModel
 
 # Import device utilities
 from device.utilities.events import EventRequests
+
+from django.apps import apps
 
 
 class EventViewer:
@@ -100,48 +106,63 @@ class RecipeViewer:
             "current_environment_name"
         )
 
-    def create(self, request_dict):
-        """ Creates a recipe. Gets recipe json, makes event request,  then
-            returns event response. """
+    def create(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Creates a recipe."""
         self.logger.info("Received create recipe request")
 
         # Get recipe json
-        if "json" not in request_dict:
-            status = 400
-            response = {"message": "Request does not contain `json`"}
-            return response, status
+        try:
+            json = request["json"]
+        except KeyError:
+            message = "Request does not contain `json`"
+            return message, 400
+
+        # Create recipe
+        try:
+            return coordinator.recipe.create_recipe(json)
+        except:
+            message = "Unable to create recipe, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
+
+    def start(self, uuid: str, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Starts a recipe."""
+        self.logger.info("Received start recipe request")
+
+        # Get device coordinator
+        app_config = apps.get_app_config("app")
+        coordinator = app_config.device_coordinator
+
+        # Get optional timestamp parameter
+        t = request.get("timestamp")
+        if t != None and t != "":
+            timestamp = float(t)
         else:
-            json = request_dict["json"]
+            timestamp = None
 
-        # Make event request and return event response
-        event_request = {"type": EventRequests.CREATE_RECIPE, "json": json}
-        return Common.manage_event(event_request)
-
-    def start(self, request_dict, pk):
-        """ Start a recipe. Sends start recipe command to event thread, waits
-        for recipe to start, then returns response. """
-        self.logger.info("Received stop recipe request")
-
-        # Get optional recipe start timestamp
-        if "start_timestamp_minutes" not in request_dict:
-            start_timestamp_minutes = None
-        else:
-            start_timestamp_minutes = request_dict["start_timestamp_minutes"]
-
-        # Make event request and return event response
-        event_request = {
-            "type": EventRequests.START_RECIPE,
-            "uuid": pk,
-            "start_timestamp_minutes": start_timestamp_minutes,
-        }
-        return Common.manage_event(event_request)
+        # Start recipe
+        try:
+            return coordinator.recipe.start_recipe(uuid, timestamp)
+        except:
+            message = "Unable to start recipe, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
 
     def stop(self):
-        """ Stops a recipe. Sends stop command to event thread, waits for 
-            recipe to stop, then returns response. """
+        """Stops a recipe."""
         self.logger.info("Received stop recipe request")
-        event_request = {"type": EventRequests.STOP_RECIPE}
-        return Common.manage_event(event_request)
+
+        # Get device coordinator
+        app_config = apps.get_app_config("app")
+        coordinator = app_config.device_coordinator
+
+        # Stop recipe
+        try:
+            return coordinator.recipe.stop_recipe()
+        except:
+            message = "Unable to stop recipe, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
 
 
 class SimpleRecipeViewer:

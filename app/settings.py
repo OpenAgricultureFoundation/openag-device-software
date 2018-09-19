@@ -24,9 +24,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "flnh=1!tsz^4&grtw&0$2&6#n*@aybhg-vdpa-i1rc&pyv$+9c"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-
 ALLOWED_HOSTS = ["*"]
 
 
@@ -102,6 +99,10 @@ DATABASES = {
 # If you touch data/config/develop, this env var will be set to DEBUG in run.sh
 LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "WARNING")
 CONSOLE_LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "ERROR")
+
+# Set device into debug mode if log level at debug
+if LOG_LEVEL == "DEBUG":
+    DEBUG = True
 
 # Set log directory
 LOG_DIR = os.path.dirname(BASE_DIR) + "/data/logs/"
@@ -188,6 +189,14 @@ LOGGING = {
             "maxBytes": 200 * 1024,
             "backupCount": 1,
         },
+        "recipe_file": {
+            "level": LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR + "recipe.log",
+            "formatter": "device_file",
+            "maxBytes": 200 * 1024,
+            "backupCount": 1,
+        },
         "resource_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
@@ -222,6 +231,7 @@ LOGGING = {
             "handlers": ["device_console", "peripheral_files"], "level": LOG_LEVEL
         },
         "event": {"handlers": ["device_console", "event_file"], "level": LOG_LEVEL},
+        "recipe": {"handlers": ["device_console", "recipe_file"], "level": LOG_LEVEL},
         "i2c": {"handlers": ["device_console", "i2c_file"], "level": LOG_LEVEL},
         "iot": {"handlers": ["device_console", "iot_file"], "level": LOG_LEVEL},
         "resource": {

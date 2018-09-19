@@ -140,13 +140,14 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """ API endpoint that allows recipes to be viewed. """
+    """API endpoints that allow recipes to be started, stopped, created, and viewed."""
 
     serializer_class = RecipeSerializer
+    lookup_field = "uuid"
 
     @method_decorator(login_required)
     def get_queryset(self):
-        queryset = RecipeModel.objects.all()
+        queryset = RecipeModel.objects.all().order_by("name")
         return queryset
 
     @method_decorator(login_required)
@@ -154,16 +155,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """ API endpoint to create a recipe. """
         permission_classes = [IsAuthenticated, IsAdminUser]
         recipe_viewer = RecipeViewer()
-        response, status = recipe_viewer.create(request.data.dict())
+        response, status = recipe_viewer.create(request.data)  # was data.dict()
         return Response(response, status)
 
     @method_decorator(login_required)
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
-    def start(self, request, pk=None):
-        """ API endpoint to start a recipe. """
-        permission_classes = [IsAuthenticated]
+    def start(self, request, uuid):
+        """API endpoint to start a recipe."""
         recipe_viewer = RecipeViewer()
-        response, status = recipe_viewer.start(request.data.dict(), pk)
+        response, status = recipe_viewer.start(uuid, request.data)  # was data.dict()
         return Response(response, status)
 
     @method_decorator(login_required)
@@ -255,7 +255,7 @@ class Dashboard(APIView):
         current_recipe = RecipeViewer()
 
         # Get stored recipe objects
-        recipe_objects = RecipeModel.objects.all()
+        recipe_objects = RecipeModel.objects.all().order_by("name")
         recipes = []
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
