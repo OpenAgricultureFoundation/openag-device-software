@@ -1,5 +1,5 @@
 # Import standard python modules
-import time, queue
+import time, queue, json
 
 # Import python types
 from typing import Dict, Tuple, Any, Optional
@@ -137,6 +137,8 @@ class RecipeEvents:
         self.logger.debug("Creating recipe")
 
         # TODO: Validate recipe json
+        self.logger.debug(json_)
+        self.logger.debug(type(json_))
 
         recipe = json.loads(json_)
 
@@ -150,6 +152,6 @@ class RecipeEvents:
         # Create recipe in database
         RecipeModel.objects.create(json=json.dumps(recipe))
 
-        # Unsuccessfully loaded recipe
-        message = "Unable to load message, not implemented"
-        return message, 500
+        # Successfully loaded recipe
+        message = "Successfully loaded recipe"
+        return message, 200

@@ -110,6 +110,10 @@ class RecipeViewer:
         """Creates a recipe."""
         self.logger.info("Received create recipe request")
 
+        # Get device coordinator
+        app_config = apps.get_app_config("app")
+        coordinator = app_config.device_coordinator
+
         # Get recipe json
         try:
             json = request["json"]
@@ -119,6 +123,7 @@ class RecipeViewer:
 
         # Create recipe
         try:
+
             return coordinator.recipe.create_recipe(json)
         except:
             message = "Unable to create recipe, unhandled exception"
