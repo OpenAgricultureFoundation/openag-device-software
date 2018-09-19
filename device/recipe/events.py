@@ -10,7 +10,6 @@ from device.utilities.modes import Modes
 # Import app models
 from app.models import RecipeModel
 
-
 START_RECIPE = "Start Recipe"
 STOP_RECIPE = "Stop Recipe"
 LOAD_RECIPE = "Load Recipe"
