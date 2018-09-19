@@ -23,4 +23,9 @@ This repo is distrubuted on production devices via debian packaging. For local d
 
 
 ### Getting the code
- - [Install Instructions](docs/install.md)
+ - [Installing the code](docs/install.md).
+
+## Design
+ - [Light control](docs/light/overview.md).
+
+
