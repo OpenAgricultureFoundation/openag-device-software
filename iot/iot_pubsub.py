@@ -99,6 +99,15 @@ class IoTPubSub:
 
         # the MQTT events topic we publish messages to
         self.mqtt_topic = "/devices/{}/events".format(self.deviceId)
+        
+        # if we are running a test client to publish to a test topic,
+        # then change the above variable.  (this requires a MQTT server - 
+        # usally a local developer instance) to be running and listening
+        # on this same topic (device-test/test).
+        test_topic = os.environ.get("IOT_TEST_TOPIC")
+        if test_topic is not None:
+            self.mqtt_topic = "/devices/{}/{}".format(self.deviceId, test_topic)
+        
         self.logger.debug("mqtt_topic={}".format(self.mqtt_topic))
 
         # create a (renewable) client with tokens that will timeout
