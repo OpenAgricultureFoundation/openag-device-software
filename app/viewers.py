@@ -17,7 +17,17 @@ from app.models import EventModel
 # Import device utilities
 from device.utilities.events import EventRequests
 
+# Import django app
 from django.apps import apps
+
+# Initialize vars
+APP_NAME = "app"
+PERIPHERAL_TYPE = "Peripheral"
+CONTROLLER_TYPE = "Controller"
+RECIPE_TYPE = "Recipe"
+START_RECIPE = "Start Recipe"
+STOP_RECIPE = "Stop Recipe"
+CREATE_RECIPE = "Create Recipe"
 
 
 class EventViewer:
@@ -26,58 +36,69 @@ class EventViewer:
     logger = logging.getLogger(__name__)
     logger = logging.LoggerAdapter(logger, extra)
 
-    def create(self, request):
-        self.logger.debug("Creating event with request: {}".format(request))
+    def create(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Create a new event request to any known thread."""
 
         # Get request parameters
         try:
             recipient = json_.loads(request["recipient"])
+            recipient_type = recipient["type"]
+            recipient_name = recipient["name"]
             request_ = json_.loads(request["request"])
+            request_type = request_["type"]
+            message = "Creating new event request for {} to {}".format(
+                recipient_name, request_type
+            )
+            self.logger.debug(message)
         except ValueError as e:
             message = "Unable to get request parameters, invalid JSON: {}".format(e)
+            self.logger.debug(message)
             return message, 400
         except KeyError as e:
             message = "Unable to get request parameters, invalid key: {}".format(e)
+            self.logger.debug(message)
             return message, 400
 
-        # Create event in database
-        self.logger.debug(
-            "Creating event in database, recipient={}, request={}".format(
-                recipient, request_
-            )
-        )
+        # Get device coordinator
+        app_config = apps.get_app_config(APP_NAME)
+        coordinator = app_config.coordinator
+
+        # Check valid recipient type and get manager
+        if recipient_type == PERIPHERAL_TYPE:
+            manager = coordinator.peripherals.get(recipient_name)
+        elif request_type == CONTROLLER_TYPE:
+            manager = coordinator.controllers.get(recipient_name)
+        else:
+            message = "Invalid recipient type `{}`".format(recipient_type)
+            self.logger.debug(message)
+            return message, 400
+
+        # Check manager exists
+        if manager == None:
+            message = "Invalid recipient name: `{}`".format(recipient_name)
+            self.logger.debug(message)
+            return message, 400
+
+        # Send event to manager
+        message, status = manager.process_event(request_)
+
+        # Save event interaction in database
         try:
-            event = EventModel.objects.create(recipient=recipient, request=request_)
+            response_dict = {"message": message, "status": status}
+            event = EventModel.objects.create(
+                recipient=recipient, request=request_, response=response_dict
+            )
         except Exception as e:
             message = "Unable to create event in database: {}".format(e)
             return message, 500
 
-        # Wait for response
-        start_time = time.time()
-        while True:
-
-            # Check response status
-            event = EventModel.objects.get(id=event.id)
-            if event.response != None:
-                break
-
-            # Check for timeout
-            if time.time() - start_time > 10:  # 10 second timeout:
-                event.response = {
-                    "message": "Critical error, response timed out", "status": 500
-                }
-                event.save()
-                break
-
-            # Update every 100ms
-            time.sleep(0.1)
-
-        # Return response
-        event = EventModel.objects.get(id=event.id)
-        return event.response["message"], event.response["status"]
+        # Successfully created event request
+        self.logger.debug("Responding with ({}): {}".format(status, message))
+        return message, status
 
 
 class RecipeViewer:
+
     # Initialize logger
     extra = {"console_name": "Recipe Viewer", "file_name": "recipe_viewer"}
     logger = logging.getLogger(__name__)
@@ -111,7 +132,7 @@ class RecipeViewer:
         self.logger.info("Received create recipe request")
 
         # Get device coordinator
-        app_config = apps.get_app_config("app")
+        app_config = apps.get_app_config(APP_NAME)
         coordinator = app_config.coordinator
 
         # Get recipe json
@@ -121,10 +142,22 @@ class RecipeViewer:
             message = "Request does not contain `json`"
             return message, 400
 
-        # Create recipe
+        # Create recipe and save event interaction
         try:
+            # Create recipe
+            message, status = coordinator.recipe.create_recipe(json)
 
-            return coordinator.recipe.create_recipe(json)
+            # Save event interaction in database
+            event = EventModel.objects.create(
+                recipient={"type": RECIPE_TYPE},
+                request={"type": CREATE_RECIPE},
+                response={"message": message, "status": status},
+            )
+
+            # Successfully created recipe
+            self.logger.debug("Responding with ({}): {}".format(status, message))
+            return message, status
+
         except:
             message = "Unable to create recipe, unhandled exception"
             self.logger.exception(message)
@@ -135,7 +168,7 @@ class RecipeViewer:
         self.logger.info("Received start recipe request")
 
         # Get device coordinator
-        app_config = apps.get_app_config("app")
+        app_config = apps.get_app_config(APP_NAME)
         coordinator = app_config.coordinator
 
         # Get optional timestamp parameter
@@ -145,9 +178,21 @@ class RecipeViewer:
         else:
             timestamp = None
 
-        # Start recipe
+        # Start recipe and save event interaction
         try:
-            return coordinator.recipe.start_recipe(uuid, timestamp)
+            # Start recipe
+            message, status = coordinator.recipe.start_recipe(uuid, timestamp)
+
+            # Save event interaction in database
+            event = EventModel.objects.create(
+                recipient={"type": RECIPE_TYPE},
+                request={"type": START_RECIPE},
+                response={"message": message, "status": status},
+            )
+
+            # Successfully started recipe
+            self.logger.debug("Responding with ({}): {}".format(status, message))
+            return message, status
         except:
             message = "Unable to start recipe, unhandled exception"
             self.logger.exception(message)
@@ -158,12 +203,24 @@ class RecipeViewer:
         self.logger.info("Received stop recipe request")
 
         # Get device coordinator
-        app_config = apps.get_app_config("app")
+        app_config = apps.get_app_config(APP_NAME)
         coordinator = app_config.coordinator
 
-        # Stop recipe
+        # Stop recipe and save event interaction
         try:
-            return coordinator.recipe.stop_recipe()
+            # Stop recipe
+            message, status = coordinator.recipe.stop_recipe()
+
+            # Save event interaction in database
+            event = EventModel.objects.create(
+                recipient={"type": RECIPE_TYPE},
+                request={"type": STOP_RECIPE},
+                response={"message": message, "status": status},
+            )
+
+            # Successfully stopped recipe
+            self.logger.debug("Responding with ({}): {}".format(status, message))
+            return message, status
         except:
             message = "Unable to stop recipe, unhandled exception"
             self.logger.exception(message)

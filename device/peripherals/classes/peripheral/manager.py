@@ -16,7 +16,7 @@ from device.state.main import State
 
 
 class PeripheralManager:
-    """ Parent class for peripheral devices e.g. sensors and actuators. """
+    """Parent class for peripheral devices e.g. sensors and actuators."""
 
     # Initialize peripheral mode and error
     _mode = None

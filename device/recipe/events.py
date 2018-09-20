@@ -68,7 +68,7 @@ class RecipeEvents:
         # Check valid mode transition if enabled
         valid_modes = [Modes.NORECIPE, Modes.PAUSE]
         if check_mode and self.mode not in valid_modes:
-            message = "Unable to stop recipe, make sure recipe is in NORECIPE or PAUSE mode"
+            message = "Unable to start recipe, make sure recipe is in NORECIPE or PAUSE mode"
             self.logger.debug(message)
             return message, 400
 

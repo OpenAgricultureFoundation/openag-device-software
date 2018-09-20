@@ -2,7 +2,7 @@
 import time, json
 
 # Import python types
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 
 # Import device utilities
 from device.utilities.modes import Modes
@@ -13,6 +13,15 @@ from device.peripherals.classes.peripheral.events import PeripheralEvents
 # Import peripheral utilities
 from device.peripherals.utilities import light
 
+# Import driver exceptions
+from device.peripherals.classes.peripheral.exceptions import DriverError
+
+# Initialze vars
+TURN_ON_EVENT = "Turn On"
+TURN_OFF_EVENT = "Turn Off"
+SET_CHANNEL_EVENT = "Set Channel"
+FADE_EVENT = "Fade"
+
 
 class LEDDAC5578Events(PeripheralEvents):  # type: ignore
     """Event mixin for led driver."""
@@ -21,106 +30,143 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
     mode: str
     request: Optional[Dict[str, Any]]
 
-    def process_peripheral_specific_event(self, request: Dict[str, Any]) -> None:
-        """Processes peripheral specific event event. Gets request parameters, 
-        executes request, returns response."""
+    def process_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific events."""
 
         # Execute request
-        if request["type"] == "Turn On":
-            self.response = self.process_turn_on_event()
-        elif request["type"] == "Turn Off":
-            self.response = self.process_turn_off_event()
-        elif request["type"] == "Set Channel":
-            self.response = self.process_set_channel_event(request)
-        elif request["type"] == "Fade":
-            self.response = self.initialize_fade_event()
-            self.fade()
-        elif request["type"] == "Calculate ULRF From Percents":
-            self.response = self.process_calculate_ulrf_from_percents(request)
-        elif request["type"] == "Calculate ULRF From Watts":
-            self.response = self.process_calculate_ulrf_from_watts(request)
+        if request["type"] == TURN_ON_EVENT:
+            return self.process_turn_on_event()
+        elif request["type"] == TURN_OFF_EVENT:
+            return self.process_turn_off_event()
+        elif request["type"] == SET_CHANNEL_EVENT:
+            return self.process_set_channel_event(request)
+        elif request["type"] == FADE_EVENT:
+            return self.initialize_fade_event()
         else:
-            message = "Unknown event request type"
-            self.logger.info(message)
-            self.response = {"status": 400, "message": message}
+            return "Unknown event request type", 400
 
-    def process_turn_on_event(self) -> Dict[str, Any]:
+    def process_turn_on_event(self) -> Tuple[str, int]:
         """Processes turn on event."""
         self.logger.debug("Processing turn on event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            return {"status": 400, "message": "Must be in manual mode."}
+            return "Must be in manual mode", 400
 
         # Turn on driver and update reported variables
         try:
             self.driver.turn_on()
             self.update_reported_variables()
-        except Exception as e:
+        except DriverError as e:
             self.mode = Modes.ERROR
             message = "Unable to turn on: {}".format(e)
-            return {"status": 400, "message": message}
+            self.logger.debug(message)
+            return message, 500
+        except:
+            self.mode = Modes.ERROR
+            message = "Unable to turn on, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
 
         # Successfully turned on
-        return {"status": 200, "message": "Turned on"}
+        return "Turning on", 200
 
-    def process_turn_off_event(self) -> Dict[str, Any]:
+    def process_turn_off_event(self) -> Tuple[str, int]:
         """Processes turn off event."""
         self.logger.debug("Processing turn off event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            return {"status": 400, "message": "Must be in manual mode."}
+            return "Must be in manual mode", 400
 
         # Turn off driver and update reported variables
         try:
             self.driver.turn_off()
             self.update_reported_variables()
-        except Exception as e:
+        except DriverError as e:
             self.mode = Modes.ERROR
             message = "Unable to turn off: {}".format(e)
-            return {"status": 400, "message": message}
+            self.logger.debug(message)
+            return message, 500
+        except:
+            self.mode = Modes.ERROR
+            message = "Unable to turn off, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
 
         # Successfully turned off
-        return {"status": 200, "message": "Turned off"}
+        return "Turning off", 200
 
-    def process_set_channel_event(self, request: Dict[str, Any]) -> Dict[str, Any]:
+    def process_set_channel_event(self, request: Dict[str, Any]) -> Tuple[str, int]:
         """Processes set channel event."""
         self.logger.debug("Processing set channel event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            return {"status": 400, "message": "Must be in manual mode."}
+            return "Must be in manual mode", 400
 
-        # Verify request parameters
+        # Get request parameters
         try:
-            channel_name, percent = request["value"].split(",")
+            response = request["value"].split(",")
+            channel_name = str(response[0])
+            percent = float(response[1])
         except KeyError as e:
-            self.logger.exception("Invalid request parameters")
-            return {"status": 400, "message": "Invalid request parameter: " + str(e)}
+            message = "Unable to set channel, invalid request parameter: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except ValueError as e:
+            message = "Unable to set channel, {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except:
+            message = "Unable to set channel, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
+
+        # Verify channel name
+        if channel_name not in self.channel_names:
+            message = "Invalid channel name: {}".format(channel_name)
+            self.logger.debug(message)
+            return message, 400
+
+        # Verify percent
+        if percent < 0 or percent > 100:
+            message = "Unable to set channel, invalid intensity: {:.0F}%".format(
+                percent
+            )
+            self.logger.debug(message)
+            return message, 400
 
         # Set channel and update reported variables
         try:
             self.driver.set_output(channel_name, float(percent))
             self.update_reported_variables()
-        except Exception as e:
+        except DriverError as e:
             self.mode = Modes.ERROR
-            message = "Unable to set channel: {}".format(e)
-            return {"status": 400, "message": message}
+            message = "Unable to turn set channel: {}".format(e)
+            self.logger.debug(message)
+            return message, 500
+        except:
+            self.mode = Modes.ERROR
+            message = "Unable to set channel, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
 
-        # Successfully turned on
-        return {"status": 200, "message": "Turned on"}
+        # Successfully set channel
+        return "Setting {} to {:.0F}%".format(channel_name, percent), 200
 
-    def initialize_fade_event(self) -> Dict[str, Any]:
+    def initialize_fade_event(self) -> Tuple[str, int]:
         """Fades through all channels if no channel is specified."""
         self.logger.debug("Initializing fade event")
 
         # Require mode to be in manual
         if self.mode != Modes.MANUAL:
-            return {"status": 400, "message": "Must be in manual mode."}
+            return "Must be in manual mode", 400
 
-        # Successfully initialized fade event
-        return {"status": 200, "message": "Fading"}
+        # Return not implemented yet
+        return "Not implemented yet", 500
 
     def fade(self, channel_name: Optional[str] = None) -> None:
         """Fades through channel names."""

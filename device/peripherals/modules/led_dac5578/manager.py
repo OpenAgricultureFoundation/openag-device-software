@@ -50,6 +50,8 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
 
         # Parse panel properties
         self.channel_types = self.panel_properties.get("channel_types", {})
+        channels = self.panel_properties.get("channels", {})
+        self.channel_names = channels.keys()
 
     @property
     def spectrum(self) -> Any:

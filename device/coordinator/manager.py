@@ -83,8 +83,8 @@ class CoordinatorManager(CoordinatorEvents):
     # post_save.connect(event.process, sender=EventModel)
 
     # Initialize peripheral and controller managers
-    peripheral_managers = None
-    controller_managers = None
+    peripherals = None
+    controllers = None
 
     def __init__(self):
         """Initializes coordinator."""
@@ -307,12 +307,12 @@ class CoordinatorManager(CoordinatorEvents):
         self.upgrade.spawn()
 
         # Create peripheral managers and spawn threads
-        self.create_peripheral_managers()
-        self.spawn_peripheral_threads()
+        self.create_peripherals()
+        self.spawn_peripherals()
 
         # Create controller managers and spawn threads
-        self.create_controller_managers()
-        self.spawn_controller_threads()
+        self.create_controllers()
+        self.spawn_controllers()
 
         # Wait for all threads to initialize
         while not self.all_threads_initialized():
@@ -661,7 +661,7 @@ class CoordinatorManager(CoordinatorEvents):
         """ Stores current environment state in environment table. """
         EnvironmentModel.objects.create(state=self.state.environment)
 
-    def create_peripheral_managers(self):
+    def create_peripherals(self):
         """ Creates peripheral managers. """
         self.logger.info("Creating peripheral managers")
 
@@ -682,7 +682,7 @@ class CoordinatorManager(CoordinatorEvents):
         i2c_lock = threading.RLock()
 
         # Create peripheral managers
-        self.peripheral_managers = {}
+        self.peripherals = {}
         for peripheral_config_dict in self.config_dict["peripherals"]:
             self.logger.debug("Creating {}".format(peripheral_config_dict["name"]))
 
@@ -711,7 +711,7 @@ class CoordinatorManager(CoordinatorEvents):
             # Create peripheral manager
             peripheral_name = peripheral_config_dict["name"]
 
-            peripheral_manager = class_instance(
+            peripheral = class_instance(
                 name=peripheral_name,
                 state=self.state,
                 config=peripheral_config_dict,
@@ -719,7 +719,7 @@ class CoordinatorManager(CoordinatorEvents):
                 i2c_lock=i2c_lock,
                 mux_simulator=mux_simulator,
             )
-            self.peripheral_managers[peripheral_name] = peripheral_manager
+            self.peripherals[peripheral_name] = peripheral
 
     def get_peripheral_setup_dict(self, uuid):
         """ Gets peripheral setup dict for uuid in peripheral setup table. """
@@ -727,16 +727,16 @@ class CoordinatorManager(CoordinatorEvents):
             return None
         return json.loads(PeripheralSetupModel.objects.get(uuid=uuid).json)
 
-    def spawn_peripheral_threads(self):
+    def spawn_peripherals(self):
         """ Spawns peripheral threads. """
-        if self.peripheral_managers == None:
+        if self.peripherals == None:
             self.logger.info("No peripheral threads to spawn")
         else:
             self.logger.info("Spawning peripheral threads")
-            for peripheral_name in self.peripheral_managers:
-                self.peripheral_managers[peripheral_name].spawn()
+            for peripheral_name in self.peripherals:
+                self.peripherals[peripheral_name].spawn()
 
-    def create_controller_managers(self):
+    def create_controllers(self):
         """ Creates controller managers. """
         self.logger.info("Creating controller managers")
 
@@ -746,7 +746,7 @@ class CoordinatorManager(CoordinatorEvents):
             return
 
         # Create controller managers
-        self.controller_managers = {}
+        self.controllers = {}
         for controller_config_dict in self.config_dict["controllers"]:
             self.logger.debug("Creating {}".format(controller_config_dict["name"]))
 
@@ -777,16 +777,16 @@ class CoordinatorManager(CoordinatorEvents):
             controller_manager = class_instance(
                 controller_name, self.state, controller_config_dict
             )
-            self.controller_managers[controller_name] = controller_manager
+            self.controllers[controller_name] = controller_manager
 
-    def spawn_controller_threads(self):
+    def spawn_controllers(self):
         """ Spawns controller threads. """
-        if self.controller_managers == None:
+        if self.controllers == None:
             self.logger.info("No controller threads to spawn")
         else:
             self.logger.info("Spawning controller threads")
-            for controller_name in self.controller_managers:
-                self.controller_managers[controller_name].spawn()
+            for controller_name in self.controllers:
+                self.controllers[controller_name].spawn()
 
     def all_threads_initialized(self):
         """ Checks that all recipe, peripheral, and controller 
