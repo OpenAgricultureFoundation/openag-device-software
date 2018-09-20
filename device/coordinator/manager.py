@@ -79,7 +79,7 @@ class CoordinatorManager(CoordinatorEvents):
     recipe = RecipeManager(state)
 
     # Intialize event object
-    event = EventManager(state)
+    event = EventManager(state)  # TODO: remove this
     # post_save.connect(event.process, sender=EventModel)
 
     # Initialize peripheral and controller managers
@@ -93,13 +93,11 @@ class CoordinatorManager(CoordinatorEvents):
         # Initialize mode and error
         self.mode = Modes.INIT
 
-        # Initialize the IoT communications manager object.
-        # Pass in a ref. to this instance (self) so we can call the
-        # start/stop recipe methods.
-        self.iot = IoTManager(self.state, self)
+        # Initialize latest publish timestamp
         self.latest_publish_timestamp = 0
 
-        # Initialize other managers.
+        # Initialize managers
+        self.iot = IoTManager(self.state, self.recipe)
         self.resource = ResourceManager(self.state, self, self.iot)
         self.connect = ConnectManager(self.state, self.iot)
         self.upgrade = UpgradeManager(self.state)

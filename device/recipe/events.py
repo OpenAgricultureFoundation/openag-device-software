@@ -48,7 +48,9 @@ class RecipeEvents:
         else:
             self.logger.error("Invalid event request type in queue: {}".format(type_))
 
-    def start_recipe(self, uuid: str, timestamp: Optional[float]) -> Tuple[str, int]:
+    def start_recipe(
+        self, uuid: str, timestamp: Optional[float] = None, check_mode: bool = True
+    ) -> Tuple[str, int]:
         """Adds a start recipe event to event queue."""
         self.logger.debug("Adding start recipe event to event queue")
         self.logger.debug("Recipe UUID: {}, timestamp: {}".format(uuid, timestamp))
@@ -63,9 +65,9 @@ class RecipeEvents:
             message = "Unable to start recipe, timestamp must be in the future"
             return message, 400
 
-        # Check valid mode transition
+        # Check valid mode transition if enabled
         valid_modes = [Modes.NORECIPE, Modes.PAUSE]
-        if self.mode not in valid_modes:
+        if check_mode and self.mode not in valid_modes:
             message = "Unable to stop recipe, make sure recipe is in NORECIPE or PAUSE mode"
             self.logger.debug(message)
             return message, 400
@@ -78,13 +80,13 @@ class RecipeEvents:
         message = "Starting recipe"
         return message, 200
 
-    def stop_recipe(self) -> Tuple[str, int]:
+    def stop_recipe(self, check_mode: bool = True) -> Tuple[str, int]:
         """Adds stop recipe event to event queue."""
         self.logger.debug("Adding stop recipe event to event queue")
 
-        # Check valid mode transition
+        # Check valid mode transition if enabled
         valid_modes = [Modes.NORMAL, Modes.QUEUED]
-        if self.mode not in valid_modes:
+        if check_mode and self.mode not in valid_modes:
             message = "Unable to stop recipe, please wait for recipe to enter NORMAL or QUEUED mode"
             self.logger.debug(message)
             return message, 400
@@ -194,6 +196,12 @@ class RecipeEvents:
         else:
             timestamp_minutes = int(time.time() / 60.0)
 
+        # Check valid mode transition
+        valid_modes = [Modes.NORECIPE, Modes.PAUSE]
+        if self.mode not in valid_modes:
+            self.logger.critical("Tried to start recipe from {} mode".format(self.mode))
+            return
+
         # Start recipe on next state machine update
         self.recipe_uuid = uuid
         self.start_timestamp_minutes = timestamp_minutes
@@ -203,6 +211,12 @@ class RecipeEvents:
         """Stops a recipe. Assumes request has been verified in public
         stop recipe function."""
         self.logger.debug("Stopping recipe")
+
+        # Check valid mode transition
+        valid_modes = [Modes.NORMAL, Modes.QUEUED]
+        if self.mode not in valid_modes:
+            self.logger.cricital("Tried to stop recipe from {} mode".format(self.mode))
+            return
 
         # Stop recipe on next state machine update
         self.mode = Modes.STOP

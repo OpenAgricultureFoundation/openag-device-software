@@ -45,7 +45,7 @@ class IoTPubSub:
 
     # Class constants for parsing received commands
     COMMANDS = "commands"
-    message_id = "message_id"
+    message_id = "messageId"
     CMD = "command"
     ARG0 = "arg0"
     ARG1 = "arg1"
@@ -117,7 +117,7 @@ class IoTPubSub:
         """Used by the phao callbacks if we need to tell the manager to recreate us."""
 
         self.state_dict["connected"] = "No"
-        self.ref_iot_manager.killIoTPubSub(msg)
+        self.ref_iot_manager.kill_iot_pubsub(msg)
 
     def publish_env_var(self, var_name, values_dict, message_type="EnvVar"):
         """Publish a single environment variable."""

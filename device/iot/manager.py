@@ -30,12 +30,13 @@ class IoTManager:
     last_status = datetime.datetime.utcnow()
     status_publish_freq_secs = 300
 
-    def __init__(self, state, ref_device_manager):
+    def __init__(self, state, ref_recipe):
         """ Class constructor """
         self.iot = None
         self.state = state
         self.error = None
-        self.ref_device_manager = ref_device_manager
+        self.ref_recipe = ref_recipe
+
         # Initialize our state.  These are filled in by the IoTPubSub class
         self.state.iot = {
             "error": self.error,
@@ -49,7 +50,7 @@ class IoTManager:
 
     def reset(self):
         try:
-            # pass in the callback that receives commands
+            # Pass in the callback that receives commands
             self.iot = IoTPubSub(self, self.command_received, self.state.iot)
         except (Exception) as e:
             self.iot = None
@@ -87,20 +88,20 @@ class IoTManager:
                 recipe_uuid = recipe_dict["uuid"]
 
                 # First stop any recipe that may be running
-                self.ref_device_manager.process_stop_recipe_event()
+                self.ref_recipe.stop_recipe()
 
-                # Put this recipe in our DB (by uuid)
-                self.ref_device_manager.load_recipe_json(recipe_json)
+                # Put this recipe via recipe manager
+                self.ref_recipe.create_or_update_recipe(recipe_json)
 
-                # Start this recipe from our DB (by uuid)
-                self.ref_device_manager.process_start_recipe_event(recipe_uuid)
+                # Start this recipe via recipe manager
+                self.ref_recipe.start_recipe(recipe_uuid)
 
                 # Record that we processed this command
                 self.iot.publish_command_reply(command, recipe_json)
                 return
 
             if command == IoTPubSub.CMD_STOP:
-                self.ref_device_manager.process_stop_recipe_event()
+                self.ref_recipe.stop_recipe()
                 self.iot.publish_command_reply(command, "")
                 return
 

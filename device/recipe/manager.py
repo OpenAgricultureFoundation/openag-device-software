@@ -122,7 +122,7 @@ class RecipeManager(RecipeEvents):  # type: ignore
     @property
     def start_timestamp_minutes(self) -> Optional[int]:
         """ Gets start timestamp minutes from shared state. """
-        value = self.state.get("start_timestamp_minutes")
+        value = self.state.recipe.get("start_timestamp_minutes")
         if value != None:
             return int(value)
         else:
