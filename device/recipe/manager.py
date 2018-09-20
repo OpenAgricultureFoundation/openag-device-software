@@ -22,6 +22,9 @@ from device.recipe.events import RecipeEvents
 from device.recipe.parser import RecipeParser
 
 
+# TODO: Fix scheme to make this less of a type checking nightmare...keep UI interaction in mind
+
+
 class RecipeManager(RecipeEvents):  # type: ignore
     """Manages recipe state machine thread."""
 

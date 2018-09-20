@@ -58,15 +58,15 @@ class IoTManager:
             self.logger.error("Couldn't create IoT connection: {}".format(e))
             # traceback.print_tb( exc_traceback, file=sys.stdout )
 
-    def killIoTPubSub(self, msg):
+    def kill_iot_pubsub(self, msg):
+        """Kills IoT pubsub."""
         self.iot = None
         self.error = msg
         self.logger.error("Killing IoTPubSub: {}".format(msg))
 
     def command_received(self, command, arg0, arg1):
-        """Process commands received from the backend (UI).
-            This is a callback that is called by the IoTPubSub class when this
-            device receives commands from the UI."""
+        """Process commands received from the backend (UI). This is a callback that is 
+        called by the IoTPubSub class when this device receives commands from the UI."""
 
         if None == self.iot:
             return
@@ -86,22 +86,22 @@ class IoTManager:
                     return
                 recipe_uuid = recipe_dict["uuid"]
 
-                # first stop any recipe that may be running
+                # First stop any recipe that may be running
                 self.ref_device_manager.process_stop_recipe_event()
 
-                # put this recipe in our DB (by uuid)
+                # Put this recipe in our DB (by uuid)
                 self.ref_device_manager.load_recipe_json(recipe_json)
 
-                # start this recipe from our DB (by uuid)
+                # Start this recipe from our DB (by uuid)
                 self.ref_device_manager.process_start_recipe_event(recipe_uuid)
 
-                # record that we processed this command
-                self.iot.publishCommandReply(command, recipe_json)
+                # Record that we processed this command
+                self.iot.publish_command_reply(command, recipe_json)
                 return
 
             if command == IoTPubSub.CMD_STOP:
                 self.ref_device_manager.process_stop_recipe_event()
-                self.iot.publishCommandReply(command, "")
+                self.iot.publish_command_reply(command, "")
                 return
 
             self.logger.error("command_received: Unknown command: {}".format(command))
@@ -113,12 +113,12 @@ class IoTManager:
 
     @property
     def error(self):
-        """ Gets error value. """
+        """Gets error value."""
         return self._error
 
     @error.setter
     def error(self, value):
-        """ Safely updates recipe error in shared state. """
+        """Safely updates recipe error in shared state."""
         self._error = value
         with threading.Lock():
             self.state.iot["error"] = value
@@ -135,11 +135,11 @@ class IoTManager:
             return
         self.iot.connected = value
 
-    def publishMessage(name, msg_json):
+    def publish_message(name, msg_json):
         """ Send a command reply. """
         if self.iot is None:
             return
-        self.iot.publishCommandReply(name, msg_json)
+        self.iot.publish_command_reply(name, msg_json)
 
     def spawn(self):
         self.logger.info("Spawning IoT thread")
@@ -178,15 +178,15 @@ class IoTManager:
                 self.prev_vars[var] = copy.deepcopy(vars_dict[var])
                 self.iot.publishEnvVar(var, vars_dict[var])
 
-    def get_IP(self):
+    def get_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect(("8.8.8.8", 80))
         except:
             pass
-        IP = s.getsockname()[0]
+        ip = s.getsockname()[0]
         s.close()
-        return IP
+        return ip
 
     def thread_proc(self):
         while True:
@@ -223,10 +223,10 @@ class IoTManager:
                             "current_version", "unknown"
                         ),
                         "device_config": device,
-                        "IP": self.get_IP(),
+                        "IP": self.get_ip(),
                     }
                     about_json = json.dumps(about_dict)
-                    self.iot.publishCommandReply("boot", about_json)
+                    self.iot.publish_command_reply("boot", about_json)
 
                 except:
                     self._error = "Unable to send boot message."
@@ -241,7 +241,7 @@ class IoTManager:
                     self.last_status = datetime.datetime.utcnow()
                     status_dict = {}
                     status_dict["timestamp"] = time.strftime("%FT%XZ", time.gmtime())
-                    status_dict["IP"] = self.get_IP()
+                    status_dict["IP"] = self.get_ip()
 
                     # get the current version from the upgrade state
                     status_dict["package_version"] = self.state.upgrade.get(
@@ -288,7 +288,7 @@ class IoTManager:
                     ]
 
                     status_json = json.dumps(status_dict)
-                    self.iot.publishCommandReply("status", status_json)
+                    self.iot.publish_command_reply("status", status_json)
                 except:
                     self._error = "Unable to send status message."
                     self.logger.critical(self._error)
@@ -296,13 +296,13 @@ class IoTManager:
             if self.stopped():
                 break
 
-            # send and receive messages over IoT
+            # Send and receive messages over IoT
             try:
                 self.iot.process_network_events()
             except:
                 pass
 
-            # check for images to publish
+            # Check for images to publish
             try:
                 image_file_list = glob.glob(IMAGE_DIR + "*.png")
                 for image_file in image_file_list:
@@ -322,12 +322,12 @@ class IoTManager:
                     fn3 = fn2.split(".")
                     camera_name = fn3[0]  # Camera-Top
 
-                    # get the file contents
+                    # Get the file contents
                     f = open(image_file, "rb")
                     file_bytes = f.read()
                     f.close()
 
-                    # if the size is < 40KB, then it is garbage we delete
+                    # If the size is < 40KB, then it is garbage we delete
                     if len(file_bytes) < 40000:
                         os.remove(image_file)
                         continue

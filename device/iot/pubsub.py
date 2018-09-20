@@ -35,10 +35,8 @@ import paho.mqtt.client as mqtt
 from app.models import IoTConfigModel
 
 
-# ------------------------------------------------------------------------------
 class IoTPubSub:
-    """ Manages IoT communications to the Google cloud backend
-        MQTT service """
+    """Manages IoT communications to the Google cloud backend MQTT service."""
 
     # Initialize logging
     extra = {"console_name": "IoT", "file_name": "IoT"}
@@ -47,7 +45,7 @@ class IoTPubSub:
 
     # Class constants for parsing received commands
     COMMANDS = "commands"
-    MESSAGEID = "messageId"
+    message_id = "message_id"
     CMD = "command"
     ARG0 = "arg0"
     ARG1 = "arg1"
@@ -71,41 +69,38 @@ class IoTPubSub:
     encryptionAlgorithm = "RS256"  # for JWT (RSA 256 bit)
     args = None  # Class configuration
 
-    # --------------------------------------------------------------------------
     def __init__(self, ref_iot_manager, command_received_callback, state_dict):
-        """ 
-        Class constructor 
-        """
+        """ Initialized IoT manager."""
         self.ref_iot_manager = ref_iot_manager
         self.command_received_callback = command_received_callback
         self.state_dict = state_dict  # items that are shown in the UI
         self.args = self.get_env_vars()  # get our settings from env. vars.
         self.deviceId = self.args.device_id
 
-        # read our IoT config settings from the DB (if they exist).
+        # Read our IoT config settings from the DB (if they exist).
         try:
             c = IoTConfigModel.objects.latest()
             self._lastConfigVersion = c.last_config_version
         except:
-            # or create a DB entry since none exists.
+            # Or create a DB entry since none exists.
             IoTConfigModel.objects.create(last_config_version=self._lastConfigVersion)
 
-        # validate our deviceId
+        # Validate our deviceId
         if self.deviceId is None or 0 == len(self.deviceId):
             msg = "Invalid or missing DEVICE_ID env. var."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         self.logger.debug("Using device_id={}".format(self.deviceId))
 
-        # the MQTT events topic we publish messages to
+        # The MQTT events topic we publish messages to
         self.mqtt_topic = "/devices/{}/events".format(self.deviceId)
         self.logger.debug("mqtt_topic={}".format(self.mqtt_topic))
 
-        # create a (renewable) client with tokens that will timeout
-        # let any exceptions pass for this (no internet conn)
+        # Create a (renewable) client with tokens that will timeout
+        # Let any exceptions pass for this (no internet conn)
         self.jwt_iat = datetime.datetime.utcnow()
         self.jwt_exp_mins = self.args.jwt_expires_minutes
-        self.mqtt_client = getMQTTclient(
+        self.mqtt_client = get_mqtt_client(
             self,
             self.args.project_id,
             self.args.cloud_region,
@@ -118,31 +113,30 @@ class IoTPubSub:
             self.args.mqtt_bridge_port,
         )
 
-    # --------------------------------------------------------------------------
-    # Used by the phao callbacks if we need to tell the manager to recreate us.
-    def killOurselves(self, msg):
+    def kill_ourselves(self, msg):
+        """Used by the phao callbacks if we need to tell the manager to recreate us."""
+
         self.state_dict["connected"] = "No"
         self.ref_iot_manager.killIoTPubSub(msg)
 
-    # --------------------------------------------------------------------------
-    def publishEnvVar(self, varName, valuesDict, messageType="EnvVar"):
-        """ Publish a single environment variable. """
+    def publish_env_var(self, var_name, values_dict, message_type="EnvVar"):
+        """Publish a single environment variable."""
         try:
             if None == self.mqtt_client:
                 return
             message_obj = {}
-            message_obj["messageType"] = messageType
-            message_obj["var"] = varName
+            message_obj["messageType"] = message_type
+            message_obj["var"] = var_name
 
             # command replies only have one value, so make it simple.
-            if messageType == "CommandReply":
-                message_obj["values"] = valuesDict
+            if message_type == "CommandReply":
+                message_obj["values"] = values_dict
             else:
                 # otherwise this is an env var that could have a list of vals:
                 count = 0
                 valuesJson = "{'values':["
-                for vname in valuesDict:
-                    val = valuesDict[vname]
+                for vname in values_dict:
+                    val = values_dict[vname]
 
                     if count > 0:
                         valuesJson += ","
@@ -175,67 +169,64 @@ class IoTPubSub:
             self.mqtt_client.publish(self.mqtt_topic, message_json, qos=1)
 
             self.logger.info(
-                "publishEnvVar: sent '{}' to {}".format(message_json, self.mqtt_topic)
+                "publish_env_var: sent '{}' to {}".format(message_json, self.mqtt_topic)
             )
             return True
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical("publishEnvVar: Exception: {}".format(e))
+            self.logger.critical("publish_env_var: Exception: {}".format(e))
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
-    # --------------------------------------------------------------------------
-    def publishCommandReply(self, commandName, valuesJsonString):
-        """ Publish a reply to a command that was received and 
-            successfully processed as an environment variable.
-        """
+    def publish_command_reply(self, command_name, values_json_string):
+        """Publish a reply to a command that was received and successfully processed as 
+        an environment variable."""
         try:
-            if None == commandName or 0 == len(commandName):
-                self.logger.error("publishCommandReply: missing commandName")
+            if None == command_name or 0 == len(command_name):
+                self.logger.error("publish_command_reply: missing command_name")
                 return False
 
-            if None == valuesJsonString or 0 == len(valuesJsonString):
-                self.logger.error("publishCommandReply: missing valuesJsonString")
+            if None == values_json_string or 0 == len(values_json_string):
+                self.logger.error("publish_command_reply: missing values_json_string")
                 return False
 
             # publish the command reply as an env. var.
-            self.publishEnvVar(
-                varName=commandName,
-                valuesDict=valuesJsonString,
-                messageType="CommandReply",
+            self.publish_env_var(
+                var_name=command_name,
+                values_dict=values_json_string,
+                message_type="CommandReply",
             )
             return True
 
         except Exception as e:
-            self.logger.critical("publishCommandReply: Exception: %s" % e)
+            self.logger.critical("publish_command_reply: Exception: %s" % e)
             return False
 
-    # --------------------------------------------------------------------------
-    # Maximum message size is 256KB, so we may have to send multiple messages.
-    def publishBinaryImage(self, variableName, imageType, imageBytes):
-        """ Publish a blob as (multiple < 256K) base64 messages. """
+    def publish_binary_image(self, variable_name, image_type, image_bytes):
+        """ Publish a blob as (multiple < 256K) base64 messages. Maximum message size 
+        is 256KB, so we may have to send multiple messages"""
         if (
-            None == variableName
-            or 0 == len(variableName)
-            or None == imageType
-            or 0 == len(imageType)
-            or None == imageBytes
-            or 0 == len(imageBytes)
-            or not isinstance(variableName, str)
-            or not isinstance(imageType, str)
-            or not isinstance(imageBytes, bytes)
+            None == variable_name
+            or 0 == len(variable_name)
+            or None == image_type
+            or 0 == len(image_type)
+            or None == image_bytes
+            or 0 == len(image_bytes)
+            or not isinstance(variable_name, str)
+            or not isinstance(image_type, str)
+            or not isinstance(image_bytes, bytes)
         ):
-            self.logger.critical("publishBinaryImage: invalid args.")
+            self.logger.critical("publish_binary_image: invalid args.")
             return False
 
         if None == self.mqtt_client:
             return
 
         try:
-            # we send the image as a base64 encoded string (which makes
+            # We send the image as a base64 encoded string (which makes
             # storing message chunks in datastore on the backend easier)
-            b64Bytes = base64.b64encode(imageBytes)
+            b64Bytes = base64.b64encode(image_bytes)
             maxMessageSize = 250 * 1024
             imageSize = len(b64Bytes)
             totalChunks = math.ceil(imageSize / maxMessageSize)
@@ -244,38 +235,38 @@ class IoTPubSub:
             if imageSize > maxMessageSize:
                 imageEndIndex = maxMessageSize
 
-            # send all messages with the same ID (for tracking and assembly)
-            messageID = time.time()
+            # Send all messages with the same ID (for tracking and assembly)
+            message_id = time.time()
 
-            # break image into messages < 256K
+            # Break image into messages < 256K
             for chunk in range(0, totalChunks):
 
-                # make a mutable byte array of the image data
+                # Make a mutable byte array of the image data
                 imageBA = bytearray(b64Bytes)
                 imageChunk = bytes(imageBA[imageStartIndex:imageEndIndex])
 
                 msg_obj = {}
                 msg_obj["messageType"] = "Image"
-                msg_obj["messageID"] = messageID
-                msg_obj["varName"] = variableName
-                msg_obj["imageType"] = imageType
+                msg_obj["messageID"] = message_id
+                msg_obj["varName"] = variable_name
+                msg_obj["imageType"] = image_type
                 msg_obj["chunk"] = chunk
                 msg_obj["totalChunks"] = totalChunks
                 msg_obj["imageChunk"] = imageChunk.decode("utf-8")
 
-                # publish this chunk
+                # Publish this chunk
                 msg_json = json.dumps(msg_obj)
                 self.mqtt_client.publish(self.mqtt_topic, msg_json, qos=1)
                 self.logger.info(
-                    "publishBinaryImage: sent image chunk "
-                    "{} of {} for {}".format(chunk, totalChunks, variableName)
+                    "publish_binary_image: sent image chunk "
+                    "{} of {} for {}".format(chunk, totalChunks, variable_name)
                 )
 
-                # for next chunk, start at the ending index
+                # For next chunk, start at the ending index
                 imageStartIndex = imageEndIndex
                 imageEndIndex = imageSize  # is this the last chunk?
 
-                # if we have more than one chunk to go, send the max
+                # If we have more than one chunk to go, send the max
                 if imageSize - imageStartIndex > maxMessageSize:
                     imageEndIndex = maxMessageSize  # no, so send max.
 
@@ -283,33 +274,30 @@ class IoTPubSub:
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical("publishBinaryImage: Exception: {}".format(e))
+            self.logger.critical("publish_binary_image: Exception: {}".format(e))
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
-    # --------------------------------------------------------------------------
     def process_network_events(self):
-        """ Call this function repeatedly from a thread proc or event loop
-            to allow processing of IoT messages. 
-        """
+        """Call this function repeatedly from a thread proc or event loop to allow 
+        processing of IoT messages."""
         try:
-            # let the mqtt client process any data it has received or
-            # needs to publish
+            # Let the mqtt client process any data it has received or needs to publish
             if self.mqtt_client is None:
                 return
             self.mqtt_client.loop()
 
             seconds_since_issue = (datetime.datetime.utcnow() - self.jwt_iat).seconds
 
-            # refresh the JWT if it is about to expire
+            # Refresh the JWT if it is about to expire
             if seconds_since_issue > 60 * self.jwt_exp_mins:
                 self.logger.debug(
                     "Refreshing token after {}s".format(seconds_since_issue)
                 )
                 self.jwt_iat = datetime.datetime.utcnow()
 
-                # renew our client with the new token
-                self.mqtt_client = getMQTTclient(
+                # Renew our client with the new token
+                self.mqtt_client = get_mqtt_client(
                     self,
                     self.args.project_id,
                     self.args.cloud_region,
@@ -324,17 +312,14 @@ class IoTPubSub:
         except (Exception) as e:
             self.logger.critical("Exception processing network events:", e)
 
-    # --------------------------------------------------------------------------
     @property
     def lastConfigVersion(self):
-        """ Get the last version of a config message (command) we received.
-        """
+        """Get the last version of a config message (command) we received."""
         return self._lastConfigVersion
 
     @lastConfigVersion.setter
     def lastConfigVersion(self, value):
-        """ Save the last version of a config message (command) we received.
-        """
+        """Save the last version of a config message (command) we received."""
         self._lastConfigVersion = value
         try:
             c = IoTConfigModel.objects.latest()
@@ -343,7 +328,6 @@ class IoTPubSub:
         except:
             IoTConfigModel.objects.create(last_config_version=value)
 
-    # --------------------------------------------------------------------------
     @property
     def connected(self):
         return self._connected
@@ -358,7 +342,6 @@ class IoTPubSub:
         else:
             self.state_dict["connected"] = "No"
 
-    # --------------------------------------------------------------------------
     @property
     def messageCount(self):
         return self._messageCount
@@ -368,7 +351,6 @@ class IoTPubSub:
         self._messageCount = value
         self.state_dict["received_message_count"] = value
 
-    # --------------------------------------------------------------------------
     @property
     def publishCount(self):
         return self._publishCount
@@ -382,10 +364,8 @@ class IoTPubSub:
     # Private internal classes / methods below here.  Don't call them. #
     ####################################################################
 
-    # --------------------------------------------------------------------------
-    # private
     class IoTArgs:
-        """ Class arguments with defaults. """
+        """Class arguments with defaults."""
 
         project_id = None
         registry_id = None
@@ -397,63 +377,54 @@ class IoTPubSub:
         mqtt_bridge_port = 443  # clould also be 8883
         jwt_expires_minutes = 20
 
-    # --------------------------------------------------------------------------
-    # private
     def get_env_vars(self):
-        """
-        Get our IoT settings from environment variables and defaults.
-        Set our self.logger level.
-        Return an IoTArgs.
-        """
+        """Gets our IoT settings from environment variables and defaults, sets our 
+        logger level. Returns an IoTArgs."""
         args = self.IoTArgs()
 
         args.project_id = os.environ.get("GCLOUD_PROJECT")
         if args.project_id is None:
             msg = "iot_pubsub: get_env_vars: " "Missing GCLOUD_PROJECT environment variable."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         args.cloud_region = os.environ.get("GCLOUD_REGION")
         if args.cloud_region is None:
             msg = "iot_pubsub: get_env_vars: " "Missing GCLOUD_REGION environment variable."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         args.registry_id = os.environ.get("GCLOUD_DEV_REG")
         if args.registry_id is None:
             msg = "iot_pubsub: get_env_vars: " "Missing GCLOUD_DEV_REG environment variable."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         args.device_id = os.environ.get("DEVICE_ID")
         if args.device_id is None:
             msg = "iot_pubsub: get_env_vars: " "Missing DEVICE_ID environment variable."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         args.private_key_file = os.environ.get("IOT_PRIVATE_KEY")
         if args.private_key_file is None:
             msg = "iot_pubsub: get_env_vars: " "Missing IOT_PRIVATE_KEY environment variable."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         args.ca_certs = os.environ.get("CA_CERTS")
         if args.ca_certs is None:
             msg = "iot_pubsub: get_env_vars: " "Missing CA_CERTS environment variable."
-            self.killOurselves(msg)
+            self.kill_ourselves(msg)
 
         return args
 
-    # --------------------------------------------------------------------------
-    # private
-    def parseCommand(self, d, messageId):
-        """ Parse the single command message.
-            Returns True or False.
-        """
+    def parse_command(self, d, message_id):
+        """Parse the single command message.Returns True or False."""
         try:
             # validate keys
-            if not validDictKey(d, self.CMD):
+            if not valid_dict_key(d, self.CMD):
                 self.logger.error("Message is missing %s key." % self.CMD)
                 return False
-            if not validDictKey(d, self.ARG0):
+            if not valid_dict_key(d, self.ARG0):
                 self.logger.error("Message is missing %s key." % self.ARG0)
                 return False
-            if not validDictKey(d, self.ARG1):
+            if not valid_dict_key(d, self.ARG1):
                 self.logger.error("Message is missing %s key." % self.ARG1)
                 return False
 
@@ -465,8 +436,8 @@ class IoTPubSub:
                 return False
 
             self.logger.debug(
-                "Received command messageId=%s %s %s %s"
-                % (messageId, d[self.CMD], d[self.ARG0], d[self.ARG1])
+                "Received command message_id=%s %s %s %s"
+                % (message_id, d[self.CMD], d[self.ARG0], d[self.ARG1])
             )
 
             # write the binary brain command to the FIFO
@@ -479,33 +450,29 @@ class IoTPubSub:
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical("Exception in parseCommand(): %s" % e)
+            self.logger.critical("Exception in parse_command(): %s" % e)
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
 
-    # --------------------------------------------------------------------------
-    # private
-    def parseConfigMessage(self, d):
-        """ Parse the config messages we receive.
-            Arg 'd': dict created from the data received with the 
-            config MQTT message.
-        """
+    def parse_config_message(self, d):
+        """Parse the config messages we receive.
+        Arg 'd': dict created from the data received with the config MQTT message."""
         try:
-            if not validDictKey(d, self.COMMANDS):
+            if not valid_dict_key(d, self.COMMANDS):
                 self.logger.error("Message is missing %s key." % self.COMMANDS)
                 return
 
-            if not validDictKey(d, self.MESSAGEID):
-                self.logger.error("Message is missing %s key." % self.MESSAGEID)
+            if not valid_dict_key(d, self.message_id):
+                self.logger.error("Message is missing %s key." % self.message_id)
                 return
 
             # unpack an array of commands from the dict
             for cmd in d[self.COMMANDS]:
-                self.parseCommand(cmd, d[self.MESSAGEID])
+                self.parse_command(cmd, d[self.message_id])
 
         except Exception as e:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical("Exception in parseConfigMessage(): %s" % e)
+            self.logger.critical("Exception in parse_config_message(): %s" % e)
             traceback.print_tb(exc_traceback, file=sys.stdout)
 
 
@@ -553,46 +520,34 @@ def create_jwt(ref_self, project_id, private_key_file, algorithm):
     return jwt.encode(token, private_key, algorithm=algorithm)
 
 
-# --------------------------------------------------------------------------
-# private
 def error_str(rc):
-    """ Convert a Paho error to a human readable string.  """
+    """Convert a Paho error to a human readable string."""
     return "{}: {}".format(rc, mqtt.error_string(rc))
 
 
-# --------------------------------------------------------------------------
-# private
 def on_connect(unused_client, ref_self, unused_flags, rc):
-    """ Paho callback for when a device connects.  """
+    """Paho callback for when a device connects."""
     ref_self.connected = True
     ref_self.logger.debug("on_connect: {}".format(mqtt.connack_string(rc)))
     ref_self.state_dict["error"] = None
 
 
-# ------------------------------------------------------------------------------
-# private
 def on_disconnect(unused_client, ref_self, rc):
-    """ Paho callback for when a device disconnects.  """
+    """Paho callback for when a device disconnects."""
     ref_self.connected = False
     ref_self.logger.debug("on_disconnect: {}".format(error_str(rc)))
     ref_self.state_dict["error"] = error_str(rc)
-    ref_self.killOurselves("IoT disconnected")
+    ref_self.kill_ourselves("IoT disconnected")
 
 
-# ------------------------------------------------------------------------------
-# private
 def on_publish(unused_client, ref_self, unused_mid):
     """Paho callback when a message is sent to the broker."""
     ref_self.publishCount = ref_self.publishCount + 1
     ref_self.logger.debug("on_publish")
 
 
-# ------------------------------------------------------------------------------
-# private
 def on_message(unused_client, ref_self, message):
-    """
-    Callback when the device receives a message on a subscription.
-    """
+    """Callback when the device receives a message on a subscription."""
     ref_self.messageCount = ref_self.messageCount + 1
 
     payload = message.payload.decode("utf-8")
@@ -608,12 +563,12 @@ def on_message(unused_client, ref_self, message):
         )
     )
 
-    # make sure there is a payload, it could be the first empty config message
+    # Make sure there is a payload, it could be the first empty config message
     if 0 == len(payload):
         ref_self.logger.debug("on_message: empty payload.")
         return
 
-    # convert the payload to a dict and get the last config msg version
+    # Convert the payload to a dict and get the last config msg version
     messageVersion = 0  # starts before the first config version # of 1
     try:
         payloadDict = json.loads(payload)
@@ -629,28 +584,22 @@ def on_message(unused_client, ref_self, message):
     if messageVersion > ref_self.lastConfigVersion:
         ref_self.lastConfigVersion = messageVersion
 
-        # parse the config message to get the commands in it
+        # Parse the config message to get the commands in it
         # (and write them to the command pipe)
-        ref_self.parseConfigMessage(payloadDict)
+        ref_self.parse_config_message(payloadDict)
     else:
         ref_self.logger.debug("Ignoring this old config message.\n")
 
 
-# ------------------------------------------------------------------------------
-# private
 def on_log(unused_client, ref_self, level, buf):
     ref_self.logger.debug("'{}' {}".format(buf, level))
 
 
-# ------------------------------------------------------------------------------
-# private
 def on_subscribe(unused_client, ref_self, mid, granted_qos):
     ref_self.logger.debug("on_subscribe")
 
 
-# ------------------------------------------------------------------------------
-# private
-def getMQTTclient(
+def get_mqtt_client(
     ref_self,
     project_id,
     cloud_region,
@@ -662,10 +611,8 @@ def getMQTTclient(
     mqtt_bridge_hostname,
     mqtt_bridge_port,
 ):
-    """
-    Create our MQTT client. The client_id is a unique string that identifies
-    this device. For Google Cloud IoT Core, it must be in the format below.
-    """
+    """Create our MQTT client. The client_id is a unique string that identifies
+    this device. For Google Cloud IoT Core, it must be in the format below."""
 
     # projects/openag-v1/locations/us-central1/registries/device-registry/devices/my-python-device
     client_id = "projects/{}/locations/{}/registries/{}/devices/{}".format(
@@ -709,10 +656,8 @@ def getMQTTclient(
     return client
 
 
-# ------------------------------------------------------------------------------
-# private
-def validDictKey(d, key):
-    """ utility function to check if a key is in a dict. """
+def valid_dict_key(d, key):
+    """Utility function to check if a key is in a dict."""
     if key in d:
         return True
     else:
