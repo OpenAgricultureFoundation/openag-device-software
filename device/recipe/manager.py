@@ -2,7 +2,10 @@
 import logging, time, threading, os, sys, datetime, json
 
 # Import python types
-import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
+
+# Import json validator
+from jsonschema import validate
 
 # Import device utilities
 from device.utilities.modes import Modes
@@ -656,3 +659,39 @@ class RecipeManager(RecipeEvents):  # type: ignore
             for variable in environment_dict:
                 value = environment_dict[variable]
                 self.state.environment["sensor"]["desired"][variable] = value
+
+    def validate_recipe(
+        self, json_: str, should_exist: Optional[bool] = None
+    ) -> Tuple[bool, Optional[str]]:
+        """Validates a recipe. Returns true if valid."""
+
+        # Load recipe schema
+        recipe_schema = json.load(open("data/schemas/recipe.json"))
+
+        # Check valid json
+        try:
+            recipe = json.loads(json_)
+            validate(recipe, recipe_schema)
+            uuid = recipe["uuid"]
+        except:
+            return False, "invalid json"
+
+        # Check valid uuid
+        if uuid == None or len(uuid) == 0:
+            return False, "invalid uuid"
+
+        # Check recipe existance criteria, does not check if should_exist == None
+        recipe_exists = RecipeModel.objects.filter(uuid=uuid).exists()
+        if should_exist == True and not recipe_exists:
+            return False, "uuid does not exist"
+        elif should_exist == False and recipe_exists:
+            return False, "uuid already exists"
+
+        # TODO: Validate recipe variables with database variables
+        # TODO: Validate recipe cycle variables with recipe environments
+        # TODO: Validate recipe cultivars with database cultivars
+        # TODO: Validate recipe cultivation methods with database cultivation methods
+        # TODO: Try to parse recipe...does this take awhile?...what is fast version?
+
+        # Recipe is valid
+        return True, None

@@ -44,7 +44,7 @@ from app.models import (
 from device.coordinator.events import CoordinatorEvents
 
 
-class DeviceCoordinator(CoordinatorEvents):
+class CoordinatorManager(CoordinatorEvents):
     """Manages device state machine thread that spawns child threads to run 
     recipes, read sensors, set actuators, manage control loops, sync data, 
     and manage external events."""
@@ -399,17 +399,21 @@ class DeviceCoordinator(CoordinatorEvents):
         self.shutdown_peripheral_threads()
         self.shutdown_controller_threads()
 
-        # Wait for reset
+        # Loop forever
         while True:
+
+            # Check for reset
             if self.mode == Modes.RESET:
                 break
 
             # Update every 100ms
-            time.sleep(0.1)  # 100ms
+            time.sleep(0.1)
 
     def update_state(self):
-        """ Updates stored state in database. If state does not exist, 
-            creates it. """
+        """Updates stored state in database. If state does not exist, creates it."""
+
+        # TODO: Move this to state manager
+
         if not StateModel.objects.filter(pk=1).exists():
             StateModel.objects.create(
                 id=1,
@@ -540,67 +544,20 @@ class DeviceCoordinator(CoordinatorEvents):
         for cultivation_method in cultivation_methods:
             CultivationMethodModel.objects.create(json=json.dumps(cultivation_method))
 
-    # Called by the IoTManager, when the UI sends a json recipe to load.
-    def load_recipe_json(self, recipe_json):
-        """ Loads and verifies a recipe json string.  
-            Usually sent by the UI. """
-        self.logger.debug("Loading recipe json")
-
-        # Get get recipe schema
-        recipe_schema = json.load(open("data/schemas/recipe.json"))
-
-        # Validate recipes with schema
-        recipe = json.loads(recipe_json)
-        validate(recipe, recipe_schema)
-
-        # Make sure we have a valid recipe uuid
-        if None == recipe["uuid"] or 0 == len(recipe["uuid"]):
-            recipe["uuid"] = str(uuid.uuid4())
-
-        # Update existing recipe or create a new one
-        try:
-            r = RecipeModel.objects.get(uuid=recipe["uuid"])
-            r.json = json.dumps(recipe)
-            r.save()
-        except:
-            RecipeModel.objects.create(json=json.dumps(recipe))
-
     def load_recipe_files(self):
-        """ Loads recipe file into database by creating new entries if 
-            nonexistant or updating existing if existant. Verification depends
-            on sensor/actuator variables, cultivars, and cultivation 
-            methods. """
-
-        # TODO: move this to recipe manager
-
+        """Loads recipe files into database via recipe manager create or update function."""
         self.logger.debug("Loading recipe files")
 
         # Get recipes
-        recipes = []
         for filepath in glob.glob("data/recipes/*.json"):
-            recipes.append(json.load(open(filepath)))
-
-        # Get get recipe schema
-        recipe_schema = json.load(open("data/schemas/recipe.json"))
-
-        # Validate recipes with schema
-        for recipe in recipes:
-            validate(recipe, recipe_schema)
-
-        # TODO: Validate recipe variables with database variables
-        # TODO: Validate recipe cycle variables with recipe environments
-        # TODO: Validate recipe cultivars with database cultivars
-        # TODO: Validate recipe cultivation methods with database cultivation methods
-        # TODO: also do the same validation in above load_recipe_json()
-
-        # Update existing recipe or create a new one
-        for recipe in recipes:
-            try:
-                r = RecipeModel.objects.get(uuid=recipe["uuid"])
-                r.json = json.dumps(recipe)
-                r.save()
-            except:
-                RecipeModel.objects.create(json=json.dumps(recipe))
+            self.logger.debug("Loading recipe file: {}".format(filepath))
+            with open(filepath, "r") as f:
+                json_ = f.read().replace("\n", "")
+                message, code = self.recipe.create_or_update_recipe(json_)
+                if code != 200:
+                    filename = filepath.split("/")[-1]
+                    error = "Unable to load {} ({})".format(filename, message)
+                    self.logger.error(error)
 
     def load_peripheral_setup_files(self):
         """ Loads peripheral setup files from codebase into database by 

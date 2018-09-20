@@ -48,40 +48,6 @@ class RecipeEvents:
         else:
             self.logger.error("Invalid event request type in queue: {}".format(type_))
 
-    def _start_recipe(self, request: Dict[str, Any]) -> None:
-        """Starts a recipe. Assumes request has been verified in public
-        start recipe function."""
-        self.logger.debug("Starting recipe")
-
-        # Get request parameters
-        uuid = request.get("uuid")
-        timestamp = request.get("timestamp")
-
-        # Convert timestamp to minutes if not None
-        if timestamp != None:
-            timestamp_minutes = int(timestamp / 60.0)
-        else:
-            timestamp_minutes = int(time.time() / 60.0)
-
-        # Start recipe on next state machine update
-        self.recipe_uuid = uuid
-        self.start_timestamp_minutes = timestamp_minutes
-        self.mode = Modes.START
-
-    def _stop_recipe(self) -> None:
-        """Stops a recipe. Assumes request has been verified in public
-        stop recipe function."""
-        self.logger.debug("Stopping recipe")
-
-        # Stop recipe on next state machine update
-        self.mode = Modes.STOP
-
-    def verify_recipe(self, json_: str) -> None:
-        """Verifies a recipe."""
-        ...
-
-    ##################### PUBLIC FUNCTIONS #####################################
-
     def start_recipe(self, uuid: str, timestamp: Optional[float]) -> Tuple[str, int]:
         """Adds a start recipe event to event queue."""
         self.logger.debug("Adding start recipe event to event queue")
@@ -109,7 +75,7 @@ class RecipeEvents:
         self.event_queue.put(request)
 
         # Successfully added recipe to event queue
-        message = "Queued start recipe event, this may take a few moments depending on the recipe size"
+        message = "Starting recipe"
         return message, 200
 
     def stop_recipe(self) -> Tuple[str, int]:
@@ -128,29 +94,115 @@ class RecipeEvents:
         self.event_queue.put(request)
 
         # Successfully added stop recipe to event queue
-        message = "Queued stop recipe event"
+        message = "Stopping recipe"
         return message, 200
 
     def create_recipe(self, json_: str) -> Tuple[str, int]:
-        """Creates a new recipe entry in database."""
+        """Creates a recipe into database."""
         self.logger.debug("Creating recipe")
 
-        # TODO: Validate recipe json
-        self.logger.debug(json_)
-        self.logger.debug(type(json_))
-
-        recipe = json.loads(json_)
-
-        # Check recipe uuid does not already exist
-        uuid = recipe["uuid"]
-        if RecipeModel.objects.filter(uuid=uuid).exists():
-            message = "Unable to load recipe, uuid already exists"
+        # Check if recipe is valid
+        is_valid, error = self.validate_recipe(json_, should_exist=False)
+        if not is_valid:
+            message = "Unable to create recipe, {}".format(error)
             self.logger.debug(message)
             return message, 400
 
         # Create recipe in database
-        RecipeModel.objects.create(json=json.dumps(recipe))
+        try:
+            recipe = json.loads(json_)
+            RecipeModel.objects.create(json=json.dumps(recipe))
+            message = "Successfully created recipe"
+            return message, 200
+        except:
+            message = "Unable to create recipe, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
 
-        # Successfully loaded recipe
-        message = "Successfully loaded recipe"
-        return message, 200
+    def update_recipe(self, json_: str) -> Tuple[str, int]:
+        """Updates an existing recipe in database."""
+
+        # Check if recipe is valid
+        is_valid, error = self.validate_recipe(json_, should_exist=False)
+        if not is_valid:
+            message = "Unable to update recipe, {}".format(error)
+            self.logger.debug(message)
+            return message, 400
+
+        # Update recipe in database
+        try:
+            recipe = json.loads(json_)
+            r = RecipeModel.objects.get(uuid=recipe["uuid"])
+            r.json = json.dumps(recipe)
+            r.save()
+            message = "Successfully updated recipe"
+            return message, 200
+        except:
+            message = "Unable to update recipe, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
+
+    def create_or_update_recipe(self, json_: str) -> Tuple[str, int]:
+        """Creates or updates an existing recipe in database."""
+
+        # Check if recipe is valid
+        is_valid, error = self.validate_recipe(json_, should_exist=None)
+        if not is_valid:
+            message = "Unable to update recipe, {}".format(error)
+            return message, 400
+
+        # Check if creating or updating recipe in database
+        recipe = json.loads(json_)
+        if not RecipeModel.objects.filter(uuid=recipe["uuid"]).exists():
+
+            # Create recipe
+            try:
+                recipe = json.loads(json_)
+                RecipeModel.objects.create(json=json.dumps(recipe))
+                message = "Successfully created recipe"
+                return message, 200
+            except:
+                message = "Unable to create recipe, unhandled exception"
+                self.logger.exception(message)
+                return message, 500
+        else:
+
+            # Update recipe
+            try:
+                r = RecipeModel.objects.get(uuid=recipe["uuid"])
+                r.json = json.dumps(recipe)
+                r.save()
+                message = "Successfully updated recipe"
+                return message, 200
+            except:
+                message = "Unable to update recipe, unhandled exception"
+                self.logger.exception(message)
+                return message, 500
+
+    def _start_recipe(self, request: Dict[str, Any]) -> None:
+        """Starts a recipe. Assumes request has been verified in public
+        start recipe function."""
+        self.logger.debug("Starting recipe")
+
+        # Get request parameters
+        uuid = request.get("uuid")
+        timestamp = request.get("timestamp")
+
+        # Convert timestamp to minutes if not None
+        if timestamp != None:
+            timestamp_minutes = int(timestamp / 60.0)
+        else:
+            timestamp_minutes = int(time.time() / 60.0)
+
+        # Start recipe on next state machine update
+        self.recipe_uuid = uuid
+        self.start_timestamp_minutes = timestamp_minutes
+        self.mode = Modes.START
+
+    def _stop_recipe(self) -> None:
+        """Stops a recipe. Assumes request has been verified in public
+        stop recipe function."""
+        self.logger.debug("Stopping recipe")
+
+        # Stop recipe on next state machine update
+        self.mode = Modes.STOP

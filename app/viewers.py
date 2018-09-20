@@ -112,7 +112,7 @@ class RecipeViewer:
 
         # Get device coordinator
         app_config = apps.get_app_config("app")
-        coordinator = app_config.device_coordinator
+        coordinator = app_config.coordinator
 
         # Get recipe json
         try:
@@ -136,7 +136,7 @@ class RecipeViewer:
 
         # Get device coordinator
         app_config = apps.get_app_config("app")
-        coordinator = app_config.device_coordinator
+        coordinator = app_config.coordinator
 
         # Get optional timestamp parameter
         t = request.get("timestamp")
@@ -159,7 +159,7 @@ class RecipeViewer:
 
         # Get device coordinator
         app_config = apps.get_app_config("app")
-        coordinator = app_config.device_coordinator
+        coordinator = app_config.coordinator
 
         # Stop recipe
         try:
