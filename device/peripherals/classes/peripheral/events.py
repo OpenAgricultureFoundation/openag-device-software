@@ -120,7 +120,7 @@ class PeripheralEvents:
         # Check valid transition
         if not self.transition.is_valid(self.mode, Modes.RESET):
             message = "Unable to reset peripheral from {} mode".format(self.mode)
-            self.logger.info(message)
+            self.logger.debug(message)
             return message, 400
 
         # Add reset event request to event queue
@@ -290,5 +290,5 @@ class PeripheralEvents:
             self.logger.critical(message)
             return
 
-        # Transistion to manual mode on next state machine update
+        # Transition to manual mode on next state machine update
         self.mode = Modes.MANUAL

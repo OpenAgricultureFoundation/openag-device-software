@@ -11,10 +11,10 @@ from device.utilities.modes import Modes
 from device.peripherals.classes.peripheral.events import PeripheralEvents
 from device.peripherals.classes.atlas.exceptions import DriverError
 
-DRY_CALIBRATION_EVENT = "Dry Calibration"
-SINGLE_POINT_CALIBRATION_EVENT = "Single Point Calibration"
-LOW_POINT_CALIBRATION_EVENT = "Low Point Calibration"
-HIGH_POINT_CALIBRATION_EVENT = "High Point Calibration"
+CALIBRATE_DRY_EVENT = "Dry Calibration"
+CALIBRATE_SINGLE_EVENT = "Single Point Calibration"
+CALIBRATE_LOW_EVENT = "Low Point Calibration"
+CALIBRATE_HIGH_EVENT = "High Point Calibration"
 CLEAR_CALIBRATION_EVENT = "Clear Calibration"
 
 
@@ -24,53 +24,75 @@ class AtlasECEvents(PeripheralEvents):  # type: ignore
     # Define var types
     mode: str
 
-    def process_peripheral_specific_event(
+    def create_peripheral_specific_event(
         self, request: Dict[str, Any]
     ) -> Tuple[str, int]:
         """Processes peripheral specific event."""
-
-        # Execute request
-        if request["type"] == DRY_CALIBRATION_EVENT:
-            return self.process_dry_calibration_event()
-        elif request["type"] == SINGLE_POINT_CALIBRATION_EVENT:
-            return self.process_single_point_calibration_event(request)
-        elif request["type"] == LOW_POINT_CALIBRATION_EVENT:
-            return self.process_low_point_calibration_event(request)
-        elif request["type"] == HIGH_POINT_CALIBRATION_EVENT:
-            return self.process_high_point_calibration_event(request)
+        if request["type"] == CALIBRATE_DRY_EVENT:
+            return self.calibrate_dry()
+        elif request["type"] == CALIBRATE_SINGLE_EVENT:
+            return self.calibrate_single(request)
+        elif request["type"] == CALIBRATE_LOW_EVENT:
+            return self.calibrate_low(request)
+        elif request["type"] == CALIBRATE_HIGH_EVENT:
+            return self.calibrate_high(request)
         elif request["type"] == CLEAR_CALIBRATION_EVENT:
-            return self.process_clear_calibration_event()
+            return self.clear_calibration()
         else:
             return "Unknown event request type", 400
 
-    def process_dry_calibration_event(self) -> Tuple[str, int]:
-        """ Processes dry calibration event. Verifies sensor in calibrate mode,
-            then takes dry calibration reading. """
-        self.logger.debug("Processing dry calibration event")
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        if request["type"] == CALIBRATE_DRY_EVENT:
+            self._calibrate_dry()
+        elif request["type"] == CALIBRATE_SINGLE_EVENT:
+            self._calibrate_single(request)
+        elif request["type"] == CALIBRATE_LOW_EVENT:
+            self._calibrate_low(request)
+        elif request["type"] == CALIBRATE_HIGH_EVENT:
+            self._calibrate_high(request)
+        elif request["type"] == CLEAR_CALIBRATION_EVENT:
+            self._clear_calibration()
+        else:
+            message = "Invalid event request type in queue: {}".format(request["type"])
+            self.logger.error(message)
 
-        # Require mode to be in CALIBRATE
+    def calibrate_dry(self) -> Tuple[str, int]:
+        """Pre-processes calibrate dry event request."""
+        self.logger.debug("Pre-processing calibrate dry event request")
+
+        # Require mode to be in calibrate
         if self.mode != Modes.CALIBRATE:
             message = "Must be in calibration mode to take dry calibration"
             self.logger.debug(message)
             return message, 400
 
+        # Add event request to event queue
+        request = {"type": CALIBRATE_DRY_EVENT}
+        self.queue.put(request)
+
+        # Return response
+        return "Taking dry calibration reading", 200
+
+    def _calibrate_dry(self) -> None:
+        """Processes calibrate dry event request."""
+        self.logger.debug("Processing calibrate dry event request")
+
+        # Require mode to be in calibrate
+        if self.mode != Modes.CALIBRATE:
+            message = "Tried to calibrate dry from {} mode.".format(self.mode)
+            self.logger.debug(message)
+            return
+
         # Send command
         try:
-            self.driver.take_dry_calibration_reading()
+            self.manager.driver.calibrate_dry()
         except DriverError:
-            message = "Unable to process dry calibration event"
-            self.logger.exception(message)
-            self.mode = Modes.ERROR
-            return message, 500
+            self.logger.exception("Unable to calibrate dry")
 
-        # Successfully took dry calibration reading
-        return "Successfully took dry calibration reading", 200
-
-    def process_single_point_calibration_event(
-        self, request: Dict[str, Any]
-    ) -> Tuple[str, int]:
-        """Processes single point calibration event."""
-        self.logger.debug("Processing single point calibration event")
+    def calibrate_single(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Processes calibrate single event request."""
+        self.logger.debug("Processing calibrate single event request")
 
         # Verify value in request
         try:
@@ -90,23 +112,34 @@ class AtlasECEvents(PeripheralEvents):  # type: ignore
             self.logger.debug(message)
             return message, 400
 
+        # Add event request to event queue
+        request = {"type": CALIBRATE_SINGLE_EVENT, "value": value}
+        self.queue.put(request)
+
+        # Return response
+        return "Taking single point calibration", 200
+
+    def _calibrate_single(self, request: Dict[str, Any]) -> None:
+        """Processes calibrate single event request."""
+        self.logger.debug("Processing calibrate single event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            message = "Tried to calibrate single from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
         # Send command
         try:
-            self.driver.take_single_point_calibration_reading(value)
+            value = float(request["value"])
+            self.manager.driver.calibrate_single(value)
         except DriverError:
             message = "Unable to process single point calibration event"
-            self.logger.exception(message)
-            self.mode = Modes.ERROR
-            return message, 500
+            self.logger.exception("Unable to calibrate single")
 
-        # Successfully took single point calibration reading
-        return "Successfully took single point calibration reading", 200
-
-    def process_low_point_calibration_event(
-        self, request: Dict[str, Any]
-    ) -> Tuple[str, int]:
-        """Processes low point calibration event."""
-        self.logger.info("Processing low point calibration event")
+    def calibrate_low(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes calibrate low event request."""
+        self.logger.info("Pre-processing calibrate low event request")
 
         # Verify value in request
         try:
@@ -126,23 +159,33 @@ class AtlasECEvents(PeripheralEvents):  # type: ignore
             self.logger.debug(message)
             return message, 400
 
+        # Add event request to event queue
+        request = {"type": CALIBRATE_LOW_EVENT, "value": value}
+        self.queue.put(request)
+
+        # Return response
+        return "Taking low point calibration reading", 200
+
+    def _calibrate_low(self, request: Dict[str, Any]) -> None:
+        """Processes calibrate low event request."""
+        self.logger.info("Processing calibrate low event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            message = "Tried to calibrate low from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
         # Send command
         try:
-            self.driver.take_low_point_calibration_reading(value)
+            value = float(request["value"])
+            self.manager.driver.calibrate_low(value)
         except DriverError:
-            message = "Unable to process low point calibration event"
-            self.logger.exception(message)
-            self.mode = Modes.ERROR
-            return message, 500
+            self.logger.exception("Unable to calibrate low")
 
-        # Successfully took low point calibration reading
-        return "Successfully took low point calibration reading", 200
-
-    def process_high_point_calibration_event(
-        self, request: Dict[str, Any]
-    ) -> Tuple[str, int]:
-        """Processes high point calibration event."""
-        self.logger.info("Processing high point calibration event")
+    def calibrate_high(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes calibrate high event request."""
+        self.logger.info("Pre-processing calibrate high event request")
 
         # Verify value in request
         try:
@@ -162,21 +205,33 @@ class AtlasECEvents(PeripheralEvents):  # type: ignore
             self.logger.debug(message)
             return message, 400
 
+        # Add event request to event queue
+        request = {"type": CALIBRATE_HIGH_EVENT, "value": value}
+        self.queue.put(request)
+
+        # Return response
+        return "Taking high point calibration reading", 200
+
+    def _calibrate_high(self, request: Dict[str, Any]) -> None:
+        """Processes calibrate high event request."""
+        self.logger.debug("Processing calibrate high event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            message = "Tried to calibrate high from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
         # Send command
         try:
-            self.driver.take_high_point_calibration_reading(value)
+            value = float(request["value"])
+            self.manager.driver.calibrate_high(value)
         except DriverError:
-            message = "Unable to process high point calibration event"
-            self.logger.exception(message)
-            self.mode = Modes.ERROR
-            return message, 500
+            self.logger.exception("Unable to calibrate high")
 
-        # Successfully took high point calibration reading
-        return "Successfully took high point calibration reading", 500
-
-    def process_clear_calibration_event(self) -> Tuple[str, int]:
-        """ Processes clear calibration event. """
-        self.logger.info("Processing clear calibration event")
+    def clear_calibration(self) -> Tuple[str, int]:
+        """ Pre-processes clear calibration event request."""
+        self.logger.debug("Pre-processing clear calibration event request")
 
         # Require mode to be in CALIBRATE
         if self.mode != Modes.CALIBRATE:
@@ -184,14 +239,25 @@ class AtlasECEvents(PeripheralEvents):  # type: ignore
             self.logger.debug(message)
             return message, 400
 
+        # Add event request to event queue
+        request = {"type": CLEAR_CALIBRATION_EVENT}
+        self.queue.put(request)
+
+        # Return response
+        return "Clearing calibration readings", 200
+
+    def _clear_calibration(self) -> None:
+        """ Processes clear calibration event request."""
+        self.logger.info("Processing clear calibration event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != Modes.CALIBRATE:
+            message = "Tried to clear calibration from {} mode".format(self.mode)
+            self.logger.debug(message)
+            return
+
         # Send command
         try:
-            self.driver.clear_calibration_readings()
+            self.manager.driver.clear_calibrations()
         except DriverError:
-            message = "Unable to process clear calibration event"
-            self.logger.exception(message)
-            self.mode = Modes.ERROR
-            return message, 500
-
-        # Successfully cleared calibration readings
-        return "Successfully cleared calibration readings", 200
+            self.logger.exception("Unable to clear calibrations")
