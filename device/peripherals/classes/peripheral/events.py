@@ -132,7 +132,7 @@ class PeripheralEvents:
 
     def _reset(self) -> None:
         """Processes reset event request."""
-        self.logger.debug("Processing reset event")
+        self.logger.debug("Processing reset event request")
 
         # Check valid transition
         if not self.transition.is_valid(self.mode, Modes.RESET):
@@ -158,7 +158,7 @@ class PeripheralEvents:
             self.logger.debug(message)
             return message, 400
 
-        # Add shutdown event request to event queue
+        # Add event request to event queue
         request = {"type": SHUTDOWN_EVENT}
         self.queue.put(request)
 
@@ -167,7 +167,7 @@ class PeripheralEvents:
 
     def _shutdown(self) -> None:
         """Processes shutdown peripheral event request."""
-        self.logger.debug("Processing shutdown event")
+        self.logger.debug("Processing shutdown event request")
 
         # Check valid transition
         if not self.transition.is_valid(self.mode, Modes.SHUTDOWN):
@@ -213,7 +213,7 @@ class PeripheralEvents:
 
     def _set_sampling_interval(self, request: Dict[str, Any]) -> None:
         """Processes set sampling interval event request."""
-        self.logger.debug("Processing set sampling interval event")
+        self.logger.debug("Processing set sampling interval event request")
 
         # Set sampling interval
         interval = request.get("interval")
@@ -221,7 +221,7 @@ class PeripheralEvents:
 
     def enable_calibration_mode(self) -> Tuple[str, int]:
         """Pre-processes enable calibration mode event request."""
-        self.logger.debug("Adding enable calibration mode event to event queue")
+        self.logger.debug("Pre-processing enable calibration mode event request")
 
         # Check if sensor alread in calibration mode
         if self.mode == Modes.CALIBRATE:
@@ -244,6 +244,7 @@ class PeripheralEvents:
 
     def _enable_calibration_mode(self) -> None:
         """Processes enable calibration mode event request."""
+        self.logger.debug("Processing enable calibration mode event request")
 
         # Check valid transition
         if not self.transition.is_valid(self.mode, Modes.SHUTDOWN):
@@ -252,7 +253,7 @@ class PeripheralEvents:
             return
 
         # Transition to calibration mode on next state machine update
-        self.mode = Modes.CALIBRATION
+        self.mode = Modes.CALIBRATE
 
     def enable_manual_mode(self) -> Tuple[str, int]:
         """Pre-processes enable manual mode event request."""
@@ -280,7 +281,7 @@ class PeripheralEvents:
 
     def _enable_manual_mode(self) -> None:
         """Processes enable manual mode event request."""
-        self.logger.debug("Processing enable manual mode event")
+        self.logger.debug("Processing enable manual mode event request")
 
         # Check peripheral is in acceptible mode
         modes = [Modes.NORMAL, Modes.CALIBRATE]

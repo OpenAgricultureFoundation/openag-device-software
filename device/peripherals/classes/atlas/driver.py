@@ -187,7 +187,7 @@ class AtlasDriver:
 
     def read_info(self, retry: bool = True) -> Info:
         """Read sensor info register containing sensor type and firmware version. e.g. EC, 2.0."""
-        self.logger.info("Reading info register")
+        self.logger.debug("Reading info register")
 
         # Send command
         try:
@@ -211,7 +211,7 @@ class AtlasDriver:
 
     def read_status(self, retry: bool = True) -> Status:
         """Reads status from device."""
-        self.logger.info("Reading status register")
+        self.logger.debug("Reading status register")
         try:
             response = self.process_command("Status", process_seconds=0.3, retry=retry)
         except Exception as e:
@@ -246,7 +246,7 @@ class AtlasDriver:
 
     def enable_protocol_lock(self, retry: bool = True) -> None:
         """Enables protocol lock."""
-        self.logger.info("Enabling protocol lock")
+        self.logger.debug("Enabling protocol lock")
         try:
             self.process_command("Plock,1", process_seconds=0.9, retry=retry)
         except Exception as e:
@@ -262,7 +262,7 @@ class AtlasDriver:
 
     def enable_led(self, retry: bool = True) -> None:
         """Enables led."""
-        self.logger.info("Enabling led")
+        self.logger.debug("Enabling led")
         try:
             self.process_command("L,1", process_seconds=1.8, retry=retry)
         except Exception as e:
@@ -270,7 +270,7 @@ class AtlasDriver:
 
     def disable_led(self, retry: bool = True) -> None:
         """Disables led."""
-        self.logger.info("Disabling led")
+        self.logger.debug("Disabling led")
         try:
             self.process_command("L,0", process_seconds=1.8, retry=retry)
         except Exception as e:
@@ -278,7 +278,7 @@ class AtlasDriver:
 
     def enable_sleep_mode(self, retry: bool = True) -> None:
         """Enables sleep mode, sensor will wake up by sending any command to it."""
-        self.logger.info("Enabling sleep mode")
+        self.logger.debug("Enabling sleep mode")
 
         # Send command
         try:
@@ -292,49 +292,43 @@ class AtlasDriver:
         self, temperature: float, retry: bool = True
     ) -> None:
         """Sets compensation temperature."""
-        self.logger.info("Setting compensation temperature")
+        self.logger.debug("Setting compensation temperature")
         try:
             command = "T,{}".format(temperature)
             self.process_command(command, process_seconds=0.3, retry=retry)
         except Exception as e:
             raise SetCompensationTemperatureError(logger=self.logger) from e
 
-    def take_low_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
+    def calibrate_low(self, value: float, retry: bool = True) -> None:
         """Takes a low point calibration reading."""
-        self.logger.info("Taking low point calibration reading")
+        self.logger.debug("Taking low point calibration reading")
         try:
             command = "Cal,low,{}".format(value)
             self.process_command(command, process_seconds=0.9, retry=retry)
         except Exception as e:
             raise TakeLowPointCalibrationError(logger=self.logger) from e
 
-    def take_mid_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
+    def calibrate_mid(self, value: float, retry: bool = True) -> None:
         """Takes a mid point calibration reading."""
-        self.logger.info("Taking mid point calibration reading")
+        self.logger.debug("Taking mid point calibration reading")
         try:
             command = "Cal,mid,{}".format(value)
             self.process_command(command, process_seconds=0.9, retry=retry)
         except Exception as e:
             raise TakeMidPointCalibrationError(logger=self.logger) from e
 
-    def take_high_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
+    def calibrate_high(self, value: float, retry: bool = True) -> None:
         """Takes a high point calibration reading."""
-        self.logger.info("Taking high point calibration reading")
+        self.logger.debug("Taking high point calibration reading")
         try:
             command = "Cal,high,{}".format(value)
             self.process_command(command, process_seconds=0.9, retry=retry)
         except Exception as e:
             raise TakeHighPointCalibrationError(logger=self.logger) from e
 
-    def clear_calibration_readings(self, retry: bool = True) -> None:
+    def clear_calibrations(self, retry: bool = True) -> None:
         """Clears calibration readings."""
-        self.logger.info("Clearing calibration readings")
+        self.logger.debug("Clearing calibration readings")
         try:
             self.process_command("Cal,clear", process_seconds=0.9, retry=retry)
         except Exception as e:
@@ -342,7 +336,7 @@ class AtlasDriver:
 
     def factory_reset(self, retry: bool = True) -> None:
         """Resets sensor to factory config."""
-        self.logger.info("Performing factory reset")
+        self.logger.debug("Performing factory reset")
         try:
             self.process_command(
                 "Factory", process_seconds=0.3, read_response=False, retry=retry

@@ -17,7 +17,7 @@ from device.peripherals.modules.usb_camera.events import USBCameraEvents
 from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 
-class USBCameraManager(PeripheralManager, USBCameraEvents):  # type: ignore
+class USBCameraManager(PeripheralManager):  # type: ignore
     """Manages a usb camera."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

@@ -13,7 +13,7 @@ from device.peripherals.modules.ccs811.driver import CCS811Driver
 from device.peripherals.modules.ccs811.exceptions import DriverError
 
 
-class CCS811Manager(PeripheralManager, CCS811Events):  # type: ignore
+class CCS811Manager(PeripheralManager):  # type: ignore
     """Manages an ccs811 co2 sensor."""
 
     # Initialize compensation variable parameters
@@ -27,6 +27,9 @@ class CCS811Manager(PeripheralManager, CCS811Events):  # type: ignore
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
+
+        # Initialize events
+        self.events = CCS811Events(self)
 
         # Initialize variable names
         self.co2_name = self.variables["sensor"]["co2_ppm"]

@@ -13,7 +13,7 @@ from device.peripherals.modules.atlas_ph.events import AtlasPHEvents
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 
-class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
+class AtlasPHManager(PeripheralManager):  # type: ignore
     """Manages an Atlas Scientific pH sensor."""
 
     # Initialize compensation temperature parameters
@@ -25,6 +25,9 @@ class AtlasPHManager(PeripheralManager, AtlasPHEvents):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
+
+        # Initialize events
+        self.events = AtlasPHEvents(self)
 
         # Initialize variable names
         self.ph_name = self.variables["sensor"]["ph"]
