@@ -1,36 +1,22 @@
 """
 Python3 Class to:
-  - Read data from a pipe and publish it to the Google Cloud IoT Core via 
-    MQTT messages.  The C brain is writing the data to the pipe.
-
+  - Publish data to the Google Cloud IoT Core via MQTT messages.  
   - Subscribe for MQTT config messages which contain commands for the device
     to execute.  The config messages are published by the backend for this
-    device.  The commands are written as binary structs to a pip that the 
-    C brain reads.
+    device.  
 
 JWT (json web tokens) are used for secure device authentication based on RSA
 public/private keys. 
 
 After connecting, this process:
- - reads data from a pipe (written by the C brain)
- - publishes data to a common (to all devices) MQTT topic.
- - subscribes for config messages for only this device specific MQTT topic.
- - writes commands to a pipe (read by the C brain)
+ - Publishes data to a common (to all devices) MQTT topic.
+ - Subscribes for config messages for only this device specific MQTT topic.
+ - Calls the provided callback when commands are received.
 
-rbaynes 2018-04-10
+rbaynes 2018-09-21
 """
 
-import base64
-import datetime
-import json
-import logging
-import math
-import os
-import ssl
-import sys
-import time
-import traceback
-import jwt
+import base64, datetime, json, logging, math, os, ssl, sys, time, traceback, jwt
 import paho.mqtt.client as mqtt
 from app.models import IoTConfigModel
 
@@ -94,6 +80,15 @@ class IoTPubSub:
 
         # The MQTT events topic we publish messages to
         self.mqtt_topic = "/devices/{}/events".format(self.deviceId)
+
+        # if we are running a test client to publish to a test topic,
+        # then change the above variable.  (this requires a MQTT server -
+        # usally a local developer instance) to be running and listening
+        # on this same topic (device-test/test).
+        test_topic = os.environ.get("IOT_TEST_TOPIC")
+        if test_topic is not None:
+            self.mqtt_topic = "/devices/{}/{}".format(self.deviceId, test_topic)
+
         self.logger.debug("mqtt_topic={}".format(self.mqtt_topic))
 
         # Create a (renewable) client with tokens that will timeout
@@ -205,7 +200,9 @@ class IoTPubSub:
 
     def publish_binary_image(self, variable_name, image_type, image_bytes):
         """ Publish a blob as (multiple < 256K) base64 messages. Maximum message size 
-        is 256KB, so we may have to send multiple messages"""
+        is 256KB, so we may have to send multiple messages,This size is enforced by 
+        the Google hosted MQTT server we connect to.
+        See 'Telemetry event payload' https://cloud.google.com/iot/quotas"""
         if (
             None == variable_name
             or 0 == len(variable_name)
@@ -226,10 +223,11 @@ class IoTPubSub:
         try:
             # We send the image as a base64 encoded string (which makes
             # storing message chunks in datastore on the backend easier)
+
             b64Bytes = base64.b64encode(image_bytes)
-            maxMessageSize = 250 * 1024
+            maxMessageSize = 240 * 1024  # < 256K
             imageSize = len(b64Bytes)
-            totalChunks = math.ceil(imageSize / maxMessageSize)
+            total_chunks = math.ceil(imageSize / maxMessageSize)
             imageStartIndex = 0
             imageEndIndex = imageSize
             if imageSize > maxMessageSize:
@@ -238,12 +236,13 @@ class IoTPubSub:
             # Send all messages with the same ID (for tracking and assembly)
             message_id = time.time()
 
-            # Break image into messages < 256K
-            for chunk in range(0, totalChunks):
+            # make a mutable byte array of the image data
+            imageBA = bytearray(b64Bytes)
 
-                # Make a mutable byte array of the image data
-                imageBA = bytearray(b64Bytes)
-                imageChunk = bytes(imageBA[imageStartIndex:imageEndIndex])
+            # break image into messages < 256K
+            for chunk in range(0, total_chunks):
+
+                image_chunk = bytes(imageBA[imageStartIndex:imageEndIndex])
 
                 msg_obj = {}
                 msg_obj["messageType"] = "Image"
@@ -251,15 +250,17 @@ class IoTPubSub:
                 msg_obj["varName"] = variable_name
                 msg_obj["imageType"] = image_type
                 msg_obj["chunk"] = chunk
-                msg_obj["totalChunks"] = totalChunks
-                msg_obj["imageChunk"] = imageChunk.decode("utf-8")
+                msg_obj["totalChunks"] = total_chunks
+                msg_obj["imageChunk"] = image_chunk.decode("utf-8")
 
                 # Publish this chunk
                 msg_json = json.dumps(msg_obj)
                 self.mqtt_client.publish(self.mqtt_topic, msg_json, qos=1)
                 self.logger.info(
                     "publish_binary_image: sent image chunk "
-                    "{} of {} for {}".format(chunk, totalChunks, variable_name)
+                    "{} of {} for {} and {} bytes".format(
+                        chunk, total_chunks, variableName, len(msg_obj["imageChunk"])
+                    )
                 )
 
                 # For next chunk, start at the ending index
@@ -268,7 +269,7 @@ class IoTPubSub:
 
                 # If we have more than one chunk to go, send the max
                 if imageSize - imageStartIndex > maxMessageSize:
-                    imageEndIndex = maxMessageSize  # no, so send max.
+                    imageEndIndex = imageStartIndex + maxMessageSize
 
             return True
 
@@ -571,9 +572,9 @@ def on_message(unused_client, ref_self, message):
     # Convert the payload to a dict and get the last config msg version
     messageVersion = 0  # starts before the first config version # of 1
     try:
-        payloadDict = json.loads(payload)
-        if "lastConfigVersion" in payloadDict:
-            messageVersion = int(payloadDict["lastConfigVersion"])
+        payload_dict = json.loads(payload)
+        if "lastConfigVersion" in payload_dict:
+            messageVersion = int(payload_dict["lastConfigVersion"])
     except Exception as e:
         ref_self.logger.debug("on_message: Exception parsing payload: {}".format(e))
         return
@@ -585,8 +586,7 @@ def on_message(unused_client, ref_self, message):
         ref_self.lastConfigVersion = messageVersion
 
         # Parse the config message to get the commands in it
-        # (and write them to the command pipe)
-        ref_self.parse_config_message(payloadDict)
+        ref_self.parse_config_message(payload_dict)
     else:
         ref_self.logger.debug("Ignoring this old config message.\n")
 
