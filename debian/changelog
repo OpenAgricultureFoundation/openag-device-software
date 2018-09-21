@@ -1,3 +1,9 @@
+openagbrain (1.0-0) stable; urgency=medium
+
+  * Fixed image bug #91. 
+
+ -- rob baynes <rbaynes@mit.edu>  Fri, 21 Sep 2018 17:24:43 +0000
+
 openagbrain (0.1-8) stable; urgency=medium
 
   * Fix logging.
