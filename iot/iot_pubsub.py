@@ -1,23 +1,19 @@
 """
 Python3 Class to:
-  - Read data from a pipe and publish it to the Google Cloud IoT Core via 
-    MQTT messages.  The C brain is writing the data to the pipe.
-
+  - Publish data to the Google Cloud IoT Core via MQTT messages.  
   - Subscribe for MQTT config messages which contain commands for the device
     to execute.  The config messages are published by the backend for this
-    device.  The commands are written as binary structs to a pip that the 
-    C brain reads.
+    device.  
 
 JWT (json web tokens) are used for secure device authentication based on RSA
 public/private keys. 
 
 After connecting, this process:
- - reads data from a pipe (written by the C brain)
- - publishes data to a common (to all devices) MQTT topic.
- - subscribes for config messages for only this device specific MQTT topic.
- - writes commands to a pipe (read by the C brain)
+ - Publishes data to a common (to all devices) MQTT topic.
+ - Subscribes for config messages for only this device specific MQTT topic.
+ - Calls the provided callback when commands are received.
 
-rbaynes 2018-04-10
+rbaynes 2018-09-21
 """
 
 import base64
@@ -222,6 +218,8 @@ class IoTPubSub:
 
     # --------------------------------------------------------------------------
     # Maximum message size is 256KB, so we may have to send multiple messages.
+    # This size is enforced by the Google hosted MQTT server we connect to.
+    # See 'Telemetry event payload' https://cloud.google.com/iot/quotas
     def publishBinaryImage(self, variableName, imageType, imageBytes):
         """ Publish a blob as (multiple < 256K) base64 messages. """
         if (
@@ -245,7 +243,7 @@ class IoTPubSub:
             # we send the image as a base64 encoded string (which makes
             # storing message chunks in datastore on the backend easier)
             b64Bytes = base64.b64encode(imageBytes)
-            maxMessageSize = 250 * 1024
+            maxMessageSize = 240 * 1024  # < 256K
             imageSize = len(b64Bytes)
             totalChunks = math.ceil(imageSize / maxMessageSize)
             imageStartIndex = 0
@@ -256,11 +254,12 @@ class IoTPubSub:
             # send all messages with the same ID (for tracking and assembly)
             messageID = time.time()
 
+            # make a mutable byte array of the image data
+            imageBA = bytearray(b64Bytes)
+
             # break image into messages < 256K
             for chunk in range(0, totalChunks):
 
-                # make a mutable byte array of the image data
-                imageBA = bytearray(b64Bytes)
                 imageChunk = bytes(imageBA[imageStartIndex:imageEndIndex])
 
                 msg_obj = {}
@@ -277,7 +276,8 @@ class IoTPubSub:
                 self.mqtt_client.publish(self.mqtt_topic, msg_json, qos=1)
                 self.logger.info(
                     "publishBinaryImage: sent image chunk "
-                    "{} of {} for {}".format(chunk, totalChunks, variableName)
+                    "{} of {} for {} and {} bytes".format(chunk, 
+                        totalChunks, variableName, len(msg_obj["imageChunk"]))
                 )
 
                 # for next chunk, start at the ending index
@@ -286,7 +286,7 @@ class IoTPubSub:
 
                 # if we have more than one chunk to go, send the max
                 if imageSize - imageStartIndex > maxMessageSize:
-                    imageEndIndex = maxMessageSize  # no, so send max.
+                    imageEndIndex = imageStartIndex + maxMessageSize
 
             return True
 
@@ -639,7 +639,6 @@ def on_message(unused_client, ref_self, message):
         ref_self.lastConfigVersion = messageVersion
 
         # parse the config message to get the commands in it
-        # (and write them to the command pipe)
         ref_self.parseConfigMessage(payloadDict)
     else:
         ref_self.logger.debug("Ignoring this old config message.\n")
