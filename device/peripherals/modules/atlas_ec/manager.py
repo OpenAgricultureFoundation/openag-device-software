@@ -26,7 +26,7 @@ class AtlasECManager(PeripheralManager):  # type: ignore
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
-        # Initialize event handler
+        # Initialize events
         self.events = AtlasECEvents(self)
 
         # Initialize variable names

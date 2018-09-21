@@ -13,7 +13,7 @@ from device.peripherals.modules.atlas_do.events import AtlasDOEvents
 from device.peripherals.modules.atlas_do.driver import AtlasDODriver
 
 
-class AtlasDOManager(PeripheralManager, AtlasDOEvents):  # type: ignore
+class AtlasDOManager(PeripheralManager):  # type: ignore
     """ Manages an Atlas Scientific dissolved oxygen driver. """
 
     # Initialize variable parameters
@@ -29,6 +29,9 @@ class AtlasDOManager(PeripheralManager, AtlasDOEvents):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
+
+        # Initialize events
+        self.events = AtlasDOEvents(self)
 
         # Initialize variable names
         self.do_name = self.variables["sensor"]["do_mg_l"]
