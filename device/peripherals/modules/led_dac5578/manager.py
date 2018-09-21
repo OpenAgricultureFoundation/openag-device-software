@@ -36,6 +36,9 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
+        # Initialize events
+        self.events = LEDDAC5578Events(self)
+
         # Initialize panel and channel configs
         self.panel_configs = self.communication.get("panels")
         self.panel_properties = self.setup_dict.get("properties")
@@ -383,4 +386,3 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
             self.channel_setpoints,
             self.distance,
         )
-        self.logger.debug("self.spectrum = {}".format(self.spectrum))

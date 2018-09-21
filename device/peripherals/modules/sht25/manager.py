@@ -22,6 +22,9 @@ class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
+        # Initialize events
+        self.events = SHT25Events(self)
+
         # Initialize variable names
         self.temperature_name = self.variables["sensor"]["temperature_celcius"]
         self.humidity_name = self.variables["sensor"]["humidity_percent"]

@@ -177,7 +177,7 @@ class IoTManager:
         for var in vars_dict:
             if self.prev_vars[var] != vars_dict[var]:
                 self.prev_vars[var] = copy.deepcopy(vars_dict[var])
-                self.iot.publishEnvVar(var, vars_dict[var])
+                self.iot.publish_env_var(var, vars_dict[var])
 
     def get_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

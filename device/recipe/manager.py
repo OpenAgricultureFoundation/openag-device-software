@@ -29,15 +29,15 @@ class RecipeManager(RecipeEvents):  # type: ignore
     """Manages recipe state machine thread."""
 
     # Define valid transition table
-    transitions = {
-        Modes.NORECIPE: [Modes.START],
-        Modes.START: [Modes.QUEUED],
-        Modes.QUEUED: [Modes.NORMAL, Modes.STOP],
-        Modes.NORMAL: [Modes.PAUSE, Modes.STOP],
-        Modes.PAUSE: [Modes.START],
-        Modes.STOP: [Modes.NORECIPE],
-        Modes.ERROR: [Modes.RESET],
-    }
+    # transitions = {
+    #     Modes.NORECIPE: [Modes.START],
+    #     Modes.START: [Modes.QUEUED],
+    #     Modes.QUEUED: [Modes.NORMAL, Modes.STOP],
+    #     Modes.NORMAL: [Modes.PAUSE, Modes.STOP],
+    #     Modes.PAUSE: [Modes.START],
+    #     Modes.STOP: [Modes.NORECIPE],
+    #     Modes.ERROR: [Modes.RESET],
+    # }
 
     # Initialize logger
     extra = {"console_name": "Recipe", "file_name": "Recipe"}

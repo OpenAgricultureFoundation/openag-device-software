@@ -80,7 +80,7 @@ class EventViewer:
             return message, 400
 
         # Send event to manager
-        message, status = manager.process_event(request_)
+        message, status = manager.events.create(request_)
 
         # Save event interaction in database
         try:

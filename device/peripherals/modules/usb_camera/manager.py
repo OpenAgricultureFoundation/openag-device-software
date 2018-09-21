@@ -27,6 +27,9 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):  # type: ignore
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
+        # Initialize events
+        self.events = USBCameraEvents(self)
+
         # Get usb mux parameters
         self.usb_mux_comms = self.communication.get("usb_mux_comms", None)
         self.usb_mux_channel = self.communication.get("usb_mux_channel", None)
