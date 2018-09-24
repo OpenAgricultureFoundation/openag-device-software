@@ -91,9 +91,10 @@ def change_password(request):
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows state to be viewed. """
+    """API endpoint that allows state to be viewed."""
 
     serializer_class = StateSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = StateModel.objects.all()
@@ -101,7 +102,7 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    """ API endpoint that allows events to be viewed and created. """
+    """API endpoint that allows events to be viewed and created."""
 
     serializer_class = EventSerializer
 
@@ -370,7 +371,7 @@ class Logs(APIView):
             name = peripheral["name"]
 
             # Load in peripheral log file
-            log_file = open("logs/peripherals/{}.log".format(name))
+            log_file = open("data/logs/peripherals/{}.log".format(name))
             lines = (
                 log_file.readlines()
             )  # As long as file doesn't get too big, readlines is OK
