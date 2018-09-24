@@ -137,6 +137,7 @@ urlpatterns = [
     url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
     url(r"^config/$", views.DeviceConfig.as_view(), name="device-config"),
     url(r"^peripherals/$", views.Peripherals.as_view(), name="peripherals"),
+    url(r"^images/$", views.Images.as_view(), name="images"),
     url(r"^logs/$", views.Logs.as_view(), name="logs"),
     url(r"^events/$", views.Events.as_view(), name="events"),
     url(r"^recipes/$", views.Recipes.as_view(), name="recipes"),

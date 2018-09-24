@@ -493,6 +493,18 @@ class IoT(APIView):
         return Response(response)
 
 
+class Images(APIView):
+    """UI page for ImageManager."""
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "images.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        response = { "status": 'OK' }
+#debugrob, return a list of URLs to images/stored/*.png ?
+        return Response(response)
+
+
 class Resource(APIView):
     """UI page for ResourceManager."""
 
