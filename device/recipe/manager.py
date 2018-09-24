@@ -4,11 +4,9 @@ import logging, time, threading, os, sys, datetime, json
 # Import python types
 from typing import Optional, List, Dict, Any, Tuple
 
-# Import json validator
-from jsonschema import validate
-
 # Import device utilities
 from device.utilities.modes import Modes
+from device.utilities.statemachine import Manager, Transitions
 
 # Import device state
 from device.state.main import State
@@ -21,23 +19,24 @@ from app.models import RecipeTransitionModel
 from device.recipe.events import RecipeEvents
 from device.recipe.parser import RecipeParser
 
+# Define state machine transitions table
+TRANSITION_TABLE = {
+    Modes.INIT: [Modes.NORECIPE, Modes.ERROR],
+    Modes.NORECIPE: [Modes.START, Modes.ERROR],
+    Modes.START: [Modes.QUEUED, Modes.ERROR],
+    Modes.QUEUED: [Modes.NORMAL, Modes.STOP, Modes.ERROR],
+    Modes.NORMAL: [Modes.PAUSE, Modes.STOP, Modes.ERROR],
+    Modes.PAUSE: [Modes.START, Modes.ERROR],
+    Modes.STOP: [Modes.NORECIPE, Modes.ERROR],
+    Modes.ERROR: [Modes.RESET],
+    Modes.RESET: [Modes.INIT],
+}
 
 # TODO: Fix scheme to make this less of a type checking nightmare...keep UI interaction in mind
 
 
-class RecipeManager(RecipeEvents):  # type: ignore
+class RecipeManager(Manager):  # type: ignore
     """Manages recipe state machine thread."""
-
-    # Define valid transition table
-    # transitions = {
-    #     Modes.NORECIPE: [Modes.START],
-    #     Modes.START: [Modes.QUEUED],
-    #     Modes.QUEUED: [Modes.NORMAL, Modes.STOP],
-    #     Modes.NORMAL: [Modes.PAUSE, Modes.STOP],
-    #     Modes.PAUSE: [Modes.START],
-    #     Modes.STOP: [Modes.NORECIPE],
-    #     Modes.ERROR: [Modes.RESET],
-    # }
 
     # Initialize logger
     extra = {"console_name": "Recipe", "file_name": "Recipe"}
@@ -55,6 +54,12 @@ class RecipeManager(RecipeEvents):  # type: ignore
         self.state = state
         self.mode = Modes.INIT
         self.stop_event = threading.Event()  # so we can stop this thread
+
+        # Initialize transitions
+        self.transitions = Transitions(self, TRANSITION_TABLE)
+
+        # Initialize events
+        self.events = RecipeEvents(self)
 
     @property
     def mode(self) -> Optional[str]:
@@ -407,10 +412,10 @@ class RecipeManager(RecipeEvents):  # type: ignore
         while True:
 
             # Check for events
-            self.check_events()
+            self.events.check()
 
             # Check for transitions
-            if self.mode != Modes.NORECIPE:
+            if self.transitions.is_new(Modes.NORECIPE):
                 break
 
             # Update every 100ms
@@ -419,14 +424,14 @@ class RecipeManager(RecipeEvents):  # type: ignore
     def run_start_mode(self) -> None:
         """Runs start mode. Loads commanded recipe uuid into shared state, 
         retrieves recipe json from recipe table, generates recipe 
-        transitions, stores them in the recipe transition table, extracts
+        transitions, stores them in the recipe transitions table, extracts
         recipe duration and start time then transitions to QUEUED."""
 
         try:
             self.logger.info("Entered START")
 
             # Get recipe json from recipe uuid
-            recipe_json = RecipeModel.objects.get(pk=self.recipe_uuid).json
+            recipe_json = RecipeModel.objects.get(uuid=self.recipe_uuid).json
             recipe_dict = json.loads(recipe_json)
 
             # Parse recipe transitions
@@ -480,11 +485,15 @@ class RecipeManager(RecipeEvents):  # type: ignore
                 prev_time_seconds = time.time()
                 self.logger.debug("Starting recipe in {} minutes".format(delay_minutes))
 
+            # Check for transitions
+            if self.transitions.is_new(Modes.QUEUED):
+                break
+
             # Check for events
-            self.check_events()
+            self.events.check()
 
             # Check for transitions
-            if self.mode != Modes.QUEUED:
+            if self.transitions.is_new(Modes.QUEUED):
                 break
 
             # Update every 100ms
@@ -507,15 +516,19 @@ class RecipeManager(RecipeEvents):  # type: ignore
 
             # Check for recipe end
             if self.current_phase == "End" and self.current_cycle == "End":
-                self.logger.info("Recipe is over, so transition from NORMAL to STOP")
+                self.logger.info("Recipe is over, so transitions from NORMAL to STOP")
                 self.mode = Modes.STOP
                 break
 
+            # Check for transitions
+            if self.transitions.is_new(Modes.NORMAL):
+                break
+
             # Check for events
-            self.check_events()
+            self.events.check()
 
             # Check for transitions
-            if self.mode != Modes.NORMAL:
+            if self.transitions.is_new(Modes.NORMAL):
                 break
 
             # Update every 100ms
@@ -534,10 +547,10 @@ class RecipeManager(RecipeEvents):  # type: ignore
         while True:
 
             # Check for events
-            self.check_events()
+            self.events.check()
 
             # Check for transitions
-            if self.mode != Modes.PAUSE:
+            if self.transitions.is_new(Modes.PAUSE):
                 break
 
             # Update every 100ms
@@ -568,10 +581,10 @@ class RecipeManager(RecipeEvents):  # type: ignore
         while True:
 
             # Check for events
-            self.check_events()
+            self.events.check()
 
             # Check for transitions
-            if self.mode != Modes.ERROR:
+            if self.transitions.is_new(Modes.ERROR):
                 break
 
             # Update every 100ms
@@ -595,17 +608,17 @@ class RecipeManager(RecipeEvents):  # type: ignore
     def store_recipe_transitions(self, recipe_transitions: List) -> None:
         """Stores recipe transitions in database."""
 
-        # Clear recipe transition table in database
+        # Clear recipe transitions table in database
         RecipeTransitionModel.objects.all().delete()
 
-        # Create recipe transition entries
-        for transition in recipe_transitions:
+        # Create recipe transitions entries
+        for transitions in recipe_transitions:
             RecipeTransitionModel.objects.create(
-                minute=transition["minute"],
-                phase=transition["phase"],
-                cycle=transition["cycle"],
-                environment_name=transition["environment_name"],
-                environment_state=transition["environment_state"],
+                minute=transitions["minute"],
+                phase=transitions["phase"],
+                cycle=transitions["cycle"],
+                environment_name=transitions["environment_name"],
+                environment_state=transitions["environment_state"],
             )
 
     def update_recipe_environment(self) -> None:
@@ -662,39 +675,3 @@ class RecipeManager(RecipeEvents):  # type: ignore
             for variable in environment_dict:
                 value = environment_dict[variable]
                 self.state.environment["sensor"]["desired"][variable] = value
-
-    def validate_recipe(
-        self, json_: str, should_exist: Optional[bool] = None
-    ) -> Tuple[bool, Optional[str]]:
-        """Validates a recipe. Returns true if valid."""
-
-        # Load recipe schema
-        recipe_schema = json.load(open("data/schemas/recipe.json"))
-
-        # Check valid json
-        try:
-            recipe = json.loads(json_)
-            validate(recipe, recipe_schema)
-            uuid = recipe["uuid"]
-        except:
-            return False, "invalid json"
-
-        # Check valid uuid
-        if uuid == None or len(uuid) == 0:
-            return False, "invalid uuid"
-
-        # Check recipe existance criteria, does not check if should_exist == None
-        recipe_exists = RecipeModel.objects.filter(uuid=uuid).exists()
-        if should_exist == True and not recipe_exists:
-            return False, "uuid does not exist"
-        elif should_exist == False and recipe_exists:
-            return False, "uuid already exists"
-
-        # TODO: Validate recipe variables with database variables
-        # TODO: Validate recipe cycle variables with recipe environments
-        # TODO: Validate recipe cultivars with database cultivars
-        # TODO: Validate recipe cultivation methods with database cultivation methods
-        # TODO: Try to parse recipe...does this take awhile?...what is fast version?
-
-        # Recipe is valid
-        return True, None

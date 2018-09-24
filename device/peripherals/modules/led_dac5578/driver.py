@@ -236,6 +236,15 @@ class LEDDAC5578Driver:
                 self.logger.exception(message)
                 panel.is_shutdown = True
 
+                # TODO: Check for new events in manager
+                # Manager event functions can get called any time
+                # As a special case, use function to set a new_event flag in driver
+                # Check it here and break if panel failed
+                # Only on panel failures b/c only ultra case leading to high latency..
+                # at 5 seconds per failed panel (due to retry)
+                # In a grid like SMHC, 25 panels * 5 seconds is grueling...
+                # How to clear flag?...event handler process funcs all remove it
+
         # Check at least one panel is still active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         self.num_active_panels = len(active_panels)

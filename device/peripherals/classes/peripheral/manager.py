@@ -7,6 +7,7 @@ from typing import Dict, Optional, List
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.modes import Modes
+from device.utilities.statemachine import Manager, Transitions
 
 # Import device comms
 from device.communication.i2c.mux_simulator import MuxSimulator
@@ -17,44 +18,7 @@ from device.state.main import State
 # Import peripheral modules
 from device.peripherals.classes.peripheral.events import PeripheralEvents
 
-
-class Transition(object):
-    """Explicates and verifies state machine transitions."""
-
-    def __init__(self, manager, transition_table: Dict[str, List[str]]) -> None:
-        """Initializes transitions object."""
-        self.manager = manager
-        self.table = transition_table
-        self.logger = manager.logger
-
-    def is_new(self, mode: str) -> bool:
-        """Checks for a new and valid transition mode."""
-
-        # Check if no mode transition
-        if mode == self.manager.mode:
-            return False
-
-        # Check if valid mode transition
-        if self.manager.mode in self.table[mode]:
-            return True
-
-        # Otherwise is invalid mode transition
-        else:
-            message = "Invalid mode transition, cannot transition from {} to {}".format(
-                mode, self.manager.mode
-            )
-            self.logger.critical(message)
-            return False
-
-    def is_valid(self, from_: str, to: str) -> bool:
-        """Checks if transition from mode to mode is valid."""
-        if to in self.table[from_]:
-            return True
-        else:
-            return False
-
-
-# Define state machine transition table
+# Define state machine transitions table
 TRANSITION_TABLE = {
     Modes.INIT: [Modes.SETUP, Modes.SHUTDOWN, Modes.ERROR],
     Modes.SETUP: [Modes.NORMAL, Modes.SHUTDOWN, Modes.ERROR],
@@ -71,7 +35,7 @@ TRANSITION_TABLE = {
 }
 
 
-class PeripheralManager(object):
+class PeripheralManager(Manager):  # type: ignore
     """Parent class for peripheral devices e.g. sensors and actuators."""
 
     # Initialize peripheral mode and error
@@ -113,7 +77,7 @@ class PeripheralManager(object):
         self.logger = logging.LoggerAdapter(logger, extra)
 
         # Initialize transitions
-        self.transition = Transition(self, TRANSITION_TABLE)
+        self.transitions = Transitions(self, TRANSITION_TABLE)
 
         # Initialize events
         self.events = PeripheralEvents(self)
@@ -253,7 +217,7 @@ class PeripheralManager(object):
         self.initialize()
 
         # Check for transitions
-        if self.transition.is_new(Modes.INIT):
+        if self.transitions.is_new(Modes.INIT):
             return
 
         # Transition to setup mode on next state machine update
@@ -269,7 +233,7 @@ class PeripheralManager(object):
         self.setup()
 
         # Check for transitions
-        if self.transition.is_new(Modes.SETUP):
+        if self.transitions.is_new(Modes.SETUP):
             return
 
         # Transition to normal mode on next state machine update
@@ -298,14 +262,14 @@ class PeripheralManager(object):
                 self.update()
 
             # Check for transitions
-            if self.transition.is_new(Modes.NORMAL):
+            if self.transitions.is_new(Modes.NORMAL):
                 break
 
             # Check for events
             self.events.check()
 
             # Check for transitions
-            if self.transition.is_new(Modes.NORMAL):
+            if self.transitions.is_new(Modes.NORMAL):
                 break
 
             # Update every 100ms
@@ -336,14 +300,14 @@ class PeripheralManager(object):
                 self.update()
 
             # Check for transitions
-            if self.transition.is_new(Modes.CALIBRATE):
+            if self.transitions.is_new(Modes.CALIBRATE):
                 break
 
             # Check for events
             self.events.check()
 
             # Check for transitions
-            if self.transition.is_new(Modes.CALIBRATE):
+            if self.transitions.is_new(Modes.CALIBRATE):
                 break
 
             # Update every 100ms
@@ -360,7 +324,7 @@ class PeripheralManager(object):
             self.events.check()
 
             # Check for transitions
-            if self.transition.is_new(Modes.MANUAL):
+            if self.transitions.is_new(Modes.MANUAL):
                 break
 
             # Update every 100ms
@@ -389,7 +353,7 @@ class PeripheralManager(object):
             self.events.check()
 
             # Check for transitions
-            if self.transition.is_new(Modes.ERROR):
+            if self.transitions.is_new(Modes.ERROR):
                 break
 
             # Update every 100ms
@@ -404,7 +368,7 @@ class PeripheralManager(object):
         self.reset()
 
         # Check for transitions
-        if self.transition.is_new(Modes.RESET):
+        if self.transitions.is_new(Modes.RESET):
             return
 
         # Transition to init on next state machine update
@@ -432,7 +396,7 @@ class PeripheralManager(object):
             self.events.check()
 
             # Check for transitions
-            if self.transition.is_new(Modes.SHUTDOWN):
+            if self.transitions.is_new(Modes.SHUTDOWN):
                 break
 
             # Update every 100ms

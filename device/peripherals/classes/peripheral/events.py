@@ -7,6 +7,7 @@ from typing import Dict, Tuple, Any
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.logger import Logger
+from device.utilities.statemachine import Manager
 
 # Initialize vars
 RESET_EVENT = "Reset"
@@ -19,15 +20,15 @@ ENABLE_MANUAL_MODE_EVENT = "Enable Manual Mode"
 class PeripheralEvents:
     """Event mixin for peripherals."""
 
-    def __init__(self, manager) -> None:  # type: ignore
+    def __init__(self, manager: Manager) -> None:
         """Initializes peripheral events."""
         self.manager = manager
         self.logger = manager.logger
-        self.transition = manager.transition
+        self.transitions = manager.transitions
         self.logger.debug("Initialized peripheral events")
 
         # Initialize event queue
-        self.queue = queue.Queue()
+        self.queue: queue.Queue = queue.Queue()
 
     @property
     def mode(self) -> str:
@@ -117,9 +118,11 @@ class PeripheralEvents:
         """Pre-processes reset event request."""
         self.logger.debug("Pre-processing reset event request")
 
-        # Check valid transition
-        if not self.transition.is_valid(self.mode, Modes.RESET):
-            message = "Unable to reset peripheral from {} mode".format(self.mode)
+        # Check valid transitions
+        if not self.transitions.is_valid(self.manager.mode, Modes.RESET):
+            message = "Unable to reset peripheral from {} mode".format(
+                self.manager.mode
+            )
             self.logger.debug(message)
             return message, 400
 
@@ -134,27 +137,29 @@ class PeripheralEvents:
         """Processes reset event request."""
         self.logger.debug("Processing reset event request")
 
-        # Check valid transition
-        if not self.transition.is_valid(self.mode, Modes.RESET):
-            self.logger.critical("Tried to reset from {} mode".format(self.mode))
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.RESET):
+            self.logger.critical("Tried to reset from {} mode".format(mode))
             return
 
         # Transition to reset mode on next state machine update
-        self.mode = Modes.RESET
+        self.manager.mode = Modes.RESET
 
     def shutdown(self) -> Tuple[str, int]:
         """Pre-processes shutdown event request."""
         self.logger.debug("Pre-processing shutdown event request")
 
         # Check sensor isn't already in shutdown mode
-        if self.mode == Modes.SHUTDOWN:
+        if self.manager.mode == Modes.SHUTDOWN:
             message = "Already in shutdown mode"
             self.logger.debug(message)
             return message, 200
 
-        # Check valid transition
-        if not self.transition.is_valid(self.mode, Modes.SHUTDOWN):
-            message = "Unable to shutdown peripheral from {} mode".format(self.mode)
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.SHUTDOWN):
+            message = "Unable to shutdown from {} mode".format(mode)
             self.logger.debug(message)
             return message, 400
 
@@ -169,13 +174,14 @@ class PeripheralEvents:
         """Processes shutdown peripheral event request."""
         self.logger.debug("Processing shutdown event request")
 
-        # Check valid transition
-        if not self.transition.is_valid(self.mode, Modes.SHUTDOWN):
-            self.logger.critical("Tried to shutdown from {} mode".format(self.mode))
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.SHUTDOWN):
+            self.logger.critical("Tried to shutdown from {} mode".format(mode))
             return
 
         # Transition to shutdown mode on next state machine update
-        self.mode = Modes.SHUTDOWN
+        self.manager.mode = Modes.SHUTDOWN
 
     def set_sampling_interval(self, request: Dict[str, Any]) -> Tuple[str, int]:
         """Pre-processes set sampling interval event request."""
@@ -224,14 +230,15 @@ class PeripheralEvents:
         self.logger.debug("Pre-processing enable calibration mode event request")
 
         # Check if sensor alread in calibration mode
-        if self.mode == Modes.CALIBRATE:
+        if self.manager.mode == Modes.CALIBRATE:
             message = "Already in calibration mode"
             self.logger.debug(message)
             return message, 200
 
         # Check valid transition
-        if not self.transition.is_valid(self.mode, Modes.CALIBRATE):
-            message = "Unable to enable calibration mode from {} mode".format(self.mode)
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.CALIBRATE):
+            message = "Unable to enable calibration mode from {} mode".format(mode)
             self.logger.debug(message)
             return message, 400
 
@@ -246,29 +253,30 @@ class PeripheralEvents:
         """Processes enable calibration mode event request."""
         self.logger.debug("Processing enable calibration mode event request")
 
-        # Check valid transition
-        if not self.transition.is_valid(self.mode, Modes.SHUTDOWN):
-            message = "Tried to enable calibration mode from {}".format(self.mode)
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.SHUTDOWN):
+            message = "Tried to enable calibration mode from {}".format(mode)
             self.logger.critical(message)
             return
 
         # Transition to calibration mode on next state machine update
-        self.mode = Modes.CALIBRATE
+        self.manager.mode = Modes.CALIBRATE
 
     def enable_manual_mode(self) -> Tuple[str, int]:
         """Pre-processes enable manual mode event request."""
         self.logger.debug("Pre-processing enable manual mode event request")
 
         # Check if sensor alread in manual mode
-        if self.mode == Modes.MANUAL:
+        if self.manager.mode == Modes.MANUAL:
             message = "Already in manual mode"
             self.logger.debug(message)
             return message, 200
 
-        # Check peripheral is in acceptible mode
-        modes = [Modes.NORMAL, Modes.CALIBRATE]
-        if self.mode not in modes:
-            message = "Unable to enable manual mode from {} mode".format(self.mode)
+        # Check valid transition
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.MANUAL):
+            message = "Unable to enable manual mode from {} mode".format(mode)
             self.logger.debug(message)
             return message, 400
 
@@ -285,10 +293,12 @@ class PeripheralEvents:
 
         # Check peripheral is in acceptible mode
         modes = [Modes.NORMAL, Modes.CALIBRATE]
-        if self.mode not in modes:
-            message = "Unable to enable manual mode from {} mode".format(self.mode)
+        if self.manager.mode not in modes:
+            message = "Unable to enable manual mode from {} mode".format(
+                self.manager.mode
+            )
             self.logger.critical(message)
             return
 
         # Transition to manual mode on next state machine update
-        self.mode = Modes.MANUAL
+        self.manager.mode = Modes.MANUAL

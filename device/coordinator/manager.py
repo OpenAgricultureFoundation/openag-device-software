@@ -551,7 +551,7 @@ class CoordinatorManager(CoordinatorEvents):
             self.logger.debug("Loading recipe file: {}".format(filepath))
             with open(filepath, "r") as f:
                 json_ = f.read().replace("\n", "")
-                message, code = self.recipe.create_or_update_recipe(json_)
+                message, code = self.recipe.events.create_or_update_recipe(json_)
                 if code != 200:
                     filename = filepath.split("/")[-1]
                     error = "Unable to load {} ({})".format(filename, message)

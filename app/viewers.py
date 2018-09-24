@@ -145,7 +145,7 @@ class RecipeViewer:
         # Create recipe and save event interaction
         try:
             # Create recipe
-            message, status = coordinator.recipe.create_recipe(json)
+            message, status = coordinator.recipe.events.create_recipe(json)
 
             # Save event interaction in database
             event = EventModel.objects.create(
@@ -181,7 +181,7 @@ class RecipeViewer:
         # Start recipe and save event interaction
         try:
             # Start recipe
-            message, status = coordinator.recipe.start_recipe(uuid, timestamp)
+            message, status = coordinator.recipe.events.start_recipe(uuid, timestamp)
 
             # Save event interaction in database
             event = EventModel.objects.create(
@@ -209,7 +209,7 @@ class RecipeViewer:
         # Stop recipe and save event interaction
         try:
             # Stop recipe
-            message, status = coordinator.recipe.stop_recipe()
+            message, status = coordinator.recipe.events.stop_recipe()
 
             # Save event interaction in database
             event = EventModel.objects.create(
