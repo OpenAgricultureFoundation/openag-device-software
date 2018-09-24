@@ -105,13 +105,12 @@ class EventViewSet(viewsets.ModelViewSet):
     """API endpoint that allows events to be viewed and created."""
 
     serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
     def get_queryset(self):
         queryset = EventModel.objects.all()
         return queryset
 
-    @method_decorator(login_required)
     def create(self, request):
         """ API endpoint to create an event. """
 
@@ -133,8 +132,9 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows events to be viewed. """
 
     serializer_class = EnvironmentSerializer
+    permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
     def get_queryset(self):
         queryset = EnvironmentModel.objects.all()
         return queryset
@@ -145,13 +145,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     serializer_class = RecipeSerializer
     lookup_field = "uuid"
+    permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
     def get_queryset(self):
         queryset = RecipeModel.objects.all().order_by("name")
         return queryset
 
-    @method_decorator(login_required)
     def create(self, request):
         """ API endpoint to create a recipe. """
         permission_classes = [IsAuthenticated, IsAdminUser]
@@ -159,7 +158,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response, status = recipe_viewer.create(request.data)  # was data.dict()
         return Response(response, status)
 
-    @method_decorator(login_required)
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def start(self, request, uuid):
         """API endpoint to start a recipe."""
@@ -167,7 +165,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response, status = recipe_viewer.start(uuid, request.data)  # was data.dict()
         return Response(response, status)
 
-    @method_decorator(login_required)
     @list_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def stop(self, request):
         """ API endpoint to stop a recipe. """
@@ -191,6 +188,7 @@ class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivars to be viewed. """
 
     serializer_class = CultivarSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = CultivarModel.objects.all()
@@ -201,6 +199,7 @@ class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivation methods to be viewed. """
 
     serializer_class = CultivationMethodSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = CultivationMethodModel.objects.all()
@@ -211,6 +210,7 @@ class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows sensor variables to be viewed. """
 
     serializer_class = SensorVariableSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = SensorVariableModel.objects.all()
@@ -221,6 +221,7 @@ class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows actuator variables to be viewed. """
 
     serializer_class = ActuatorVariableSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = ActuatorVariableModel.objects.all()
@@ -231,6 +232,7 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows peripheral setups to be viewed. """
 
     serializer_class = PeripheralSetupSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = PeripheralSetupModel.objects.all()
@@ -556,7 +558,6 @@ class ConnectJoinWifi(viewsets.ViewSet):
     This class extends the ViewSet (not ModelViewSet) because it
     dynamically gets its data and the Model gets data from the DB."""
 
-    # @permission_classes((IsAuthenticated, IsAdminUser))
     @method_decorator(login_required)
     def create(self, request):
         extra = {"console_name": "views.ConnectJoinWifi"}
