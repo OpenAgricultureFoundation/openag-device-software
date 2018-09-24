@@ -1,18 +1,25 @@
 # Import standard python modules
 import time, queue, json
+from json.decoder import JSONDecodeError
 
 # Import python types
 from typing import Dict, Tuple, Any, Optional
 
 # Import json validator
 from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.statemachine import Manager
 
 # Import app models
-from app.models import RecipeModel
+from app.models import (
+    RecipeModel,
+    SensorVariableModel,
+    CultivarModel,
+    CultivationMethodModel,
+)
 
 START_RECIPE = "Start Recipe"
 STOP_RECIPE = "Stop Recipe"
@@ -159,7 +166,7 @@ class RecipeEvents:
         # Check if recipe is valid
         is_valid, error = self.validate_recipe(json_, should_exist=False)
         if not is_valid:
-            message = "Unable to create recipe, {}".format(error)
+            message = "Unable to create recipe. {}".format(error)
             self.logger.debug(message)
             return message, 400
 
@@ -180,7 +187,7 @@ class RecipeEvents:
         # Check if recipe is valid
         is_valid, error = self.validate_recipe(json_, should_exist=False)
         if not is_valid:
-            message = "Unable to update recipe, {}".format(error)
+            message = "Unable to update recipe. {}".format(error)
             self.logger.debug(message)
             return message, 400
 
@@ -203,7 +210,7 @@ class RecipeEvents:
         # Check if recipe is valid
         is_valid, error = self.validate_recipe(json_, should_exist=None)
         if not is_valid:
-            message = "Unable to update recipe, {}".format(error)
+            message = "Unable to create/update recipe -> {}".format(error)
             return message, 400
 
         # Check if creating or updating recipe in database
@@ -242,30 +249,99 @@ class RecipeEvents:
         # Load recipe schema
         recipe_schema = json.load(open("data/schemas/recipe.json"))
 
-        # Check valid json
+        # Check valid json and try to parse recipe
         try:
+            # Decode json
             recipe = json.loads(json_)
+
+            # Validate recipe against schema
             validate(recipe, recipe_schema)
+
+            # Parse recipe
+            format_ = recipe["format"]
+            version = recipe["version"]
+            name = recipe["name"]
             uuid = recipe["uuid"]
-        except:
-            return False, "invalid json"
+            cultivars = recipe["cultivars"]
+            cultivation_methods = recipe["cultivation_methods"]
+            environments = recipe["environments"]
+            phases = recipe["phases"]
+
+        except JSONDecodeError as e:
+            message = "Invalid recipe json encoding: {}".format(e)
+            self.logger.debug(message)
+            return False, message
+        except ValidationError as e:
+            message = "Invalid recipe json schema: {}".format(e.message)
+            self.logger.debug(message)
+            return False, message
+        except KeyError as e:
+            self.logger.critical("Recipe schema did not ensure `{}` exists".format(e))
+            message = "Invalid recipe json schema: `{}` is requred".format(e)
+            return False, message
+        except Exception as e:
+            self.logger.critical("Invalid recipe, unhandled exception: {}".format(e))
+            return False, "Unhandled exception: {}".format(type(e))
 
         # Check valid uuid
         if uuid == None or len(uuid) == 0:
-            return False, "invalid uuid"
+            return False, "Invalid uuid"
 
         # Check recipe existance criteria, does not check if should_exist == None
         recipe_exists = RecipeModel.objects.filter(uuid=uuid).exists()
         if should_exist == True and not recipe_exists:
-            return False, "uuid does not exist"
+            return False, "UUID does not exist"
         elif should_exist == False and recipe_exists:
-            return False, "uuid already exists"
+            return False, "UUID already exists"
 
-        # TODO: Validate recipe variables with database variables
-        # TODO: Validate recipe cycle variables with recipe environments
-        # TODO: Validate recipe cultivars with database cultivars
-        # TODO: Validate recipe cultivation methods with database cultivation methods
-        # TODO: Try to parse recipe...does this take awhile?...what is fast version?
+        # Check cycle environment key names are valid
+        try:
+            for phase in phases:
+                for cycle in phase["cycles"]:
+                    cycle_name = cycle["name"]
+                    environment_key = cycle["environment"]
+                    if environment_key not in environments:
+                        message = "Invalid environment key `{}` in cycle `{}`".format(
+                            environment_key, cycle_name
+                        )
+                        self.logger.debug(message)
+                        return False, message
+        except KeyError as e:
+            self.logger.critical("Recipe schema did not ensure `{}` exists".format(e))
+            message = "Invalid recipe json schema: `{}` is requred".format(e)
+            return False, message
+
+        # Build list of environment variables
+        env_vars = []
+        for env_key, env_dict in environments.items():
+            for env_var, _ in env_dict.items():
+                if env_var != "name" and env_var not in env_vars:
+                    env_vars.append(env_var)
+
+        # Check environment variables are valid sensor variables
+        for env_var in env_vars:
+            if not SensorVariableModel.objects.filter(key=env_var).exists():
+                message = "Invalid recipe environment variable: `{}`".format(env_var)
+                self.logger.debug(message)
+                return False, message
+
+        # Check cultivars are valid
+        for cultivar in cultivars:
+            cultivar_name = cultivar["name"]
+            cultivar_uuid = cultivar["uuid"]
+            if not CultivarModel.objects.filter(uuid=cultivar_uuid).exists():
+                message = "Invalid recipe cultivar: `{}`".format(cultivar_name)
+                self.logger.debug(message)
+                return False, message
+
+        # Check cultivation methods are valid
+        for method in cultivation_methods:
+            method_name = method["name"]
+            method_uuid = method["uuid"]
+            if not CultivationMethodModel.objects.filter(uuid=method_uuid).exists():
+                message = "Invalid recipe cultivation method: `{}`".format(method_name)
+                self.logger.debug(message)
+                return False, message
 
         # Recipe is valid
         return True, None

@@ -554,7 +554,7 @@ class CoordinatorManager(CoordinatorEvents):
                 message, code = self.recipe.events.create_or_update_recipe(json_)
                 if code != 200:
                     filename = filepath.split("/")[-1]
-                    error = "Unable to load {} ({})".format(filename, message)
+                    error = "Unable to load {} -> {}".format(filename, message)
                     self.logger.error(error)
 
     def load_peripheral_setup_files(self):

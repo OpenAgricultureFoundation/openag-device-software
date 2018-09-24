@@ -1,4 +1,4 @@
-
+{
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-06-18T11:45:41Z",
@@ -7,8 +7,8 @@
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
 	"description": {
-		"brief": "Grows arugula.",
-		"verbose": "Grows arugula in 40 days in a shallow water culture hydroponic system. The lights are on a balanced spectrum and follow a standard 24 hour light cycle with 16 hour days. Moderate temperatures are maintained throughout the grow."
+		"brief": "Grows  Apollo Arugula.",
+		"verbose": "Grows arugula in 30 days in a shallow water culture hydroponic system. The lights are on a balanced spectrum and follow a standard 24 hour light cycle with 16 hour days. Moderate temperatures are maintained throughout the grow."
 	},
 	"authors": [
 		{
@@ -19,7 +19,7 @@
 	],
 	"cultivars": [
 		{
-			"name": "Arugula",
+			"name": "Apollo Arugula",
 			"uuid": "581d6309-1155-442f-8f50-9541a4005ea2"
 		}
 	],
@@ -48,7 +48,7 @@
 	"phases": [
 		{
 			"name": "Standard Growth",
-			"repeat": 40,
+			"repeat": 30,
 			"cycles": [
 				{
 					"name": "Day",
