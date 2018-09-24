@@ -9,6 +9,7 @@ __pycache__/
 *.cache*
 .pytest_cache/
 data/registration
+data/config/develop
 images/
 about.json
 .idea
