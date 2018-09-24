@@ -75,6 +75,9 @@ from device.upgrade.utilities import UpgradeUtilities
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
 
+LOG_DIR = "data/logs/"
+
+
 def change_password(request):
     if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
@@ -367,16 +370,14 @@ class Logs(APIView):
             config_name = "unspecified"
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
-        # Build logs
+        # Build peripheral logs
         logs = []
         for peripheral in device_config["peripherals"]:
             name = peripheral["name"]
 
             # Load in peripheral log file
-            log_file = open("data/logs/peripherals/{}.log".format(name))
-            lines = (
-                log_file.readlines()
-            )  # As long as file doesn't get too big, readlines is OK
+            log_file = open(LOG_DIR + "peripherals/{}.log".format(name))
+            lines = log_file.readlines()
 
             # Return up to 500 lines
             if len(lines) < 500:
@@ -386,6 +387,34 @@ class Logs(APIView):
 
             # Append to log
             logs.append({"name": name, "entries": entries})
+
+        # Build device top-level logs
+        log_filenames = [
+            "app",
+            "coordinator",
+            "recipe",
+            "resource",
+            "iot",
+            "i2c",
+            "connect",
+            "upgrade",
+        ]
+
+        # Load in all log files
+        for name in log_filenames:
+
+            # Load log filenames
+            file = open(LOG_DIR + name + ".log")
+            lines = file.readlines()
+
+            # Return up to 500 lines
+            if len(lines) < 500:
+                entries = lines
+            else:
+                entries = lines[-500:]
+
+            # Append to log
+            logs.append({"name": name.capitalize(), "entries": entries})
 
         # Return response
         return Response({"logs": logs, "logs_json": json.dumps(logs)})
