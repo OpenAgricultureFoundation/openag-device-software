@@ -5,9 +5,9 @@ import time, threading
 from typing import Optional, Tuple, NamedTuple
 
 # Import device comms
-from device.comms.i2c2.main import I2C
-from device.comms.i2c2.exceptions import I2CError
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.main import I2C
+from device.communication.i2c.exceptions import I2CError
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -192,7 +192,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         except Exception as e:
             raise SetProbeTypeError(logger=self.logger) from e
 
-    def take_dry_calibration_reading(self, retry: bool = True) -> None:
+    def calibrate_dry(self, retry: bool = True) -> None:
         """Take a dry calibration reading."""
         self.logger.info("Taking dry calibration reading")
         try:
@@ -200,9 +200,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         except Exception as e:
             raise TakeDryCalibrationError(logger=self.logger) from e
 
-    def take_single_point_calibration_reading(
-        self, value: float, retry: bool = True
-    ) -> None:
+    def calibrate_single(self, value: float, retry: bool = True) -> None:
         """Takes a single point calibration reading."""
         self.logger.info("Taking single point calibration reading")
 

@@ -11,10 +11,10 @@ from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
 
 # Import device state
-from device.state import State
+from device.state.main import State
 
 # Import mux simulator
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.led_dac5578.manager import LEDDAC5578Manager

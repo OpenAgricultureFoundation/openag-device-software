@@ -25,17 +25,11 @@ mkdir -p $DEST
 echo "Copying files..."
 # Copy the app source dirs:
 cp -R app/ \
-  config/ \
-  connect/ \
   data/ \
   device/ \
   docs/ \
-  iot/ \
-  registration/ \
-  resource/ \
   scripts/ \
   tests/ \
-  upgrade/ \
   venv/ \
   $DEST
 
@@ -50,16 +44,12 @@ cp __init__.py \
   $DEST
 
 # Make some empty directories we will use:
-mkdir -p $DEST/images
-mkdir -p $DEST/logs/peripherals
+mkdir -p $DEST/data/images
+mkdir -p $DEST/data/logs/peripherals
 
 # Clean up any files that might be in a working / configured install that we 
 # don't want in the package:
 cd $DEST
 rm -fr \
-  registration/data \
-  config/device.txt
-
-
-
-
+  data/registration \
+  data/config/device.txt

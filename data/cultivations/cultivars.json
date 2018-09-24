@@ -30,5 +30,37 @@
 			"average_duration_days": 35,
 			"duration_start_stage": "2.5 year old sapling"
 		}
+	},
+	{
+		"uuid": "9dc80135-0c24-4a65-ae0b-95f1c5e53676",
+		"name": "Genovese Basil",
+		"info": 
+		{
+			"description": {
+				"brief": "Classic large-leaved Italian sweet basil.",
+				"verbose": "This classic large-leaved Italian sweet basil, prized for its flavor and heady aroma, is a top pick for many cooks when making pesto. Fragrant plants grow 18-24 in. and produce densely branched plants when pinched back regularly."
+			},
+			"link": "https://www.seedsavers.org/genovese-basil-organic-herb",
+			"average_height_centimeters": 50,
+			"average_width_centimeters": 30,
+			"average_duration_days": 60,
+			"duration_start_stage": "seedling"
+		}
+	},
+	{
+		"uuid": "581d6309-1155-442f-8f50-9541a4005ea2",
+		"name": "Apollo Arugula",
+		"info": 
+		{
+			"description": {
+				"brief": "Improved Dutch strain of domesticated rocket.",
+				"verbose": "(Eruca sativa) Improved Dutch strain of domesticated rocket. Very large, rounded leaves are high in vitamin C. Excellent flavor and rarely bitter. Will produce 3-5 cuttings per sowing if kept well picked."
+			},
+			"link": "https://www.seedsavers.org/apollo-arugula",
+			"average_height_centimeters": 30,
+			"average_width_centimeters": 10,
+			"average_duration_days": 30,
+			"duration_start_stage": "seedling"
+		}
 	}
 ]

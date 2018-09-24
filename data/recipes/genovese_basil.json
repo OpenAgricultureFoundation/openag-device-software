@@ -2,7 +2,7 @@
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-06-18T11:45:41Z",
-	"name": "Genovese basil",
+	"name": "Genovese Basil",
 	"uuid": "92c3b8f9-3d12-4d03-8414-e9f5af8002ab",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
@@ -19,7 +19,7 @@
 	],
 	"cultivars": [
 		{
-			"name": "Genovese basil",
+			"name": "Genovese Basil",
 			"uuid": "9dc80135-0c24-4a65-ae0b-95f1c5e53676"
 		}
 	],

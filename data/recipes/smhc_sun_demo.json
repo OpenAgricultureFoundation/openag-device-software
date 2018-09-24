@@ -1,0 +1,119 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-07-26T16:45:41Z",
+	"name": "Small Hazelnut Sun Demo",
+	"uuid": "711bdc18-4d57-4ef6-9397-3773a53e9d7d",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Demo grow simulating sun spectrum over an accelerated day",
+		"verbose": "Demo grow simulating sun spectrum over an accelerated day"
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		},
+		{
+			"name": "Dan Poitrast",
+			"email": "poitrast@mit.edu",
+			"uuid": "117a72aa-6288-46bc-87f9-5b37630fd944"
+		},
+		{
+			"name": "Zander Auerbach",
+			"email": "zandera@mit.edu",
+			"uuid": "0935948e-e2c9-4db7-902e-6db5922ff0a3"
+		}
+
+	],
+	"cultivars": [
+		{
+			"name": "2.5 Year Old Hazelnut Tree",
+			"uuid": "4b348702-6e23-40ac-aa89-597f06d64a26"
+		}
+	],
+	"cultivation_methods": [
+		{
+			"name": "Soil",
+			"uuid": "dc919f3d-f110-4371-965c-3e89041cecfe"
+		}
+	],
+	"environments": {
+		"morning_1": {
+			"name": "Light Morning 1",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
+			"light_illumination_distance_cm": 30,
+			"light_ppfd_umol_m2_s": 300
+		},
+		"morning_2": {
+			"name": "Light Morning 2",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
+			"light_illumination_distance_cm": 30,
+			"light_ppfd_umol_m2_s": 600
+		},
+		"afternoon": {
+			"name": "Light Afternoon",
+			"light_spectrum_nm_percent": {"380-399": 10, "400-499": 30, "500-599": 30, "600-700": 30, "701-780": 10},
+			"light_illumination_distance_cm": 73,
+			"light_ppfd_umol_m2_s": 900
+		},
+		"evening_1": {
+			"name": "Light Evening 1",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
+			"light_illumination_distance_cm": 30,
+			"light_ppfd_umol_m2_s": 600
+		},
+		"evening_2": {
+			"name": "Light Evening 2",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
+			"light_illumination_distance_cm": 30,
+			"light_ppfd_umol_m2_s": 300
+		},
+		"night": {
+			"name": "Light Night",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 100, "500-599": 0, "600-700": 0, "701-780": 0},
+			"light_illumination_distance_cm": 30,
+			"light_ppfd_umol_m2_s": 0
+		}
+	},
+	"phases": [
+		{
+			"name": "Demo",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Morning 1",
+					"environment": "morning_1",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Morning 2",
+					"environment": "morning_2",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Afternoon",
+					"environment": "afternoon",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 1",
+					"environment": "evening_1",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Evening 2",
+					"environment": "evening_2",
+					"duration_minutes": 1
+				},
+				{
+					"name": "Night",
+					"environment": "night",
+					"duration_minutes": 1
+				}
+			]
+		}
+	]
+}

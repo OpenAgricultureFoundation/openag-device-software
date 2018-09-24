@@ -5,9 +5,9 @@ import time, os, datetime, glob, threading
 from typing import Optional, Tuple, Dict, Any, List
 
 # Import device comms
-from device.comms.i2c2.main import I2C
-from device.comms.i2c2.exceptions import I2CError
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.main import I2C
+from device.communication.i2c.exceptions import I2CError
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -23,6 +23,8 @@ from device.peripherals.modules.usb_camera.exceptions import (
     CaptureError,
     CaptureImageError,
 )
+
+IMAGE_DIR = "data/images/"
 
 
 class USBCameraDriver:
@@ -57,7 +59,7 @@ class USBCameraDriver:
             self.logger.info("Simulating driver")
             self.directory = "device/peripherals/modules/usb_camera/tests/images/"
         else:
-            self.directory = "images/"
+            self.directory = IMAGE_DIR
 
         # Check directory exists else create it
         if not os.path.exists(self.directory):

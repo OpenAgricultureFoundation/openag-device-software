@@ -15,7 +15,7 @@ from device.utilities.modes import Modes
 from device.utilities.accessors import get_peripheral_config
 
 # Import device state
-from device.state import State
+from device.state.main import State
 
 # Import peripheral manager
 from device.peripherals.classes.peripheral.manager import PeripheralManager
@@ -27,7 +27,7 @@ peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-
 
 
 def test_init():
-    peripheral_manager = PeripheralManager(
+    manager = PeripheralManager(
         name="Test",
         state=State(),
         config=peripheral_config,
@@ -37,36 +37,36 @@ def test_init():
 
 
 def test_run_init_mode():
-    peripheral_manager = PeripheralManager(
+    manager = PeripheralManager(
         name="Test",
         state=State(),
         config=peripheral_config,
         i2c_lock=threading.RLock(),
         simulate=True,
     )
-    peripheral_manager.run_init_mode()
-    assert peripheral_manager.mode == Modes.SETUP
+    manager.run_init_mode()
+    assert manager.mode == Modes.SETUP
 
 
 def test_run_setup_mode():
-    peripheral_manager = PeripheralManager(
+    manager = PeripheralManager(
         name="Test",
         state=State(),
         config=peripheral_config,
         i2c_lock=threading.RLock(),
         simulate=True,
     )
-    peripheral_manager.run_setup_mode()
-    assert peripheral_manager.mode == Modes.NORMAL
+    manager.run_setup_mode()
+    assert manager.mode == Modes.NORMAL
 
 
 def test_run_reset_mode():
-    peripheral_manager = PeripheralManager(
+    manager = PeripheralManager(
         name="Test",
         state=State(),
         config=peripheral_config,
         i2c_lock=threading.RLock(),
         simulate=True,
     )
-    peripheral_manager.run_reset_mode()
-    assert peripheral_manager.mode == Modes.INIT
+    manager.run_reset_mode()
+    assert manager.mode == Modes.INIT

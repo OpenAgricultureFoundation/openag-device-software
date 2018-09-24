@@ -69,10 +69,13 @@ from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
-from connect.connect_utils import ConnectUtils
-from upgrade.upgrade_utils import UpgradeUtils
+from device.connect.utilities import ConnectUtilities
+from device.upgrade.utilities import UpgradeUtilities
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
+
+
+LOG_DIR = "data/logs/"
 
 
 def change_password(request):
@@ -91,9 +94,10 @@ def change_password(request):
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows state to be viewed. """
+    """API endpoint that allows state to be viewed."""
 
     serializer_class = StateSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = StateModel.objects.all()
@@ -101,16 +105,15 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class EventViewSet(viewsets.ModelViewSet):
-    """ API endpoint that allows events to be viewed and created. """
+    """API endpoint that allows events to be viewed and created."""
 
     serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
     def get_queryset(self):
         queryset = EventModel.objects.all()
         return queryset
 
-    @method_decorator(login_required)
     def create(self, request):
         """ API endpoint to create an event. """
 
@@ -132,41 +135,39 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows events to be viewed. """
 
     serializer_class = EnvironmentSerializer
+    permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
+    # @method_decorator(login_required)
     def get_queryset(self):
         queryset = EnvironmentModel.objects.all()
         return queryset
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """ API endpoint that allows recipes to be viewed. """
+    """API endpoints that allow recipes to be started, stopped, created, and viewed."""
 
     serializer_class = RecipeSerializer
+    lookup_field = "uuid"
+    permission_classes = [IsAuthenticated]
 
-    @method_decorator(login_required)
     def get_queryset(self):
-        queryset = RecipeModel.objects.all()
+        queryset = RecipeModel.objects.all().order_by("name")
         return queryset
 
-    @method_decorator(login_required)
     def create(self, request):
         """ API endpoint to create a recipe. """
         permission_classes = [IsAuthenticated, IsAdminUser]
         recipe_viewer = RecipeViewer()
-        response, status = recipe_viewer.create(request.data.dict())
+        response, status = recipe_viewer.create(request.data)  # was data.dict()
         return Response(response, status)
 
-    @method_decorator(login_required)
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
-    def start(self, request, pk=None):
-        """ API endpoint to start a recipe. """
-        permission_classes = [IsAuthenticated]
+    def start(self, request, uuid):
+        """API endpoint to start a recipe."""
         recipe_viewer = RecipeViewer()
-        response, status = recipe_viewer.start(request.data.dict(), pk)
+        response, status = recipe_viewer.start(uuid, request.data)  # was data.dict()
         return Response(response, status)
 
-    @method_decorator(login_required)
     @list_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def stop(self, request):
         """ API endpoint to stop a recipe. """
@@ -190,6 +191,7 @@ class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivars to be viewed. """
 
     serializer_class = CultivarSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = CultivarModel.objects.all()
@@ -200,6 +202,7 @@ class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivation methods to be viewed. """
 
     serializer_class = CultivationMethodSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = CultivationMethodModel.objects.all()
@@ -210,6 +213,7 @@ class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows sensor variables to be viewed. """
 
     serializer_class = SensorVariableSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = SensorVariableModel.objects.all()
@@ -220,6 +224,7 @@ class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows actuator variables to be viewed. """
 
     serializer_class = ActuatorVariableSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = ActuatorVariableModel.objects.all()
@@ -230,6 +235,7 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows peripheral setups to be viewed. """
 
     serializer_class = PeripheralSetupSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         queryset = PeripheralSetupModel.objects.all()
@@ -255,7 +261,7 @@ class Dashboard(APIView):
         current_recipe = RecipeViewer()
 
         # Get stored recipe objects
-        recipe_objects = RecipeModel.objects.all()
+        recipe_objects = RecipeModel.objects.all().order_by("name")
         recipes = []
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
@@ -356,23 +362,22 @@ class Logs(APIView):
     def get(self, request):
 
         # Load device config
-        if os.path.exists("config/device.txt"):
-            with open("config/device.txt") as f:
+        DEVICE_CONFIG_PATH = "data/config/device.txt"
+        if os.path.exists(DEVICE_CONFIG_PATH):
+            with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()
         else:
             config_name = "unspecified"
         device_config = json.load(open("data/devices/{}.json".format(config_name)))
 
-        # Build logs
+        # Build peripheral logs
         logs = []
         for peripheral in device_config["peripherals"]:
             name = peripheral["name"]
 
             # Load in peripheral log file
-            log_file = open("logs/peripherals/{}.log".format(name))
-            lines = (
-                log_file.readlines()
-            )  # As long as file doesn't get too big, readlines is OK
+            log_file = open(LOG_DIR + "peripherals/{}.log".format(name))
+            lines = log_file.readlines()
 
             # Return up to 500 lines
             if len(lines) < 500:
@@ -382,6 +387,34 @@ class Logs(APIView):
 
             # Append to log
             logs.append({"name": name, "entries": entries})
+
+        # Build device top-level logs
+        log_filenames = [
+            "app",
+            "coordinator",
+            "recipe",
+            "resource",
+            "iot",
+            "i2c",
+            "connect",
+            "upgrade",
+        ]
+
+        # Load in all log files
+        for name in log_filenames:
+
+            # Load log filenames
+            file = open(LOG_DIR + name + ".log")
+            lines = file.readlines()
+
+            # Return up to 500 lines
+            if len(lines) < 500:
+                entries = lines
+            else:
+                entries = lines[-500:]
+
+            # Append to log
+            logs.append({"name": name.capitalize(), "entries": entries})
 
         # Return response
         return Response({"logs": logs, "logs_json": json.dumps(logs)})
@@ -528,7 +561,7 @@ class Connect(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.get_status()
+        response = ConnectUtilities.get_status()
         logger.info("Connect response={}".format(response))
         return Response(response)
 
@@ -544,7 +577,7 @@ class ConnectGetStatus(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.get_status()
+        response = ConnectUtilities.get_status()
         logger.info("ConnectGetStatus response={}".format(response))
         return Response(response)
 
@@ -554,7 +587,6 @@ class ConnectJoinWifi(viewsets.ViewSet):
     This class extends the ViewSet (not ModelViewSet) because it
     dynamically gets its data and the Model gets data from the DB."""
 
-    # @permission_classes((IsAuthenticated, IsAdminUser))
     @method_decorator(login_required)
     def create(self, request):
         extra = {"console_name": "views.ConnectJoinWifi"}
@@ -572,7 +604,7 @@ class ConnectJoinWifi(viewsets.ViewSet):
         password = reqd["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        success = ConnectUtils.join_wifi(wifi, password)
+        success = ConnectUtilities.join_wifi(wifi, password)
         response = {"success": success}
         logger.info("ConnectJoinWifi response={}".format(response))
         return Response(response)
@@ -588,7 +620,7 @@ class ConnectDeleteWifis(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.delete_wifi_connections()
+        response = ConnectUtilities.delete_wifi_connections()
         logger.info("ConnectDeleteWifis response={}".format(response))
         return Response(response)
 
@@ -603,7 +635,7 @@ class ConnectRegisterIoT(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.register_iot()
+        response = ConnectUtilities.register_iot()
         logger.info("ConnectRegisterIoT response={}".format(response))
         return Response(response)
 
@@ -618,7 +650,7 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtils.delete_iot_registration()
+        response = ConnectUtilities.delete_iot_registration()
         logger.info("ConnectDeleteIoTreg response={}".format(response))
         return Response(response)
 
@@ -635,7 +667,7 @@ class Upgrade(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = UpgradeUtils.get_status()
+        response = UpgradeUtilities.get_status()
         logger.info("Upgrade status response={}".format(response))
         return Response(response)
 
@@ -650,7 +682,7 @@ class UpgradeNow(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeNow"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtils.update_software()
+        response = UpgradeUtilities.update_software()
         logger.info("UpgradeNow response={}".format(response))
         return Response(response)
 
@@ -663,7 +695,7 @@ class UpgradeCheck(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeCheck"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtils.check()
+        response = UpgradeUtilities.check()
         logger.info("UpgradeCheck response={}".format(response))
         return Response(response)
 
@@ -676,7 +708,7 @@ class UpgradeStatus(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeStatus"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtils.get_status()
+        response = UpgradeUtilities.get_status()
         logger.info("UpgradeStatus response={}".format(response))
         return Response(response)
 

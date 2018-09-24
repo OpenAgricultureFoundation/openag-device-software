@@ -8,7 +8,7 @@ from typing import Dict
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import mux simulator
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.common.dac5578.driver import DAC5578Driver

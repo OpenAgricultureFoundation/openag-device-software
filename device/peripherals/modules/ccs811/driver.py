@@ -5,9 +5,9 @@ import time, threading
 from typing import NamedTuple, Optional, Tuple
 
 # Import device comms
-from device.comms.i2c2.main import I2C
-from device.comms.i2c2.mux_simulator import MuxSimulator
-from device.comms.i2c2.exceptions import I2CError
+from device.communication.i2c.main import I2C
+from device.communication.i2c.mux_simulator import MuxSimulator
+from device.communication.i2c.exceptions import I2CError
 
 # Import device utilities
 from device.utilities.logger import Logger

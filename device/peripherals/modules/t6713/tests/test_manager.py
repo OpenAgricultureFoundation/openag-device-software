@@ -11,10 +11,10 @@ from device.utilities.accessors import get_peripheral_config
 from device.utilities.modes import Modes
 
 # Import device state
-from device.state import State
+from device.state.main import State
 
 # Import simulators
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 from device.peripherals.modules.t6713.simulator import T6713Simulator
 
 # Import peripheral manager

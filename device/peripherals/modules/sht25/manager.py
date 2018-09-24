@@ -13,7 +13,7 @@ from device.peripherals.modules.sht25.driver import SHT25Driver
 from device.peripherals.modules.sht25.exceptions import DriverError
 
 
-class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
+class SHT25Manager(PeripheralManager):  # type: ignore
     """Manages an sht25 temperature and humidity sensor."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -21,6 +21,9 @@ class SHT25Manager(PeripheralManager, SHT25Events):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
+
+        # Initialize events
+        self.events = SHT25Events(self)
 
         # Initialize variable names
         self.temperature_name = self.variables["sensor"]["temperature_celcius"]
