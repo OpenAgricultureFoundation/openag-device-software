@@ -2,7 +2,7 @@
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-07-26T16:45:41Z",
-	"name": "Small Hazelnut Sun demo",
+	"name": "Small Hazelnut Sun Demo",
 	"uuid": "711bdc18-4d57-4ef6-9397-3773a53e9d7d",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,

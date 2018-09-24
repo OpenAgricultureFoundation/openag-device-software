@@ -1,8 +1,8 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Small Hazelnut - A",
+    "name": "Small Hazelnut Computer - C",
     "version": "1",
-    "uuid": "65dba26a-f9b4-48d7-a8d5-d180645cf4c6",
+    "uuid": "7efd7806-e922-4c68-abc6-6879ad70899b",
     "peripherals": [
         {
             "name": "LEDArray-1",
@@ -25,11 +25,12 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP13", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2, "active_low": true},
-                        {"name": "LP23", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true},
-                        {"name": "LP33", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4,"active_low": true},
-                        {"name": "LP41", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1, "active_low": true},
-                        {"name": "LP42", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 0, "active_low": true}
+                        {"name": "LP25", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 0, "active_low": true},
+                        {"name": "LP34", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5, "active_low": true},
+                        {"name": "LP35", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "active_low": true},
+                        {"name": "LP43", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true},
+                        {"name": "LP44", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6, "active_low": true},
+                        {"name": "LP54", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2, "active_low": true}
                     ]
                 }
             }
