@@ -259,7 +259,8 @@ class IoTPubSub:
                 self.logger.info(
                     "publish_binary_image: sent image chunk "
                     "{} of {} for {} and {} bytes".format(
-                        chunk, total_chunks, variableName, len(msg_obj["imageChunk"])
+                        chunk, total_chunks, variable_name, 
+                        len(msg_obj["imageChunk"])
                     )
                 )
 

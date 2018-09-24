@@ -328,12 +328,14 @@ class IoTManager:
                     file_bytes = f.read()
                     f.close()
 
-                    # If the size is < 40KB, then it is garbage we delete
-                    if len(file_bytes) < 40000:
+                    # If the size is < 200KB, then it is garbage we delete
+                    # (based on the 1280x1024 average file size)
+                    if len(file_bytes) < 200000:
                         os.remove(image_file)
                         continue
 
-                    self.iot.publishBinaryImage(camera_name, "png", file_bytes)
+                    self.iot.publish_binary_image(camera_name, "png", 
+                            file_bytes)
 
                     # Check if stored directory exists, if not create it
                     if not os.path.isdir(IMAGE_DIR + "stored"):
@@ -341,7 +343,7 @@ class IoTManager:
 
                     # Move image from image directory once processed
                     stored_image_file = image_file.replace(
-                        IMAGE_DIR, IMAGE_DIR + "stored"
+                        IMAGE_DIR, IMAGE_DIR + "stored/"
                     )
                     shutil.move(image_file, stored_image_file)
 
