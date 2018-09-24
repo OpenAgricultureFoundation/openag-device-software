@@ -17,7 +17,6 @@ from device.state.main import State
 
 # Import device managers
 from device.recipe.manager import RecipeManager
-from device.event.manager import EventManager
 from device.resource.manager import ResourceManager
 from device.iot.manager import IoTManager
 from device.connect.manager import ConnectManager
@@ -77,10 +76,6 @@ class CoordinatorManager(CoordinatorEvents):
 
     # Initialize recipe object
     recipe = RecipeManager(state)
-
-    # Intialize event object
-    event = EventManager(state)  # TODO: remove this
-    # post_save.connect(event.process, sender=EventModel)
 
     # Initialize peripheral and controller managers
     peripherals = None
@@ -300,7 +295,6 @@ class CoordinatorManager(CoordinatorEvents):
 
         # Spawn the threads this object controls
         self.recipe.spawn()
-        self.event.spawn()
         self.iot.spawn()
         self.resource.spawn()
         self.connect.spawn()
@@ -382,7 +376,6 @@ class CoordinatorManager(CoordinatorEvents):
         self.kill_peripheral_threads()
         self.kill_controller_threads()
         self.recipe.stop()
-        self.event.stop()
         self.iot.stop()
 
         # Transition to INIT

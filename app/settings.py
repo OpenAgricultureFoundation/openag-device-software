@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     "app",
     "device.coordinator",
     "device.peripherals",
-    "device.event",
     "device.iot",
     "device.resource",
     "device.connect",
