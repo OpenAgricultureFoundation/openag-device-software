@@ -3,6 +3,8 @@
 {% block javascript %}
 <script>
 
+  $('#datetimepicker1').datetimepicker();
+
   function createDeviceEvent(event_name, event_id) {
      /* Creates peripheral event. */
      console.log("Creating device event: " + event_name)
@@ -74,33 +76,20 @@
 
       console.log(timestamp)
       
-      // Create recipient and request dicts
-      recipient =  {
-          "type": "Device",
-          "name": null};
-      request = {
-          "type": "Start Recipe",
-          "uuid": uuid,
-          "timestamp": timestamp,
-        };
-
-       console.log(request)
-
       // Send create event request to endpoint
       $.ajax({
-          url: "/api/event/",
+          url: "/api/recipe/" + uuid + "/start/",
           type: "POST",
           data: {
             "csrfmiddlewaretoken": "{{ csrf_token }}",
-            "recipient": JSON.stringify(recipient),
-            "request": JSON.stringify(request)
+            "timestamp": timestamp
           },
           dataType: 'json',
           success: function(data) {
             console.log("Event request succeeded")
 
             // Get response message
-            message = data.message
+            message = data
             alert(message);
             location.reload();
           },
@@ -108,58 +97,77 @@
             console.log("Event request failed")
 
             // Get response message
-            response_dict = JSON.parse(data.responseText)
-            message = response_dict["message"]
+            message = JSON.parse(data.responseText)
             alert(message);
           }
       }); 
    }
 
-   $('#datetimepicker1').datetimepicker();
 
-   // TODO not used
-   // function stop_recipe() {
-   //   $.ajax({
-   //     url: '/api/recipe/stop/',
-   //     type: "POST",
-   //     data: {
-   //       'csrfmiddlewaretoken': '{{ csrf_token }}'},
-   //     dataType: 'json',
-   //     success: function(data) {
-   //         alert(data.message)
-   //     },
-   //     error: function(data) {
-   //         alert(data.responseText)
-   //     },
-   //     complete: function(data) {
-   //         // TODO: Reload on when recipe name changes
-   //         location.reload();
-   //     }
-   //   });
-   // }
+   function stopRecipe() {
+      /* Stops a recipe. */
+      console.log("Stopping recipe")
+
+      // Send stop request to endpoint
+      $.ajax({
+          url: "/api/recipe/stop/",
+          type: "POST",
+          data: {
+            "csrfmiddlewaretoken": "{{ csrf_token }}"
+          },
+          dataType: 'json',
+          success: function(data) {
+            console.log("Stop recipe succeeded")
+
+            // Get response message
+            message = data
+            alert(message);
+            location.reload();
+          },
+          error: function(data) {
+            console.log("Stop recipe failed")
+
+            // Get response message
+            message = JSON.parse(data.responseText)
+            alert(message);
+          }
+      }); 
+   }
+
+   function createRecipe() {
+      /* Stops a recipe. */
+      console.log("Creating recipe")
+
+      // Get recipe json
+      var recipe_json = $("#recipe_json").val();
+
+      // Send stop request to endpoint
+      $.ajax({
+          url: "/api/recipe/",
+          type: "POST",
+          data: {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "json": recipe_json
+          },
+          dataType: 'json',
+          success: function(data) {
+            console.log("Create recipe succeeded")
+
+            // Get response message
+            message = data
+            alert(message);
+            location.reload();
+          },
+          error: function(data) {
+            console.log("Create recipe failed")
+
+            // Get response message
+            message = JSON.parse(data.responseText)
+            alert(message);
+          }
+      }); 
+   }
    
-   // TODO not used
-   // function start_recipe() {
-   //     var uuid = $('#recipe_uuid').val();
-   
-   //     $.ajax({
-   //         url: '/api/recipe/' + uuid + '/start/',
-   //         type: "POST",
-   //         data: {
-   //           'csrfmiddlewaretoken': '{{ csrf_token }}'},
-   //         dataType: 'json',
-   //         success: function(data) {
-   //             alert(data.message)
-   //         },
-   //         error: function(data) {
-   //             alert(data.responseText)
-   //         },
-   //         complete: function(data) {
-   //             // TODO: Reload on when recipe name changes
-   //             location.reload();
-   //         }
-   //     });
-   // }
    
    // function upload_recipe() {
    //     var recipe_json = $("#recipe_json").val();
@@ -214,7 +222,7 @@
             </p>
             <p>
                <input type="text" id="recipe_json" name="recipe_json" placeholder='Paste recipe json here' required>
-               <button class="btn" type="button" onClick="upload_recipe()"><i class="icon-share"></i> Upload Recipe </button>
+               <button class="btn" type="button" onClick="createRecipe()"><i class="icon-share"></i> Upload Recipe </button>
             </p>
             {% if current_recipe.recipe_uuid == None %}
             <select id="recipe_uuid">
@@ -241,8 +249,8 @@
             <!-- <button class="btn" type="button" onClick="createDeviceEvent('Start Recipe', 'recipe_uuid')"><i class="icon-share"></i> Start Recipe </button> -->
 
             {% else %}
-            <!-- <button class="btn" type="button" onClick="stop_recipe()"><i class="icon-share"></i> Stop Recipe </button> -->
-            <button class="btn" type="button" onClick="createDeviceEvent('Stop Recipe', null)"><i class="icon-share"></i> Stop Recipe </button>
+            <button class="btn" type="button" onClick="stopRecipe()"><i class="icon-share"></i> Stop Recipe </button>
+            <!-- <button class="btn" type="button" onClick="createDeviceEvent('Stop Recipe', null)"><i class="icon-share"></i> Stop Recipe </button> -->
             {% endif %}
          </div>
       </div>

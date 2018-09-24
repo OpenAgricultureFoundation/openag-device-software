@@ -5,7 +5,10 @@ from typing import Any, Dict
 from device.utilities.bitwise import byte_str
 
 # Import simulator elements
-from device.comms.i2c2.peripheral_simulator import PeripheralSimulator, verify_mux
+from device.communication.i2c.peripheral_simulator import (
+    PeripheralSimulator,
+    verify_mux,
+)
 
 
 class CCS811Simulator(PeripheralSimulator):  # type: ignore

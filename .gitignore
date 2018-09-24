@@ -8,7 +8,8 @@ __pycache__/
 *.mypy_cache*
 *.cache*
 .pytest_cache/
-registration/data/
+data/registration
+data/config/develop
 images/
 about.json
 .idea
@@ -20,3 +21,4 @@ build-deb-pkg-tmp/
 config/develop
 dummy.png
 active.png
+device/peripherals/modules/usb_camera/active.jpg

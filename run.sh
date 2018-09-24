@@ -18,23 +18,25 @@ fi
 # Activate the python env for this bash process
 source $DIR/venv/bin/activate
 
+REG_DATA_DIR=$DIR/data/registration
+
 # Pass all these to django as env vars.
-export IOT_PRIVATE_KEY=$DIR/registration/data/rsa_private.pem
-export CA_CERTS=$DIR/registration/data/roots.pem
+export IOT_PRIVATE_KEY=$REG_DATA_DIR/rsa_private.pem
+export CA_CERTS=$REG_DATA_DIR/roots.pem
 export GCLOUD_PROJECT=openag-v1
 export GCLOUD_REGION=us-central1
 export GCLOUD_DEV_REG=device-registry
 
 
 # Load the DEVICE_ID environment variable created by the above script.
-DEVICE_ID_FILE=$DIR/registration/data/device_id.bash
+DEVICE_ID_FILE=$REG_DATA_DIR/device_id.bash
 if [ -f $DEVICE_ID_FILE ]; then
     source $DEVICE_ID_FILE
 fi
 
 
 # Turn on debug logging if we are in developer mode
-if [ -f $DIR/config/develop ]; then
+if [ -f $DIR/data/config/develop ]; then
     export OPENAG_LOG_LEVEL=DEBUG
 fi
 

@@ -1,5 +1,5 @@
 # Import python types
-from typing import Optional, Tuple, List, Dict
+from typing import Optional, Tuple, List, Dict, Any
 
 # Import peripheral event mixin
 from device.peripherals.classes.peripheral.events import PeripheralEvents
@@ -8,10 +8,13 @@ from device.peripherals.classes.peripheral.events import PeripheralEvents
 class AtlasDOEvents(PeripheralEvents):  # type: ignore
     """Event mixin for manager."""
 
-    def process_peripheral_specific_event(self, request: Dict) -> None:
-        """Processes an event. Gets request parameters, executes request, returns 
-        response."""
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event."""
+        return "Unknown event request type", 400
 
-        message = "Unknown event request type"
-        self.logger.info(message)
-        self.response = {"status": 400, "message": message}
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        type_ = request.get("type")
+        self.logger.error("Invalid event request type in queue: {}".format(type_))

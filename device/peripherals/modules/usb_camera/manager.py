@@ -17,7 +17,7 @@ from device.peripherals.modules.usb_camera.events import USBCameraEvents
 from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 
-class USBCameraManager(PeripheralManager, USBCameraEvents):  # type: ignore
+class USBCameraManager(PeripheralManager):  # type: ignore
     """Manages a usb camera."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -26,6 +26,9 @@ class USBCameraManager(PeripheralManager, USBCameraEvents):  # type: ignore
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
+
+        # Initialize events
+        self.events = USBCameraEvents(self)
 
         # Get usb mux parameters
         self.usb_mux_comms = self.communication.get("usb_mux_comms", None)

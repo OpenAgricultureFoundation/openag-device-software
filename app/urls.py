@@ -26,7 +26,7 @@ from django.conf.urls.static import static
 from app import views
 from app.router import Router
 
-from connect.connect_utils import ConnectUtils
+from device.connect.utilities import ConnectUtilities
 
 
 # Setup REST framework routes
@@ -51,9 +51,7 @@ router.register(
     base_name="api-peripheral-setups",
 )
 router.register(
-    r"variables/sensor", 
-    views.SensorVariableViewSet, 
-    base_name="api-sensor-variables"
+    r"variables/sensor", views.SensorVariableViewSet, base_name="api-sensor-variables"
 )
 router.register(
     r"variables/actuator",
@@ -61,14 +59,9 @@ router.register(
     base_name="api-actuator-variables",
 )
 router.register(
-    r"connect/status", 
-    views.ConnectGetStatus, 
-    base_name="api-connect-status"
+    r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
 )
-router.register(
-    r"connect/joinwifi", 
-    views.ConnectJoinWifi, 
-    base_name="api-join-wifi")
+router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
 router.register(
     r"connect/deletewifis",
     views.ConnectDeleteWifis,
@@ -84,28 +77,16 @@ router.register(
     views.ConnectDeleteIoTreg,
     base_name="api-connect-deleteiotreg",
 )
-router.register(
-    r"upgrade",
-    views.UpgradeNow,
-    base_name="api-upgrade-now",
-)
-router.register(
-    r"upgradecheck",
-    views.UpgradeCheck,
-    base_name="api-upgrade-check",
-)
-router.register(
-    r"upgradestatus",
-    views.UpgradeStatus,
-    base_name="api-upgrade-status",
-)
+router.register(r"upgrade", views.UpgradeNow, base_name="api-upgrade-now")
+router.register(r"upgradecheck", views.UpgradeCheck, base_name="api-upgrade-check")
+router.register(r"upgradestatus", views.UpgradeStatus, base_name="api-upgrade-status")
 
 
 # Setup dashboard redirect
 def redirect_to_dashboard(request):
 
     # if we have a valid internet connection, go to the dashboard
-    if ConnectUtils.valid_internet_connection():
+    if ConnectUtilities.valid_internet_connection():
         return HttpResponseRedirect(reverse("dashboard"))
     else:
         # otherwise, let the user set up their wifi connection

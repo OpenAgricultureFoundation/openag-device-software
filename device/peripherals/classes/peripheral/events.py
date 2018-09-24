@@ -1,165 +1,304 @@
+# Import standard python modules
+import queue
+
 # Import python types
-from typing import Dict
+from typing import Dict, Tuple, Any
 
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.logger import Logger
+from device.utilities.statemachine import Manager
+
+# Initialize vars
+RESET_EVENT = "Reset"
+SHUTDOWN_EVENT = "Shutdown"
+SET_SAMPLING_INTERVAL_EVENT = "Set Sampling Interval"
+ENABLE_CALIBRATION_MODE_EVENT = "Enable Calibration Mode"
+ENABLE_MANUAL_MODE_EVENT = "Enable Manual Mode"
 
 
 class PeripheralEvents:
     """Event mixin for peripherals."""
 
-    # Initialize parent class var types
-    logger: Logger
-    mode: str
-    min_sampling_interval_seconds: float
+    def __init__(self, manager: Manager) -> None:
+        """Initializes peripheral events."""
+        self.manager = manager
+        self.logger = manager.logger
+        self.transitions = manager.transitions
+        self.logger.debug("Initialized peripheral events")
 
-    def process_event(self, request: Dict) -> None:
-        """Processes an event. Gets request parameters, executes request, returns 
-        response."""
+        # Initialize event queue
+        self.queue: queue.Queue = queue.Queue()
 
-        self.logger.debug("Processing event request: `{}`".format(request))
+    @property
+    def mode(self) -> str:
+        """Gets manager mode."""
+        return str(self.manager.mode)
+
+    @mode.setter
+    def mode(self, value: str) -> None:
+        """Sets manager mode."""
+        self.manager.mode = value
+
+    def create(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Creates a new event, checks for matching event type, pre-processes request, 
+        then adds to event queue."""
+        self.logger.debug("Creating event request: `{}`".format(request))
 
         # Get request parameters
         try:
-            request_type = request["type"]
+            type_ = request["type"]
         except KeyError as e:
-            self.logger.exception("Invalid request parameters")
-            self.response = {
-                "status": 400, "message": "Invalid request parameters: {}".format(e)
-            }
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
 
         # Process general event requests
-        if request_type == "Reset":
-            self.response = self.process_reset_event()
-        elif request_type == "Shutdown":
-            self.response = self.process_shutdown_event()
-        elif request_type == "Set Sampling Interval":
-            self.response = self.process_set_sampling_interval_event(request)
-        elif request_type == "Enable Calibration Mode":
-            self.response = self.process_enable_calibration_mode_event()
-        elif request_type == "Enable Manual Mode":
-            self.response = self.process_enable_manual_mode_event()
+        if type_ == RESET_EVENT:
+            return self.reset()
+        elif type_ == SHUTDOWN_EVENT:
+            return self.shutdown()
+        elif type_ == SET_SAMPLING_INTERVAL_EVENT:
+            return self.set_sampling_interval(request)
+        elif type_ == ENABLE_CALIBRATION_MODE_EVENT:
+            return self.enable_calibration_mode()
+        elif type_ == ENABLE_MANUAL_MODE_EVENT:
+            return self.enable_manual_mode()
         else:
-            # Process peripheral specific requests
-            self.process_peripheral_specific_event(request)
+            return self.create_peripheral_specific_event(request)
 
-    def process_reset_event(self) -> Dict:
-        """Processes reset event."""
-        self.logger.debug("Processing reset event")
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event. This method should be 
+        overridden in child class."""
+        return "Unknown event request type", 400
 
-        # Check sensor is in acceptible mode
-        modes = [
-            Modes.NORMAL, Modes.ERROR, Modes.CALIBRATE, Modes.SHUTDOWN, Modes.MANUAL
-        ]
-        if self.mode not in modes:
-            message = "Unable to reset peripheral from {} mode!".format(self.mode)
-            self.logger.info(message)
-            return {"status": 400, "message": message}
+    def check(self) -> None:
+        """Checks for a new event. Only processes one event per call, even if there are 
+        multiple in the queue. Events are processed first-in-first-out (FIFO)."""
+
+        # Check for new events
+        if self.queue.empty():
+            return
+
+        # Get request
+        request = self.queue.get()
+        self.logger.debug("Received new request: {}".format(request))
+
+        # Get request parameters
+        try:
+            type_ = request["type"]
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.exception(message)
+            return
+
+        # Execute request
+        if type_ == RESET_EVENT:
+            self._reset()
+        elif type_ == SHUTDOWN_EVENT:
+            self._shutdown()
+        elif type_ == SET_SAMPLING_INTERVAL_EVENT:
+            self._set_sampling_interval(request)
+        elif type_ == ENABLE_CALIBRATION_MODE_EVENT:
+            self._enable_calibration_mode()
+        elif type_ == ENABLE_MANUAL_MODE_EVENT:
+            self._enable_manual_mode()
+        else:
+            self.check_peripheral_specific_events(request)
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events. This method should be 
+        overwritten in child class."""
+        type_ = request.get("type")
+        self.logger.error("Invalid event request type in queue: {}".format(type_))
+
+    def reset(self) -> Tuple[str, int]:
+        """Pre-processes reset event request."""
+        self.logger.debug("Pre-processing reset event request")
+
+        # Check valid transitions
+        if not self.transitions.is_valid(self.manager.mode, Modes.RESET):
+            message = "Unable to reset peripheral from {} mode".format(
+                self.manager.mode
+            )
+            self.logger.debug(message)
+            return message, 400
+
+        # Add reset event request to event queue
+        request = {"type": RESET_EVENT}
+        self.queue.put(request)
+
+        # Return event response
+        return "Resetting", 200
+
+    def _reset(self) -> None:
+        """Processes reset event request."""
+        self.logger.debug("Processing reset event request")
+
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.RESET):
+            self.logger.critical("Tried to reset from {} mode".format(mode))
+            return
 
         # Transition to reset mode on next state machine update
-        self.mode = Modes.RESET
+        self.manager.mode = Modes.RESET
 
-        # Return event response
-        return {"status": 200, "message": "Resetting!"}
-
-    def process_shutdown_event(self) -> Dict:
-        """Processes shutdown event."""
-        self.logger.debug("Processing shutdown event")
+    def shutdown(self) -> Tuple[str, int]:
+        """Pre-processes shutdown event request."""
+        self.logger.debug("Pre-processing shutdown event request")
 
         # Check sensor isn't already in shutdown mode
-        if self.mode == Modes.SHUTDOWN:
-            message = "Device already in shutdown mode"
-            self.logger.info(message)
-            return {"status": 200, "message": message}
+        if self.manager.mode == Modes.SHUTDOWN:
+            message = "Already in shutdown mode"
+            self.logger.debug(message)
+            return message, 200
 
-        # Transition to shutdown mode on next state machine update
-        self.mode = Modes.SHUTDOWN
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.SHUTDOWN):
+            message = "Unable to shutdown from {} mode".format(mode)
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": SHUTDOWN_EVENT}
+        self.queue.put(request)
 
         # Return event response
-        return {"status": 200, "message": "Shutting down"}
+        return "Shutting down", 200
 
-    def process_set_sampling_interval_event(self, request: Dict) -> Dict:
-        """Processes shutdown event."""
-        self.logger.debug("Processing set sampling interval event")
+    def _shutdown(self) -> None:
+        """Processes shutdown peripheral event request."""
+        self.logger.debug("Processing shutdown event request")
+
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.SHUTDOWN):
+            self.logger.critical("Tried to shutdown from {} mode".format(mode))
+            return
+
+        # Transition to shutdown mode on next state machine update
+        self.manager.mode = Modes.SHUTDOWN
+
+    def set_sampling_interval(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes set sampling interval event request."""
+        self.logger.debug("Pre-processing set sampling interval event request")
 
         # Verify value in request
         try:
             value = request["value"]
         except KeyError as e:
             message = "Invalid request parameters: {}".format(e)
-            self.logger.info(message)
-            return {"status": 400, "message": message}
-
-        # Check sensor is in acceptible mode
-        modes = [Modes.NORMAL, Modes.SHUTDOWN]
-        if self.mode not in modes:
-            message = "Unable to set sampling interval from {} mode".format(self.mode)
-            self.logger.info(message)
-            return {"status": 400, "message": message}
+            self.logger.debug(message)
+            return message, 400
 
         # Safely get desired sampling interval
         try:
-            desired_sampling_interval_seconds = float(value)
+            interval = float(value)
         except ValueError:
-            return {"status": 400, "message": "Invalid sampling interval value"}
+            message = "Invalid sampling interval value"
+            self.logger.debug(message)
+            return message, 400
 
         # Check desired sampling interval larger than min interval
-        if desired_sampling_interval_seconds < self.min_sampling_interval_seconds:
-            message = "Unable to set sampling interval below {} seconds.".format(
-                self.min_sampling_interval_seconds
-            )
-            self.logger.info(message)
-            return {"status": 400, "message": message}
+        msi = self.manager.min_sampling_interval
+        if interval < msi:
+            message = "Unable to set sampling interval below {} seconds.".format(msi)
+            self.logger.debug(message)
+            return message, 400
 
-        # Set new sampling interval
-        self.sampling_interval_seconds = desired_sampling_interval_seconds
+        # Add event request to event queue
+        request = {"type": SET_SAMPLING_INTERVAL_EVENT, "interval": interval}
+        self.queue.put(request)
 
-        # Successfully set sampling interval
-        return {"status": 200, "message": "Set sampling interval"}
+        # Return event response
+        return "Setting sampling interval", 200
 
-    def process_enable_calibration_mode_event(self) -> Dict:
-        """Processes enable calibration mode event."""
-        self.logger.debug("Processing enable calibration mode event")
+    def _set_sampling_interval(self, request: Dict[str, Any]) -> None:
+        """Processes set sampling interval event request."""
+        self.logger.debug("Processing set sampling interval event request")
+
+        # Set sampling interval
+        interval = request.get("interval")
+        self.sampling_interval_seconds = interval
+
+    def enable_calibration_mode(self) -> Tuple[str, int]:
+        """Pre-processes enable calibration mode event request."""
+        self.logger.debug("Pre-processing enable calibration mode event request")
 
         # Check if sensor alread in calibration mode
-        if self.mode == Modes.CALIBRATE:
-            return {"status": 200, "message": "Already in calibration mode"}
+        if self.manager.mode == Modes.CALIBRATE:
+            message = "Already in calibration mode"
+            self.logger.debug(message)
+            return message, 200
 
-        # Check sensor is in acceptible mode
-        modes = [Modes.NORMAL, Modes.MANUAL]
-        if self.mode not in modes:
-            mode = self.mode.lower()
+        # Check valid transition
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.CALIBRATE):
             message = "Unable to enable calibration mode from {} mode".format(mode)
-            return {"status": 400, "message": message}
+            self.logger.debug(message)
+            return message, 400
 
-        # Enable calibration mode
-        self.mode = Modes.CALIBRATE
-        return {"status": 200, "message": "Enabling calibration mode"}
+        # Add event request to event queue
+        request = {"type": ENABLE_CALIBRATION_MODE_EVENT}
+        self.queue.put(request)
 
-    def process_enable_manual_mode_event(self) -> Dict:
-        """Processes enable manual mode event."""
-        self.logger.debug("Processing enable manual mode event")
+        # Return response
+        return "Enabling calibration mode", 200
+
+    def _enable_calibration_mode(self) -> None:
+        """Processes enable calibration mode event request."""
+        self.logger.debug("Processing enable calibration mode event request")
+
+        # Check valid transitions
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.SHUTDOWN):
+            message = "Tried to enable calibration mode from {}".format(mode)
+            self.logger.critical(message)
+            return
+
+        # Transition to calibration mode on next state machine update
+        self.manager.mode = Modes.CALIBRATE
+
+    def enable_manual_mode(self) -> Tuple[str, int]:
+        """Pre-processes enable manual mode event request."""
+        self.logger.debug("Pre-processing enable manual mode event request")
 
         # Check if sensor alread in manual mode
-        if self.mode == Modes.MANUAL:
-            return {"status": 200, "message": "Already in manual mode"}
+        if self.manager.mode == Modes.MANUAL:
+            message = "Already in manual mode"
+            self.logger.debug(message)
+            return message, 200
 
-        # Check sensor is in acceptible mode
-        modes = [Modes.NORMAL, Modes.CALIBRATE]
-        if self.mode not in modes:
-            mode = self.mode.lower()
+        # Check valid transition
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.MANUAL):
             message = "Unable to enable manual mode from {} mode".format(mode)
-            return {"status": 400, "message": message}
+            self.logger.debug(message)
+            return message, 400
 
-        # Enable manual mode
-        self.mode = Modes.MANUAL
-        return {"status": 200, "message": "Enabling manual mode"}
+        # Add event request to event queue
+        request = {"type": ENABLE_MANUAL_MODE_EVENT}
+        self.queue.put(request)
 
-    def process_peripheral_specific_event(self, request: Dict) -> None:
-        """Processes peripheral specific event. This method should be overridden in 
-        child class to handle child classes events."""
+        # Return response
+        return "Enabling manual mode", 200
 
-        message = "Unknown event request type!"
-        self.logger.info(message)
-        self.response = {"status": 400, "message": message}
+    def _enable_manual_mode(self) -> None:
+        """Processes enable manual mode event request."""
+        self.logger.debug("Processing enable manual mode event request")
+
+        # Check peripheral is in acceptible mode
+        modes = [Modes.NORMAL, Modes.CALIBRATE]
+        if self.manager.mode not in modes:
+            message = "Unable to enable manual mode from {} mode".format(
+                self.manager.mode
+            )
+            self.logger.critical(message)
+            return
+
+        # Transition to manual mode on next state machine update
+        self.manager.mode = Modes.MANUAL

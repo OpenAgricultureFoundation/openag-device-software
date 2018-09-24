@@ -10,23 +10,23 @@ sys.path.append(root_dir)
 os.chdir(root_dir)
 
 # Import mux simulator
-from device.comms.i2c2.mux_simulator import MuxSimulator
+from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 # Set test image directory
-directory = "device/peripherals/modules/usb_camera/tests/images/"
+IMAGE_DIR = "device/peripherals/modules/usb_camera/tests/images/"
 
 
 def delete_test_images() -> None:
-    filelist = glob.glob(os.path.join(directory, "*.png"))
+    filelist = glob.glob(os.path.join(IMAGE_DIR, "*.png"))
     for f in filelist:
         os.remove(f)
 
 
 def list_test_images() -> List[str]:
-    return glob.glob(os.path.join(directory, "*.png"))
+    return glob.glob(os.path.join(IMAGE_DIR, "*.png"))
 
 
 def test_init() -> None:

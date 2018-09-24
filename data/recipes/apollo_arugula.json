@@ -1,0 +1,66 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-06-18T11:45:41Z",
+	"name": "Arugula",
+	"uuid": "96826d3e-78e5-4fa5-94ef-cc38672f40f0",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Grows  Apollo Arugula.",
+		"verbose": "Grows arugula in 30 days in a shallow water culture hydroponic system. The lights are on a balanced spectrum and follow a standard 24 hour light cycle with 16 hour days. Moderate temperatures are maintained throughout the grow."
+	},
+	"authors": [
+		{
+			"name": "Manvitha Ponnapati",
+			"email": "manvitha@media.mit.edu",
+			"uuid": "a3263729-e31b-4d6a-82fc-ca4e09fc3239"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Apollo Arugula",
+			"uuid": "581d6309-1155-442f-8f50-9541a4005ea2"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"standard_day": {
+			"name": "Standard Day",
+			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
+			"light_ppfd_umol_m2_s": 300,
+			"light_illumination_distance_cm": 10,
+			"air_temperature_celcius": 21
+		},
+		"standard_night": {
+			"name": "Standard Night",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
+			"light_ppfd_umol_m2_s": 0,
+			"light_illumination_distance_cm": 10,
+			"air_temperature_celcius": 16
+		}
+	},
+	"phases": [
+		{
+			"name": "Standard Growth",
+			"repeat": 30,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "standard_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		}
+	]
+}

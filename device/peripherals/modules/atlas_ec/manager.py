@@ -13,7 +13,7 @@ from device.peripherals.modules.atlas_ec.events import AtlasECEvents
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 
 
-class AtlasECManager(PeripheralManager, AtlasECEvents):  # type: ignore
+class AtlasECManager(PeripheralManager):  # type: ignore
     """Manages an atlas scientific electrical conductivity sensor."""
 
     # Initialize compensation temperature parameters
@@ -25,6 +25,9 @@ class AtlasECManager(PeripheralManager, AtlasECEvents):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
+
+        # Initialize events
+        self.events = AtlasECEvents(self)
 
         # Initialize variable names
         self.ec_name = self.variables["sensor"]["ec_ms_cm"]

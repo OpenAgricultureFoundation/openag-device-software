@@ -23,8 +23,11 @@ class T6713Manager(PeripheralManager, T6713Events):  # type: ignore
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
+        # Initialize events
+        self.events = T6713Events(self)
+
         # Initialize variable names
-        self.co2_name = self.parameters["variables"]["sensor"]["carbon_dioxide_ppm"]
+        self.co2_name = self.variables["sensor"]["carbon_dioxide_ppm"]
 
     @property
     def co2(self) -> Optional[float]:
