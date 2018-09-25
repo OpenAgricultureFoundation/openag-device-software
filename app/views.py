@@ -533,8 +533,18 @@ class Images(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        response = { "status": 'OK' }
-#debugrob, return a list of URLs to images/stored/*.png ?
+        files = []
+        files.append({"name": "2018-09-20-T17:26:49Z_Camera-Top.png"})
+        files.append({"name": "2018-09-21-T00:54:20Z_Camera-Top.png"})
+        files.append({"name": "2018-09-21-T12:22:44Z_Camera-Top.png"})
+        files.append({"name": "2018-09-25-T13:16:24Z_Camera-Top.png"})
+
+        response = {"status": "OK", 
+                    "files_json": json.dumps(files)}
+        print('debugrob Images returning: {}'.format(response))
+
+#debugrob, return a list of fileNames (not URLs)
+# data/images/stored/*.png
         return Response(response)
 
 

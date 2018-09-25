@@ -2,72 +2,59 @@
 
 {% block javascript %}
 <script>
+  var images = [] // global image file names
+
   //--------------------------------------------------------------------------
   window.onload = function() {
-    //document.getElementById("status").innerHTML = "{{status}}";
+    document.getElementById("status").innerHTML = "{{status}}";
+
+    var files_json = document.getElementById("files_json").value;
+    var files = JSON.parse(files_json);
+    for(i in files) {
+      images.push( files[i].name );
+    }
+
+    var slideO = document.getElementById("imageSlider");
+    slideO.max = images.length - 1;
+    slideO.value = images.length - 1; // farthest to the right
+    
+    var slider = $("#imageSlider");
+    slider.on("input change", showImage);
+    showImage();
   }
 
-  //debugrob
-var slider = $("#calculatorSlider");
-var reseller = $("#resellerEarnings");
-var client = $("#clientPrice");
-var percentageBonus = 30; // = 30%
-slider.val(0);
-
-function calculate(price, value) {
-    client.text((Math.round((price - (value / 100 * price)))) + '$');
-    reseller.text((Math.round(((percentageBonus - value) / 100 * price))) + '$')
-}
-
-slider.on("input change", function(e) {
-    calculate(319, $(this).val());
-})
-
+  //--------------------------------------------------------------------------
+  function showImage() {
+    var slider = $("#imageSlider");
+    var img = document.getElementById("image");
+    img.src = "/app/static/stored_images/" + images[ slider.val() ];
+    var fn = $("#file_name");
+    fn.text( images[ slider.val() ] );
+  }
 </script>
 {% endblock %}
 
 {% block content %}
 <html>
+   <input type="hidden" id="files_json" name="variable" value="{{files_json}}">
    <body>
       <div class="images">
         <h2>Images</h2>
          <div class="card">
             <ul>
-              <li><b>debugrob, slider or drop list:</b> {{ status }}
+              <li><b>status {{ status }}
+              <li><b>debugrob:</b> <span id="status"></span>
             </ul>
             <h3 class="text-center"><strong>Slide to see images</strong></h3>
 
             <form class="range-field">
-              <input id="calculatorSlider" class="no-border w-100" type="range" value="0" min="0" max="30" />
+              <input id="imageSlider" class="no-border w-100" type="range" value="0" min="0" max="0" />
+              <span id="file_name" class="text-center"></span>
             </form>
 
-            <!-- Grid row -->
+            <!-- debugrob, image stretches, keep aspect square. -->
             <div class="row">
-
-                <!-- Grid column -->
-                <div class="col-md-6 text-center pb-5">
-
-                    <h2><span class="badge blue lighten-2 mb-4">You earn</span></h2>
-                    <h2 class="display-4" style="color:#0d47a1"><strong id="resellerEarnings">75$</strong></h2>
-
-                </div>
-                <!-- Grid column -->
-
-                <!-- Grid column -->
-                <div class="col-md-6 text-center pb-5">
-
-                    <h2><span class="badge blue lighten-2 mb-4">Client pays</span></h2>
-                    <h2 class="display-4" style="color:#0d47a1"><strong id="clientPrice">319$</strong></h2>
-
-                </div>
-                <!-- Grid column -->
-
-            </div>
-            <!-- Grid row -->
-
-            <div class="row">
-              {% load static %}
-              <img src="{% static "stored_images/2018-09-25-T05:49:48Z_Camera-Top.png" %}" class="img-thumbnail">
+              <img id="image" src="" class="img-thumbnail">
             </div>
 
          </div>
