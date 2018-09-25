@@ -35,8 +35,8 @@ class USBCameraManager(PeripheralManager):  # type: ignore
         self.usb_mux_channel = self.communication.get("usb_mux_channel", None)
 
         # Initialize sampling parameters
-        self.min_sampling_interval_seconds = (120)
-        self.default_sampling_interval_seconds = 3600  # every hour
+        self.min_sampling_interval = 120  # seconds
+        self.default_sampling_interval = 3600  # every hour
 
     def initialize(self) -> None:
         """ Initializes manager."""
