@@ -1,4 +1,31 @@
 {% extends 'base.html' %}
+
+{% block javascript %}
+<script>
+  //--------------------------------------------------------------------------
+  window.onload = function() {
+    //document.getElementById("status").innerHTML = "{{status}}";
+  }
+
+  //debugrob
+var slider = $("#calculatorSlider");
+var reseller = $("#resellerEarnings");
+var client = $("#clientPrice");
+var percentageBonus = 30; // = 30%
+slider.val(0);
+
+function calculate(price, value) {
+    client.text((Math.round((price - (value / 100 * price)))) + '$');
+    reseller.text((Math.round(((percentageBonus - value) / 100 * price))) + '$')
+}
+
+slider.on("input change", function(e) {
+    calculate(319, $(this).val());
+})
+
+</script>
+{% endblock %}
+
 {% block content %}
 <html>
    <body>
@@ -8,6 +35,41 @@
             <ul>
               <li><b>debugrob, slider or drop list:</b> {{ status }}
             </ul>
+            <h3 class="text-center"><strong>Slide to see images</strong></h3>
+
+            <form class="range-field">
+              <input id="calculatorSlider" class="no-border w-100" type="range" value="0" min="0" max="30" />
+            </form>
+
+            <!-- Grid row -->
+            <div class="row">
+
+                <!-- Grid column -->
+                <div class="col-md-6 text-center pb-5">
+
+                    <h2><span class="badge blue lighten-2 mb-4">You earn</span></h2>
+                    <h2 class="display-4" style="color:#0d47a1"><strong id="resellerEarnings">75$</strong></h2>
+
+                </div>
+                <!-- Grid column -->
+
+                <!-- Grid column -->
+                <div class="col-md-6 text-center pb-5">
+
+                    <h2><span class="badge blue lighten-2 mb-4">Client pays</span></h2>
+                    <h2 class="display-4" style="color:#0d47a1"><strong id="clientPrice">319$</strong></h2>
+
+                </div>
+                <!-- Grid column -->
+
+            </div>
+            <!-- Grid row -->
+
+            <div class="row">
+              {% load static %}
+              <img src="{% static "stored_images/2018-09-25-T05:49:48Z_Camera-Top.png" %}" class="img-thumbnail">
+            </div>
+
          </div>
       </div>
    </body>

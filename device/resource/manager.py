@@ -236,7 +236,7 @@ class ResourceManager:
         low_resources = False
         low_disk = False
         if "K" == fm_units or \
-          ("M" == fm_units and 10 <= len(fm_val):
+          ("M" == fm_units and 10 <= len(fm_val)):
             # 10M low memory limit
             self.status = "Warning: low memory: {}".format(free_memory)
             self.logger.warning(self.status)
