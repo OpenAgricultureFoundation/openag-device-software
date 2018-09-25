@@ -11,6 +11,7 @@ from jsonschema import validate
 # Import device utilities
 from device.utilities.modes import Modes
 from device.utilities.accessors import set_nested_dict_safely
+from device.utilities.statemachine import Manager, Transitions
 
 # Import device state
 from device.state.main import State
@@ -42,8 +43,19 @@ from app.models import (
 # Import coordinator modules
 from device.coordinator.events import CoordinatorEvents
 
+# Define state machine transitions table
+TRANSITION_TABLE = {
+    Modes.INIT: [Modes.CONFIG, Modes.ERROR],
+    Modes.CONFIG: [Modes.SETUP, Modes.ERROR],
+    Modes.SETUP: [Modes.NORMAL, Modes.ERROR],
+    Modes.NORMAL: [Modes.LOAD, Modes.ERROR],
+    Modes.LOAD: [Modes.CONFIG, Modes.ERROR],
+    Modes.ERROR: [Modes.RESET],
+    Modes.RESET: [Modes.INIT],
+}
 
-class CoordinatorManager(CoordinatorEvents):
+
+class CoordinatorManager(Manager):
     """Manages device state machine thread that spawns child threads to run 
     recipes, read sensors, set actuators, manage control loops, sync data, 
     and manage external events."""
@@ -78,8 +90,8 @@ class CoordinatorManager(CoordinatorEvents):
     recipe = RecipeManager(state)
 
     # Initialize peripheral and controller managers
-    peripherals = None
-    controllers = None
+    peripherals = {}
+    controllers = {}
 
     def __init__(self):
         """Initializes coordinator."""
@@ -90,6 +102,12 @@ class CoordinatorManager(CoordinatorEvents):
 
         # Initialize latest publish timestamp
         self.latest_publish_timestamp = 0
+
+        # Initialize state machine transitions
+        self.transitions = Transitions(self, TRANSITION_TABLE)
+
+        # Initialize coordinator event handler
+        self.events = CoordinatorEvents(self)
 
         # Initialize managers
         self.iot = IoTManager(self.state, self.recipe)
@@ -229,8 +247,8 @@ class CoordinatorManager(CoordinatorEvents):
                 self.run_reset_mode()
 
     def run_init_mode(self):
-        """Runs initialization mode. Loads stored state from database then 
-        transitions to CONFIG."""
+        """Runs initialization mode. Loads local data files and stored database state 
+        then transitions to config mode."""
         self.logger.info("Entered INIT")
 
         # Load local data files
@@ -239,12 +257,16 @@ class CoordinatorManager(CoordinatorEvents):
         # Load stored state from database
         self.load_database_stored_state()
 
+        # Check for transitions
+        if self.transitions.is_new(Modes.INIT):
+            return
+
         # Transition to CONFIG
         self.mode = Modes.CONFIG
 
     def run_config_mode(self):
-        """Runs configuration mode. If device config is not set, waits for 
-        config command then transitions to SETUP."""
+        """Runs configuration mode. If device config is not set, loads 'unspecified' 
+        config then transitions to setup mode."""
         self.logger.info("Entered CONFIG")
 
         # Check device config specifier file exists in repo
@@ -282,13 +304,17 @@ class CoordinatorManager(CoordinatorEvents):
                 )
                 self.config_uuid = device_config["uuid"]
 
+        # Check for transitions
+        if self.transitions.is_new(Modes.CONFIG):
+            return
+
         # Transition to SETUP
         self.mode = Modes.SETUP
 
     def run_setup_mode(self):
         """Runs setup mode. Creates and spawns recipe, peripheral, and 
         controller threads, waits for all threads to initialize then 
-        transitions to NORMAL."""
+        transitions to normal mode."""
         self.logger.info("Entered SETUP")
         config_uuid = self.state.device["config_uuid"]
         self.logger.debug("state.device.config_uuid = {}".format(config_uuid))
@@ -312,13 +338,16 @@ class CoordinatorManager(CoordinatorEvents):
         while not self.all_threads_initialized():
             time.sleep(0.2)
 
+        # Check for transitions
+        if self.transitions.is_new(Modes.SETUP):
+            return
+
         # Transition to NORMAL
         self.mode = Modes.NORMAL
 
     def run_normal_mode(self):
         """Runs normal operation mode. Updates device state summary and stores device 
-        state in database, waits for new config command then transitions to CONFIG. 
-        Transitions to ERROR on error."""
+        state in database, checks for new events and transitions."""
         self.logger.info("Entered NORMAL")
 
         while True:
@@ -335,66 +364,56 @@ class CoordinatorManager(CoordinatorEvents):
                 self.iot.publish()
 
             # Check for events
-            request = self.request
-            if self.request != None:
-                self.request = None
-                self.process_event(request)
+            self.events.check()
 
-            # Check for system error
-            if self.mode == Modes.ERROR:
-                self.logger.error("System received ERROR")
-                break
-
-            # Check for new configuration
-            if self.mode == Modes.CONFIG:
-                self.logger.info("Transitioning to CONFIG")
+            # Check for transitions
+            if self.transitions.is_new(Modes.NORMAL):
                 break
 
             # Update every 100ms
             time.sleep(0.1)
 
     def run_load_mode(self):
-        """ Runs load mode. Stops peripheral and controller threads, loads 
-            config into stored state, transitions to CONFIG. """
+        """Runs load mode, kills peripheral and controller threads then transitions 
+        to config mode."""
         self.logger.info("Entered LOAD")
 
-        # Stop peripheral and controller threads
-        self.stop_peripheral_threads()
-        self.stop_controller_threads()
-
-        # Load config into stored state
+        # Kill peripheral and controller threads
+        self.kill_peripheral_threads()
+        self.kill_controller_threads()
 
         # Transition to CONFIG
         self.mode = Modes.CONFIG
 
     def run_reset_mode(self):
-        """ Runs reset mode. Kills peripheral and controller threads, clears 
-            error state, then transitions to INIT. """
+        """Runs reset mode. Kills child threads then transitions to init."""
         self.logger.info("Entered RESET")
 
-        # Kills peripheral and controller threads
+        # Kills child threads
         self.kill_peripheral_threads()
         self.kill_controller_threads()
         self.recipe.stop()
         self.iot.stop()
 
-        # Transition to INIT
+        # Transition to init on next state machine update
         self.mode = Modes.INIT
 
     def run_error_mode(self):
-        """ Runs error mode. Shuts down peripheral and controller threads, 
-            waits for reset signal then transitions to RESET. """
+        """Runs error mode. Shutsdown child threads, waits for new events and transitions."""
         self.logger.info("Entered ERROR")
 
-        # Shuts down peripheral and controller threads
-        self.shutdown_peripheral_threads()
-        self.shutdown_controller_threads()
+        # Kills peripheral and controller threads
+        self.kill_peripheral_threads()
+        self.kill_controller_threads()
 
         # Loop forever
         while True:
 
-            # Check for reset
-            if self.mode == Modes.RESET:
+            # Check for events
+            self.events.check()
+
+            # Check for transitions
+            if self.transitions.is_new(Modes.ERROR):
                 break
 
             # Update every 100ms
@@ -722,7 +741,7 @@ class CoordinatorManager(CoordinatorEvents):
 
     def spawn_peripherals(self):
         """ Spawns peripheral threads. """
-        if self.peripherals == None:
+        if self.peripherals == {}:
             self.logger.info("No peripheral threads to spawn")
         else:
             self.logger.info("Spawning peripheral threads")
@@ -774,7 +793,7 @@ class CoordinatorManager(CoordinatorEvents):
 
     def spawn_controllers(self):
         """ Spawns controller threads. """
-        if self.controllers == None:
+        if self.controllers == {}:
             self.logger.info("No controller threads to spawn")
         else:
             self.logger.info("Spawning controller threads")
@@ -815,33 +834,11 @@ class CoordinatorManager(CoordinatorEvents):
         return True
 
     def kill_peripheral_threads(self):
-        """ Kills all peripheral threads. """
-
-    # TODO this needs work
-    # for peripheral_name in self.state.peripherals:
-    #    self.state.peripherals[peripheral_name].thread_is_active = False
+        """Kills all peripheral threads."""
+        for peripheral_name, peripheral_manager in self.peripherals.items():
+            peripheral_manager.thread_is_active = False
 
     def kill_controller_threads(self):
-        """ Kills all controller threads. """
-
-    # TODO this needs work
-    # for controller_name in self.state.controller:
-    #    self.state.controller[controller_name].thread_is_active = False
-
-    def shutdown_peripheral_threads(self):
-        """ Shuts down peripheral threads. """
-        ...
-
-        # TODO: Fix this
-
-        # for peripheral_name in self.peripherals:
-        #     self.periphrals[peripheral_name].commanded_mode = Modes.SHUTDOWN
-
-    def shutdown_controller_threads(self):
-        """ Shuts down controller threads. """
-        ...
-
-        # TODO: Fix this
-
-        # for controller_name in self.controllers:
-        #     self.controllers[controller_name].commanded_mode = Modes.SHUTDOWN
+        """Kills all controller threads."""
+        for controller_name, controller_manager in self.controllers.items():
+            controlled_manager.thread_is_active = False

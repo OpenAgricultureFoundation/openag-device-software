@@ -13,6 +13,11 @@ def magnitude(x):
     return int(math.floor(math.log10(x)))
 
 
+def is_sorted_increasing(list_):
+    """Checks if list is sorted in increasing order."""
+    return all(list_[i] <= list_[i + 1] for i in range(len(list_) - 1))
+
+
 def interpolate(x_list, y_list, x):
     """ Interpolates value for x from x_list and y_list. """
 
@@ -21,21 +26,35 @@ def interpolate(x_list, y_list, x):
         raise ValueError("x_list and y_list must be same length")
 
     # Verify x_list is sorted
-    if not all(x_list[i] <= x_list[i + 1] for i in range(len(x_list) - 1)):
-        raise ValueError("x_list must be sorted")
+    if not is_sorted_increasing(x_list):
+
+        # Try reversing list and rechecking
+        x_list_copy = x_list.copy()
+        x_list_copy.reverse()
+        if not is_sorted_increasing(x_list_copy):
+            raise ValueError("x_list must be sorted")
+
+        # x_list is sorted in decreasing order, need to reverse y_list now
+        y_list_copy = y_list.copy()
+        y_list_copy.reverse()
+
+    # x_list is sorted in increasing order
+    else:
+        x_list_copy = x_list.copy()
+        y_list_copy = y_list.copy()
 
     # if x < smallest in list, make that the new x
-    if x < x_list[0]:
-        x = x_list[0]
+    if x < x_list_copy[0]:
+        x = x_list_copy[0]
 
     # if x > largest in list, make that the new x
-    if x > x_list[-1]:
-        x = x_list[-1]
+    if x > x_list_copy[-1]:
+        x = x_list_copy[-1]
 
     # Check if x matches entry in x_list
-    if x in x_list:
-        index = x_list.index(x)
-        return y_list[index]
+    if x in x_list_copy:
+        index = x_list_copy.index(x)
+        return y_list_copy[index]
 
     # Get index of smallest element greater than x
     for index in range(len(x_list)):
@@ -44,10 +63,10 @@ def interpolate(x_list, y_list, x):
     index = index - 1
 
     # Get values for calculating slope
-    x0 = x_list[index]
-    x1 = x_list[index + 1]
-    y0 = y_list[index]
-    y1 = y_list[index + 1]
+    x0 = x_list_copy[index]
+    x1 = x_list_copy[index + 1]
+    y0 = y_list_copy[index]
+    y1 = y_list_copy[index + 1]
 
     # Calculate slope
     m = (y1 - y0) / (x1 - x0)

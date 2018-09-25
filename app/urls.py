@@ -39,6 +39,9 @@ router.register(
     views.RecipeTransitionViewSet,
     base_name="api-recipe-transition",
 )
+router.register(
+    r"config/device", views.DeviceConfigViewSet, base_name="api-config-device"
+)
 router.register(r"cultivars", views.CultivarViewSet, base_name="api-cultivars")
 router.register(
     r"cultivation-methods",

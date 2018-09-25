@@ -56,6 +56,7 @@ from app.serializers import CultivationMethodSerializer
 from app.serializers import PeripheralSetupSerializer
 from app.serializers import SensorVariableSerializer
 from app.serializers import ActuatorVariableSerializer
+from app.serializers import DeviceConfigSerializer
 
 # Import app viewers
 from app.viewers import DeviceViewer
@@ -289,7 +290,9 @@ class DeviceConfig(APIView):
         config_objects = DeviceConfigModel.objects.all()
         configs = []
         for config_object in config_objects:
-            configs.append(DeviceConfigViewer(config_object))
+            config = DeviceConfigViewer()
+            config.parse(config_object)
+            configs.append(config)
 
         # Sort configs by name
         configs.sort(key=lambda x: x.name)
@@ -307,6 +310,26 @@ class DeviceConfig(APIView):
         # Build and return response
         response = {"configs": configs, "current_config": current_config}
         return Response(response)
+
+
+class DeviceConfigViewSet(viewsets.ModelViewSet):
+    """API endpoint that allows device config to be viewed and loaded."""
+
+    serializer_class = DeviceConfigSerializer
+    lookup_field = "uuid"
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = DeviceConfigModel.objects.all()
+        return queryset
+
+    @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def load(self, request, uuid):
+        """API endpoint to load a device config."""
+
+        device_config_viewer = DeviceConfigViewer()
+        response, status = device_config_viewer.load(uuid, request.data)
+        return Response(response, status)
 
 
 class RecipeBuilder(APIView):
@@ -472,7 +495,9 @@ class DeviceConfigList(APIView):
         device_config_objects = DeviceConfignModel.objects.all()
         device_config_viewers = []
         for device_config_object in device_config_objects:
-            device_config_viewers.append(DeviceConfigViewer(device_config_object))
+            device_config_viewer = DeviceConfigViewer()
+            device_config_viewer.parse(device_config_object)
+            device_config_viewers.append(device_config_viewer)
 
         return Response({"device_config_viewers": device_config_viewers})
 

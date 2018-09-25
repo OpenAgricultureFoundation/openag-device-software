@@ -24,10 +24,12 @@ from django.apps import apps
 APP_NAME = "app"
 PERIPHERAL_TYPE = "Peripheral"
 CONTROLLER_TYPE = "Controller"
+COORDINATOR_TYPE = "Coordinator"
 RECIPE_TYPE = "Recipe"
 START_RECIPE = "Start Recipe"
 STOP_RECIPE = "Stop Recipe"
 CREATE_RECIPE = "Create Recipe"
+LOAD_DEVICE_CONFIG = "Load Device Config"
 
 
 class EventViewer:
@@ -237,10 +239,44 @@ class SimpleRecipeViewer:
 
 class DeviceConfigViewer:
 
-    def __init__(self, device_config_object):
+    # Initialize logger
+    extra = {"console_name": "DeviceConfigViewer", "file_name": "device_config_viewer"}
+    logger = logging.getLogger(__name__)
+    logger = logging.LoggerAdapter(logger, extra)
+
+    def parse(self, device_config_object):
+        """Parses device config into dict, uuid, and name."""
         self.dict = json_.loads(device_config_object.json)
         self.uuid = self.dict["uuid"]
         self.name = self.dict["name"]
+
+    def load(self, uuid: str, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Loads a recipe."""
+        self.logger.info("Received load device config request")
+
+        # Get device coordinator
+        app_config = apps.get_app_config(APP_NAME)
+        coordinator = app_config.coordinator
+
+        # Load config and save event interaction
+        try:
+            # Start recipe
+            message, status = coordinator.events.load_device_config(uuid)
+
+            # Save event interaction in database
+            event = EventModel.objects.create(
+                recipient={"type": COORDINATOR_TYPE},
+                request={"type": LOAD_DEVICE_CONFIG, "uuid": uuid},
+                response={"message": message, "status": status},
+            )
+
+            # Successfully loaded device config
+            self.logger.debug("Responding with ({}): {}".format(status, message))
+            return message, status
+        except Exception as e:
+            message = "Unable to load config, unhandled exception: {}".format(type(e))
+            self.logger.exception(message)
+            return message, 500
 
 
 class CultivarsViewer:

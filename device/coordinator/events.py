@@ -1,157 +1,102 @@
+# Import standard python modules
+import time, queue, json, glob
+
 # Import python types
-from typing import Dict
+from typing import Dict, Tuple, Any, Optional
 
 # Import device utilities
 from device.utilities.modes import Modes
+from device.utilities.statemachine import Manager
+
+LOAD_DEVICE_CONFIG = "Load Device Config"
+CONFIG_PATH = "data/config/"
+# DEVICE_CONFIG_PATH = CONFIG_PATH + "device.txt"
 
 
 class CoordinatorEvents:
     """Event mixin for coordinator manager."""
 
-    def process_event(self, request: Dict) -> None:
-        """Processes an event request."""
+    def __init__(self, manager: Manager) -> None:
+        """Initializes coordinator events."""
+
+        self.manager = manager
+        self.logger = manager.logger
+        self.transitions = manager.transitions
+        self.logger.debug("Initialized coordinator events")
+
+        # Initialize event queue
+        self.queue: queue.Queue = queue.Queue()
+
+    def check(self) -> None:
+        """Checks for a new event. Only processes one event per call, even if there are
+        multiple in the queue. Events are processed first-in-first-out (FIFO)."""
+
+        # Check for new events
+        if self.queue.empty():
+            return
+
+        # Get request
+        request = self.queue.get()
+        self.logger.debug("Received new request: {}".format(request))
 
         # Get request parameters
         try:
-            request_type = request["type"]
+            type_ = request["type"]
         except KeyError as e:
             message = "Invalid request parameters: {}".format(e)
             self.logger.exception(message)
-            self.response = {"status": 400, "message": message}
             return
 
         # Execute request
-        if request_type == "Load Recipe":
-            self.process_load_recipe_event()
-        elif request_type == "Start Recipe":
-            self.process_start_recipe_event(request)
-        elif request_type == "Stop Recipe":
-            self.process_stop_recipe_event()
-        elif request_type == "Reset":
-            self.process_reset_event()
-        elif request_type == "Load Config":
-            self.process_load_config_event(request)
+        if type_ == LOAD_DEVICE_CONFIG:
+            self._load_device_config(request)
         else:
-            message = "Received invalid event request type: {}".format(request_type)
-            self.logger.info(message)
+            self.logger.error("Invalid event request type in queue: {}".format(type_))
 
-    def process_load_recipe_event(self):
-        """Processes load recipe event."""
-        self.logger.critical("Loading recipe")
-        self.response = {"status": 500, "message": "Not implemented yet"}
-
-    # Also called from the IoTManager command receiver.
-    # Need to save the json recipe to the DB first
-    # (referenced here by UUID)
-    def process_start_recipe_event(self, request: Dict) -> None:
-        """Processes load recipe event."""
-        self.logger.debug("Processing start recipe event")
-
-        # TODO: Check for valid mode transition
-
-        # For backwards compatibility with SW v0.1.0
-        if type(request) == str:
-            request_uuid = request
-            request_timestamp = None
-        else:
-            # Get recipe uuid value and timestamp:
-            self.logger.info("request = {}".format(request))
-            request_uuid = request.get("uuid", None)
-            request_timestamp = request.get("timestamp", None)
-
-        # Verify uuid value exists
-        if request_uuid == None:
-            message = "Invalid request parameters: `uuid`"
-            self.response = {"status": 400, "message": message}
-            return
-
-        # Check if starting recipe at timestamp
-        if request_timestamp != None:
-
-            # Check timestamp is in the future
-            if request_timestamp < time.time():
-                message = "Invalid timestamp, value must be in the future"
-                self.response = {"status": 400, "message": message}
-                return
-
-            # Convert timestamp in seconds to minutes
-            request_timestamp_minutes = int(request_timestamp / 60.0)
-        else:
-            request_timestamp_minutes = None
-
-        # Send start recipe command to recipe thread
-        self.recipe.commanded_recipe_uuid = request_uuid
-        self.recipe.commanded_start_timestamp_minutes = request_timestamp_minutes
-        self.recipe.commanded_mode = Modes.START
-
-        # Set response
-        self.response = {"status": 200, "message": "Starting recipe"}
-
-    # Also called from the IoTManager command receiver.
-    def process_stop_recipe_event(self):
-        """Processes load recipe event."""
-        self.logger.debug("Processing stop recipe event")
-
-        # TODO: Check for valid mode transition
-
-        # Send stop recipe command
-        self.recipe.commanded_mode = Modes.STOP
-
-        # Wait for recipe to be picked up by recipe thread or timeout event
-        start_time_seconds = time.time()
-        timeout_seconds = 10
-        while True:
-            # Exit when recipe thread transitions to NORECIPE
-            if self.recipe.mode == Modes.NORECIPE:
-                self.response = {"status": 200, "message": "Stopped recipe"}
-                break
-
-            # Exit on timeout
-            if time.time() - start_time_seconds > timeout_seconds:
-                self.logger.critical(
-                    "Unable to stop recipe within 10 seconds. Something is wrong with code."
-                )
-                self.response = {
-                    "status": 500,
-                    "message": "Unable to stop recipe, thread did not change state withing 10 seconds. Something is wrong with code.",
-                }
-                break
-
-    def process_reset_event(self):
-        """ Processes reset event. """
-        self.logger.debug("Processing reset event")
-        self.response = {"status": 200, "message": "Pretended to reset device"}
-
-    def process_load_config_event(self, request):
-        """ Processes load config event. """
-        self.logger.debug("Processing load config event")
-
-        # Get request parameters
-        config_uuid = request.get("uuid", None)
-        self.logger.debug("Received config_uuid: {}".format(config_uuid))
-
-        # TODO: This flow is a bit wonky...clean up idea on uuid vs. filename
+    def load_device_config(self, uuid: str) -> Tuple[str, int]:
+        """Pre-processes load device config event request."""
+        self.logger.debug("Pre-processing load device config request")
 
         # Get filename of corresponding uuid
-        config_filename = None
+        filename = None
         for filepath in glob.glob("data/devices/*.json"):
+            self.logger.debug(filepath)
             device_config = json.load(open(filepath))
-            if device_config["uuid"] == config_uuid:
-                config_filename = filepath.split("/")[-1].replace(".json", "")
+            if device_config["uuid"] == uuid:
+                filename = filepath.split("/")[-1].replace(".json", "")
+        # self.logger.debug(filename)
 
         # Verify valid config uuid
-        if config_filename == None:
+        if filename == None:
             message = "Invalid config uuid, corresponding filepath not found"
-            self.response = {"status": 400, "message": message}
-            return
+            self.logger.debug(message)
+            return message, 400
 
-        # Write config filename to to device config path
-        with open(DEVICE_CONFIG_PATH, "w") as f:
-            f.write(config_filename + "\n")
+        # Check valid mode transition if enabled
+        mode = self.manager.mode
+        if not self.transitions.is_valid(mode, Modes.LOAD):
+            message = "Unable to load device config from {} mode".format(mode)
+            self.logger.debug(message)
+            return message, 400
 
-        # Transition to config mode
-        self.mode = Modes.CONFIG
+        # Add load device config event request to event queue
+        request = {"type": LOAD_DEVICE_CONFIG, "filename": filename}
+        self.queue.put(request)
 
-        # Return success response
-        message = "Loading config: {}".format(config_filename)
-        self.response = {"status": 200, "message": message}
+        # Successfully added load device config request to event queue
+        message = "Loading config"
+        return message, 200
+
+    def _load_device_config(self, request: Dict[str, Any]) -> None:
+        """Processes load device config event request."""
+        self.logger.debug("Processing load device config request")
+
+        # Get request parameters
+        filename = request.get("filename")
+
+        # Write config filename to device config path
+        with open(CONFIG_PATH + "device.txt", "w") as f:
+            f.write(str(filename) + "\n")
+
+        # Transition to load mode on next state machine update
+        self.manager.mode = Modes.LOAD

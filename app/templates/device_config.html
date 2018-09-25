@@ -8,34 +8,21 @@
      console.log("Loading config")
      var uuid = $("#config_uuid").val()
      console.log(uuid)
-     
-     // Create recipient and request dicts
-     recipient =  {
-         "type": "Device",
-         "name": null};
-     request = {
-         "type": "Load Config",
-         "uuid": uuid,
-       };
-
-      console.log(request)
 
      // Send create event request to endpoint
      $.ajax({
-         url: "/api/event/",
+         url: "/api/config/device/" + uuid + "/load/",
          type: "POST",
          data: {
-           "csrfmiddlewaretoken": "{{ csrf_token }}",
-           "recipient": JSON.stringify(recipient),
-           "request": JSON.stringify(request)
+           "csrfmiddlewaretoken": "{{ csrf_token }}"
          },
          dataType: 'json',
          success: function(data) {
            console.log("Event request succeeded")
 
            // Get response message
-           message = data.message
-           alert(message);
+           // message = data.message
+           alert(data);
            location.reload();
          },
          error: function(data) {
@@ -43,7 +30,7 @@
 
            // Get response message
            response_dict = JSON.parse(data.responseText)
-           message = response_dict["message"]
+           // message = response_dict["message"]
            alert(message);
          }
      }); 

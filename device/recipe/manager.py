@@ -55,10 +55,10 @@ class RecipeManager(Manager):  # type: ignore
         self.mode = Modes.INIT
         self.stop_event = threading.Event()  # so we can stop this thread
 
-        # Initialize transitions
+        # Initialize state machine transitions
         self.transitions = Transitions(self, TRANSITION_TABLE)
 
-        # Initialize events
+        # Initialize recipe event handler
         self.events = RecipeEvents(self)
 
     @property
