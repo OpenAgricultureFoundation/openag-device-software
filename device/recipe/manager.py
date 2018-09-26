@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any, Tuple
 
 # Import device utilities
 from device.utilities.modes import Modes
-from device.utilities.statemachine import Manager, Transitions
+from device.utilities.statemachine import StateMachineManager
 
 # Import device state
 from device.state.main import State
@@ -35,7 +35,7 @@ TRANSITION_TABLE = {
 # TODO: Fix scheme to make this less of a type checking nightmare...keep UI interaction in mind
 
 
-class RecipeManager(Manager):  # type: ignore
+class RecipeManager(RecipeEvents, StateMachineManager):  # type: ignore
     """Manages recipe state machine thread."""
 
     # Initialize logger
@@ -51,15 +51,16 @@ class RecipeManager(Manager):  # type: ignore
 
     def __init__(self, state: State) -> None:
         """Initializes recipe manager."""
+
+        # Initialize parent class
+        super.__init__()
+
+        # Initialize state and mode
         self.state = state
         self.mode = Modes.INIT
-        self.stop_event = threading.Event()  # so we can stop this thread
 
         # Initialize state machine transitions
-        self.transitions = Transitions(self, TRANSITION_TABLE)
-
-        # Initialize recipe event handler
-        self.events = RecipeEvents(self)
+        self.transitions = TRANSITION_TABLE
 
     @property
     def mode(self) -> Optional[str]:
@@ -341,20 +342,10 @@ class RecipeManager(Manager):  # type: ignore
             self.state.recipe["current_environment_state"] = value
             self.set_desired_sensor_values(value)
 
-    def spawn(self) -> None:
-        """ Spawns recipe thread. """
-        self.thread = threading.Thread(target=self.run_state_machine)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def stop(self) -> None:
-        self.stop_event.set()
-
-    def stopped(self) -> bool:
-        return self.stop_event.is_set()
-
     def run_state_machine(self) -> None:
-        """Runs recipe state machine."""
+        """Runs state machine."""
+
+        # Loop forever
         while True:
 
             # Check for thread stop event..
@@ -412,7 +403,7 @@ class RecipeManager(Manager):  # type: ignore
         while True:
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
             if self.transitions.is_new(Modes.NORECIPE):
@@ -492,7 +483,7 @@ class RecipeManager(Manager):  # type: ignore
                 break
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
             if self.transitions.is_new(Modes.QUEUED):
@@ -527,7 +518,7 @@ class RecipeManager(Manager):  # type: ignore
                 break
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
             if self.transitions.is_new(Modes.NORMAL):
@@ -549,7 +540,7 @@ class RecipeManager(Manager):  # type: ignore
         while True:
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
             if self.transitions.is_new(Modes.PAUSE):
@@ -583,7 +574,7 @@ class RecipeManager(Manager):  # type: ignore
         while True:
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
             if self.transitions.is_new(Modes.ERROR):
@@ -602,9 +593,9 @@ class RecipeManager(Manager):  # type: ignore
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            RecipeTransitionModel.objects.filter(minute__lte=minute)
-            .order_by("-minute")
-            .first()
+            RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
+                "-minute"
+            ).first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:
@@ -677,3 +668,18 @@ class RecipeManager(Manager):  # type: ignore
             for variable in environment_dict:
                 value = environment_dict[variable]
                 self.state.environment["sensor"]["desired"][variable] = value
+
+    def new_transition(self, mode: str) -> bool:
+        """Checks for a new transition. Logs errors if tries invalid transition."""
+
+        # Check if state machine mode still in current mode
+        if mode == self.mode:
+            return False
+
+        # Check if state machine mode is a valid transition from the current mode
+        if self.mode in self.transitions[mode]:
+            return True
+        else:
+            message = "Invalid transition attempt from {} to {}".format(mode, self.mode)
+            self.mode = Modes.ERROR
+            return True

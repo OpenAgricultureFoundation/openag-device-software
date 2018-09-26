@@ -29,18 +29,7 @@ LOAD_RECIPE = "Load Recipe"
 class RecipeEvents:
     """Event mixin for recipe manager."""
 
-    def __init__(self, manager: Manager) -> None:
-        """Initializes recipe events."""
-
-        self.manager = manager
-        self.logger = manager.logger
-        self.transitions = manager.transitions
-        self.logger.debug("Initialized recipe events")
-
-        # Initialize event queue
-        self.queue: queue.Queue = queue.Queue()
-
-    def check(self) -> None:
+    def check_events(self) -> None:
         """Checks for a new event. Only processes one event per call, even if there are 
         multiple in the queue. Events are processed first-in-first-out (FIFO)."""
 
@@ -86,9 +75,8 @@ class RecipeEvents:
             return message, 400
 
         # Check valid mode transition if enabled
-        mode = self.manager.mode
-        if check_mode and not self.transitions.is_valid(mode, Modes.START):
-            message = "Unable to start recipe from {} mode".format(mode)
+        if check_mode and not self.transitions.is_valid(self.mode, Modes.START):
+            message = "Unable to start recipe from {} mode".format(self.mode)
             self.logger.debug(message)
             return message, 400
 
@@ -116,24 +104,22 @@ class RecipeEvents:
             timestamp_minutes = int(time.time() / 60.0)
 
         # Check valid mode transition
-        mode = self.manager.mode
-        if not self.transitions.is_valid(mode, Modes.START):
-            self.logger.critical("Tried to start recipe from {} mode".format(mode))
+        if not self.transitions.is_valid(self.mode, Modes.START):
+            self.logger.critical("Tried to start recipe from {} mode".format(self.mode))
             return
 
         # Start recipe on next state machine update
-        self.manager.recipe_uuid = uuid
-        self.manager.start_timestamp_minutes = timestamp_minutes
-        self.manager.mode = Modes.START
+        self.recipe_uuid = uuid
+        self.start_timestamp_minutes = timestamp_minutes
+        self.mode = Modes.START
 
     def stop_recipe(self, check_mode: bool = True) -> Tuple[str, int]:
         """Adds stop recipe event to event queue."""
         self.logger.debug("Adding stop recipe event to event queue")
 
         # Check valid mode transition if enabled
-        mode = self.manager.mode
-        if check_mode and not self.transitions.is_valid(mode, Modes.STOP):
-            message = "Unable to stop recipe from {} mode".format(mode)
+        if check_mode and not self.transitions.is_valid(self.mode, Modes.STOP):
+            message = "Unable to stop recipe from {} mode".format(self.mode)
             self.logger.debug(message)
             return message, 400
 
@@ -151,13 +137,12 @@ class RecipeEvents:
         self.logger.debug("Stopping recipe")
 
         # Check valid mode transition
-        mode = self.manager.mode
-        if not self.transitions.is_valid(mode, Modes.STOP):
-            self.logger.cricital("Tried to stop recipe from {} mode".format(mode))
+        if not self.transitions.is_valid(self.mode, Modes.STOP):
+            self.logger.cricital("Tried to stop recipe from {} mode".format(self.mode))
             return
 
         # Stop recipe on next state machine update
-        self.manager.mode = Modes.STOP
+        self.mode = Modes.STOP
 
     def create_recipe(self, json_: str) -> Tuple[str, int]:
         """Creates a recipe into database."""

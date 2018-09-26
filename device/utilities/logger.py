@@ -2,14 +2,13 @@ import logging, sys, json, os
 
 
 class Logger:
-    """ Manages logging. Ensures descriptive logs in normal runtime
-        environment and in testing environment. """
+    """Simple logger class. Ensures descriptive logs in run and test environments."""
 
-    def __init__(self, name: str, dunder_name: str) -> None:
+    def __init__(self, name: str, log: str) -> None:
         """ Initializes logger. """
         self.name = name
         extra = {"console_name": name, "file_name": name}
-        logger = logging.getLogger(dunder_name)
+        logger = logging.getLogger(log)
         self.logger = logging.LoggerAdapter(logger, extra)
 
     def debug(self, message: str) -> None:
@@ -17,7 +16,7 @@ class Logger:
             environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
-            self.logger.debug(self.name + ": " + str(message))
+            print("DEBUG " + self.name + ": " + str(message))
         else:
             self.logger.debug(message)
 
@@ -26,7 +25,7 @@ class Logger:
             environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
-            self.logger.info(self.name + ": " + str(message))
+            print("INFO " + self.name + ": " + str(message))
         else:
             self.logger.info(message)
 
@@ -35,7 +34,7 @@ class Logger:
             environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
-            self.logger.warning(self.name + ": " + str(message))
+            print("WARNING " + self.name + ": " + str(message))
         else:
             self.logger.warning(message)
 
@@ -44,7 +43,7 @@ class Logger:
             environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
-            self.logger.error(self.name + ": " + str(message))
+            print("ERROR " + self.name + ": " + str(message))
         else:
             self.logger.error(message)
 
@@ -53,7 +52,7 @@ class Logger:
             environment. If in test environment, prepends message with
             logger name. """
         if "pytest" in sys.modules:
-            self.logger.critical(self.name + ": " + str(message))
+            print("CRITICAL " + self.name + ": " + str(message))
         else:
             self.logger.critical(message)
 

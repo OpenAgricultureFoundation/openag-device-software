@@ -1,16 +1,68 @@
 # Import standard python modules
-import logging
+import logging, threading, queue
 
 # Import python types
 from typing import Dict, List
 
 
-class Manager(object):
-    """State machine manager base class. Mainly just for type checking right now."""
+# TODO: Make modes their own classes instead of strings...
+# E.g. class ErrorMode(BaseMode)
 
-    logger: logging.Logger
+
+class StateMachineManager():
+    """State machine manager base class."""
+
+    # Initialize var types
     mode: str
-    min_sampling_interval: float
+    transitions: Dict[str, List[str]]
+
+    def __init__(self):
+        """Initializes state machine manager."""
+
+        # Initialize event queue
+        self.event_queue: queue.Queue = queue.Queue()
+
+        # Not sure we need this
+        self.stop_event = threading.Event()
+
+    def spawn(self) -> None:
+        """ Spawns recipe thread. """
+        self.thread = threading.Thread(target=self.run_state_machine)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def stop(self) -> None:
+        self.stop_event.set()
+
+    def stopped(self) -> bool:
+        return self.stop_event.is_set()
+
+    def valid_transition(self, from_mode: str, to_mode: str) -> bool:
+        """Checks if transition from mode to mode is valid."""
+        if to_mode in self.transitions[from_mode]:
+            return True
+        else:
+            return False
+
+    def new_transition(self, mode: str) -> bool:
+        """Checks for a new transition. Logs errors if tries invalid transition."""
+
+        # Check if state machine mode still in current mode
+        if mode == self.mode:
+            return False
+
+        # Check if state machine mode is a valid transition from the current mode
+        if self.valid_transition(mode, self.mode):
+            return True
+        else:
+            message = "Invalid transition attempt from {} to {}".format(mode, self.mode)
+            self.mode = "ERROR"  # this is error prone
+            return True
+
+
+# Temporary -- remove me
+class Manager(StateMachineManager):
+    ...
 
 
 class Transitions(object):
