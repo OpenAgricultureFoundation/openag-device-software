@@ -108,7 +108,7 @@ def test_reset_200() -> None:
 #         simulate=True,
 #     )
 #     manager.process_event(request={"type": "Set Sampling Interval", "value": 5})
-#     assert manager.sampling_interval_seconds == 5
+#     assert manager.sampling_interval == 5
 
 
 # def test_unknown_event():

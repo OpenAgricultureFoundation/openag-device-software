@@ -25,6 +25,7 @@ from device.peripherals.modules.t6713.exceptions import (
 
 class Status(NamedTuple):
     """Data class for parsed status."""
+
     error_condition: bool
     flash_error: bool
     calibration_error: bool

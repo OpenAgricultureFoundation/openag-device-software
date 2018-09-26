@@ -8,15 +8,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0006_statemodel_resource'),
-    ]
+    dependencies = [("app", "0006_statemodel_resource")]
 
     operations = [
         migrations.AddField(
-            model_name='statemodel',
-            name='connect',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=''),
+            model_name="statemodel",
+            name="connect",
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=""),
             preserve_default=False,
-        ),
+        )
     ]

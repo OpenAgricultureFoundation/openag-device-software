@@ -139,18 +139,21 @@ class IoTPubSub:
 
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
-                        valuesJson += (
-                            "{'name':'%s', 'type':'float', 'value':%s}" % (vname, val)
+                        valuesJson += "{'name':'%s', 'type':'float', 'value':%s}" % (
+                            vname,
+                            val,
                         )
 
                     elif isinstance(val, int):
-                        valuesJson += (
-                            "{'name':'%s', 'type':'int', 'value':%s}" % (vname, val)
+                        valuesJson += "{'name':'%s', 'type':'int', 'value':%s}" % (
+                            vname,
+                            val,
                         )
 
                     else:  # assume str
-                        valuesJson += (
-                            "{'name':'%s', 'type':'str', 'value':'%s'}" % (vname, val)
+                        valuesJson += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
+                            vname,
+                            val,
                         )
 
                 valuesJson += "]}"
@@ -259,8 +262,7 @@ class IoTPubSub:
                 self.logger.info(
                     "publish_binary_image: sent image chunk "
                     "{} of {} for {} in {} bytes".format(
-                        chunk, total_chunks, variable_name, 
-                        len(msg_obj["imageChunk"])
+                        chunk, total_chunks, variable_name, len(msg_obj["imageChunk"])
                     )
                 )
 

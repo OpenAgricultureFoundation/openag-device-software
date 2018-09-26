@@ -1,19 +1,8 @@
 # Import standard python libraries
 import sys, os
 
-# Get current working directory
-cwd = os.getcwd()
-print("Running from: {}".format(cwd))
-
-# Set correct import path
-if cwd.endswith("utilities"):
-    print("Running locally")
-    sys.path.append("../../")
-elif cwd.endswith("openag-device-software"):
-    print("Running globally")
-else:
-    print("Running from invalid location")
-    sys.exit(0)
+# Set system path
+sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import sensor
 from device.utilities import bitwise

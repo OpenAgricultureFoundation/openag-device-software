@@ -1,5 +1,5 @@
 # Import standard python libraries
-import os, sys, json, threading
+import os, sys, json, threading, logging
 
 # Set system path and directory
 root_dir = os.environ["OPENAG_BRAIN_ROOT"]
@@ -26,6 +26,9 @@ device_config = json.load(open(path))
 peripheral_config = get_peripheral_config(
     device_config["peripherals"], "AtlasEC-Reservoir"
 )
+
+# Initialize logger
+logging.basicConfig(level=logging.DEBUG)
 
 
 def test_init() -> None:
@@ -103,7 +106,7 @@ def test_shutdown() -> None:
     manager.shutdown()
 
 
-def test_dry_calibration() -> None:
+def test_calibrate_dry() -> None:
     manager = AtlasECManager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -114,11 +117,12 @@ def test_dry_calibration() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    manager.process_event(request={"type": "Dry Calibration"})
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(request={"type": "Dry Calibration"})
+    assert status == 200
+    manager.events.check()
 
 
-def test_single_point_calibration() -> None:
+def test_calibrate_single() -> None:
     manager = AtlasECManager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -129,11 +133,14 @@ def test_single_point_calibration() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    manager.process_event(request={"type": "Single Point Calibration", "value": 7.0})
-    assert manager.response["status"] == 500
+    message, status = manager.events.create(
+        request={"type": "Single Point Calibration", "value": 7.0}
+    )
+    assert status == 200
+    manager.events.check()
 
 
-def test_low_point_calibration() -> None:
+def test_calibrate_low() -> None:
     manager = AtlasECManager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -144,11 +151,14 @@ def test_low_point_calibration() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    manager.process_event(request={"type": "Low Point Calibration", "value": 4.0})
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(
+        request={"type": "Low Point Calibration", "value": 4.0}
+    )
+    assert status == 200
+    manager.events.check()
 
 
-def test_high_point_calibration() -> None:
+def test_calibrate_high() -> None:
     manager = AtlasECManager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -159,11 +169,14 @@ def test_high_point_calibration() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    manager.process_event(request={"type": "High Point Calibration", "value": 10.0})
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(
+        request={"type": "High Point Calibration", "value": 10.0}
+    )
+    assert status == 200
+    manager.events.check()
 
 
-def test_clear_calibration() -> None:
+def test_clear_calibrations() -> None:
     manager = AtlasECManager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -174,5 +187,6 @@ def test_clear_calibration() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    manager.process_event(request={"type": "Clear Calibration"})
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(request={"type": "Clear Calibration"})
+    assert status == 200
+    manager.events.check()
