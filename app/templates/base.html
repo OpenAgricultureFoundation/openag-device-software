@@ -11,7 +11,7 @@
         body {
          background-color: #f1f1f1;
         }
-       .dashboard, .events, .recipes, .environments, .peripherals, .config, .password, .logs, .iot, .resources, .connect, .upgrade {
+       .dashboard, .events, .recipes, .environments, .peripherals, .images, .config, .password, .logs, .iot, .resources, .connect, .upgrade {
         padding: 20px;
        }
        .card {
@@ -36,6 +36,9 @@
             </li>
             <li {% if 'peripherals' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'peripherals' %}">Peripherals</a>
+            </li>
+            <li {% if 'images' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
+              <a class="nav-link" href="{% url 'images' %}">Images</a>
             </li>
             <li {% if 'logs' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'logs' %}">Logs</a>

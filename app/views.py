@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, json, logging
+import os, json, logging, shutil
 from operator import itemgetter
 
 # Import django modules
@@ -77,6 +77,7 @@ from device.upgrade.utilities import UpgradeUtilities
 
 
 LOG_DIR = "data/logs/"
+IMAGE_DIR = "data/images/"
 
 
 def change_password(request):
@@ -563,6 +564,34 @@ class IoT(APIView):
             "received_message_count": iotv.iot_dict["received_message_count"],
             "published_message_count": iotv.iot_dict["published_message_count"],
         }
+        return Response(response)
+
+
+class Images(APIView):
+    """UI page for ImageManager."""
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "images.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        stored_path = IMAGE_DIR + "stored/"
+        files = []
+        for f in os.listdir(stored_path):
+            # Clean up any place holder images
+            if f.startswith('This_'):
+                os.remove(stored_path + f)
+                continue
+            if f.endswith('.png'):
+                files.append({"name": f})
+
+        if 0 == len(files):
+            if not os.path.isdir(stored_path):
+                os.mkdir(stored_path)
+            s='device/peripherals/modules/usb_camera/tests/simulation_image.png'
+            place_holder='This_is_just_a_sample_image_until_your_EDU_takes_its_own_picture.png'
+            shutil.copy(s, stored_path + place_holder)
+            files.append({"name": place_holder})
+        response = {"files_json": json.dumps(files)}
         return Response(response)
 
 

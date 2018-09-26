@@ -258,7 +258,7 @@ class IoTPubSub:
                 self.mqtt_client.publish(self.mqtt_topic, msg_json, qos=1)
                 self.logger.info(
                     "publish_binary_image: sent image chunk "
-                    "{} of {} for {} and {} bytes".format(
+                    "{} of {} for {} in {} bytes".format(
                         chunk, total_chunks, variable_name, 
                         len(msg_obj["imageChunk"])
                     )
