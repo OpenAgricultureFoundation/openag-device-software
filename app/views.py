@@ -396,10 +396,17 @@ class Logs(APIView):
         # Build peripheral logs
         logs = []
         for peripheral in device_config["peripherals"]:
-            name = peripheral["name"]
 
-            # Load in peripheral log file
-            log_file = open(LOG_DIR + "peripherals/{}.log".format(name))
+            # Get log file path
+            name = peripheral["name"]
+            PERIPHERAL_PATH = LOG_DIR + "peripherals/{}.log".format(name)
+
+            # Check path exists
+            if not os.path.exists(PERIPHERAL_PATH):
+                continue
+
+            # Load in log file
+            log_file = open(PERIPHERAL_PATH)
             lines = log_file.readlines()
 
             # Return up to 500 lines
@@ -414,6 +421,7 @@ class Logs(APIView):
         # Build device top-level logs
         log_filenames = [
             "app",
+            "device",
             "coordinator",
             "recipe",
             "resource",
@@ -426,8 +434,15 @@ class Logs(APIView):
         # Load in all log files
         for name in log_filenames:
 
+            # Get log file path
+            LOG_PATH = LOG_DIR + name + ".log"
+
+            # Check path exists
+            if not os.path.exists(LOG_PATH):
+                continue
+
             # Load log filenames
-            file = open(LOG_DIR + name + ".log")
+            file = open(LOG_PATH)
             lines = file.readlines()
 
             # Return up to 500 lines

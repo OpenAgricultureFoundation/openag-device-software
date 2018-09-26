@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "app",
+    "device",
     "device.coordinator",
     "device.peripherals",
     "device.iot",
@@ -110,6 +111,10 @@ LOG_DIR = os.path.dirname(BASE_DIR) + "/data/logs/"
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
+# Set log max file size and backup count
+LOG_SIZE = 200 * 1024
+LOG_BACKUPS = 1
+
 
 LOGGING = {
     "version": 1,
@@ -148,16 +153,24 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "app.log",
             "formatter": "app_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
+        },
+        "device_file": {
+            "level": LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR + "device.log",
+            "formatter": "device_file",
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "coordinator_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "coordinator.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "peripheral_files": {
             "level": LOG_LEVEL,
@@ -169,60 +182,61 @@ LOGGING = {
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "event.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "i2c_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "i2c.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "iot_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "iot.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "recipe_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "recipe.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "resource_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "resource.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "connect_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "connect.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
         "upgrade_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
             "filename": LOG_DIR + "upgrade.log",
             "formatter": "device_file",
-            "maxBytes": 200 * 1024,
-            "backupCount": 1,
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
         },
     },
     "loggers": {
         "app": {"handlers": ["app_console", "app_file"], "level": LOG_LEVEL},
+        "device": {"handlers": ["device_console", "device_file"], "level": LOG_LEVEL},
         "coordinator": {
             "handlers": ["device_console", "coordinator_file"], "level": LOG_LEVEL
         },
