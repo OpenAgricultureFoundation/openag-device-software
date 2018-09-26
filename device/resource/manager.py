@@ -151,7 +151,7 @@ class ResourceManager:
 
     def delete_files(self, path):
         try:
-            self.logger.info('Deleting all files in: ' + path)
+            self.logger.info("Deleting all files in: " + path)
             imageFileList = glob.glob(path)
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
@@ -167,7 +167,7 @@ class ResourceManager:
         """Delete all but the most recent 50 events and 
            environments from database."""
         try:
-            self.logger.info('Cleaning up database.')
+            self.logger.info("Cleaning up database.")
             # clean out the events
             qs = EventModel.objects.all()  # query set of all items
             eventCount = len(qs)
@@ -234,15 +234,13 @@ class ResourceManager:
         # detect low memory and disk space
         low_resources = False
         low_disk = False
-        if "K" == fm_units or \
-          ("M" == fm_units and 10 <= len(fm_val)):
+        if "K" == fm_units or ("M" == fm_units and 10 <= len(fm_val)):
             # 10M low memory limit
             self.status = "Warning: low memory: {}".format(free_memory)
             self.logger.warning(self.status)
             low_resources = True
 
-        if "K" == fd_units or \
-          ("M" == fd_units and 50 <= int(fm_val)):
+        if "K" == fd_units or ("M" == fd_units and 50 <= int(fm_val)):
             # 50M low disk limit
             self.status = "Warning: low disk space: {}".format(free_disk)
             self.logger.warning(self.status)
