@@ -28,6 +28,7 @@ from device.peripherals.modules.sht25.exceptions import (
 
 class UserRegister(NamedTuple):
     """Dataclass for parsed user register byte."""
+
     resolution: int
     end_of_battery: bool
     heater_enabled: bool

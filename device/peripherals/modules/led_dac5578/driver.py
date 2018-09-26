@@ -297,7 +297,7 @@ class LEDDAC5578Driver:
     def get_channel_number(self, channel_name: str) -> int:
         """Gets channel number from channel name."""
         try:
-            channel_dict = self.channels[channel_name]
+            channel_dict = self.channels[channel_name]  # type: ignore
             channel_number = channel_dict.get("port", -1)
             return int(channel_number)
         except KeyError:
@@ -307,7 +307,7 @@ class LEDDAC5578Driver:
         """Build channel outputs. Sets each channel to provided value."""
         self.logger.debug("Building channel outputs")
         channel_outputs = {}
-        for key in self.channels.keys():
+        for key in self.channels.keys():  # type: ignore
             channel_outputs[key] = value
         self.logger.debug("channel outputs = {}".format(channel_outputs))
         return channel_outputs
@@ -318,7 +318,7 @@ class LEDDAC5578Driver:
         # Build interpolation lists
         dac_list = []
         par_list = []
-        for dac_percent, par_percent in self.dac_map.items():
+        for dac_percent, par_percent in self.dac_map.items():  # type: ignore
             dac_list.append(float(dac_percent))
             par_list.append(float(par_percent))
 
@@ -337,7 +337,7 @@ class LEDDAC5578Driver:
         # Build interpolation lists
         dac_list = []
         par_list = []
-        for dac_percent, par_percent in self.dac_map.items():
+        for dac_percent, par_percent in self.dac_map.items():  # type: ignore
             dac_list.append(float(dac_percent))
             par_list.append(float(par_percent))
 
@@ -345,4 +345,4 @@ class LEDDAC5578Driver:
         dac_setpoint = maths.interpolate(par_list, dac_list, par_setpoint)
 
         # Successfully translated dac setpoint
-        return dac_setpoint
+        return dac_setpoint  # type: ignore

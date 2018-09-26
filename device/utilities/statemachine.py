@@ -7,6 +7,7 @@ from typing import Dict, List
 
 class Manager(object):
     """State machine manager base class. Mainly just for type checking right now."""
+
     logger: logging.Logger
     mode: str
 

@@ -215,7 +215,7 @@ class ConnectUtilities:
             with open(REG_DATA_DIR + "device_id.bash") as f:
                 contents = f.read()
                 index = contents.find("=")
-                devid = contents[index + 1:]
+                devid = contents[index + 1 :]
                 return devid.rstrip()
         except:
             pass

@@ -130,7 +130,7 @@ def test_set_compensation_temperature() -> None:
     driver.set_compensation_temperature(26.0)
 
 
-def test_take_low_point_calibration_reading() -> None:
+def test_calibrate_low() -> None:
     driver = AtlasDriver(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -140,10 +140,10 @@ def test_take_low_point_calibration_reading() -> None:
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
     )
-    driver.take_low_point_calibration_reading(4.0)
+    driver.calibrate_low(4.0)
 
 
-def test_take_mid_point_calibration_reading() -> None:
+def test_calibrate_mid() -> None:
     driver = AtlasDriver(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -153,10 +153,10 @@ def test_take_mid_point_calibration_reading() -> None:
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
     )
-    driver.take_mid_point_calibration_reading(7.0)
+    driver.calibrate_mid(7.0)
 
 
-def test_take_high_point_calibration_reading() -> None:
+def test_calibrate_high() -> None:
     driver = AtlasDriver(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -166,10 +166,10 @@ def test_take_high_point_calibration_reading() -> None:
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
     )
-    driver.take_high_point_calibration_reading(10.0)
+    driver.calibrate_high(10.0)
 
 
-def test_clear_calibration_readings() -> None:
+def test_clear_calibrations() -> None:
     driver = AtlasDriver(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -179,7 +179,7 @@ def test_clear_calibration_readings() -> None:
         mux_simulator=MuxSimulator(),
         Simulator=AtlasSimulator,
     )
-    driver.clear_calibration_readings()
+    driver.clear_calibrations()
 
 
 def test_factory_reset() -> None:

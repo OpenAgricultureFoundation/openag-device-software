@@ -38,12 +38,14 @@ from device.peripherals.classes.atlas.exceptions import (
 
 class Info(NamedTuple):
     """Data class for parsed info register."""
+
     sensor_type: str
     firmware_version: float
 
 
 class Status(NamedTuple):
     """Data class for parsed status register."""
+
     prev_restart_reason: str
     voltage: float
 

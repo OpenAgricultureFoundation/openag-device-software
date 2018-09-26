@@ -23,10 +23,18 @@ TRANSITION_TABLE = {
     Modes.INIT: [Modes.SETUP, Modes.SHUTDOWN, Modes.ERROR],
     Modes.SETUP: [Modes.NORMAL, Modes.SHUTDOWN, Modes.ERROR],
     Modes.NORMAL: [
-        Modes.CALIBRATE, Modes.MANUAL, Modes.RESET, Modes.SHUTDOWN, Modes.ERROR
+        Modes.CALIBRATE,
+        Modes.MANUAL,
+        Modes.RESET,
+        Modes.SHUTDOWN,
+        Modes.ERROR,
     ],
     Modes.MANUAL: [
-        Modes.NORMAL, Modes.CALIBRATE, Modes.RESET, Modes.SHUTDOWN, Modes.ERROR
+        Modes.NORMAL,
+        Modes.CALIBRATE,
+        Modes.RESET,
+        Modes.SHUTDOWN,
+        Modes.ERROR,
     ],
     Modes.CALIBRATE: [Modes.RESET, Modes.SHUTDOWN, Modes.ERROR],
     Modes.ERROR: [Modes.RESET, Modes.SHUTDOWN],

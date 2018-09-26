@@ -27,7 +27,7 @@ class I2C(object):
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,

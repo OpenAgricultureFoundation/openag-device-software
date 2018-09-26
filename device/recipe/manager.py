@@ -472,7 +472,9 @@ class RecipeManager(Manager):  # type: ignore
                 break
 
             # Calculate remaining delay time
-            delay_minutes = self.start_timestamp_minutes - self.current_timestamp_minutes
+            delay_minutes = (
+                self.start_timestamp_minutes - self.current_timestamp_minutes
+            )
 
             # Log remaining delay time every hour if remaining time > 1 hour
             if delay_minutes > 60 and time.time() > prev_time_seconds + 3600:
@@ -600,9 +602,9 @@ class RecipeManager(Manager):  # type: ignore
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
-                "-minute"
-            ).first()
+            RecipeTransitionModel.objects.filter(minute__lte=minute)
+            .order_by("-minute")
+            .first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:

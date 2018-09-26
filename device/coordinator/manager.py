@@ -83,7 +83,9 @@ class CoordinatorManager(Manager):
 
     # Initialize recipe state dict
     state.recipe = {
-        "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
+        "recipe_uuid": None,
+        "start_timestamp_minutes": None,
+        "last_update_minute": None,
     }
 
     # Initialize recipe object

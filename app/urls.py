@@ -133,6 +133,4 @@ urlpatterns = [
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),
-] + static(
-    settings.STATIC_URL, document_root=settings.STATIC_ROOT
-)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

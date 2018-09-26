@@ -22,20 +22,20 @@ fi
 source $DIR/venv/bin/activate
 
 # Environment variables used in the IoT code, using CHECKED IN test device auth.
-export IOT_PRIVATE_KEY=$DIR/tests/data/rsa_private.pem
-export CA_CERTS=$DIR/tests/data/roots.pem
-export GCLOUD_PROJECT=openag-v1
-export GCLOUD_REGION=us-central1
-export GCLOUD_DEV_REG=device-registry
-source $DIR/tests/data/device_id.bash
+# export IOT_PRIVATE_KEY=$DIR/tests/data/rsa_private.pem
+# export CA_CERTS=$DIR/tests/data/roots.pem
+# export GCLOUD_PROJECT=openag-v1
+# export GCLOUD_REGION=us-central1
+# export GCLOUD_DEV_REG=device-registry
+# source $DIR/tests/data/device_id.bash
 
 # Run our code formatter
 printf "\nRunning code formatter...\n"
-black app/ device/ iot/ resource/
+black app/ device/
 
 # Run static type checks, TODO: run for all codebase
 printf "\nRunning static type checks...\n"
-mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators device/comms/i2c2
+mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators $DIR
 printf "...type checks complete!\n"
 
 printf "\nRunning unit tests...\n"
@@ -43,7 +43,7 @@ printf "\nRunning unit tests...\n"
 if [ $# -eq 0 ]; then
   # No command line args to this script, so run all tests:
   # python -m pytest -s tests
-  python -m pytest tests --cov tests
+  python -m pytest $DIR --cov device app
 else
   # Run any tests passed on the command line of this script:
   python -m pytest -s $@

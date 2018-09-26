@@ -113,9 +113,11 @@ def test_calibrate_low() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    request = {"type": "Low Point Calibration", "value": "4.0"}
-    manager.process_event(request)
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(
+        request={"type": "Low Point Calibration", "value": "4.0"}
+    )
+    assert status == 200
+    manager.events.check()
 
 
 def test_calibrate_mid() -> None:
@@ -129,9 +131,11 @@ def test_calibrate_mid() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    request = {"type": "Mid Point Calibration", "value": "7.0"}
-    manager.process_event(request)
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(
+        request={"type": "Mid Point Calibration", "value": "7.0"}
+    )
+    assert status == 200
+    manager.events.check()
 
 
 def test_calibrate_high() -> None:
@@ -145,9 +149,11 @@ def test_calibrate_high() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    request = {"type": "High Point Calibration", "value": "10.0"}
-    manager.process_event(request)
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(
+        request={"type": "High Point Calibration", "value": "10.0"}
+    )
+    assert status == 200
+    manager.events.check()
 
 
 def test_clear_calibration() -> None:
@@ -161,6 +167,6 @@ def test_clear_calibration() -> None:
     )
     manager.initialize()
     manager.mode = Modes.CALIBRATE
-    request = {"type": "Clear Calibration"}
-    manager.process_event(request)
-    assert manager.response["status"] == 200
+    message, status = manager.events.create(request={"type": "Clear Calibration"})
+    assert status == 200
+    manager.events.check()

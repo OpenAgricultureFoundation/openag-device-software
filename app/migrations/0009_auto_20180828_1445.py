@@ -7,13 +7,11 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0008_connectmodel'),
-    ]
+    dependencies = [("app", "0008_connectmodel")]
 
     operations = [
         migrations.AlterModelOptions(
-            name='statemodel',
-            options={'verbose_name': 'State', 'verbose_name_plural': 'States'},
-        ),
+            name="statemodel",
+            options={"verbose_name": "State", "verbose_name_plural": "States"},
+        )
     ]
