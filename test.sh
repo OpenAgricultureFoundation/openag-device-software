@@ -34,18 +34,9 @@ printf "\nRunning code formatter...\n"
 black app/ device/
 
 # Run static type checks, TODO: run for all codebase
-printf "\nRunning static type checks...\n"
-mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators .
-printf "...type checks complete!\n"
+# printf "\nRunning static type checks...\n"
+# mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators .
+# printf "...type checks complete!\n"
 
 printf "\nRunning unit tests...\n"
-# Note remove the pytest '-s' arg to not show print()s from the test code.
-if [ $# -eq 0 ]; then
-  # No command line args to this script, so run all tests:
-  # python -m pytest -s tests
-  python -m pytest $DIR --cov device app
-else
-  # Run any tests passed on the command line of this script:
-  python -m pytest -s $@
-fi
-
+python -m pytest $DIR --cov device app
