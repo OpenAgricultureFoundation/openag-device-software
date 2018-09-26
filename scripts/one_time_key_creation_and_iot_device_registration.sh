@@ -46,8 +46,8 @@ if [[ $RET = *"error"* ]]; then
 fi
 
 # Save this devices ID to a file that the brain startup script will read.
-echo "export DEVICE_ID=EDU-$CKSUM-$MAC" >> device_id.bash
+echo "export DEVICE_ID=EDU-$CKSUM-$MAC" > device_id.bash
 
-echo "$CKSUM" >> verification_code.txt
+echo "$CKSUM" > verification_code.txt
 
 
