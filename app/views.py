@@ -594,6 +594,7 @@ class Images(APIView):
             )
             shutil.copy(s, stored_path + place_holder)
             files.append({"name": place_holder})
+        files.sort()
         response = {"files_json": json.dumps(files)}
         return Response(response)
 
