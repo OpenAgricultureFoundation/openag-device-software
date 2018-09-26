@@ -55,4 +55,3 @@ def test_capture() -> None:
     driver.capture()
     images = list_test_images()
     assert len(images) == 1
-    assert False

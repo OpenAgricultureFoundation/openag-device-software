@@ -208,7 +208,9 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
-            self.health = 100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
+            self.health = (
+                100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
+            )
         except DriverError as e:
             self.logger.exception("Manager unable to initialize")
             self.health = 0.0
@@ -219,7 +221,9 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
         self.logger.debug("Setting up")
         try:
             self.channel_setpoints = self.driver.turn_off()
-            self.health = 100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
+            self.health = (
+                100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
+            )
         except DriverError as e:
             self.logger.exception("Unable to setup")
             self.mode = Modes.ERROR
@@ -308,7 +312,9 @@ class LEDDAC5578Manager(PeripheralManager, LEDDAC5578Events):  # type: ignore
             result = self.driver.set_spd(
                 self.desired_distance, self.desired_intensity, self.desired_spectrum
             )
-            self.health = 100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
+            self.health = (
+                100.0 * self.driver.num_active_panels / self.driver.num_expected_panels
+            )
         except DriverError as e:
             self.logger.exception("Unable to set spd")
             self.mode = Modes.ERROR

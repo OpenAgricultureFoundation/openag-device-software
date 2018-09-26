@@ -223,7 +223,7 @@ class PeripheralEvents:
 
         # Set sampling interval
         interval = request.get("interval")
-        self.sampling_interval_seconds = interval
+        self.sampling_interval = interval
 
     def enable_calibration_mode(self) -> Tuple[str, int]:
         """Pre-processes enable calibration mode event request."""

@@ -8,20 +8,23 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0007_statemodel_connect'),
-    ]
+    dependencies = [("app", "0007_statemodel_connect")]
 
     operations = [
         migrations.CreateModel(
-            name='ConnectModel',
+            name="ConnectModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
-            options={
-                'verbose_name': 'Connect',
-                'verbose_name_plural': 'Connects',
-            },
-        ),
+            options={"verbose_name": "Connect", "verbose_name_plural": "Connects"},
+        )
     ]

@@ -8,7 +8,6 @@ from rest_framework.response import Response
 
 
 class Router(routers.DefaultRouter):
-
     def get_api_root_view(self, api_urls=None):
         """
         Return a basic root view.

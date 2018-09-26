@@ -96,5 +96,3 @@ class ConnectSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = ConnectModel
         fields = "__all__"
-
-

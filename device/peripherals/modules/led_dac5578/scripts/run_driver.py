@@ -60,7 +60,11 @@ class DriverRunner(RunnerBase):  # type: ignore
             distance = 10
             ppfd = 800
             spectrum = {
-                "380-399": 0, "400-499": 26, "500-599": 22, "600-700": 39, "701-780": 13
+                "380-399": 0,
+                "400-499": 26,
+                "500-599": 22,
+                "600-700": 39,
+                "701-780": 13,
             }
             self.driver.set_spd(distance, ppfd, spectrum)
 

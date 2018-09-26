@@ -8,15 +8,13 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0009_auto_20180828_1445'),
-    ]
+    dependencies = [("app", "0009_auto_20180828_1445")]
 
     operations = [
         migrations.AddField(
-            model_name='statemodel',
-            name='upgrade',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=''),
+            model_name="statemodel",
+            name="upgrade",
+            field=django.contrib.postgres.fields.jsonb.JSONField(default=""),
             preserve_default=False,
-        ),
+        )
     ]

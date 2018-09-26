@@ -9,7 +9,9 @@ from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
-from device.peripherals.modules.atlas_ec.exceptions import TakeSinglePointCalibrationError
+from device.peripherals.modules.atlas_ec.exceptions import (
+    TakeSinglePointCalibrationError
+)
 
 
 def test_init() -> None:
@@ -144,7 +146,7 @@ def test_set_probe_type() -> None:
     driver.set_probe_type(1.0)
 
 
-def test_take_dry_calibration_reading() -> None:
+def test_calibrate_dry() -> None:
     driver = AtlasECDriver(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -153,10 +155,10 @@ def test_take_dry_calibration_reading() -> None:
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
-    driver.take_dry_calibration_reading()
+    driver.calibrate_dry()
 
 
-def test_take_single_point_calibration_reading() -> None:
+def test_calibrate_single() -> None:
     driver = AtlasECDriver(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -166,4 +168,4 @@ def test_take_single_point_calibration_reading() -> None:
         mux_simulator=MuxSimulator(),
     )
     with pytest.raises(TakeSinglePointCalibrationError):
-        driver.take_single_point_calibration_reading(1.413)
+        driver.calibrate_single(1.413)
