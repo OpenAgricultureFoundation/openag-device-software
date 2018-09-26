@@ -1,0 +1,135 @@
+{
+	"name":  "Atlas Temperature Sensor Default",
+	"version": "1",
+	"uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+	"module_name": "atlas_temp.manager",
+	"class_name": "AtlasTemp",
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"temperature": {
+					"name": {
+                        "type": "string",
+                        "default": "water_temperature_celcius"
+                    }
+				}
+			},
+			"actuator": null
+		},	
+		"communication": {
+            "bus": {
+                "type": "integer",
+                "default": 2
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 1
+            },
+            "address": {
+                "type": "string",
+                "default": "0x66"
+            }
+        }
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor mode.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    },
+	    {
+	        "name": "Calibrate",
+	        "description": "Set into calibration mode, take calibration reading, then reset.",
+	        "value": null,
+	        "sequence": [
+	            {
+	                "name": "Enable Calibration Mode",
+	                "description": "Stops reporting data into environment database. Required to send calibration commands.",
+	                "value": null
+	            },
+	            {
+	                "name": "Calibrate",
+	                "description": "Submerge sensor in known temperature solution (boiling water works well), wait for sensor value to stabilize, then take calibration reading.",
+	                "value": null
+	            },
+	            {
+	                "name": "Reset",
+	                "description": "Restarts sensor initialization process.",
+	                "value": null
+	            }
+	        ]
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor":{
+				"temperature": {
+					"units": "C",
+					"range": [-126, 1254],
+			        "accuracy": {
+			            "value": 0.1
+			        },
+			        "response_time_seconds": 1
+				}
+			},
+			"actuator": null
+		},
+		"communication": [
+		    {
+		        "type": "I2C",
+		        "default_address_hex": "0x66",
+		        "clock_speed_range_hertz": [100, 400] 
+		    },
+		    {
+		        "type": "UART"
+		    }
+		],
+		"power": [
+		    {
+		        "voltage_volts": 3.3,
+		        "current_consumption_milliamps": {
+		            "max": 12.1,
+		            "standby": 12,
+		            "sleep": 0.3
+		        }
+		    },
+		    {
+		        "voltage_volts": 5,
+		        "current_consumption_milliamps": {
+		            "max": 13.5,
+		            "standby": 13.1,
+		            "sleep": 0.66
+		        }
+		    }
+		],
+		"purchase_links": [
+			"https://www.atlas-scientific.com/product_pages/circuits/ezo_rtd.html",
+			"https://www.atlas-scientific.com/product_pages/probes/pt1000.html"
+		],
+		"datasheet_links": [
+			"https://www.atlas-scientific.com/_files/_datasheets/_circuit/EZO_RTD_Datasheet.pdf",
+			"https://www.atlas-scientific.com/_files/_datasheets/_probe/PT-1000-probe.pdf"
+		]
+
+	}
+}
