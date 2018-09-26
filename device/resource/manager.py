@@ -155,7 +155,6 @@ class ResourceManager:
             imageFileList = glob.glob(path)
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
-                self.logger.debug("Deleted {}".format(imageFile))
         except Exception as e:
             self.logger.error(e)
 

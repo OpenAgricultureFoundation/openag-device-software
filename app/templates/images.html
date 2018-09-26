@@ -6,8 +6,6 @@
 
   //--------------------------------------------------------------------------
   window.onload = function() {
-    document.getElementById("status").innerHTML = "{{status}}";
-
     var files_json = document.getElementById("files_json").value;
     var files = JSON.parse(files_json);
     for(i in files) {
@@ -29,7 +27,10 @@
     var img = document.getElementById("image");
     img.src = "/app/static/stored_images/" + images[ slider.val() ];
     var fn = $("#file_name");
-    fn.text( images[ slider.val() ] );
+    var fntext = images[ slider.val() ];
+    fntext = fntext.replace( /_/g, ' ' );
+    fntext = fntext.replace( '.png', '' );
+    fn.text( fntext );
   }
 </script>
 {% endblock %}
@@ -42,18 +43,11 @@
         <h2>Images</h2>
          <div class="card">
             <ul>
-              <li><b>status {{ status }}
-              <li><b>debugrob:</b> <span id="status"></span>
-            </ul>
-            <h3 class="text-center"><strong>Slide to see images</strong></h3>
-
+            <div class="text-center"><span id="file_name"></span></div>
             <form class="range-field">
               <input id="imageSlider" class="no-border w-100" type="range" value="0" min="0" max="0" />
-              <span id="file_name" class="text-center"></span>
             </form>
-
-            <!-- debugrob, image stretches, keep aspect square. -->
-            <div class="row">
+            <div class="text-center">
               <img id="image" src="" class="img-thumbnail">
             </div>
 

@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, json, logging
+import os, json, logging, shutil
 from operator import itemgetter
 
 # Import django modules
@@ -76,6 +76,7 @@ from device.upgrade.utilities import UpgradeUtilities
 
 
 LOG_DIR = "data/logs/"
+IMAGE_DIR = "data/images/"
 
 
 def change_password(request):
@@ -533,18 +534,24 @@ class Images(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
+        stored_path = IMAGE_DIR + "stored/"
         files = []
-        files.append({"name": "2018-09-20-T17:26:49Z_Camera-Top.png"})
-        files.append({"name": "2018-09-21-T00:54:20Z_Camera-Top.png"})
-        files.append({"name": "2018-09-21-T12:22:44Z_Camera-Top.png"})
-        files.append({"name": "2018-09-25-T13:16:24Z_Camera-Top.png"})
+        for f in os.listdir(stored_path):
+            # Clean up any place holder images
+            if f.startswith('This_'):
+                os.remove(stored_path + f)
+                continue
+            if f.endswith('.png'):
+                files.append({"name": f})
 
-        response = {"status": "OK", 
-                    "files_json": json.dumps(files)}
-        print('debugrob Images returning: {}'.format(response))
-
-#debugrob, return a list of fileNames (not URLs)
-# data/images/stored/*.png
+        if 0 == len(files):
+            if not os.path.isdir(stored_path):
+                os.mkdir(stored_path)
+            s='device/peripherals/modules/usb_camera/tests/simulation_image.png'
+            place_holder='This_is_just_a_sample_image_until_your_EDU_takes_its_own_picture.png'
+            shutil.copy(s, stored_path + place_holder)
+            files.append({"name": place_holder})
+        response = {"files_json": json.dumps(files)}
         return Response(response)
 
 
