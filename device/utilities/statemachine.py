@@ -10,6 +10,7 @@ class Manager(object):
 
     logger: logging.Logger
     mode: str
+    min_sampling_interval: float
 
 
 class Transitions(object):
