@@ -1,27 +1,22 @@
 # Import standard python libraries
-import os, sys, json, threading
+import os, sys, json, threading, pytest
 
 # Set system path and directory
-root_dir = os.environ["OPENAG_BRAIN_ROOT"]
-sys.path.append(root_dir)
-os.chdir(root_dir)
+ROOT_DIR = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(ROOT_DIR)
+os.chdir(ROOT_DIR)
 
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
-from device.utilities.modes import Modes
-
-# Import device state
-from device.state.main import State
-
-# Import simulators
 from device.communication.i2c.mux_simulator import MuxSimulator
+from device.state.main import State
 
 # Import peripheral manager
 from device.peripherals.modules.sht25.manager import SHT25Manager
 
 # Load test config
-path = root_dir + "/device/peripherals/modules/sht25/tests/config.json"
-device_config = json.load(open(path))
+CONFIG_PATH = ROOT_DIR + "/device/peripherals/modules/sht25/tests/config.json"
+device_config = json.load(open(CONFIG_PATH))
 peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
 
 
