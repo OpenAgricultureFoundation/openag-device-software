@@ -1,5 +1,8 @@
-from device.peripherals.classes.atlas.exceptions import DriverError
+from device.peripherals.classes.atlas import exceptions
 
 
-class ReadPHError(DriverError):  # type: ignore
+SetupError = exceptions.SetupError
+
+
+class ReadPHError(exceptions.DriverError):
     message_base = "Unable to read pH"
