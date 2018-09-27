@@ -9,16 +9,13 @@ from typing import Dict, Tuple, Any
 from app.common import Common
 
 # Import app models
-from app.models import CultivarModel, CultivationMethodModel, RecipeModel
-
-# Import app models
-from app.models import EventModel
-
-# Import device utilities
-from device.utilities.events import EventRequests
+from app.models import CultivarModel, CultivationMethodModel, RecipeModel, EventModel
 
 # Import django app
 from django.apps import apps
+
+# Import recipe events
+from device.recipe import events as recipe_events
 
 # Initialize vars
 APP_NAME = "app"
@@ -26,6 +23,8 @@ PERIPHERAL_TYPE = "Peripheral"
 CONTROLLER_TYPE = "Controller"
 COORDINATOR_TYPE = "Coordinator"
 RECIPE_TYPE = "Recipe"
+
+
 START_RECIPE = "Start Recipe"
 STOP_RECIPE = "Stop Recipe"
 CREATE_RECIPE = "Create Recipe"
@@ -82,7 +81,7 @@ class EventViewer:
             return message, 400
 
         # Send event to manager
-        message, status = manager.events.create(request_)
+        message, status = manager.create_event(request_)
 
         # Save event interaction in database
         try:
@@ -147,12 +146,12 @@ class RecipeViewer:
         # Create recipe and save event interaction
         try:
             # Create recipe
-            message, status = coordinator.recipe.events.create_recipe(json)
+            message, status = coordinator.recipe.create_recipe(json)
 
             # Save event interaction in database
             event = EventModel.objects.create(
                 recipient={"type": RECIPE_TYPE},
-                request={"type": CREATE_RECIPE},
+                request={"type": "Create Recipe"},
                 response={"message": message, "status": status},
             )
 
@@ -183,12 +182,12 @@ class RecipeViewer:
         # Start recipe and save event interaction
         try:
             # Start recipe
-            message, status = coordinator.recipe.events.start_recipe(uuid, timestamp)
+            message, status = coordinator.recipe.start_recipe(uuid, timestamp)
 
             # Save event interaction in database
             event = EventModel.objects.create(
                 recipient={"type": RECIPE_TYPE},
-                request={"type": START_RECIPE},
+                request={"type": recipe_events.START},
                 response={"message": message, "status": status},
             )
 
@@ -216,7 +215,7 @@ class RecipeViewer:
             # Save event interaction in database
             event = EventModel.objects.create(
                 recipient={"type": RECIPE_TYPE},
-                request={"type": STOP_RECIPE},
+                request={"type": recipe_events.STOP},
                 response={"message": message, "status": status},
             )
 

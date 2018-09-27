@@ -9,7 +9,7 @@ from typing import Dict, List
 # E.g. class ErrorMode(BaseMode)
 
 
-class StateMachineManager():
+class StateMachineManager:
     """State machine manager base class."""
 
     # Initialize var types

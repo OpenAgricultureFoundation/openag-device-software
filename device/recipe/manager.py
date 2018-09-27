@@ -18,7 +18,7 @@ from app import models
 from device.recipe import modes, events
 
 # Set file paths
-RECIPE_SCHEMA_PATH = "schemas/recipe.json"
+RECIPE_SCHEMA_PATH = "data/schemas/recipe.json"
 
 
 class RecipeManager(StateMachineManager):
@@ -120,7 +120,7 @@ class RecipeManager(StateMachineManager):
         """ Gets start timestamp minutes from shared state. """
         value = self.state.recipe.get("start_timestamp_minutes")
         if value != None:
-            return int(value)
+            return int(value)  # type: ignore
         else:
             return None
 
@@ -152,20 +152,12 @@ class RecipeManager(StateMachineManager):
     @property
     def start_datestring(self) -> Optional[str]:
         """Gets start datestring value from shared state."""
-        value = self.state.recipe.get("start_datestring")
-        if value != None:
-            return str(value)
-        else:
-            return None
+        return self.state.recipe.get("start_datestring")  # type: ignore
 
     @property
     def duration_minutes(self) -> Optional[int]:
         """Gets recipe duration in minutes from shared state."""
-        value = self.state.recipe.get("duration_minutes")
-        if value != None:
-            return int(value)
-        else:
-            return None
+        return self.state.recipe.get("duration_minutes")  # type: ignore
 
     @duration_minutes.setter
     def duration_minutes(self, value: Optional[int]) -> None:
@@ -189,11 +181,7 @@ class RecipeManager(StateMachineManager):
     @property
     def last_update_minute(self) -> Optional[int]:
         """Gets the last update minute from shared state."""
-        value = self.state.recipe.get("last_update_minute")
-        if value != None:
-            return int(value)
-        else:
-            return None
+        return self.state.recipe.get("last_update_minute")  # type: ignore
 
     @last_update_minute.setter
     def last_update_minute(self, value: Optional[int]) -> None:
@@ -209,13 +197,17 @@ class RecipeManager(StateMachineManager):
 
         # Generate values
         if value != None and self.duration_minutes != None:
-            pct_complete = float(value) / self.duration_minutes * 100  # type: ignore
-            percent_complete_string = "{0:.2f} %".format(pct_complete)  # type: ignore
+            percent_complete = (
+                float(value) / self.duration_minutes * 100  # type: ignore
+            )
+            percent_complete_string = "{0:.2f} %".format(  # type: ignore
+                percent_complete
+            )
             time_remaining_minutes = self.duration_minutes - value  # type: ignore
             time_remaining_string = self.get_duration_string(time_remaining_minutes)
             time_elapsed_string = self.get_duration_string(value)  # type: ignore
         else:
-            percent_complete = None
+            percent_complete = None  # type: ignore
             percent_complete_string = None
             time_remaining_minutes = None
             time_remaining_string = None
@@ -224,7 +216,7 @@ class RecipeManager(StateMachineManager):
         # Safely update values in shared state
         with self.state.lock:
             self.state.recipe["last_update_minute"] = value
-            self.state.recipe["percent_complete"] = pct_complete
+            self.state.recipe["percent_complete"] = percent_complete
             self.state.recipe["percent_complete_string"] = percent_complete_string
             self.state.recipe["time_remaining_minutes"] = time_remaining_minutes
             self.state.recipe["time_remaining_string"] = time_remaining_string
@@ -233,38 +225,22 @@ class RecipeManager(StateMachineManager):
     @property
     def percent_complete(self) -> Optional[float]:
         """Gets percent complete from shared state."""
-        value = self.state.recipe.get("percent_complete")
-        if value != None:
-            return float(value)
-        else:
-            return None
+        return self.state.recipe.get("percent_complete")  # type: ignore
 
     @property
     def percent_complete_string(self) -> Optional[str]:
         """Gets percent complete string from shared state."""
-        value = self.state.recipe.get("percent_complete_string")
-        if value != None:
-            return str(value)
-        else:
-            return None
+        return self.state.recipe.get("percent_complete_string")  # type: ignore
 
     @property
     def time_remaining_minutes(self) -> Optional[int]:
         """Gets time remaining minutes from shared state."""
-        value = self.state.recipe.get("time_remaining_minutes")
-        if value != None:
-            return int(value)
-        else:
-            return None
+        return self.state.recipe.get("time_remaining_minutes")  # type: ignore
 
     @property
     def time_remaining_string(self) -> Optional[str]:
         """Gets time remaining string from shared state."""
-        value = self.state.recipe.get("time_remaining_string")
-        if value != None:
-            return value
-        else:
-            return None
+        return self.state.recipe.get("time_remaining_string")  # type: ignore
 
     @property
     def time_elapsed_string(self) -> Optional[str]:
@@ -378,7 +354,7 @@ class RecipeManager(StateMachineManager):
         mode = self.state.recipe.get("stored_mode")
         if mode != None:
             self.logger.debug("Returning to stored mode: {}".format(mode))
-            self.mode = mode
+            self.mode = mode  # type: ignore
         else:
             self.mode = modes.NORECIPE
 
@@ -577,9 +553,9 @@ class RecipeManager(StateMachineManager):
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            models.RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
-                "-minute"
-            ).first()
+            models.RecipeTransitionModel.objects.filter(minute__lte=minute)
+            .order_by("-minute")
+            .first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:
@@ -703,7 +679,7 @@ class RecipeManager(StateMachineManager):
             return False, "Invalid uuid"
 
         # Check recipe existance criteria, does not check if should_exist == None
-        recipe_exists = models.models.RecipeModel.objects.filter(uuid=uuid).exists()
+        recipe_exists = models.RecipeModel.objects.filter(uuid=uuid).exists()
         if should_exist == True and not recipe_exists:
             return False, "UUID does not exist"
         elif should_exist == False and recipe_exists:

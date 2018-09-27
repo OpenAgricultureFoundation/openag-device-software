@@ -137,9 +137,8 @@ def test_calibrate_single() -> None:
     message, status = manager.create_event(
         request={"type": events.CALIBRATE_SINGLE, "value": 7.0}
     )
-    assert status == 200
-    with pytest.raises(exceptions.DriverError):
-        manager.check_events()
+    assert status == 400
+    manager.check_events()
 
 
 def test_calibrate_low() -> None:

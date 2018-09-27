@@ -20,4 +20,4 @@ class CoreConfig(AppConfig):
             from device.coordinator.manager import CoordinatorManager
 
             self.coordinator = CoordinatorManager()
-            self.coordinator.spawn(delay=1)
+            self.coordinator.spawn()

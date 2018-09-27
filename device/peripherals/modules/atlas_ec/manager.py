@@ -2,7 +2,7 @@
 from typing import Optional, Tuple, Dict, Any
 
 # Import manager elements
-from device.peripherals.classes.peripheral import manager, modes, 
+from device.peripherals.classes.peripheral import manager, modes
 from device.peripherals.classes.atlas import exceptions
 from device.peripherals.modules.atlas_ec import driver, events
 
@@ -225,7 +225,7 @@ class AtlasECManager(manager.PeripheralManager):
         self.event_queue.put(request)
 
         # Return response
-        return "Taking single point calibration", 200
+        return "Not implemented", 400
 
     def _calibrate_single(self, request: Dict[str, Any]) -> None:
         """Processes calibrate single event request."""
