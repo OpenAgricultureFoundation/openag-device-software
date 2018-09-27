@@ -576,8 +576,10 @@ class Images(APIView):
     @method_decorator(login_required)
     def get(self, request):
         stored_path = IMAGE_DIR + "stored/"
+        stored_files = os.listdir(stored_path)
+        stored_files.sort()
         files = []
-        for f in os.listdir(stored_path):
+        for f in stored_files:
             # Clean up any place holder images
             if f.startswith("This_"):
                 os.remove(stored_path + f)
@@ -594,6 +596,7 @@ class Images(APIView):
             )
             shutil.copy(s, stored_path + place_holder)
             files.append({"name": place_holder})
+
         response = {"files_json": json.dumps(files)}
         return Response(response)
 

@@ -5,11 +5,12 @@ import os, sys, glob, logging, subprocess, threading, time, urllib.request
 from django.db import connection  # so we can do raw sql queries
 
 # Import app models
-from app.models import EnvironmentModel
-from app.models import EventModel
+from app.models import EnvironmentModel, EventModel
 
-# Initialize file paths
-IMAGE_PATH = "data/images/"
+IMAGE_DIR = "data/images/"
+SYS_LOGS_DIR = "/var/log/"
+LOGS_DIR = "data/logs/"
+LOGSP_DIR = "data/logs/peripherals/"
 
 
 class ResourceManager:
@@ -150,19 +151,28 @@ class ResourceManager:
 
         return free_memory
 
-    def delete_files(self, path):
+    def delete_files(self, path, leave_newest=False):
         try:
             self.logger.info("Deleting all files in: " + path)
             imageFileList = glob.glob(path)
+            imageFileList.sort()
+            """ If we want to keep the newest 10 files, then make the list
+                contain everything but the last 10 (if there are more than 10).
+            """
+            if leave_newest and len(imageFileList) > 10:
+                imageFileList = imageFileList[:len(imageFileList) - 10]
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
         except Exception as e:
             self.logger.error(e)
 
     def clean_up_disk(self):
-        """Delete ALL image files."""
-        self.delete_files(IMAGE_PATH + "*.png")
-        self.delete_files(IMAGE_PATH + "stored/*.png")
+        """Delete most image and log files."""
+        self.delete_files(IMAGE_DIR + "*.png")
+        self.delete_files(IMAGE_DIR + "stored/*.png", leave_newest=True)
+        self.delete_files(SYS_LOGS_DIR + "*.1")
+        self.delete_files(LOGS_DIR + "*.1")
+        self.delete_files(LOGSP_DIR + "*.1")
 
     def clean_up_database(self):
         """Delete all but the most recent 50 events and 
@@ -235,13 +245,13 @@ class ResourceManager:
         # detect low memory and disk space
         low_resources = False
         low_disk = False
-        if "K" == fm_units or ("M" == fm_units and 10 <= len(fm_val)):
+        if "K" == fm_units or ("M" == fm_units and 10 >= int(fm_val)):
             # 10M low memory limit
             self.status = "Warning: low memory: {}".format(free_memory)
             self.logger.warning(self.status)
             low_resources = True
 
-        if "K" == fd_units or ("M" == fd_units and 50 <= int(fm_val)):
+        if "K" == fd_units or ("M" == fd_units and 50 >= int(fd_val)):
             # 50M low disk limit
             self.status = "Warning: low disk space: {}".format(free_disk)
             self.logger.warning(self.status)
@@ -253,9 +263,6 @@ class ResourceManager:
             self.error = None
 
         if low_resources:
-            self.status = "Warning: low resources"
-            self.error = "Low resources"
-            self.logger.warning(self.error)
             if self.connected:
                 self.ref_iot_manager.publishMessage("alert", self.status)
 
