@@ -150,9 +150,6 @@ class StateMachineManager:
     def new_transition(self, current_mode: str) -> bool:
         """Checks for a new transition. Logs errors if tries invalid transition."""
 
-        self.logger.debug("current_mode = {}".format(current_mode))
-        self.logger.debug("self.mode = {}".format(self.mode))
-
         # Check if state machine mode still in current mode
         if current_mode == self.mode:
             return False
