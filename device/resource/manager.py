@@ -246,7 +246,7 @@ class ResourceManager:
         # detect low memory and disk space
         low_resources = False
         low_disk = False
-        if "K" == fm_units or ("M" == fm_units and 10 >= len(fm_val)):
+        if "K" == fm_units or ("M" == fm_units and 10 >= int(fm_val)):
             # 10M low memory limit
             self.status = "Warning: low memory: {}".format(free_memory)
             self.logger.warning(self.status)
@@ -264,9 +264,6 @@ class ResourceManager:
             self.error = None
 
         if low_resources:
-            self.status = "Warning: low resources"
-            self.error = "Low resources"
-            self.logger.warning(self.error)
             if self.connected:
                 self.ref_iot_manager.publishMessage("alert", self.status)
 
