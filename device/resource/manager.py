@@ -8,7 +8,8 @@ from django.db import connection  # so we can do raw sql queries
 from app.models import EnvironmentModel
 from app.models import EventModel
 
-IMAGE_DIR = "data/images/"
+# Initialize file paths
+IMAGE_PATH = "data/images/"
 
 
 class ResourceManager:
@@ -160,8 +161,8 @@ class ResourceManager:
 
     def clean_up_disk(self):
         """Delete ALL image files."""
-        self.delete_files(IMAGE_DIR + "*.png")
-        self.delete_files(IMAGE_DIR + "stored/*.png")
+        self.delete_files(IMAGE_PATH + "*.png")
+        self.delete_files(IMAGE_PATH + "stored/*.png")
 
     def clean_up_database(self):
         """Delete all but the most recent 50 events and 
