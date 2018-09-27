@@ -5,19 +5,14 @@ import json
 from typing import Optional, Tuple, Dict, Any
 
 # Import device utilities
-from device.utilities.modes import Modes
-from device.utilities.accessors import get_nested_dict_safely
+from device.utilities import logger, accessors
 
-# Import peripheral parent class
-from device.peripherals.classes.peripheral.manager import PeripheralManager
-from device.peripherals.classes.peripheral.exceptions import DriverError
-
-# Import driver modules
-from device.peripherals.modules.usb_camera.events import USBCameraEvents
-from device.peripherals.modules.usb_camera.driver import USBCameraDriver
+# Import manager elements
+from device.peripherals.classes.peripheral import manager, modes
+from device.peripherals.modules.usb_camera import driver, exceptions
 
 
-class USBCameraManager(PeripheralManager):  # type: ignore
+class USBCameraManager(manager.PeripheralManager):  # type: ignore
     """Manages a usb camera."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -27,9 +22,6 @@ class USBCameraManager(PeripheralManager):  # type: ignore
         # Instantiate parent class
         super().__init__(*args, **kwargs)
 
-        # Initialize events
-        self.events = USBCameraEvents(self)
-
         # Get usb mux parameters
         self.usb_mux_comms = self.communication.get("usb_mux_comms", None)
         self.usb_mux_channel = self.communication.get("usb_mux_channel", None)
@@ -38,8 +30,8 @@ class USBCameraManager(PeripheralManager):  # type: ignore
         self.min_sampling_interval = 120  # seconds
         self.default_sampling_interval = 3600  # every hour
 
-    def initialize(self) -> None:
-        """ Initializes manager."""
+    def initialize_peripheral(self) -> None:
+        """ Initializes peripheral."""
         self.logger.debug("Initializing")
 
         # Clear reported values
@@ -50,7 +42,7 @@ class USBCameraManager(PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
-            self.driver = USBCameraDriver(
+            self.driver = driver.USBCameraDriver(
                 name=self.name,
                 vendor_id=int(self.properties.get("vendor_id"), 16),
                 product_id=int(self.properties.get("product_id"), 16),
@@ -61,35 +53,17 @@ class USBCameraManager(PeripheralManager):  # type: ignore
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
-        except DriverError as e:
-            self.logger.exception("Unable to initialize")
+        except exceptions.DriverError as e:
+            self.logger.debug("Unable to initialize: {}".format(e))
             self.health = 0.0
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
 
-    def setup(self) -> None:
-        """Sets up manager."""
-        self.logger.info("No setup required")
-
-    def update(self) -> None:
-        """Updates camera, captures an image."""
+    def update_peripheral(self) -> None:
+        """Updates peripheral, captures an image."""
         try:
             self.driver.capture()
             self.health = 100.0
-        except DriverError as e:
-            self.logger.error("Unable to update")
-            self.mode = Modes.ERROR
+        except exceptions.DriverError as e:
+            self.logger.debug("Unable to update: {}".format(e))
+            self.mode = modes.ERROR
             self.health = 0
-
-    def reset(self) -> None:
-        """ Resets camera. """
-        self.logger.info("Resetting")
-        self.clear_reported_values()
-
-    def shutdown(self) -> None:
-        """ Shuts down camera. """
-        self.logger.info("Shutting down")
-        self.clear_reported_values()
-
-    def clear_reported_values(self) -> None:
-        """Clears reported values."""
-        ...

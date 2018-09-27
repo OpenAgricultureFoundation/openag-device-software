@@ -5,7 +5,7 @@ import logging, time, threading, math, json
 from typing import Dict, Optional, List, Any, Tuple
 
 # Import device utilities
-from device.utilities.logger import Logger
+from device.utilities import logger
 from device.utilities.statemachine.manager import StateMachineManager
 from device.communication.i2c.mux_simulator import MuxSimulator
 from device.state.main import State
@@ -47,7 +47,7 @@ class PeripheralManager(StateMachineManager):
 
         # Initialize logger
         logname = "Manager({})".format(self.name)
-        self.logger = Logger(logname, __name__)
+        self.logger = logger.Logger(logname, __name__)
 
         # Load config parameters
         self.parameters = self.config.get("parameters", {})
@@ -391,12 +391,14 @@ class PeripheralManager(StateMachineManager):
         self.logger.debug("No update required")
 
     def reset_peripheral(self) -> None:
-        """Resets peripheral."""
-        self.logger.debug("No reset required")
+        """ Resets peripheral. """
+        self.logger.info("Resetting")
+        self.clear_reported_values()
 
     def shutdown_peripheral(self) -> None:
-        """Shutsdown peripheral."""
-        self.logger.debug("No shutdown required")
+        """ Shuts down peripheral. """
+        self.logger.info("Shutting down")
+        self.clear_reported_values()
 
     def clear_reported_values(self) -> None:
         """Clears reported values."""
