@@ -4,31 +4,18 @@ import time, threading
 # Import python types
 from typing import Optional, Tuple, NamedTuple
 
-# Import device comms
+# Import device utilities
+from device.utilities import maths
 from device.communication.i2c.main import I2C
 from device.communication.i2c.exceptions import I2CError
 from device.communication.i2c.mux_simulator import MuxSimulator
 
-# Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import maths
-
 # Import module elements
-from device.peripherals.classes.atlas.driver import AtlasDriver
-from device.peripherals.modules.atlas_temp.simulator import AtlasTempSimulator
-from device.peripherals.modules.atlas_temp.exceptions import (
-    ReadTemperatureError,
-    EnableDataLoggerError,
-    DisableDataLoggerError,
-    SetTemperatureScaleCelciusError,
-    SetTemperatureScaleFarenheitError,
-    SetTemperatureScaleKelvinError,
-    CalibrationError,
-)
-from device.peripherals.classes.peripheral.exceptions import SetupError
+from device.peripherals.classes.atlas import driver
+from device.peripherals.modules.atlas_temp import simulator, exceptions
 
 
-class AtlasTempDriver(AtlasDriver):  # type: ignore
+class AtlasTempDriver(driver.AtlasDriver):
     """Driver for atlas temperature sensor."""
 
     # Initialize sensor properties
@@ -39,7 +26,7 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -51,7 +38,7 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
 
         # Check if simulating
         if simulate:
-            Simulator = AtlasTempSimulator
+            Simulator = simulator.AtlasTempSimulator
         else:
             Simulator = None
 
@@ -68,18 +55,18 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
             Simulator=Simulator,
         )
 
-    def setup(self) -> None:
+    def setup(self, retry: bool = True) -> None:
         """Sets up sensor."""
         self.logger.info("Setting up sensor")
         try:
-            self.enable_led()
-            info = self.read_info()
+            self.enable_led(retry=retry)
+            info = self.read_info(retry=retry)
             if info.firmware_version > 1.94:
-                self.enable_protocol_lock()
-            self.set_temperature_scale_celcius()
-            self.disable_data_logger()
+                self.enable_protocol_lock(retry=retry)
+            self.set_temperature_scale_celcius(retry=retry)
+            self.disable_data_logger(retry=retry)
         except Exception as e:
-            raise SetupError(logger=self.logger) from e
+            raise exceptions.SetupError(logger=self.logger) from e
 
     def read_temperature(self, retry: bool = True) -> Optional[float]:
         """Reads temperature value."""
@@ -90,22 +77,22 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
         try:
             response = self.process_command("R", process_seconds=0.6, retry=retry)
         except Exception as e:
-            raise ReadTemperatureError(logger=self.logger) from e
+            raise exceptions.ReadTemperatureError(logger=self.logger) from e
 
         # Parse response
-        temp_raw = float(response)
+        temperature_raw = float(response)  # type: ignore
 
         # Round to 2 decimal places
-        temp = round(temp_raw, 2)
+        temperature = round(temperature_raw, 2)
 
         # Verify tempreature value within valid range
-        if temp > self.min_temp and temp < self.min_temp:
+        if temperature > self.min_temperature and temperature < self.min_temperature:
             self.logger.warning("Temperature outside of valid range")
             return None
 
         # Successfully read temperature
-        self.logger.debug("Temp: {} C".format(temp))
-        return temp
+        self.logger.debug("Temp: {} C".format(temperature))
+        return temperature
 
     def enable_data_logger(self, retry: bool = True) -> None:
         """Enables data logger."""
@@ -113,7 +100,7 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("D,1", process_seconds=0.6, retry=retry)
         except Exception as e:
-            raise EnableDataLoggerError(logger=self.logger) from e
+            raise exceptions.EnableDataLoggerError(logger=self.logger) from e
 
     def disable_data_logger(self, retry: bool = True) -> None:
         """Disables data logger."""
@@ -121,7 +108,7 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("D,0", process_seconds=0.6, retry=retry)
         except Exception as e:
-            raise DisableDataLoggerError(logger=self.logger) from e
+            raise exceptions.DisableDataLoggerError(logger=self.logger) from e
 
     def set_temperature_scale_celcius(self, retry: bool = True) -> None:
         """Sets temperature scale to celcius."""
@@ -129,7 +116,7 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("S,c", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise SetTemperatureScaleCelciusError(logger=self.logger) from e
+            raise exceptions.SetTemperatureScaleCelciusError(logger=self.logger) from e
 
     def set_temperature_scale_farenheit(self, retry: bool = True) -> None:
         """Sets temperature scale to celcius."""
@@ -137,7 +124,9 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("S,f", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise SetTemperatureScaleFarenheitError(logger=self.logger) from e
+            raise exceptions.SetTemperatureScaleFarenheitError(
+                logger=self.logger
+            ) from e
 
     def set_temperature_scale_kelvin(self, retry: bool = True) -> None:
         """Sets temperature scale to kelvin."""
@@ -145,7 +134,7 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("S,k", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise SetTemperatureScaleKelvinError(logger=self.logger) from e
+            raise exceptions.SetTemperatureScaleKelvinError(logger=self.logger) from e
 
     def calibrate(self, value: float, retry: bool = True) -> None:
         """Take a calibration reading."""
@@ -154,4 +143,4 @@ class AtlasTempDriver(AtlasDriver):  # type: ignore
             command = "Cal,{}".format(value)
             self.process_command(command, process_seconds=2.0, retry=retry)
         except Exception as e:
-            raise CalibrationError(logger=self.logger) from e
+            raise exceptions.CalibrationError(logger=self.logger) from e

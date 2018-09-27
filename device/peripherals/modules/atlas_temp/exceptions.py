@@ -1,29 +1,32 @@
-from device.peripherals.classes.atlas.exceptions import DriverError
+from device.peripherals.classes.atlas import exceptions
 
 
-class ReadTemperatureError(DriverError):  # type: ignore
+SetupError = exceptions.SetupError
+
+
+class ReadTemperatureError(exceptions.DriverError):
     message_base = "Unable to read temperature"
 
 
-class EnableDataLoggerError(DriverError):  # type: ignore
+class EnableDataLoggerError(exceptions.DriverError):
     message_base = "Unable to enable data logger"
 
 
-class DisableDataLoggerError(DriverError):  # type: ignore
+class DisableDataLoggerError(exceptions.DriverError):
     message_base = "Unable to disable data logger"
 
 
-class SetTemperatureScaleCelciusError(DriverError):  # type: ignore
+class SetTemperatureScaleCelciusError(exceptions.DriverError):
     message_base = "Unable to set temperature scale to calcius"
 
 
-class SetTemperatureScaleFarenheitError(DriverError):  # type: ignore
+class SetTemperatureScaleFarenheitError(exceptions.DriverError):
     message_base = "Unable to set temperature scale to farenheit"
 
 
-class SetTemperatureScaleKelvinError(DriverError):  # type: ignore
+class SetTemperatureScaleKelvinError(exceptions.DriverError):
     message_base = "Unable to set temperature scale to kelvin"
 
 
-class CalibrationError(DriverError):  # type: ignore
+class CalibrationError(exceptions.DriverError):
     message_base = "Unable to calibrate"
