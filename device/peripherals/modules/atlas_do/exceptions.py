@@ -1,8 +1,7 @@
 from device.peripherals.classes.atlas import exceptions
 
 
-class SetupError(exceptions.SetupError):
-    pass
+SetupError = exceptions.SetupError
 
 
 class ReadDOError(exceptions.DriverError):

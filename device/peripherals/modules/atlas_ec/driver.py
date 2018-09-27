@@ -4,36 +4,18 @@ import time, threading
 # Import python types
 from typing import Optional, Tuple, NamedTuple
 
-# Import device comms
+# Import device utilities
+from device.utilities import maths
 from device.communication.i2c.main import I2C
 from device.communication.i2c.exceptions import I2CError
 from device.communication.i2c.mux_simulator import MuxSimulator
 
-# Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import maths
-
 # Import module elements
-from device.peripherals.classes.atlas.driver import AtlasDriver
-from device.peripherals.modules.atlas_ec.simulator import AtlasECSimulator
-from device.peripherals.classes.peripheral.exceptions import SetupError
-from device.peripherals.modules.atlas_ec.exceptions import (
-    ReadECError,
-    EnableECOutputError,
-    DisableECOutputError,
-    EnableTDSOutputError,
-    DisableTDSOutputError,
-    EnableSalinityOutputError,
-    DisableSalinityOutputError,
-    EnableSpecificGravityOutputError,
-    DisableSpecificGravityOutputError,
-    SetProbeTypeError,
-    TakeDryCalibrationError,
-    TakeSinglePointCalibrationError,
-)
+from device.peripherals.classes.atlas import driver
+from device.peripherals.modules.atlas_ec import exceptions, simulator
 
 
-class AtlasECDriver(AtlasDriver):  # type: ignore
+class AtlasECDriver(driver.AtlasDriver):
     """ Driver for atlas ec sensor. """
 
     # Initialize sensor properties
@@ -44,7 +26,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -56,7 +38,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
 
         # Check if simulating
         if simulate:
-            Simulator = AtlasECSimulator
+            Simulator = simulator.AtlasECSimulator
         else:
             Simulator = None
 
@@ -73,21 +55,21 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
             Simulator=Simulator,
         )
 
-    def setup(self) -> None:
+    def setup(self, retry: bool = True) -> None:
         """Sets up sensor."""
         self.logger.info("Setting up sensor")
         try:
-            self.enable_led()
-            info = self.read_info()
+            self.enable_led(retry=retry)
+            info = self.read_info(retry=retry)
             if info.firmware_version > 1.94:
-                self.enable_protocol_lock()
-            self.enable_ec_output()
-            self.disable_tds_output()
-            self.disable_salinity_output()
-            self.disable_specific_gravity_output()
-            self.set_probe_type(1.0)
+                self.enable_protocol_lock(retry=retry)
+            self.enable_ec_output(retry=retry)
+            self.disable_tds_output(retry=retry)
+            self.disable_salinity_output(retry=retry)
+            self.disable_specific_gravity_output(retry=retry)
+            self.set_probe_type(1.0, retry=retry)
         except Exception as e:
-            raise SetupError(logger=self.logger) from e
+            raise exceptions.SetupError(logger=self.logger) from e
 
     def read_ec(self, retry: bool = True) -> Optional[float]:
         """ Reads ec from sensor, sets significant 
@@ -100,10 +82,10 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
             ec_raw = self.process_command("R", process_seconds=0.6, retry=retry)
         except Exception as e:
             message = "Driver unable to read ec"
-            raise ReadECError(message, logger=self.logger) from e
+            raise exceptions.ReadECError(message, logger=self.logger) from e
 
         # Parse response, convert from uS/cm to mS/cm
-        ec = float(ec_raw) / 1000
+        ec = float(ec_raw) / 1000  # type: ignore
 
         # Set significant figures based off error magnitude
         error_value = ec * self.ec_accuracy_percent / 100
@@ -126,7 +108,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,EC,1", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise EnableECOutputError(logger=self.logger) from e
+            raise exceptions.EnableECOutputError(logger=self.logger) from e
 
     def disable_ec_output(self, retry: bool = True) -> None:
         """Disables ec output when reporting readings."""
@@ -134,7 +116,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,EC,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisableECOutputError(logger=self.logger) from e
+            raise exceptions.DisableECOutputError(logger=self.logger) from e
 
     def enable_tds_output(self, retry: bool = True) -> None:
         """Enables total dissolved solids output when reporting readings."""
@@ -142,7 +124,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,TDS,1", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise EnableTDSOutputError(logger=self.logger) from e
+            raise exceptions.EnableTDSOutputError(logger=self.logger) from e
 
     def disable_tds_output(self, retry: bool = True) -> None:
         """Disables total dissolved solids output when reporting readings. """
@@ -150,7 +132,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,TDS,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisableTDSOutputError(logger=self.logger) from e
+            raise exceptions.DisableTDSOutputError(logger=self.logger) from e
 
     def enable_salinity_output(self, retry: bool = True) -> None:
         """Enables salinity output when reporting readings."""
@@ -158,7 +140,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,S,1", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise EnableSalinityOutputError(logger=self.logger)
+            raise exceptions.EnableSalinityOutputError(logger=self.logger)
 
     def disable_salinity_output(self, retry: bool = True) -> None:
         """Disables salinity output when reporting readings."""
@@ -166,7 +148,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,S,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisableSalinityOutputError(logger=self.logger) from e
+            raise exceptions.DisableSalinityOutputError(logger=self.logger) from e
 
     def enable_specific_gravity_output(self, retry: bool = True) -> None:
         """Enables specific gravity output when reporting readings."""
@@ -174,7 +156,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,SG,1", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise EnableSpecificGravityOutputError(logger=self.logger) from e
+            raise exceptions.EnableSpecificGravityOutputError(logger=self.logger) from e
 
     def disable_specific_gravity_output(self, retry: bool = True) -> None:
         """Disables specific gravity output when reporting readings."""
@@ -182,7 +164,9 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,SG,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisableSpecificGravityOutputError(logger=self.logger) from e
+            raise exceptions.DisableSpecificGravityOutputError(
+                logger=self.logger
+            ) from e
 
     def set_probe_type(self, value: float, retry: bool = True) -> None:
         """Set probe type to value."""
@@ -190,7 +174,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("K,{}".format(value), process_seconds=0.3)
         except Exception as e:
-            raise SetProbeTypeError(logger=self.logger) from e
+            raise exceptions.SetProbeTypeError(logger=self.logger) from e
 
     def calibrate_dry(self, retry: bool = True) -> None:
         """Take a dry calibration reading."""
@@ -198,7 +182,7 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("Cal,dry", process_seconds=2.0, retry=retry)
         except Exception as e:
-            raise TakeDryCalibrationError(logger=self.logger) from e
+            raise exceptions.TakeDryCalibrationError(logger=self.logger) from e
 
     def calibrate_single(self, value: float, retry: bool = True) -> None:
         """Takes a single point calibration reading."""
@@ -206,7 +190,9 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
 
         # Temporary solution
         message = "Not implemented"
-        raise TakeSinglePointCalibrationError(message=message, logger=self.logger)
+        raise exceptions.TakeSinglePointCalibrationError(
+            message=message, logger=self.logger
+        )
 
         # TODO: Debug why this command returns an invalid syntax code
         # See datasheet: https://bit.ly/2rTuCub
@@ -220,4 +206,4 @@ class AtlasECDriver(AtlasDriver):  # type: ignore
         #     self.logger.debug("command = {}".format(command))
         #     self.process_command(command, process_seconds=0.6, retry=retry)
         # except Exception as e:
-        #     raise TakeSinglePointCalibrationError(logger=self.logger) from e
+        #     raise exceptions.TakeSinglePointCalibrationError(logger=self.logger) from e
