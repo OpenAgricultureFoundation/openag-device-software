@@ -31,60 +31,64 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
+
+      {% if not user.is_authenticated %}
+            <li><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+      {% else %}
+
             <li {% if 'dashboard' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'dashboard' %}">Dashboard<span class="sr-only">(current)</span></a>
             </li>
+
             <li {% if 'peripherals' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'peripherals' %}">Peripherals</a>
             </li>
-            <li {% if 'images' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'images' %}">Images</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">Provision</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="{% url 'device-config' %}">Config</a></li>
+                <li><a class="nav-link" href="{% url 'connect' %}">Connect</a></li>
+                <li><a class="nav-link" href="#">Remote (TBD)</a></li>
+                <li><a class="nav-link" href="{% url 'upgrade' %}">Upgrade</a></li>
+              </ul>
             </li>
-            <li {% if 'logs' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'logs' %}">Logs</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">System</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
+                <li><a class="nav-link" href="/api" target="_blank">API</a></li>
+                <li><a class="nav-link" href="{% url 'environments' %}">Environments</a></li>
+                <li><a class="nav-link" href="{% url 'events' %}">Events</a></li>
+                <li><a class="nav-link" href="{% url 'images' %}">Images</a></li>
+                <li><a class="nav-link" href="{% url 'iot' %}">IoT</a></li>
+                <li><a class="nav-link" href="{% url 'logs' %}">Logs</a></li>
+                <li><a class="nav-link" href="{% url 'recipes' %}">Recipes</a></li>
+                <li><a class="nav-link" href="{% url 'resource' %}">Resources</a></li>
+              </ul>
             </li>
-            <li {% if 'events' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'events' %}">Events</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">User</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="{% url 'change_password' %}">Password</a></li>
+                <li><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+              </ul>
             </li>
-            <li {% if 'recipes' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'recipes' %}">Recipes</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">Help</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="https://github.com/OpenAgInitiative/openag-device-software/blob/master/README.md" target="_blank">Read Me</a></li>
+                <li><a class="nav-link" href="https://github.com/OpenAgInitiative/openag-device-software/blob/master/LICENSE" target="_blank">License</a></li>
+                <li><a class="nav-link" href="https://github.com/OpenAgInitiative/openag-device-software/blob/master/docs/contributing.md" target="_blank">Contributing</a></li>
+                <li><a class="nav-link" href="https://forum.openag.media.mit.edu/" target="_blank">Forum</a></li>
+                <li><a class="nav-link" href="https://wiki.openag.media.mit.edu" target="_blank">Wiki</a></li>
+              </ul>
             </li>
-            <li {% if 'environment' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'environments' %}">Environments</a>
-            </li>
-            <li {% if 'iot' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'iot' %}">IoT</a>
-            </li>
-            <li {% if 'resource' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'resource' %}">Resources</a>
-            </li>
-            <li {% if 'config' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'device-config' %}">Config</a>
-            </li>
-            <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
-            </li>
-            <li {% if 'upgrade' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'upgrade' %}">Upgrade</a>
-            </li>
-            <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-            </li>
-            <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="/api">API</a>
-            </li>
-            {% if not user.is_authenticated %}
-            <li {% if 'login' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'login' %}">Login</a>
-            </li>
-            {% else %}
-            <li {% if 'password' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'change_password' %}">Password</a>
-            </li>
-            <li {% if 'logout' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-            </li>
-            {% endif %}
+
+      {% endif %}
            
           </ul>
         </div>
