@@ -21,7 +21,7 @@ device_config = json.load(open(path))
 peripheral_config = get_peripheral_config(device_config["peripherals"], "Camera-Top")
 
 
-def test_init():
+def test_init() -> None:
     manager = PeripheralManager(
         name="Test",
         state=State(),
@@ -31,7 +31,7 @@ def test_init():
     )
 
 
-def test_run_init_mode():
+def test_run_init_mode() -> None:
     manager = PeripheralManager(
         name="Test",
         state=State(),
@@ -43,7 +43,7 @@ def test_run_init_mode():
     assert manager.mode == modes.SETUP
 
 
-def test_run_setup_mode():
+def test_run_setup_mode() -> None:
     manager = PeripheralManager(
         name="Test",
         state=State(),
@@ -56,7 +56,7 @@ def test_run_setup_mode():
     assert manager.mode == modes.NORMAL
 
 
-def test_run_reset_mode():
+def test_run_reset_mode() -> None:
     manager = PeripheralManager(
         name="Test",
         state=State(),
@@ -71,7 +71,7 @@ def test_run_reset_mode():
 ##### EVENT TEST FUNCTIONS #############################################################
 
 
-def test_set_sampling_interval():
+def test_set_sampling_interval() -> None:
     manager = PeripheralManager(
         name="Test",
         state=State(),
