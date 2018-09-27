@@ -1,16 +1,10 @@
 # Import python modules
-import subprocess
-import socket
-import json
-import os
-import platform
-import time
-import urllib.request
-import uuid
+import subprocess, socket, json, os, platform, time, uuid, urllib.request
 
-from app.viewers import ConnectViewer
-from app.viewers import IoTViewer
+# Import app viewers
+from app.viewers import ConnectViewer, IoTViewer
 
+# Initialize file paths
 REG_DATA_DIR = "data/registration/"
 
 
@@ -215,7 +209,7 @@ class ConnectUtilities:
             with open(REG_DATA_DIR + "device_id.bash") as f:
                 contents = f.read()
                 index = contents.find("=")
-                devid = contents[index + 1 :]
+                devid = contents[index + 1:]
                 return devid.rstrip()
         except:
             pass

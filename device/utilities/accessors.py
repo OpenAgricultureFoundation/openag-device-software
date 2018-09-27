@@ -39,7 +39,7 @@ def dictify_list(list_: List[Any], reference_dict: Dict[str, Any]) -> Dict[str, 
 
 
 def set_nested_dict_safely(
-    nested_dict: Dict, keys: List, value: str, lock: threading.Lock
+    nested_dict: Dict, keys: List, value: Any, lock: threading.RLock
 ) -> None:
     """ Safely sets value in nested dict. """
     with lock:
