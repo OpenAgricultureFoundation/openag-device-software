@@ -56,8 +56,8 @@ class DeviceIO(object):
         self.bus = bus
 
         # Initialize logger
-        logger_name = "DeviceIO({})".format(name)
-        self.logger = Logger(name=logger_name, dunder_name=__name__)
+        logname = "DeviceIO({})".format(name)
+        self.logger = Logger(logname, __name__)
 
         # Verify io exists
         self.logger.debug("Verifying io stream exists")

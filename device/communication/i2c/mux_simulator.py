@@ -15,18 +15,15 @@ class MuxSimulator(object):
     """I2C mux simulator. Note connections is a dict because we could have multiple
     muxes on a device."""
 
-    # Initialize logger
-    logname = "Simulator(Mux)"
-    extra = {"console_name": logname, "file_name": logname}
-    logger = logging.getLogger("i2c")
-    logger = logging.LoggerAdapter(logger, extra)
-
     # Initialize mux parameters
     valid_channel_bytes = [0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80]
     connections: Dict[int, int] = {}
 
     def __init__(self) -> None:
         """Initializes mux simulator."""
+
+        # Initialize logger
+        self.logger = Logger("Simulator(Mux)", __name__)
         self.logger.debug("Initializing simulator")
 
     def set(self, address: int, channel_byte: int) -> None:

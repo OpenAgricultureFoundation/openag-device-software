@@ -47,9 +47,7 @@ class I2C(object):
 
         # Initialize logger
         logname = "I2C({})".format(self.name)
-        extra = {"console_name": logname, "file_name": logname}
-        logger = logging.getLogger("i2c")
-        self.logger = logging.LoggerAdapter(logger, extra)
+        self.logger = Logger(logname, __name__)
         self.logger.debug("Initializing communication")
 
         # Verify mux config

@@ -38,16 +38,7 @@ def verify_mux(func: F) -> F:
 
 
 class PeripheralSimulator:
-    """I2C peripheral simulator. 
-
-    Attributes:
-        name -- name of device
-        bus --  device bus
-        device_addr -- device address
-        mux_address -- device mux address
-        mux_channel -- device mux channel
-        mux_simulator -- mux simulator
-    """
+    """I2C peripheral simulator base class."""
 
     def __init__(
         self,
@@ -69,9 +60,7 @@ class PeripheralSimulator:
 
         # Initialize logger
         logname = "Simulator({})".format(name)
-        extra = {"console_name": logname, "file_name": logname}
-        logger = logging.getLogger("i2c")
-        self.logger = logging.LoggerAdapter(logger, extra)
+        self.logger = Logger(logname, __name__)
         self.logger.debug("Initializing simulator")
 
         # Initialize buffer
@@ -134,12 +123,12 @@ class PeripheralSimulator:
 
             # Verify mux connection
             if self.mux_address != None:
-                self.mux_simulator.verify(  # type: ignore
-                    self.mux_address, self.mux_channel
-                )
+                address = self.mux_address  # type: ignore
+                channel = self.mux_channel
+                self.mux_simulator.verify(address, channel)  # type: ignore
 
             # Get response bytes
-            response_bytes = self.writes.get(byte_str(bytes_), None)
+            response_bytes = self.writes.get(byte_str(bytes_), None)  # type: ignore
 
             # Verify known write bytes
             if response_bytes == None:
