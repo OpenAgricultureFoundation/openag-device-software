@@ -8,15 +8,7 @@ from typing import Dict, List, Tuple, Any
 from device.utilities.logger import Logger
 
 # Import module elements
-from device.utilities.statemachine.modes import (
-    INIT_MODE,
-    NORMAL_MODE,
-    RESET_MODE,
-    SHUTDOWN_MODE,
-    ERROR_MODE,
-    INVALID_MODE,
-)
-from device.utilities.statemachine.events import RESET_EVENT, SHUTDOWN_EVENT
+from device.utilities.statemachine import modes, events
 
 
 class StateMachineManager:
@@ -29,12 +21,12 @@ class StateMachineManager:
         self.thread: threading.Thread = threading.Thread(target=self.run)
         self.event_queue: queue.Queue = queue.Queue()
         self.is_shutdown: bool = False
-        self.mode: str = INIT_MODE
+        self._mode: str = modes.INIT
         self.transitions: Dict[str, List[str]] = {
-            INIT_MODE: [NORMAL_MODE, SHUTDOWN_MODE, ERROR_MODE],
-            NORMAL_MODE: [RESET_MODE, SHUTDOWN_MODE, ERROR_MODE],
-            RESET_MODE: [INIT_MODE, SHUTDOWN_MODE, ERROR_MODE],
-            ERROR_MODE: [RESET_MODE, SHUTDOWN_MODE],
+            modes.INIT: [modes.NORMAL, modes.SHUTDOWN, modes.ERROR],
+            modes.NORMAL: [modes.RESET, modes.SHUTDOWN, modes.ERROR],
+            modes.RESET: [modes.INIT, modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.RESET, modes.SHUTDOWN],
         }
         self.logger.debug("Initialized")
 
@@ -54,19 +46,19 @@ class StateMachineManager:
                 break
 
             # Check for mode transitions
-            if self.mode == INIT_MODE:
+            if self._mode == modes.INIT:
                 self.run_init_mode()
-            elif self.mode == NORMAL_MODE:
+            elif self._mode == modes.NORMAL:
                 self.run_normal_mode()
-            elif self.mode == RESET_MODE:
+            elif self._mode == modes.RESET:
                 self.run_reset_mode()
-            elif self.mode == ERROR_MODE:
+            elif self._mode == modes.ERROR:
                 self.run_error_mode()
-            elif self.mode == SHUTDOWN_MODE:
+            elif self._mode == modes.SHUTDOWN:
                 self.run_shutdown_mode()
             else:
                 self.logger.critical("Invalid state machine mode")
-                self.mode = INVALID_MODE
+                self._mode = modes.INVALID
                 self.is_shutdown = True
                 break
 
@@ -77,7 +69,7 @@ class StateMachineManager:
         # Do something
 
         # Transition to normal mode on next state machine update
-        self.mode = NORMAL_MODE
+        self._mode = modes.NORMAL
 
     def run_normal_mode(self) -> None:
         """Runs normal mode."""
@@ -90,7 +82,7 @@ class StateMachineManager:
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(NORMAL_MODE):
+            if self.new_transition(modes.NORMAL):
                 break
 
             # Update every 100ms
@@ -103,7 +95,7 @@ class StateMachineManager:
         # Do something
 
         # Transition to init mode on next state machine update
-        self.mode = INIT_MODE
+        self._mode = modes.INIT
 
     def run_error_mode(self) -> None:
         """Runs error mode."""
@@ -116,7 +108,7 @@ class StateMachineManager:
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(ERROR_MODE):
+            if self.new_transition(modes.ERROR):
                 break
 
             # Update every 100ms
@@ -147,29 +139,29 @@ class StateMachineManager:
         """Checks for a new transition. Logs errors if tries invalid transition."""
 
         self.logger.debug("current_mode = {}".format(current_mode))
-        self.logger.debug("self.mode = {}".format(self.mode))
+        self.logger.debug("self._mode = {}".format(self._mode))
 
         # Check if state machine mode still in current mode
-        if current_mode == self.mode:
+        if current_mode == self._mode:
             return False
 
         # Check if state machine mode is a valid transition from the current mode
-        if self.valid_transition(current_mode, self.mode):
+        if self.valid_transition(current_mode, self._mode):
             return True
         else:
             message = "Invalid transition attempt from {} to {}".format(
-                current_mode, self.mode
+                current_mode, self._mode
             )
-            self.mode = ERROR_MODE
+            self._mode = modes.ERROR
             return True
 
     def create_event(self, request: Dict[str, Any]) -> Tuple[str, int]:
         """Creates a new event, checks for matching event type, pre-processes request,
         then adds to event queue. Returns message and http status code."""
 
-        if request["type"] == RESET_EVENT:
+        if request["type"] == events.RESET:
             return self.reset()
-        elif request["type"] == SHUTDOWN_EVENT:
+        elif request["type"] == events.SHUTDOWN:
             return self.shutdown()
         else:
             return "Unknown event request type", 400
@@ -195,9 +187,9 @@ class StateMachineManager:
             return
 
         # Execute request
-        if type_ == SHUTDOWN_EVENT:
+        if type_ == events.SHUTDOWN:
             self._shutdown()
-        elif type_ == RESET_EVENT:
+        elif type_ == events.RESET:
             self._reset()
         else:
             self.logger.error("Invalid event request type in queue: {}".format(type_))
@@ -207,7 +199,7 @@ class StateMachineManager:
         self.logger.debug("Pre-processing shutdown event request")
 
         # Add start recipe event request to event queue
-        request = {"type": SHUTDOWN_EVENT}
+        request = {"type": events.SHUTDOWN}
         self.event_queue.put(request)
 
         # Successfully added shutdown event to event queue
@@ -219,20 +211,20 @@ class StateMachineManager:
         self.logger.debug("Processing shutdown event request")
 
         # Transition to shutdown mode on next state machine update
-        self.mode = SHUTDOWN_MODE
+        self._mode = modes.SHUTDOWN
 
     def reset(self) -> Tuple[str, int]:
         """Pre-processes reset event request. Returns message and http status code."""
         self.logger.debug("Pre-processing reset event request")
 
         # Check valid transitions
-        if not self.valid_transition(self.mode, RESET_MODE):
-            message = "Unable to reset from {} mode".format(self.mode)
+        if not self.valid_transition(self._mode, modes.RESET):
+            message = "Unable to reset from {} mode".format(self._mode)
             self.logger.debug(message)
             return message, 400
 
         # Add reset event request to event queue
-        request = {"type": RESET_EVENT}
+        request = {"type": events.RESET}
         self.event_queue.put(request)
 
         # Return event response
@@ -243,9 +235,9 @@ class StateMachineManager:
         self.logger.debug("Processing reset event request")
 
         # Check valid transitions
-        if not self.valid_transition(self.mode, RESET_MODE):
-            self.logger.critical("Tried to reset from {} mode".format(self.mode))
+        if not self.valid_transition(self._mode, modes.RESET):
+            self.logger.critical("Tried to reset from {} mode".format(self._mode))
             return
 
         # Transition to reset mode on next state machine update
-        self.mode = RESET_MODE
+        self._mode = modes.RESET

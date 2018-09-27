@@ -1,2 +1,2 @@
-SHUTDOWN_EVENT = "Shutdown"
-RESET_EVENT = "Reset"
+RESET = "Reset"
+SHUTDOWN = "Shutdown"
