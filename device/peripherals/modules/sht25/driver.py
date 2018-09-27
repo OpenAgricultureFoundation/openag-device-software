@@ -4,26 +4,14 @@ import time, threading
 # Import python types
 from typing import NamedTuple, Optional, Tuple
 
-# Import device comms
+# Import device utilities
+from device.utilities import logger, bitwise
 from device.communication.i2c.main import I2C
 from device.communication.i2c.exceptions import I2CError
 from device.communication.i2c.mux_simulator import MuxSimulator
 
-# Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import bitwise
-
 # Import driver elements
-from device.peripherals.modules.sht25.simulator import SHT25Simulator
-
-# Import exceptions
-from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
-from device.peripherals.modules.sht25.exceptions import (
-    ReadTemperatureError,
-    ReadHumidityError,
-    ReadUserRegisterError,
-    ResetError,
-)
+from device.peripherals.modules.sht25 import simulator, exceptions
 
 
 class UserRegister(NamedTuple):
@@ -47,7 +35,7 @@ class SHT25Driver:
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -58,12 +46,13 @@ class SHT25Driver:
         """Initializes driver."""
 
         # Initialize logger
-        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+        logname = "Driver({})".format(name)
+        self.logger = logger.Logger(logname, __name__)
 
         # Check if simulating
         if simulate:
             self.logger.info("Simulating driver")
-            Simulator = SHT25Simulator
+            Simulator = simulator.SHT25Simulator
         else:
             Simulator = None
 
@@ -83,7 +72,7 @@ class SHT25Driver:
             self.read_user_register(retry=True)
 
         except I2CError as e:
-            raise InitError(logger=self.logger) from e
+            raise exceptions.InitError(logger=self.logger) from e
 
     def read_temperature(self, retry: bool = True) -> Optional[float]:
         """ Reads temperature value."""
@@ -93,7 +82,7 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xF3]), retry=retry)
         except I2CError as e:
-            raise ReadTemperatureError(logger=self.logger) from e
+            raise exceptions.ReadTemperatureError(logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
         # SHT25 is 12-bit so max temperature processing time is 22ms
@@ -103,7 +92,7 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
-            raise ReadTemperatureError(logger=self.logger) from e
+            raise exceptions.ReadTemperatureError(logger=self.logger) from e
 
         # Convert temperature data and set significant figures
         msb, lsb = bytes_
@@ -128,7 +117,7 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xF5]), retry=retry)
         except I2CError as e:
-            raise ReadHumidityError(logger=self.logger) from e
+            raise exceptions.ReadHumidityError(logger=self.logger) from e
 
         # Wait for sensor to process, see datasheet Table 7
         # SHT25 is 12-bit so max humidity processing time is 29ms
@@ -138,7 +127,7 @@ class SHT25Driver:
         try:
             bytes_ = self.i2c.read(2, retry=retry)  # Read sensor data
         except I2CError as e:
-            raise ReadHumidityError(logger=self.logger) from e
+            raise exceptions.ReadHumidityError(logger=self.logger) from e
 
         # Convert humidity data and set significant figures
         msb, lsb = bytes_
@@ -163,7 +152,7 @@ class SHT25Driver:
         try:
             byte = self.i2c.read_register(0xE7, retry=retry)
         except I2CError as e:
-            raise ReadUserRegisterError(logger=self.logger) from e
+            raise exceptions.ReadUserRegisterError(logger=self.logger) from e
 
         # Parse register content
         resolution_msb = bitwise.get_bit_from_byte(bit=7, byte=byte)
@@ -187,4 +176,4 @@ class SHT25Driver:
         try:
             self.i2c.write(bytes([0xFE]), retry=retry)
         except I2CError as e:
-            raise ResetError(logger=self.logger) from e
+            raise exceptions.ResetError(logger=self.logger) from e

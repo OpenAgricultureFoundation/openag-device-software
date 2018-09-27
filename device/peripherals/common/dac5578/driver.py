@@ -4,27 +4,16 @@ import time, threading
 # Import python types
 from typing import NamedTuple, Optional, Dict
 
-# Import device comms
+# Import device utilities
+from device.utilities.logger import Logger
+from device.utilities import bitwise
 from device.communication.i2c.main import I2C
 from device.communication.i2c.exceptions import I2CError
 from device.communication.i2c.mux_simulator import MuxSimulator
 
-# Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import bitwise
-
 # Import driver elements
 from device.peripherals.common.dac5578.simulator import DAC5578Simulator
-
-# Import exceptions
-from device.peripherals.classes.peripheral.exceptions import InitError
-from device.peripherals.common.dac5578.exceptions import (
-    WriteOutputError,
-    WriteOutputsError,
-    ReadPowerRegisterError,
-    SetHighError,
-    SetLowError,
-)
+from device.peripherals.common.dac5578 import exceptions
 
 
 class DAC5578Driver:
@@ -33,7 +22,7 @@ class DAC5578Driver:
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -44,7 +33,8 @@ class DAC5578Driver:
         """Initializes DAC5578."""
 
         # Initialize logger
-        self.logger = Logger(name="DAC5578-({})".format(name), dunder_name=__name__)
+        logname = "DAC5578-({})".format(name)
+        self.logger = Logger(logname, __name__)
 
         # Check if simulating
         if simulate:
@@ -66,7 +56,7 @@ class DAC5578Driver:
                 PeripheralSimulator=Simulator,
             )
         except I2CError as e:
-            raise InitError(logger=self.logger) from e
+            raise exceptions.InitError(logger=self.logger) from e
 
     def write_output(
         self, channel: int, percent: int, retry: bool = True, disable_mux: bool = False
@@ -78,12 +68,12 @@ class DAC5578Driver:
         # Check valid channel range
         if channel < 0 or channel > 7:
             message = "channel out of range, must be within 0-7"
-            raise WriteOutputError(message=message, logger=self.logger)
+            raise exceptions.WriteOutputError(message=message, logger=self.logger)
 
         # Check valid value range
         if percent < 0 or percent > 100:
             message = "output percent out of range, must be within 0-100"
-            raise WriteOutputError(message=message, logger=self.logger)
+            raise exceptions.WriteOutputError(message=message, logger=self.logger)
 
         # Convert output percent to byte, ensure 100% is byte 255
         if percent == 100:
@@ -96,7 +86,7 @@ class DAC5578Driver:
         try:
             self.i2c.write(bytes([0x30 + channel, byte, 0x00]), disable_mux=disable_mux)
         except I2CError as e:
-            raise WriteOutputError(logger=self.logger) from e
+            raise exceptions.WriteOutputError(logger=self.logger) from e
 
     def write_outputs(self, outputs: dict, retry: bool = True) -> None:
         """Sets output channels to output percents. Only sets mux once. 
@@ -106,12 +96,12 @@ class DAC5578Driver:
         # Check output dict is not empty
         if len(outputs) < 1:
             message = "output dict must not be empty"
-            raise WriteOutputsError(message=message, logger=self.logger)
+            raise exceptions.WriteOutputsError(message=message, logger=self.logger)
 
         if len(outputs) > 8:
             print("outputs len = {}".format(len(outputs)))
             message = "output dict must not contain more than 8 entries"
-            raise WriteOutputsError(message=message, logger=self.logger)
+            raise exceptions.WriteOutputsError(message=message, logger=self.logger)
 
         # Run through each output
         for channel, percent in outputs.items():
@@ -119,8 +109,8 @@ class DAC5578Driver:
             self.logger.debug(message)
             try:
                 self.write_output(channel, percent, retry=retry)
-            except WriteOutputError as e:
-                raise WriteOutputsError(logger=self.logger) from e
+            except exceptions.WriteOutputError as e:
+                raise exceptions.WriteOutputsError(logger=self.logger) from e
 
     def read_power_register(self, retry: bool = True) -> Optional[Dict[int, bool]]:
         """Reads power register."""
@@ -131,7 +121,7 @@ class DAC5578Driver:
             self.i2c.write([0x40], retry=retry)
             bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
-            raise ReadPowerRegisterError(logger=self.logger) from e
+            raise exceptions.ReadPowerRegisterError(logger=self.logger) from e
 
         # Parse response bytes
         msb = bytes_[0]
@@ -154,15 +144,15 @@ class DAC5578Driver:
             self.logger.debug("Setting channel {} high".format(channel))
             try:
                 self.write_output(channel, 100, retry=retry)  # type: ignore
-            except WriteOutputError as e:
-                raise SetHighError(logger=self.logger) from e
+            except exceptions.WriteOutputError as e:
+                raise exceptions.SetHighError(logger=self.logger) from e
         else:
             self.logger.debug("Setting all channels high")
             outputs = {0: 100, 1: 100, 2: 100, 3: 100, 4: 100, 5: 100, 6: 100, 7: 100}
             try:
                 self.write_outputs(outputs, retry=retry)
-            except WriteOutputsError as e:
-                raise SetHighError(logger=self.logger) from e
+            except exceptions.WriteOutputsError as e:
+                raise exceptions.SetHighError(logger=self.logger) from e
 
     def set_low(self, channel: Optional[int] = None, retry: bool = True) -> None:
         """Sets channel low, sets all channels low if no channel is specified."""
@@ -170,15 +160,15 @@ class DAC5578Driver:
             self.logger.debug("Setting channel {} low".format(channel))
             try:
                 self.write_output(channel, 100, retry=retry)  # type: ignore
-            except WriteOutputError as e:
-                raise SetLowError(logger=self.logger) from e
+            except exceptions.WriteOutputError as e:
+                raise exceptions.SetLowError(logger=self.logger) from e
         else:
             self.logger.debug("Setting all channels low")
             outputs = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
             try:
                 self.write_outputs(outputs, retry=retry)
-            except WriteOutputsError as e:
-                raise SetLowError(logger=self.logger) from e
+            except exceptions.WriteOutputsError as e:
+                raise exceptions.SetLowError(logger=self.logger) from e
 
     # def probe(self) -> Error:
     #     """Probes dac5578 by trying to read the power register."""

@@ -68,7 +68,7 @@ class PeripheralSimulator:
 
         # Initialize register
         self.registers: Dict[int, int] = {}
-        self.writes: Dict[bytes, bytes] = {}
+        self.writes: Dict[str, bytes] = {}
 
     def __enter__(self) -> object:
         """Context manager enter function."""
@@ -134,10 +134,9 @@ class PeripheralSimulator:
             if response_bytes == None:
                 raise WriteError("Unknown write bytes: {}".format(byte_str(bytes_)))
 
-            # TODO: This is over simplified, what is setting compensation temperature?
-
             # Write response bytes to buffer
-            self.logger.debug("Response bytes: {}".format(byte_str(response_bytes)))
+            response_byte_string = byte_str(response_bytes)  # type: ignore
+            self.logger.debug("Response bytes: {}".format(response_byte_string))
             for byte in response_bytes:  # type: ignore
                 self.buffer.insert(0, byte)
             self.logger.debug("Buffer: {}".format(byte_str(self.buffer)))

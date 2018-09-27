@@ -1,4 +1,3 @@
-# Import driver error base class
 from device.utilities.exceptions import ExceptionLogger
 
 
