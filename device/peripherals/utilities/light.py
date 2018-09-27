@@ -14,7 +14,7 @@ def approximate_spd(
     des_distance: float,
     des_intensity: float,
     des_spectrum: Dict[str, float],
-):
+) -> Tuple[Dict, Dict, float]:
     """Approximates spectral power distribution."""
 
     # Get desired spd vector (i.e. `b` in Ax=b)
@@ -53,7 +53,7 @@ def approximate_spd(
     return mapped_channel_setpoint_dict, output_spectrum_dict, output_intensity
 
 
-def calculate_spd_dict(intensity: float, spectrum: Dict[str, float]):
+def calculate_spd_dict(intensity: float, spectrum: Dict[str, float]) -> Dict:
     """Calculates spd dict from intensity and spectrum."""
     spd_dict = {}
     for wavelength_band, percent in spectrum.items():
@@ -72,7 +72,7 @@ def build_channel_spd_ndict(
     intensity_map = panel_properties.get("intensity_map_cm_umol", 0)
 
     # Get channel weights
-    channel_weights = {}
+    channel_weights: Dict[str, float] = {}
     for channel_key, channel_dict in channels.items():
         channel_type = channel_dict.get("type")
         if channel_type in channel_weights:
@@ -122,8 +122,8 @@ def get_intensity_at_distance(
 
 
 def translate_spd_ndict(
-    spd_ndict: Dict[str, float], reference_spd_dict: Dict[str, float]
-) -> Dict[str, float]:
+    spd_ndict: Dict[str, Dict[str, float]], reference_spd_dict: Dict[str, float]
+) -> Dict[str, Dict[str, float]]:
     """Translates a spd nested dict to match wavelength bands of reference spd dict."""
     translated_spd_ndict = {}
     for key, spd_dict in spd_ndict.items():
@@ -143,7 +143,7 @@ def translate_spd_dict(
         wavelength_bands.append(wavelength_band)
 
     # Build translated spd dict shell with same wavelength bands as reference spd dict
-    translated_spd_dict = {}
+    translated_spd_dict: Dict[str, float] = {}
     for wavelength_band in wavelength_bands:
         translated_spd_dict[wavelength_band] = 0
 
@@ -227,7 +227,7 @@ def calculate_ulrf_from_percents(
     intensity_map = panel_properties.get("intensity_map_cm_umol", {})
     distance_list = []
     intensity_list = []
-    for distance_, intensity in intensity_map.items():
+    for distance_, intensity in intensity_map.items():  # type: ignore
         distance_list.append(float(distance_))
         intensity_list.append(intensity)
 
@@ -242,7 +242,7 @@ def calculate_ulrf_from_percents(
 
     # Get reference SPD from channel configs
     channel_types = panel_properties.get("channel_types", {})
-    for channel_key, channel_dict in channel_types.items():
+    for channel_key, channel_dict in channel_types.items():  # type: ignore
         reference_spectrum = channel_dict.get("spectrum_nm_percent", {})
         break
 
@@ -272,8 +272,8 @@ def calculate_resultant_spd(
     channel_spd_matrix = accessors.matrixify_nested_dict(channel_spd_ndict)
 
     # Factorize setpoint types. The type setpoint is the average of all instance setpoints
-    factorized_channel_setpoint_dict = {}
-    count = {}
+    factorized_channel_setpoint_dict: Dict[str, float] = {}
+    count: Dict[str, int] = {}
     for channel_name, setpoint in channel_setpoint_dict.items():
         channel_dict = channels.get(channel_name, {})
         channel_type = channel_dict.get("type", "Error")

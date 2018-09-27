@@ -7,7 +7,7 @@ sys.path.append(ROOT_DIR)
 os.chdir(ROOT_DIR)
 
 # Import device utilities
-from device.utilities.accessors import get_peripheral_config
+from device.utilities import accessors
 from device.communication.i2c.mux_simulator import MuxSimulator
 from device.state.main import State
 
@@ -17,7 +17,9 @@ from device.peripherals.modules.sht25.manager import SHT25Manager
 # Load test config
 CONFIG_PATH = ROOT_DIR + "/device/peripherals/modules/sht25/tests/config.json"
 device_config = json.load(open(CONFIG_PATH))
-peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
+peripheral_config = accessors.get_peripheral_config(
+    device_config["peripherals"], "SHT25-Top"
+)
 
 
 def test_init() -> None:

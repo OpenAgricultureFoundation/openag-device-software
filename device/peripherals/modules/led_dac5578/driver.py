@@ -5,33 +5,17 @@ import time, threading
 from typing import NamedTuple, Optional, Tuple, Dict, Any, List
 
 # Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import maths
-
-# Import mux simulator
+from device.utilities import logger, bitwise, maths
+from device.communication.i2c.main import I2C
+from device.communication.i2c.exceptions import I2CError
 from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral utilities
 from device.peripherals.utilities import light
 
-# Import dac driver elements
+# Import driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver
-
-# Import exceptions
-from device.peripherals.classes.peripheral.exceptions import (
-    DriverError,
-    InitError,
-    SetupError,
-)
-from device.peripherals.modules.led_dac5578.exceptions import (
-    NoActivePanelsError,
-    TurnOnError,
-    TurnOffError,
-    SetSPDError,
-    SetOutputError,
-    SetOutputsError,
-    InvalidChannelNameError,
-)
+from device.peripherals.modules.led_dac5578 import exceptions
 
 
 class LEDDAC5578Panel(object):
@@ -48,7 +32,7 @@ class LEDDAC5578Panel(object):
         i2c_lock: threading.Lock,
         simulate: bool,
         mux_simulator: Optional[MuxSimulator],
-        logger: Logger,
+        logger: logger.Logger,
     ) -> None:
         """Initializes panel."""
 
@@ -118,7 +102,8 @@ class LEDDAC5578Driver:
         self.simulate = simulate
 
         # Initialize logger
-        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+        logname = "Driver({})".format(name)
+        self.logger = logger.Logger(logname, __name__)
 
         # Parse panel properties
         self.channels = self.panel_properties.get("channels")
@@ -140,7 +125,7 @@ class LEDDAC5578Driver:
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         self.num_active_panels = len(active_panels)
         if self.num_active_panels < 1:
-            raise NoActivePanelsError(logger=self.logger)
+            raise exceptions.NoActivePanelsError(logger=self.logger)
 
         # Successfully initialized
         message = "Successfully initialized with {} ".format(self.num_active_panels)
@@ -181,7 +166,7 @@ class LEDDAC5578Driver:
             )
         except Exception as e:
             message = "approximate spd failed"
-            raise SetSPDError(message=message, logger=self.logger) from e
+            raise exceptions.SetSPDError(message=message, logger=self.logger) from e
 
         # Set outputs
         self.set_outputs(channel_outputs)
@@ -191,7 +176,7 @@ class LEDDAC5578Driver:
             channel_outputs, output_spectrum, output_intensity
         )
         self.logger.debug(message)
-        return (channel_outputs, output_spectrum, output_intensity)
+        return channel_outputs, output_spectrum, output_intensity  # type: ignore
 
     def set_outputs(self, par_setpoints: dict) -> None:
         """Sets outputs on light panels. Converts channel names to channel numbers, 
@@ -202,7 +187,7 @@ class LEDDAC5578Driver:
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         self.num_active_panels = len(active_panels)
         if self.num_active_panels < 1:
-            raise NoActivePanelsError(logger=self.logger)
+            raise exceptions.NoActivePanelsError(logger=self.logger)
         message = "Setting outputs on {} active panels".format(self.num_active_panels)
         self.logger.debug(message)
 
@@ -214,7 +199,7 @@ class LEDDAC5578Driver:
             try:
                 number = self.get_channel_number(name)
             except Exception as e:
-                raise SetOutputsError(logger=self.logger) from e
+                raise exceptions.SetOutputsError(logger=self.logger) from e
 
             # Append to converted outputs
             converted_outputs[number] = percent
@@ -250,7 +235,7 @@ class LEDDAC5578Driver:
         self.num_active_panels = len(active_panels)
         if self.num_active_panels < 1:
             message = "failed when setting outputs"
-            raise NoActivePanelsError(message=message, logger=self.logger)
+            raise exceptions.NoActivePanelsError(message=message, logger=self.logger)
 
     def set_output(self, channel_name: str, par_setpoint: float) -> None:
         """Sets output on light panels. Converts channel name to channel number, 
@@ -260,7 +245,7 @@ class LEDDAC5578Driver:
         # Check at least one panel is active
         active_panels = [panel for panel in self.panels if not panel.is_shutdown]
         if len(active_panels) < 1:
-            raise NoActivePanelsError(logger=self.logger)
+            raise exceptions.NoActivePanelsError(logger=self.logger)
         message = "Setting output on {} active panels".format(self.num_active_panels)
         self.logger.debug(message)
 
@@ -268,7 +253,7 @@ class LEDDAC5578Driver:
         try:
             channel_number = self.get_channel_number(channel_name)
         except Exception as e:
-            raise SetOutputError(logger=self.logger) from e
+            raise exceptions.SetOutputError(logger=self.logger) from e
 
         # Set output on all panels
         for panel in self.panels:
@@ -292,7 +277,7 @@ class LEDDAC5578Driver:
         self.num_active_panels = len(active_panels)
         if self.num_active_panels < 1:
             message = "failed when setting output"
-            raise NoActivePanelsError(message=message, logger=self.logger)
+            raise exceptions.NoActivePanelsError(message=message, logger=self.logger)
 
     def get_channel_number(self, channel_name: str) -> int:
         """Gets channel number from channel name."""
@@ -301,7 +286,9 @@ class LEDDAC5578Driver:
             channel_number = channel_dict.get("port", -1)
             return int(channel_number)
         except KeyError:
-            raise InvalidChannelNameError(message=channel_name, logger=self.logger)
+            raise exceptions.InvalidChannelNameError(
+                message=channel_name, logger=self.logger
+            )
 
     def build_channel_outputs(self, value: float) -> Dict[str, float]:
         """Build channel outputs. Sets each channel to provided value."""
