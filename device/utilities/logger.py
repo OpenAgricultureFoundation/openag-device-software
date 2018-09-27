@@ -1,4 +1,8 @@
+# Import standard python modules
 import logging, sys, json, os
+
+# Import python types
+from typing import Dict, Any
 
 
 class Logger:
@@ -69,7 +73,7 @@ class Logger:
 class PeripheralFileHandler(logging.Handler):
     """Splits each peripheral thread into its own log file."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes peripheral file handler."""
 
         # Inherit functions from handler
@@ -78,7 +82,7 @@ class PeripheralFileHandler(logging.Handler):
         # Get project root dir
         ROOT_DIR = os.environ.get("OPENAG_BRAIN_ROOT")
         if ROOT_DIR != None:
-            ROOT_DIR += "/"
+            ROOT_DIR += "/"  # type: ignore
         else:
             ROOT_DIR = ""
 
@@ -106,11 +110,12 @@ class PeripheralFileHandler(logging.Handler):
                 os.remove(LOG_DIR + file)
 
         # Initialize peripheral file handlers
-        self.file_handlers = {}
+        self.file_handlers: Dict = {}
         for peripheral_config in peripheral_configs:
             name = peripheral_config["name"]
             filename = LOG_DIR + name + ".log"
-            self.file_handlers[name] = logging.handlers.RotatingFileHandler(
+            handlers = logging.handlers  # type: ignore
+            self.file_handlers[name] = handlers.RotatingFileHandler(
                 filename=filename,
                 mode="a",
                 maxBytes=200 * 1024,
@@ -120,7 +125,7 @@ class PeripheralFileHandler(logging.Handler):
             )
             self.file_handlers[name].format = self.format
 
-    def emit(self, record):
+    def emit(self, record: Any) -> None:
         """ Emits a log record. """
 
         # Format record

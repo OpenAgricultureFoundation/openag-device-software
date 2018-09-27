@@ -31,7 +31,7 @@ def get_byte_from_bits(bits: Dict) -> int:
         byte += bits[i] << i
 
         # Return byte value
-    return byte
+    return int(byte)
 
 
 def get_byte_from_bit_list(bits: List[int]) -> int:

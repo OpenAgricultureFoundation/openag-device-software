@@ -64,7 +64,9 @@ def get_nested_dict_safely(nested_dict: Dict, keys: List) -> Any:
     return value
 
 
-def get_peripheral_config(peripheral_configs: List, name: str) -> Dict:
+def get_peripheral_config(
+    peripheral_configs: List[Dict[str, Any]], name: str
+) -> Dict[str, Any]:
     """ Gets peripheral config from list of peripheral configs. """
     for peripheral_config in peripheral_configs:
         if peripheral_config["name"] == name:
