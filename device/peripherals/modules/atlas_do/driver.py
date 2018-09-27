@@ -4,31 +4,20 @@ import time, threading
 # Import python types
 from typing import Optional, Tuple, NamedTuple
 
-# Import device comms
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
-
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities import maths
+from device.utilities import logger, maths
 
-# Import module elements
-from device.peripherals.classes.atlas.driver import AtlasDriver
-from device.peripherals.modules.atlas_do.simulator import AtlasDOSimulator
-from device.peripherals.modules.atlas_do.exceptions import (
-    ReadDOError,
-    EnableMgLOutputError,
-    DisableMgLOutputError,
-    EnablePercentSaturationOutputError,
-    DisablePercentSaturationOutputError,
-    SetCompensationECError,
-    SetCompensationPressureError,
-)
-from device.peripherals.classes.peripheral.exceptions import SetupError
+# from device.communication.i2c.main import I2C
+# from device.communication.i2c.exceptions import I2CError
+from device.communication.i2c.mux_simulator import MuxSimulator
+
+# Import driver elements
+from device.peripherals.classes.atlas import driver
+from device.peripherals.modules.atlas_do import simulator, exceptions
 
 
-class AtlasDODriver(AtlasDriver):  # type: ignore
+class AtlasDODriver(driver.AtlasDriver):
     """Driver for atlas dissolved oxygen sensor."""
 
     # Initialize sensor properties
@@ -39,7 +28,7 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -51,7 +40,7 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
 
         # Check if simulating
         if simulate:
-            Simulator = AtlasDOSimulator
+            Simulator = simulator.AtlasDOSimulator
         else:
             Simulator = None
 
@@ -68,18 +57,18 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
             Simulator=Simulator,
         )
 
-    def setup(self) -> None:
+    def setup(self, retry: bool = True) -> None:
         """Sets up sensor."""
         self.logger.info("Setting up sensor")
         try:
-            self.enable_led()
-            info = self.read_info()
+            self.enable_led(retry=retry)
+            info = self.read_info(retry=retry)
             if info.firmware_version > 1.94:
-                self.enable_protocol_lock()
-            self.enable_mg_l()
-            self.disable_percent_saturation()
+                self.enable_protocol_lock(retry=retry)
+            self.enable_mg_l_output(retry=retry)
+            self.disable_percent_saturation_output(retry=retry)
         except Exception as e:
-            raise SetupError(logger=self.logger) from e
+            raise exceptions.SetupError(logger=self.logger) from e
 
     def read_do(self, retry: bool = True) -> Optional[float]:
         """Reads dissolved oxygen value."""
@@ -90,10 +79,10 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
         try:
             response = self.process_command("R", process_seconds=0.6, retry=retry)
         except Exception as e:
-            raise ReadDOError(logger=self.logger) from e
+            raise exceptions.ReadDOError(logger=self.logger) from e
 
         # Parse response
-        do_raw = float(response)
+        do_raw = float(response)  # type: ignore
 
         # Set significant figures based off error magnitude
         error_magnitude = maths.magnitude(self.do_accuracy)
@@ -115,7 +104,7 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,mg,1", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise EnableMgLOutputError(logger=self.logger) from e
+            raise exceptions.EnableMgLOutputError(logger=self.logger) from e
 
     def disable_mg_l_output(self, retry: bool = True) -> None:
         """Disables DO mg/L output."""
@@ -123,7 +112,7 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,mg,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisableMgLOutputError(logger=self.logger) from e
+            raise exceptions.DisableMgLOutputError(logger=self.logger) from e
 
     def enable_percent_saturation_output(self, retry: bool = True) -> None:
         """Enables precent saturation output."""
@@ -131,7 +120,9 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,%,1", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise EnablePercentSaturationOutputError(logger=self.logger) from e
+            raise exceptions.EnablePercentSaturationOutputError(
+                logger=self.logger
+            ) from e
 
     def disable_percent_saturation_output(self, retry: bool = True) -> None:
         """Disables percent saturation output."""
@@ -139,7 +130,9 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
         try:
             self.process_command("O,%,0", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise DisablePercentSaturationOutputError(logger=self.logger) from e
+            raise exceptions.DisablePercentSaturationOutputError(
+                logger=self.logger
+            ) from e
 
     def set_compensation_ec(self, value_ms_cm: float, retry: bool = True) -> None:
         """Sets compensation ec."""
@@ -153,7 +146,7 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
         try:
             self.process_command(command, process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise SetCompensationECError(logger=self.logger) from e
+            raise exceptions.SetCompensationECError(logger=self.logger) from e
 
     def set_compensation_pressure(self, value: float, retry: bool = True) -> None:
         """Sets compensation ec."""
@@ -162,4 +155,4 @@ class AtlasDODriver(AtlasDriver):  # type: ignore
             command = "P,{}".format(value)
             self.process_command(command, process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise SetCompensationPressureError(logger=self.logger) from e
+            raise exceptions.SetCompensationPressureError(logger=self.logger) from e

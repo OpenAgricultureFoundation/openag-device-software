@@ -38,7 +38,7 @@ def test_init() -> None:
     )
 
 
-# def test_initialize() -> None:
+# def test_initialize_peripheral() -> None:
 #     manager = AtlasDOManager(
 #         name="Test",
 #         state=State(),
@@ -46,10 +46,10 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
+#     manager.initialize_peripheral()
 
 
-# def test_setup() -> None:
+# def test_setup_peripheral() -> None:
 #     manager = AtlasDOManager(
 #         name="Test",
 #         state=State(),
@@ -57,11 +57,11 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.setup()
+#     manager.initialize_peripheral()
+#     manager.setup_peripheral()
 
 
-# def test_update() -> None:
+# def test_update_peripheral() -> None:
 #     manager = AtlasDOManager(
 #         name="Test",
 #         state=State(),
@@ -69,11 +69,11 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.update()
+#     manager.initialize_peripheral()
+#     manager.update_peripheral()
 
 
-# def test_reset() -> None:
+# def test_reset_peripheral() -> None:
 #     manager = AtlasDOManager(
 #         name="Test",
 #         state=State(),
@@ -81,11 +81,11 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.reset()
+#     manager.initialize_peripheral()
+#     manager.reset_peripheral()
 
 
-# def test_shutdown() -> None:
+# def test_shutdown_peripheral() -> None:
 #     manager = AtlasDOManager(
 #         name="Test",
 #         state=State(),
@@ -93,5 +93,5 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.shutdown()
+#     manager.initialize_peripheral()
+#     manager.shutdown_peripheral()
