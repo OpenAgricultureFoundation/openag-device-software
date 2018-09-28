@@ -53,7 +53,7 @@ class StateMachineManager:
         # Loop forever
         while True:
 
-            # Check if thread is shutdown
+            # Check if manager is shutdown
             if self.is_shutdown:
                 break
 

@@ -31,7 +31,7 @@ class RecipeManager(StateMachineManager):
         super().__init__()
 
         # Initialize logger
-        self.logger = Logger("Recipe", __name__)
+        self.logger = Logger("Recipe", "recipe")
 
         # Initialize state
         self.state = state
@@ -553,9 +553,9 @@ class RecipeManager(StateMachineManager):
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            models.RecipeTransitionModel.objects.filter(minute__lte=minute)
-            .order_by("-minute")
-            .first()
+            models.RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
+                "-minute"
+            ).first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:

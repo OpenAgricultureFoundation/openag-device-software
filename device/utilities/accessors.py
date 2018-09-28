@@ -4,6 +4,9 @@ import threading, subprocess, pyudev, numpy
 # Import python types
 from typing import Dict, Optional, List, Any
 
+# Import device utilities
+from device.utilities import constants
+
 
 def listify_dict(dict_: Dict[str, float]) -> List[float]:
     """Converts a dict into a list."""
@@ -102,3 +105,17 @@ def usb_device_matches(
 
     # USB device matches!
     return True
+
+
+def floatify_string(value: str) -> float:
+    """Converts a num string (e.g. 10M or 10K) to a float."""
+    unit = value[-1]
+    number = float(value[:-1])
+    if unit.lower() == "k":
+        return number * constants.KILOBYTE
+    elif unit.lower() == "m":
+        return number * constants.MEGABYTE
+    elif unit.lower() == "g":
+        return number * constants.GIGABYTE
+    else:
+        raise ValueError("Invalid unit type `{}`".format(unit))

@@ -58,7 +58,7 @@ class CoordinatorManager(StateMachineManager):
         super().__init__()
 
         # Initialize logger
-        self.loggger = Logger("Coordinator", __name__)
+        self.loggger = Logger("Coordinator", "coordinator")
         self.logger.debug("Initializing coordinator")
 
         # Initialize state
@@ -84,7 +84,7 @@ class CoordinatorManager(StateMachineManager):
         # Initialize managers
         self.recipe = RecipeManager(self.state)
         self.iot = IoTManager(self.state, self.recipe)  # type: ignore
-        self.resource = ResourceManager(self.state, self, self.iot)  # type: ignore
+        self.resource = ResourceManager(self.state, self.iot)  # type: ignore
         self.connect = ConnectManager(self.state, self.iot)  # type: ignore
         self.upgrade = UpgradeManager(self.state)  # type: ignore
 
@@ -305,23 +305,24 @@ class CoordinatorManager(StateMachineManager):
         self.mode = modes.CONFIG
 
     def run_reset_mode(self) -> None:
-        """Runs reset mode. Kills child threads then transitions to init."""
+        """Runs reset mode. Shutsdown child threads then transitions to init."""
         self.logger.info("Entered RESET")
 
         # Shutdown managers
         self.shutdown_peripheral_threads()
         self.shutdown_controller_threads()
         self.recipe.shutdown()
-        self.iot.stop()
+        self.iot.shutdown()
 
         # Transition to init mode on next state machine update
         self.mode = modes.INIT
 
     def run_error_mode(self) -> None:
-        """Runs error mode. Shutsdown child threads, waits for new events and transitions."""
+        """Runs error mode. Shutsdown child threads, waits for new events 
+        and transitions."""
         self.logger.info("Entered ERROR")
 
-        # Kills peripheral and controller threads
+        # Shutsdown peripheral and controller threads
         self.shutdown_peripheral_threads()
         self.shutdown_controller_threads()
 
