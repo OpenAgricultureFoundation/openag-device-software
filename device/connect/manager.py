@@ -19,7 +19,7 @@ class ConnectManager:
         """Initializes connect manager."""
 
         # Initialize logger
-        self.logger = Logger("ConnectManager", __name__)
+        self.logger = Logger("ConnectManager", "connect")
         self.logger.debug("Initializing manager")
 
         # Initialize our state

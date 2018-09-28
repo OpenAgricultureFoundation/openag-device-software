@@ -29,7 +29,7 @@ class LEDDAC5578Panel(object):
         self,
         driver_name: str,
         config: Dict[str, Any],
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         simulate: bool,
         mux_simulator: Optional[MuxSimulator],
         logger: logger.Logger,
@@ -103,7 +103,7 @@ class LEDDAC5578Driver:
 
         # Initialize logger
         logname = "Driver({})".format(name)
-        self.logger = logger.Logger(logname, __name__)
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Parse panel properties
         self.channels = self.panel_properties.get("channels")

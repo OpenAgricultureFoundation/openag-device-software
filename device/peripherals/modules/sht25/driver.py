@@ -47,7 +47,7 @@ class SHT25Driver:
 
         # Initialize logger
         logname = "Driver({})".format(name)
-        self.logger = logger.Logger(logname, __name__)
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Check if simulating
         if simulate:

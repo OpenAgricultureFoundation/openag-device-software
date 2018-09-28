@@ -54,7 +54,7 @@ class T6713Driver:
 
         # Initialize logger
         logname = "Driver({})".format(name)
-        self.logger = logger.Logger(logname, __name__)
+        self.logger = logger.Logger(logname, "device")
 
         # Check if simulating
         if simulate:

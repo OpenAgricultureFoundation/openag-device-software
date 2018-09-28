@@ -51,7 +51,7 @@ class AtlasDriver:
 
         # Initialize logger
         logname = "Driver({})".format(name)
-        self.logger = Logger(logname, __name__)
+        self.logger = Logger(logname, "peripherals")
 
         # Initialize I2C
         try:

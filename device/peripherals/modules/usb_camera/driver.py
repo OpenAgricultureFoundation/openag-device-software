@@ -12,9 +12,7 @@ from device.communication.i2c.mux_simulator import MuxSimulator
 
 # Import driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver
-from device.peripherals.common.dac5578.exceptions import (
-    DriverError as DAC5578DriverError
-)
+from device.peripherals.common.dac5578.exceptions import DriverError as DAC5578DriverError
 from device.peripherals.modules.usb_camera import exceptions
 
 # Initialize file paths
@@ -48,7 +46,7 @@ class USBCameraDriver:
 
         # Initialize logger
         logname = "Driver({})".format(name)
-        self.logger = logger.Logger(logname, __name__)
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Check if simulating
         if simulate:

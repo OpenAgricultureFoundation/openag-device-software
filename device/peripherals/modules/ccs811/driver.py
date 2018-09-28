@@ -56,7 +56,7 @@ class CCS811Driver:
 
         # Initialize logger
         logname = "Driver({})".format(name)
-        self.logger = logger.Logger(logname, __name__)
+        self.logger = logger.Logger(logname, "peripherals")
         self.logger.info("Initializing driver")
 
         # Check if simulating

@@ -47,7 +47,7 @@ class PeripheralManager(StateMachineManager):
 
         # Initialize logger
         logname = "Manager({})".format(self.name)
-        self.logger = logger.Logger(logname, __name__)
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Load config parameters
         self.parameters = self.config.get("parameters", {})
@@ -82,18 +82,10 @@ class PeripheralManager(StateMachineManager):
             modes.INIT: [modes.SETUP, modes.ERROR, modes.SHUTDOWN],
             modes.SETUP: [modes.NORMAL, modes.ERROR, modes.SHUTDOWN],
             modes.NORMAL: [
-                modes.CALIBRATE,
-                modes.MANUAL,
-                modes.RESET,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.CALIBRATE, modes.MANUAL, modes.RESET, modes.ERROR, modes.SHUTDOWN
             ],
             modes.MANUAL: [
-                modes.NORMAL,
-                modes.CALIBRATE,
-                modes.RESET,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.NORMAL, modes.CALIBRATE, modes.RESET, modes.ERROR, modes.SHUTDOWN
             ],
             modes.CALIBRATE: [modes.RESET, modes.ERROR, modes.SHUTDOWN],
             modes.RESET: [modes.INIT, modes.ERROR, modes.SHUTDOWN],
