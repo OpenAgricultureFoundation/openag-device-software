@@ -6,7 +6,7 @@ from device.utilities.accessors import get_nested_dict_safely
 
 # Import the IoT communications class
 from device.iot.pubsub import IoTPubSub
-from device.connect.utilities import ConnectUtilities
+from device.connect import utilities
 
 
 IMAGE_DIR = "data/images/"
@@ -194,7 +194,7 @@ class IoTManager:
 
             # Make sure we have a valid registration + device id
             # export DEVICE_ID=EDU-BD9BC8B7-f4-5e-ab-3f-07-fd
-            device_id = ConnectUtilities.get_device_id_from_file()
+            device_id = utilities.get_device_id_from_file()
             if device_id is None:
                 time.sleep(15)
                 self.logger.error("Missing device id file.")
@@ -309,8 +309,11 @@ class IoTManager:
                 for image_file in image_file_list:
 
                     # Is this file open by a process? (fswebcam)
-                    if 0 == os.system(
-                        "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                    if (
+                        0
+                        == os.system(
+                            "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                        )
                     ):
                         continue  # Yes, so skip it and try the next one.
 

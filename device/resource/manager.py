@@ -17,6 +17,7 @@ from device.state.main import State
 
 # Import device managers
 from device.iot.manager import IoTManager
+from device.connect import utilities as connect_utilities
 
 # Initialize file paths
 IMAGES_PATH = "data/images/*.png"
@@ -156,7 +157,7 @@ class ResourceManager(manager.StateMachineManager):
 
             # Check if manager is shutdown
             if self.is_shutdown:
-                break
+                break  # TODO: Fix name
 
             # Check for mode transitions
             if self.mode == modes.NORMAL:
@@ -209,19 +210,11 @@ class ResourceManager(manager.StateMachineManager):
         self.logger.debug("Updating connection")
 
         # Update connection status
-        self.connected = self.valid_internet_connection()
+        self.connected = connect_utilities.valid_internet_connection()
 
         # Reset iot manager on reconnect event
         if self.reconnected:
             self.iot.reset()  # type: ignore
-
-    def valid_internet_connection(self) -> bool:
-        """Checks if internet connection is valid."""
-        try:
-            urllib.request.urlopen("http://google.com")
-            return True
-        except urllib.error.URLError:  # type: ignore
-            return False
 
     def update_storage(self) -> None:
         """Updates storage information."""

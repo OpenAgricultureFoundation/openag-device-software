@@ -70,7 +70,7 @@ from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
-from device.connect.utilities import ConnectUtilities
+from device.connect import utilities as connect_utilities
 from device.upgrade.utilities import UpgradeUtilities
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
@@ -636,7 +636,7 @@ class Connect(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtilities.get_status()
+        response = connect_utilities.get_status()
         logger.info("Connect response={}".format(response))
         return Response(response)
 
@@ -652,7 +652,7 @@ class ConnectGetStatus(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtilities.get_status()
+        response = connect_utilities.get_status()
         logger.info("ConnectGetStatus response={}".format(response))
         return Response(response)
 
@@ -679,7 +679,7 @@ class ConnectJoinWifi(viewsets.ViewSet):
         password = reqd["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        success = ConnectUtilities.join_wifi(wifi, password)
+        success = connect_utilities.join_wifi(wifi, password)
         response = {"success": success}
         logger.info("ConnectJoinWifi response={}".format(response))
         return Response(response)
@@ -695,7 +695,7 @@ class ConnectDeleteWifis(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtilities.delete_wifi_connections()
+        response = connect_utilities.delete_wifi_connections()
         logger.info("ConnectDeleteWifis response={}".format(response))
         return Response(response)
 
@@ -710,7 +710,7 @@ class ConnectRegisterIoT(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtilities.register_iot()
+        response = connect_utilities.register_iot()
         logger.info("ConnectRegisterIoT response={}".format(response))
         return Response(response)
 
@@ -725,7 +725,7 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtilities.delete_iot_registration()
+        response = connect_utilities.delete_iot_registration()
         logger.info("ConnectDeleteIoTreg response={}".format(response))
         return Response(response)
 
