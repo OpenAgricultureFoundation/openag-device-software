@@ -3,7 +3,7 @@
 {% block javascript %}
 <script>
 
-  $('#datetimepicker1').datetimepicker();
+  $('#datetimepicker1').datetimepicker(); // default initialization
 
   function createDeviceEvent(event_name, event_id) {
      /* Creates peripheral event. */
@@ -63,18 +63,17 @@
       /* Starts a recipe. */
       console.log("Starting recipe")
       var uuid = $("#recipe_uuid").val()
-      var date = $('#datetimepicker1').data("DateTimePicker").date();
-      console.log(uuid)
-      console.log(date)
+      var date = $('#datetimepicker1').datetimepicker('date');
+      console.log('startRecipe uuid='+uuid);
+      console.log('startRecipe date='+date);
 
       if( date ){
-       var timestamp = date.unix();
-      }
-      else {
-       var timestamp = null;
+        var timestamp = date.unix();
+      } else {
+        var timestamp = null;
       }
 
-      console.log(timestamp)
+      console.log('startRecipe timestamp='+timestamp)
       
       // Send create event request to endpoint
       $.ajax({
@@ -195,11 +194,6 @@
 
 {% block content %}
 
-<!-- TEST START -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet"/>
-<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
-<!-- TEST END -->
-
 {% csrf_token %}
 
 <div class="dashboard">
@@ -236,21 +230,18 @@
             </select>
 
             <!-- Datetime Picker -->
-            <div class='input-group date' id='datetimepicker1'>
-                <input type='text' class="form-control" placeholder='Optionally specify recipe start time' />
-                <span class="input-group-addon">
-                    <span class="glyphicon glyphicon-calendar"></span>
-                </span>
+            <div class='input-group date' id='datetimepicker1' data-target-input='nearest'>
+                <input type='text' class='form-control datetimepicker-input' data-target='#datetimepicker1' placeholder='Optionally specify recipe start time' />
+                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
             </div>
 
-            <!-- <button onclick="getValue()" class="btn btn-primary">Get value</button> -->
-
             <button class="btn" type="button" onClick="startRecipe()"><i class="icon-share"></i> Start Recipe </button>
-            <!-- <button class="btn" type="button" onClick="createDeviceEvent('Start Recipe', 'recipe_uuid')"><i class="icon-share"></i> Start Recipe </button> -->
 
             {% else %}
             <button class="btn" type="button" onClick="stopRecipe()"><i class="icon-share"></i> Stop Recipe </button>
-            <!-- <button class="btn" type="button" onClick="createDeviceEvent('Stop Recipe', null)"><i class="icon-share"></i> Stop Recipe </button> -->
+
             {% endif %}
          </div>
       </div>

@@ -31,60 +31,66 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
+
+      {% if not user.is_authenticated %}
+            <li><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+      {% else %}
+
             <li {% if 'dashboard' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'dashboard' %}">Dashboard<span class="sr-only">(current)</span></a>
             </li>
+
             <li {% if 'peripherals' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
               <a class="nav-link" href="{% url 'peripherals' %}">Peripherals</a>
             </li>
-            <li {% if 'images' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'images' %}">Images</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">Provision</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="{% url 'device-config' %}">Config</a></li>
+                <li><a class="nav-link" href="{% url 'connect' %}">Connect</a></li>
+<!-- rob: TODO add a remote menu to provision ngrok link
+                <li><a class="nav-link" href="#">Remote (TBD)</a></li>
+-->
+                <li><a class="nav-link" href="{% url 'upgrade' %}">Upgrade</a></li>
+              </ul>
             </li>
-            <li {% if 'logs' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'logs' %}">Logs</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">System</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
+                <li><a class="nav-link" href="/api" target="_blank">API</a></li>
+                <li><a class="nav-link" href="{% url 'environments' %}">Environments</a></li>
+                <li><a class="nav-link" href="{% url 'events' %}">Events</a></li>
+                <li><a class="nav-link" href="{% url 'images' %}">Images</a></li>
+                <li><a class="nav-link" href="{% url 'iot' %}">IoT</a></li>
+                <li><a class="nav-link" href="{% url 'logs' %}">Logs</a></li>
+                <li><a class="nav-link" href="{% url 'recipes' %}">Recipes</a></li>
+                <li><a class="nav-link" href="{% url 'resource' %}">Resources</a></li>
+              </ul>
             </li>
-            <li {% if 'events' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'events' %}">Events</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">User</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="{% url 'change_password' %}">Password</a></li>
+                <li><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+              </ul>
             </li>
-            <li {% if 'recipes' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'recipes' %}">Recipes</a>
+
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="caret">Help</span></a>
+              <ul class="dropdown-menu bg-dark">
+                <li><a class="nav-link" href="https://github.com/OpenAgInitiative/openag-device-software/blob/master/README.md" target="_blank">Read Me</a></li>
+                <li><a class="nav-link" href="https://github.com/OpenAgInitiative/openag-device-software/blob/master/LICENSE" target="_blank">License</a></li>
+                <li><a class="nav-link" href="https://github.com/OpenAgInitiative/openag-device-software/blob/master/docs/contributing.md" target="_blank">Contributing</a></li>
+                <li><a class="nav-link" href="https://forum.openag.media.mit.edu/" target="_blank">Forum</a></li>
+                <li><a class="nav-link" href="https://wiki.openag.media.mit.edu" target="_blank">Wiki</a></li>
+              </ul>
             </li>
-            <li {% if 'environment' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'environments' %}">Environments</a>
-            </li>
-            <li {% if 'iot' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'iot' %}">IoT</a>
-            </li>
-            <li {% if 'resource' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'resource' %}">Resources</a>
-            </li>
-            <li {% if 'config' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'device-config' %}">Config</a>
-            </li>
-            <li {% if 'connect' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'connect' %}">Connect</a>
-            </li>
-            <li {% if 'upgrade' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'upgrade' %}">Upgrade</a>
-            </li>
-            <li {% if 'admin' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'admin:index' %}">Admin</a>
-            </li>
-            <li {% if 'api' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="/api">API</a>
-            </li>
-            {% if not user.is_authenticated %}
-            <li {% if 'login' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'login' %}">Login</a>
-            </li>
-            {% else %}
-            <li {% if 'password' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'change_password' %}">Password</a>
-            </li>
-            <li {% if 'logout' in request.path %} class="active nav-item"{% else %} class="nav-item" {% endif %}>
-              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-            </li>
-            {% endif %}
+
+      {% endif %}
            
           </ul>
         </div>
@@ -96,16 +102,17 @@
     </main>
     <footer>
     </footer>
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+    <!-- include order MUST be: jquery, popper, bootstrap, moment -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
 
-    <!-- TEST START -->
-    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script> -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
-    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script> -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-    <!-- TEST END -->
+    <!-- for the datetime picker that works with bootstrap 4 -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
 
     {% block javascript %}{% endblock %}
   </body>
