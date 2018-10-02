@@ -563,6 +563,7 @@ class IoT(APIView):
             "error": iotv.iot_dict["error"],
             "received_message_count": iotv.iot_dict["received_message_count"],
             "published_message_count": iotv.iot_dict["published_message_count"],
+            "device_id": os.environ.get("DEVICE_ID"),
         }
         return Response(response)
 
@@ -621,6 +622,23 @@ class Resource(APIView):
             "database_size": rv.resource_dict["database_size"],
             "internet_connection": rv.resource_dict["internet_connection"],
         }
+        return Response(response)
+
+
+class ConnectAdvanced(APIView):
+    """UI page fields the advanced wireless connection page."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "connect_advanced.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        extra = {"console_name": "views.ConnectAdvanced"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtilities.get_status()
+        logger.info("ConnectAdvanced response={}".format(response))
         return Response(response)
 
 

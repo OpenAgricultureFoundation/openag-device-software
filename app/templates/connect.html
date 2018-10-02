@@ -118,7 +118,6 @@
             $('#show_wifi').collapse('hide');
             $('#show_dev_UI').collapse('show');
           }
-          document.getElementById("delete_wifis_status").innerHTML = '';
 
           // clean out the existing wifis
           var wifiSel = document.getElementById("wifiList");
@@ -141,7 +140,6 @@
           } else if( data['valid_internet_connection']) {
             $('#register_iot_but').collapse('show');
           }
-          document.getElementById("delete_iot_reg_status").innerHTML = '';
 
           var statusDict = data;
           resolve(statusDict);
@@ -196,21 +194,6 @@
   }
 
   //--------------------------------------------------------------------------
-  function deleteWifis() {
-    document.getElementById("delete_wifis_status").innerHTML = 'Deleting...';
-    deleteWifisPromise()
-      .then(function(deleteWifiSuccess) {
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("delete_wifis_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("delete_wifis_status").innerHTML = error;
-      })
-  }
-
-  //--------------------------------------------------------------------------
   function deleteWifisPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -219,48 +202,11 @@
         data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
         dataType: 'json',
         success: function(data) {
-          document.getElementById("delete_wifis_status").innerHTML = 'Verifying...';
           var deleteWifiSuccess = data;
           resolve(deleteWifiSuccess)
         },
         error: function(data) {
           console.log("deleteWifis failed")
-          reject(data)
-        }
-      });
-    })
-  }
-
-  //--------------------------------------------------------------------------
-  function deleteIoTreg() {
-    document.getElementById("delete_iot_reg_status").innerHTML = 'Deleting...';
-    deleteIoTregPromise()
-      .then(function(deleteIoTregSuccess) {
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("delete_iot_reg_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("delete_iot_reg_status").innerHTML = error;
-      })
-  }
-
-  //--------------------------------------------------------------------------
-  function deleteIoTregPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/deleteiotreg/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          document.getElementById("delete_iot_reg_status").innerHTML = 'Verifying...';
-          var deleteIoTregSuccess = data;
-          resolve(deleteIoTregSuccess)
-        },
-        error: function(data) {
-          console.log("deleteIoTreg failed")
           reject(data)
         }
       });
@@ -310,6 +256,10 @@
           style="width:200px" href="" role="button" onclick="joinWifi();">
           Join Wifi</a>
         </br>
+
+        <p>
+          If you have trouble connecting to your wireless network, please try the: <a href="/connect_advanced">Advanced wireless network configuration</a> 
+        </p>
       </div>
 
     </div>
@@ -329,7 +279,7 @@
   </div>
 
   <div class="card" id="iot-card">
-    <h3>Cloud Registration</h3><br/>
+    <h3>Cloud Registration debugrob: remove this, should be done automatically by connect button above or by the advanced connect button</h3><br/>
     <ul>
       <li><b>Device ID:</b> <span id="device_id"></span>
       <li><b>Cloud Connection:</b> <span id="iot_connection"></span>
@@ -340,18 +290,6 @@
          style="width:200px" href="" role="button" onclick="registerIoT();">
         Register this device</a> <span id="reg_iot_status"></span>
     </div>
-  </div>
-
-  <div class="card" id="adv-card">
-    <h3>Danger Zone</h3><br/>
-    <ul>
-      <li><a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="deleteWifis();">
-       Delete all wifi connections</a> <span id="delete_wifis_status"></span>
-      <li><a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="deleteIoTreg();">
-       Delete registration</a> <span id="delete_iot_reg_status"></span>
-    </ul>
   </div>
 
 </div>
