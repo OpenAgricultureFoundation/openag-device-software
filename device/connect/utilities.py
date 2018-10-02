@@ -320,7 +320,7 @@ def get_device_id_from_file():
         with open(REG_DATA_PATH + "device_id.bash") as f:
             contents = f.read()
             index = contents.find("=")
-            devid = contents[index + 1:]
+            devid = contents[index + 1 :]
             return devid.rstrip()
     except:
         pass

@@ -68,7 +68,8 @@ class ResourceManager(manager.StateMachineManager):
 
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
-            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR], modes.ERROR: [modes.SHUTDOWN]
+            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.SHUTDOWN],
         }
 
         # Initialize state machine mode
@@ -294,7 +295,7 @@ class ResourceManager(manager.StateMachineManager):
                     with subprocess.Popen(
                         command3, stdin=process2.stdout, stdout=subprocess.PIPE
                     ) as process3:
-                        free_disk = (process3.stdout.read().decode("utf-8").rstrip())
+                        free_disk = process3.stdout.read().decode("utf-8").rstrip()
         except Exception:
             self.logger.exception("Unable to get free disk, unhandled exception")
             return "Unknown"

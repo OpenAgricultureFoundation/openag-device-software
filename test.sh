@@ -33,7 +33,7 @@ source $DIR/venv/bin/activate
 printf "\nRunning code formatter...\n"
 black app/ device/
 
-Run static type checks, TODO: run for all codebase
+# Run static type checks, TODO: run for all codebase
 printf "\nRunning static type checks...\n"
 mypy --config-file mypy.ini device app
 printf "...type checks complete!\n"

@@ -121,7 +121,13 @@ class UpgradeUtilities:
 
             # update our debian package
             cmd = [
-                "at", "-f", "/tmp/openagbrain-at-commands", "now", "+", "1", "minute"
+                "at",
+                "-f",
+                "/tmp/openagbrain-at-commands",
+                "now",
+                "+",
+                "1",
+                "minute",
             ]
             subprocess.Popen(cmd)
 

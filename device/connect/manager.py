@@ -18,6 +18,7 @@ from device.connect import utilities
 
 class ConnectManager(manager.StateMachineManager):
     """ Sets up and manages internet and IoT connections. """
+
     _connected: bool = False
 
     def __init__(self, state: State) -> None:
@@ -42,7 +43,8 @@ class ConnectManager(manager.StateMachineManager):
 
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
-            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR], modes.ERROR: [modes.SHUTDOWN]
+            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.SHUTDOWN],
         }
         # Initialize state machine mode
         self.mode = modes.NORMAL

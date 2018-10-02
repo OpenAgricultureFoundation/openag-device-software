@@ -155,17 +155,20 @@ class IoTPubSub:
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
                         valuesJson += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                     elif isinstance(val, int):
                         valuesJson += "{'name':'%s', 'type':'int', 'value':%s}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                     else:  # assume str
                         valuesJson += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                 valuesJson += "]}"
