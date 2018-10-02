@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 
 {% block javascript %}
+
 <script>
 
-  $('#datetimepicker1').datetimepicker(); // default initialization
+
 
   function createDeviceEvent(event_name, event_id) {
      /* Creates peripheral event. */
@@ -167,28 +168,6 @@
       }); 
    }
    
-   
-   // function upload_recipe() {
-   //     var recipe_json = $("#recipe_json").val();
-   //     $.ajax({
-   //         url: "/api/recipe/",
-   //         type: "POST",
-   //         data: {
-   //             "csrfmiddlewaretoken": "{{ csrf_token }}",
-   //             "json": recipe_json},
-   //         dataType: "json",
-   //         success: function(data) {
-   //             alert(data.message)
-   //         },
-   //         error: function(data) {
-   //             alert(data.responseText)
-   //         },
-   //         complete: function(data) {
-   //             // TODO: Reload on when recipe name changes
-   //             location.reload();
-   //         }
-   //     });
-   // }
 </script>
 {% endblock %}
 
@@ -230,6 +209,10 @@
             </select>
 
             <!-- Datetime Picker -->
+            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/js/tempusdominus-bootstrap-4.min.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.1/css/tempusdominus-bootstrap-4.min.css" />
+            <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
+
             <div class='input-group date' id='datetimepicker1' data-target-input='nearest'>
                 <input type='text' class='form-control datetimepicker-input' data-target='#datetimepicker1' placeholder='Optionally specify recipe start time' />
                 <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">

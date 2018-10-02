@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    # "bootstrap_datepicker_plus",
+    "bootstrap",
+    "fontawesome",
     "app",
     "device",
     "device.coordinator",
@@ -62,6 +65,9 @@ MIDDLEWARE = [
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 STATIC_URL = "/app/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+
+BOOTSTRAP4 = {"include_jquery": True}
 
 ROOT_URLCONF = "app.urls"
 
