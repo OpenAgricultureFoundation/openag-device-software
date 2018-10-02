@@ -8,8 +8,21 @@ from device.utilities.accessors import get_nested_dict_safely
 from device.iot.pubsub import IoTPubSub
 from device.connect import utilities
 
-
+# Initialize file paths
 IMAGE_DIR = "data/images/"
+
+# TODO Notes:
+# Remove redundant functions accross connect, iot, update, resource, and upgrade
+# Adjust function and variable names to match python conventions
+# Add static type checking
+# Write tests
+# Catch specific exceptions
+# Pull out file path strings to top of file
+# We may just want many of these functions in the manager or in device utilities
+# Inherit from state machine manager
+# Always use get method to access dicts unless checking for KeyError (rare cases)
+# Always use decorators to access shared state w/state.lock
+# Use logger class from device utilities
 
 
 class IoTManager:

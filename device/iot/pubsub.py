@@ -21,6 +21,21 @@ import paho.mqtt.client as mqtt
 from app.models import IoTConfigModel
 
 
+# TODO Notes:
+# Remove redundant functions accross connect, iot, update, resource, and upgrade
+# We may just want many of these functions in the manager or in device utilities
+# Adjust function and variable names to match python conventions
+# Add static type checking
+# Write tests
+# Catch specific exceptions
+# Pull out file path strings to top of file
+# Inherit from state machine manager
+# Always use get method to access dicts unless checking for KeyError (rare cases)
+# Always use decorators to access shared state w/state.lock
+# Always logger class from device utilities
+# Make logic easy to read (descriptive variables, frequent comments, minimized nesting)
+
+
 class IoTPubSub:
     """Manages IoT communications to the Google cloud backend MQTT service."""
 
@@ -56,7 +71,7 @@ class IoTPubSub:
     args = None  # Class configuration
 
     def __init__(self, ref_iot_manager, command_received_callback, state_dict):
-        """ Initialized IoT manager."""
+        """Initializes IoT manager."""
         self.ref_iot_manager = ref_iot_manager
         self.command_received_callback = command_received_callback
         self.state_dict = state_dict  # items that are shown in the UI
@@ -81,7 +96,7 @@ class IoTPubSub:
         # The MQTT events topic we publish messages to
         self.mqtt_topic = "/devices/{}/events".format(self.deviceId)
 
-        # if we are running a test client to publish to a test topic,
+        # If we are running a test client to publish to a test topic,
         # then change the above variable.  (this requires a MQTT server -
         # usally a local developer instance) to be running and listening
         # on this same topic (device-test/test).
@@ -140,20 +155,17 @@ class IoTPubSub:
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
                         valuesJson += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                            vname,
-                            val,
+                            vname, val
                         )
 
                     elif isinstance(val, int):
                         valuesJson += "{'name':'%s', 'type':'int', 'value':%s}" % (
-                            vname,
-                            val,
+                            vname, val
                         )
 
                     else:  # assume str
                         valuesJson += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                            vname,
-                            val,
+                            vname, val
                         )
 
                 valuesJson += "]}"

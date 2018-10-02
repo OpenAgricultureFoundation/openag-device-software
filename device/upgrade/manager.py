@@ -6,6 +6,22 @@ import platform
 from device.upgrade.utilities import UpgradeUtilities
 
 
+# TODO Notes:
+# Remove redundant functions accross connect, iot, update, resource, and upgrade
+# We may just want many of these functions in the manager or in device utilities
+# Adjust function and variable names to match python conventions
+# Add static type checking
+# Write tests
+# Catch specific exceptions
+# Pull out file path strings to top of file
+# Inherit from state machine manager
+# Always use get method to access dicts unless checking for KeyError (rare cases)
+# Always use decorators to access shared state w/state.lock
+# Use consistent names for class variables and state variables
+# Always logger class from device utilities
+# Make logic easy to read (descriptive variables, frequent comments, minimized nesting)
+
+
 class UpgradeManager:
     """Manage software upgrades."""
 
@@ -17,7 +33,6 @@ class UpgradeManager:
     # Place holder for thread object.
     thread = None
 
-    # ------------------------------------------------------------------------
     def __init__(self, state):
         """Initializes upgrade manager."""
         self.logger.debug("Initializing manager")
@@ -26,14 +41,13 @@ class UpgradeManager:
         self.state = state
         UpgradeUtilities.save_state(state)
         self.error = None
-        stat = "Initializing..."
-        self.status = stat
-        self.state.upgrade["current_version"] = stat
-        self.state.upgrade["upgrade_version"] = stat
+        status = "Initializing..."
+        self.status = status
+        self.state.upgrade["current_version"] = status
+        self.state.upgrade["upgrade_version"] = status
         self.state.upgrade["show_upgrade"] = False
         self._stop_event = threading.Event()  # so we can stop this thread
 
-    # ------------------------------------------------------------------------
     @property
     def error(self):
         """ Gets error value. """
@@ -43,38 +57,33 @@ class UpgradeManager:
     def error(self, value):
         """ Safely updates shared state. """
         self._error = value
-        with threading.Lock():
+        with self.state.lock:
             self.state.upgrade["error"] = value
 
-    # ------------------------------------------------------------------------
     @property
     def status(self):
         """ Gets status value. """
-        return self.state.upgrade["status"]
+        return self.state.upgrade.get("status")
 
     @status.setter
     def status(self, value):
         """ Safely updates shared state. """
-        with threading.Lock():
+        with self.state.lock:
             self.state.upgrade["status"] = value
 
-    # ------------------------------------------------------------------------
     def spawn(self):
         self.logger.info("Spawning upgrade manager thread")
         self.thread = threading.Thread(target=self.thread_proc)
         self.thread.daemon = True
         self.thread.start()
 
-    # ------------------------------------------------------------------------
     def stop(self):
         self.logger.info("Stopping upgrade manager thread")
         self._stop_event.set()
 
-    # ------------------------------------------------------------------------
     def stopped(self):
         return self._stop_event.is_set()
 
-    # ------------------------------------------------------------------------
     def thread_proc(self):
         while True:
             if self.stopped():
@@ -83,7 +92,6 @@ class UpgradeManager:
             self.update()
             time.sleep(86400)  # idle for one day
 
-    # ------------------------------------------------------------------------
     def update(self):
         self.logger.info("Checking for software update")
         UpgradeUtilities.update_dict()

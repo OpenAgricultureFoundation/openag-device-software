@@ -1,15 +1,27 @@
-# Import python modules
-import subprocess
-import socket
-import json
-import os
-import platform
-import time
-import urllib.request
-import uuid
+# Import standard python modules
+import subprocess, socket, json, os, platform, time, uuid, urllib.request
 
-from app.viewers import UpgradeViewer
+# Import  device utilities
 from device.state.main import State
+
+# Import app viewers
+from app.viewers import UpgradeViewer
+
+# TODO Notes:
+# Remove redundant functions accross connect, iot, update, resource, and upgrade
+# We may just want many of these functions in the manager or in device utilities
+# Adjust function and variable names to match python conventions
+# Add static type checking
+# Write tests
+# Catch specific exceptions
+# Pull out file path strings to top of file
+# Inherit from state machine manager
+# Always use get method to access dicts unless checking for KeyError (rare cases)
+# Always use decorators to access shared state w/state.lock
+# Use consistent names for class variables and state variables
+# Always logger class from device utilities
+# Make logic easy to read (descriptive variables, frequent comments, minimized nesting)
+# Add method docstring to every function
 
 
 class UpgradeUtilities:
@@ -109,13 +121,7 @@ class UpgradeUtilities:
 
             # update our debian package
             cmd = [
-                "at",
-                "-f",
-                "/tmp/openagbrain-at-commands",
-                "now",
-                "+",
-                "1",
-                "minute",
+                "at", "-f", "/tmp/openagbrain-at-commands", "now", "+", "1", "minute"
             ]
             subprocess.Popen(cmd)
 
