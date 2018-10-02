@@ -55,7 +55,13 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+# Configure static file storage
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_URL = "/app/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 ROOT_URLCONF = "app.urls"
 
@@ -238,20 +244,17 @@ LOGGING = {
         "app": {"handlers": ["app_console", "app_file"], "level": LOG_LEVEL},
         "device": {"handlers": ["device_console", "device_file"], "level": LOG_LEVEL},
         "coordinator": {
-            "handlers": ["device_console", "coordinator_file"],
-            "level": LOG_LEVEL,
+            "handlers": ["device_console", "coordinator_file"], "level": LOG_LEVEL
         },
         "peripherals": {
-            "handlers": ["device_console", "peripheral_files"],
-            "level": LOG_LEVEL,
+            "handlers": ["device_console", "peripheral_files"], "level": LOG_LEVEL
         },
         "event": {"handlers": ["device_console", "event_file"], "level": LOG_LEVEL},
         "recipe": {"handlers": ["device_console", "recipe_file"], "level": LOG_LEVEL},
         "i2c": {"handlers": ["device_console", "i2c_file"], "level": LOG_LEVEL},
         "iot": {"handlers": ["device_console", "iot_file"], "level": LOG_LEVEL},
         "resource": {
-            "handlers": ["device_console", "resource_file"],
-            "level": LOG_LEVEL,
+            "handlers": ["device_console", "resource_file"], "level": LOG_LEVEL
         },
         "connect": {"handlers": ["device_console", "connect_file"], "level": LOG_LEVEL},
         "upgrade": {"handlers": ["device_console", "upgrade_file"], "level": LOG_LEVEL},
@@ -279,6 +282,4 @@ USE_TZ = True
 
 # STATICFILES_DIRS = (os.path.join(BASE_DIR, 'app/static/'))
 
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "app/static")]
-STATIC_URL = "/app/static/"
-# STATIC_ROOT = "/var/www/example.com/static/"
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "app/static")]
