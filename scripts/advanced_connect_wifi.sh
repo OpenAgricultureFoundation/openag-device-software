@@ -15,37 +15,38 @@ eap=$5
 identity=$6
 phase2=$7
 
-# Passphrase / password is optional
-usingPass="Passphrase=$passphrase"
-if [ $passphrase != "" ]; then
-    usingPass=""
+# Build up the config file contents
+contents="[service_wifi_openag]
+Type=wifi
+Name=$ssid_name
+Security=$security
+Hidden=$hiddenSSID"
+ 
+# Passphrase / password is optional, use if the string is not zero length.
+if [ 0 -ne ${#passphrase} ]; then
+    contents+="
+Passphrase=$passphrase"
 fi
 
 # Only if security is WPA-EAP (ieee8021x) then we add the last 3 fields
-usingEAP="EAP=$eap
+if [ $security == "ieee8021x" ]; then
+    contents+="
+EAP=$eap
 Identity=$identity
 Phase2=$phase2"
-if [ $security != "ieee8021x" ]; then
-    usingEAP=""
 fi
- 
-echo "Using sudo to configure your networking, please enter your password:"
-sudo touch "/var/lib/connman/openag.config"
-sudo chmod 777 "/var/lib/connman/openag.config"
-echo "[service_wifi_openag]
-Type=wifi
-Name=$ssid_name
-Hidden=$hiddenSSID
-Security=$security
-$usingPass
-$usingEAP
-"> "/var/lib/connman/openag.config"
+
+touch "/var/lib/connman/openag.config.tmp"
+chmod 777 "/var/lib/connman/openag.config.tmp"
+echo "$contents"> "/var/lib/connman/openag.config.tmp"
+mv "/var/lib/connman/openag.config.tmp" "/var/lib/connman/openag.config"
 sleep 2
  
+echo "Using sudo to configure your networking, please enter your password:"
+sudo service connman restart
+
 # We must restart autossh, otherwise serveo.net won't let us back in.
 sleep 4
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $DIR/forward_ports.sh
  
-#connmanctl services
-#ifconfig wlan0
