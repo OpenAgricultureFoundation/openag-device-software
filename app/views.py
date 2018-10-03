@@ -268,12 +268,18 @@ class Dashboard(APIView):
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
 
+        # Get datetime picker form
+        from app import forms
+
+        form = forms.MyForm()
+
         # Build and return response
         response = {
             "current_device": current_device,
             "current_environment": current_environment,
             "current_recipe": current_recipe,
             "recipes": recipes,
+            "form": form,
         }
         return Response(response)
 

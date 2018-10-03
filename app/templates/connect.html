@@ -31,7 +31,6 @@
     {% endif %}
   }
 
-  //--------------------------------------------------------------------------
   function joinWifi() {
     document.getElementById("status").innerHTML = 'Connecting, this will take a minute...'
     var wifiSel = document.getElementById("wifiList");
@@ -59,7 +58,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function joinWifiPromise(wifi, passwd) {
     return new Promise(function (resolve, reject) {
       // Do POST with selected wifi to API to connect.
@@ -87,7 +85,6 @@
      console.log("joinWifi func done.")
   }
 
-  //--------------------------------------------------------------------------
   function getStatusPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -155,7 +152,6 @@
     })
   }
 
-  //--------------------------------------------------------------------------
   function registerIoT() {
     document.getElementById("reg_iot_status").innerHTML = 'Registering...';
     registerIoTPromise()
@@ -175,7 +171,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function registerIoTPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -195,7 +190,6 @@
     })
   }
 
-  //--------------------------------------------------------------------------
   function deleteWifis() {
     document.getElementById("delete_wifis_status").innerHTML = 'Deleting...';
     deleteWifisPromise()
@@ -210,7 +204,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function deleteWifisPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -231,7 +224,6 @@
     })
   }
 
-  //--------------------------------------------------------------------------
   function deleteIoTreg() {
     document.getElementById("delete_iot_reg_status").innerHTML = 'Deleting...';
     deleteIoTregPromise()
@@ -246,7 +238,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function deleteIoTregPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -267,7 +258,6 @@
     })
   }
 
-  //--------------------------------------------------------------------------
   function makePasswordVisible() {
     var pass = document.getElementById("wifi_p");
     if (pass.type === "password") {
@@ -281,8 +271,10 @@
 {% endblock %}
 
 {% block content %}
-<html>
 
+{% csrf_token %}
+
+<html>
 <!-- holds list of available wifis before we put them in a drop list -->
 <input type="hidden" id="wifis" name="variable" value="{{ wifis }}">
 
