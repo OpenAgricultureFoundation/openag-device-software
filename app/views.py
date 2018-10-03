@@ -271,7 +271,7 @@ class Dashboard(APIView):
         # Get datetime picker form
         from app import forms
 
-        form = forms.MyForm()
+        datetime_form = forms.DateTimeForm()
 
         # Build and return response
         response = {
@@ -279,7 +279,7 @@ class Dashboard(APIView):
             "current_environment": current_environment,
             "current_recipe": current_recipe,
             "recipes": recipes,
-            "form": form,
+            "datetime_form": datetime_form,
         }
         return Response(response)
 

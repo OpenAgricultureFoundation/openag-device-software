@@ -177,7 +177,7 @@
 
 <head>
     <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    {{ form.media }}
+    {{ datetime_form.media }}
 </head>
 
 <body>
@@ -217,16 +217,8 @@
             <!-- Datetime Picker -->
             <form method="post" action=".">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {{ datetime_form.as_p }}
             </form>
-
-           
-<!--             <div class='input-group date' id='datetimepicker1' data-target-input='nearest'>
-                <input type='text' class='form-control datetimepicker-input' data-target='#datetimepicker1' placeholder='Optionally specify recipe start time' />
-                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
-                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                </div>
-            </div> -->
             <button class="btn" type="button" onClick="startRecipe()"><i class="icon-share"></i> Start Recipe </button>
 
             {% else %}
