@@ -262,7 +262,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 
                     # Check for events
                     if not self.queue.empty():
-                        break
+                        return
 
                     # Update every 100ms
                     time.sleep(0.1)
@@ -280,7 +280,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 
                     # Check for events
                     if not self.queue.empty():
-                        break
+                        return
 
                     # Update every 100ms
                     time.sleep(0.1)
