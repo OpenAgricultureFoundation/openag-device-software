@@ -58,8 +58,6 @@ class ConnectUtilities:
     @staticmethod
     def valid_internet_connection():
         """Checks if we have a valid internet connection and DNS?"""
-#debugrob, delete this debugging line
-        return False #debugrob, delete this debugging line
         try:
             urllib.request.urlopen("http://google.com")
             return True
@@ -68,7 +66,7 @@ class ConnectUtilities:
 
     @staticmethod
     def is_simulation_mode():
-        if os.environ.get("SIMULATE") is not None:
+        if os.environ.get("SIMULATE") == "true":
             return True
         return False
 

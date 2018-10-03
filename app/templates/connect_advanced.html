@@ -15,14 +15,6 @@
       $('#show_config_form').collapse('hide');
       $('#show_connected_status').collapse('show');
     {% endif %}
-
-
-//debugrob, remove this later, for debugging
-var wifiSel = document.getElementById("wifiList");
-var option = document.createElement("option");
-option.text = "MIT SECURE"; 
-option.value = option.text;
-wifiSel.add(option);
   }
 
   //--------------------------------------------------------------------------
@@ -122,7 +114,7 @@ wifiSel.add(option);
             wifi = wifiList[i];
             var option = document.createElement("option");
             option.text = wifi.ssid;
-            option.value = wifi.service;
+            option.value = wifi.ssid;
             wifiSel.add(option);
           }
 
@@ -282,7 +274,7 @@ wifiSel.add(option);
              onchange="document.getElementById('ssid_name').value=this.value">
               <option value=""></option>
               {% for wifi in wifis %}
-              <option value={{wifi.service}}>{{wifi.ssid}}</option>
+              <option value="{{wifi.ssid}}">{{wifi.ssid}}</option>
               {% endfor %}
             </select>
             <p></p>
