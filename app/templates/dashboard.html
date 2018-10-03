@@ -1,9 +1,8 @@
 {% extends 'base.html' %}
 
 {% block javascript %}
-<script>
 
-  $('#datetimepicker1').datetimepicker(); // default initialization
+<script>
 
   function createDeviceEvent(event_name, event_id) {
      /* Creates peripheral event. */
@@ -63,12 +62,14 @@
       /* Starts a recipe. */
       console.log("Starting recipe")
       var uuid = $("#recipe_uuid").val()
-      var date = $('#datetimepicker1').datetimepicker('date');
+      var date = document.getElementById('id_start_time').value
+
       console.log('startRecipe uuid='+uuid);
       console.log('startRecipe date='+date);
 
       if( date ){
-        var timestamp = date.unix();
+        var d = new Date(date)
+        var timestamp = d.getTime() / 1000
       } else {
         var timestamp = null;
       }
@@ -167,28 +168,6 @@
       }); 
    }
    
-   
-   // function upload_recipe() {
-   //     var recipe_json = $("#recipe_json").val();
-   //     $.ajax({
-   //         url: "/api/recipe/",
-   //         type: "POST",
-   //         data: {
-   //             "csrfmiddlewaretoken": "{{ csrf_token }}",
-   //             "json": recipe_json},
-   //         dataType: "json",
-   //         success: function(data) {
-   //             alert(data.message)
-   //         },
-   //         error: function(data) {
-   //             alert(data.responseText)
-   //         },
-   //         complete: function(data) {
-   //             // TODO: Reload on when recipe name changes
-   //             location.reload();
-   //         }
-   //     });
-   // }
 </script>
 {% endblock %}
 
@@ -196,6 +175,14 @@
 
 {% csrf_token %}
 
+<head>
+    {% if valid_internet_connection %}
+      <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+      {{ datetime_form.media }}
+    {% endif %}
+</head>
+
+<body>
 <div class="dashboard">
    <div class="row">
       <div class="col-sm">
@@ -229,14 +216,10 @@
                {% endfor %}
             </select>
 
-            <!-- Datetime Picker -->
-            <div class='input-group date' id='datetimepicker1' data-target-input='nearest'>
-                <input type='text' class='form-control datetimepicker-input' data-target='#datetimepicker1' placeholder='Optionally specify recipe start time' />
-                <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
-                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
-                </div>
-            </div>
-
+            <!-- Datetime picker, only avaliable if we have a valid internet connection -->
+            {% if valid_internet_connection %}
+              {{ datetime_form.as_p }}
+            {% endif %}
             <button class="btn" type="button" onClick="startRecipe()"><i class="icon-share"></i> Start Recipe </button>
 
             {% else %}
@@ -284,4 +267,5 @@
       </div>
    </div>
 </div>
+</body>
 {% endblock %}

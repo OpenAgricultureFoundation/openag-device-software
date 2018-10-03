@@ -2,7 +2,7 @@
 
 {% block javascript %}
 <script>
-  //--------------------------------------------------------------------------
+  
   window.onload = function() {
 
     document.getElementById("status").innerHTML = "{{status}}";
@@ -22,7 +22,6 @@
     {% endif %}
   }
 
-  //--------------------------------------------------------------------------
   function joinWifi() {
     document.getElementById("status").innerHTML = 'Connecting, this will take a minute...'
     var wifiSel = document.getElementById("wifiList");
@@ -50,7 +49,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function joinWifiPromise(wifi, passwd) {
     return new Promise(function (resolve, reject) {
       // Do POST with selected wifi to API to connect.
@@ -78,7 +76,6 @@
      console.log("joinWifi func done.")
   }
 
-  //--------------------------------------------------------------------------
   function getStatusPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -144,8 +141,10 @@
 {% endblock %}
 
 {% block content %}
-<html>
 
+{% csrf_token %}
+
+<html>
 <!-- holds list of available wifis before we put them in a drop list -->
 <input type="hidden" id="wifis" name="variable" value="{{ wifis }}">
 

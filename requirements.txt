@@ -15,3 +15,6 @@ cryptography==2.1.4
 pyjwt==1.6.0
 paho-mqtt==1.3.1
 pyudev==0.21.0
+whitenoise==4.1
+django-bootstrap-static==4.0.0
+django-tempus-dominus==5.0.1.2

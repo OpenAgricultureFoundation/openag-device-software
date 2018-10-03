@@ -32,6 +32,9 @@ from rest_framework.renderers import JSONRenderer
 # Import app common
 from app.common import Common
 
+# Import app forms
+from app import forms
+
 # Import app models
 from app.models import StateModel
 from app.models import EventModel
@@ -139,7 +142,6 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = EnvironmentSerializer
     permission_classes = [IsAuthenticated]
 
-    # @method_decorator(login_required)
     def get_queryset(self):
         queryset = EnvironmentModel.objects.all()
         return queryset
@@ -244,6 +246,31 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+class Home(APIView):
+    """UI page for home."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "home.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+
+        # Get internet connectivity. TODO: This should access connect manager through
+        # coordinator manager. See viewers.py for example implementation
+        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+
+        from django.shortcuts import redirect, reverse
+
+        if valid_internet_connection:
+            return redirect(reverse("dashboard"))
+        else:
+            return redirect(reverse("connect"))
+
+        # Build and return response
+        response = {"valid_internet_connection": valid_internet_connection}
+        return Response()
+
+
 class Dashboard(APIView):
     """UI page for dashboard."""
 
@@ -268,12 +295,21 @@ class Dashboard(APIView):
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
 
+        # Get datetime picker form
+        datetime_form = forms.DateTimeForm()
+
+        # Get resource viewer: TODO: This should access connect manager through
+        # coordinator manager. See viewers.py for example implementation
+        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+
         # Build and return response
         response = {
             "current_device": current_device,
             "current_environment": current_environment,
             "current_recipe": current_recipe,
             "recipes": recipes,
+            "datetime_form": datetime_form,
+            "valid_internet_connection": valid_internet_connection,
         }
         return Response(response)
 

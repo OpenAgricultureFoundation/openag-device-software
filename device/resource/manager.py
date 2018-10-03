@@ -161,7 +161,7 @@ class ResourceManager:
                 contain everything but the last 10 (if there are more than 10).
             """
             if leave_newest and len(imageFileList) > 10:
-                imageFileList = imageFileList[:len(imageFileList) - 10] 
+                imageFileList = imageFileList[:len(imageFileList) - 10]
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
         except Exception as e:
@@ -246,13 +246,13 @@ class ResourceManager:
         # detect low memory and disk space
         low_resources = False
         low_disk = False
-        if "K" == fm_units or ("M" == fm_units and 10 >= int(fm_val)):
+        if "K" == fm_units or ("M" == fm_units and 10 >= float(fm_val)):
             # 10M low memory limit
             self.status = "Warning: low memory: {}".format(free_memory)
             self.logger.warning(self.status)
             low_resources = True
 
-        if "K" == fd_units or ("M" == fd_units and 50 >= int(fd_val)):
+        if "K" == fd_units or ("M" == fd_units and 50 >= float(fd_val)):
             # 50M low disk limit
             self.status = "Warning: low disk space: {}".format(free_disk)
             self.logger.warning(self.status)
@@ -265,7 +265,7 @@ class ResourceManager:
 
         if low_resources:
             if self.connected:
-                self.ref_iot_manager.publishMessage("alert", self.status)
+                self.ref_iot_manager.publish_message("alert", self.status)
 
         if low_disk:
             self.clean_up_disk()

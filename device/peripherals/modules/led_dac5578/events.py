@@ -214,8 +214,12 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         if self.mode != Modes.MANUAL:
             return "Must be in manual mode", 400
 
+        # Add event request to event queue
+        request = {"type": FADE_EVENT}
+        self.queue.put(request)
+
         # Return not implemented yet
-        return "Not implemented yet", 500
+        return "Fading", 200
 
     def _fade(self, channel_name: Optional[str] = None) -> None:
         """Processes fade event request."""
@@ -236,7 +240,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         if channel_name != None:
             channel_names = [channel_name]
         else:
-            channel_outputs = self.driver.build_channel_outputs(0)
+            channel_outputs = self.manager.driver.build_channel_outputs(0)
             channel_names = channel_outputs.keys()
 
         # Loop forever
@@ -256,15 +260,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                         self.logger.exception("Unable to fade driver")
                         return
 
-                    # Check for new events
-                    if self.request != None:
-                        request = self.request
-                        self.request = None
-                        self.process_event(request)
-                        return
-
-                    # Check for new modes
-                    if self.mode != Modes.MANUAL:
+                    # Check for events
+                    if not self.queue.empty():
                         return
 
                     # Update every 100ms
@@ -281,15 +278,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                         self.logger.exception("Unable to fade driver")
                         return
 
-                    # Check for new events
-                    if self.request != None:
-                        request = self.request
-                        self.request = None
-                        self.process_event(request)
-                        return
-
-                    # Check for new modes
-                    if self.mode != Modes.MANUAL:
+                    # Check for events
+                    if not self.queue.empty():
                         return
 
                     # Update every 100ms

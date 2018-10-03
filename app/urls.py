@@ -101,7 +101,7 @@ router.register(
 
 
 # Setup dashboard redirect
-def redirect_to_dashboard(request):
+def redirect_to_connect_or_dashboard(request):
 
     # if we have a valid internet connection, go to the dashboard
     if ConnectUtilities.valid_internet_connection():
@@ -109,11 +109,6 @@ def redirect_to_dashboard(request):
     else:
         # otherwise, let the user set up their wifi connection
         return HttpResponseRedirect(reverse("connect"))
-
-
-# Setup dashboard redirect
-def redirect_to_login(request):
-    return HttpResponseRedirect(reverse("login"))
 
 
 # Setup url patterns
@@ -132,7 +127,7 @@ urlpatterns = [
     url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
     url(r"^password/$", views.change_password, name="change_password"),
     # App specific
-    url(r"^$", redirect_to_dashboard, name="home"),
+    url(r"^$", views.Home.as_view(), name="home"),
     url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
     url(r"^config/$", views.DeviceConfig.as_view(), name="device-config"),
     url(r"^peripherals/$", views.Peripherals.as_view(), name="peripherals"),
@@ -150,4 +145,6 @@ urlpatterns = [
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(
+    settings.STATIC_URL, document_root=settings.STATIC_ROOT
+)
