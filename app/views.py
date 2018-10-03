@@ -246,6 +246,31 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+class Home(APIView):
+    """UI page for home."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "home.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+
+        # Get internet connectivity. TODO: This should access connect manager through
+        # coordinator manager. See viewers.py for example implementation
+        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+
+        from django.shortcuts import redirect, reverse
+
+        if valid_internet_connection:
+            return redirect(reverse("dashboard"))
+        else:
+            return redirect(reverse("connect"))
+
+        # Build and return response
+        response = {"valid_internet_connection": valid_internet_connection}
+        return Response()
+
+
 class Dashboard(APIView):
     """UI page for dashboard."""
 

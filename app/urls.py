@@ -86,7 +86,7 @@ router.register(r"upgradestatus", views.UpgradeStatus, base_name="api-upgrade-st
 
 
 # Setup dashboard redirect
-def redirect_to_dashboard(request):
+def redirect_to_connect_or_dashboard(request):
 
     # if we have a valid internet connection, go to the dashboard
     if ConnectUtilities.valid_internet_connection():
@@ -94,11 +94,6 @@ def redirect_to_dashboard(request):
     else:
         # otherwise, let the user set up their wifi connection
         return HttpResponseRedirect(reverse("connect"))
-
-
-# Setup dashboard redirect
-def redirect_to_login(request):
-    return HttpResponseRedirect(reverse("login"))
 
 
 # Setup url patterns
@@ -117,8 +112,8 @@ urlpatterns = [
     url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
     url(r"^password/$", views.change_password, name="change_password"),
     # App specific
-    # url(r"^$", redirect_to_dashboard, name="home"),
-    url(r"^$", views.Dashboard.as_view(), name="dashboard"),
+    url(r"^$", views.Home.as_view(), name="home"),
+    url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
     url(r"^config/$", views.DeviceConfig.as_view(), name="device-config"),
     url(r"^peripherals/$", views.Peripherals.as_view(), name="peripherals"),
     url(r"^images/$", views.Images.as_view(), name="images"),
