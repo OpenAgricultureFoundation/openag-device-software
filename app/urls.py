@@ -37,52 +37,67 @@ router.register(r"recipe", views.RecipeViewSet, base_name="api-recipe")
 router.register(
     r"recipe/transitions",
     views.RecipeTransitionViewSet,
-    base_name="api-recipe-transition",
-)
+    base_name="api-recipe-transition")
 router.register(
-    r"config/device", views.DeviceConfigViewSet, base_name="api-config-device"
-)
-router.register(r"cultivars", views.CultivarViewSet, base_name="api-cultivars")
+    r"config/device", 
+    views.DeviceConfigViewSet, 
+    base_name="api-config-device")
+router.register(
+    r"cultivars", 
+    views.CultivarViewSet, 
+    base_name="api-cultivars")
 router.register(
     r"cultivation-methods",
     views.CultivationMethodViewSet,
-    base_name="api-cultivation-methods",
-)
+    base_name="api-cultivation-methods")
 router.register(
     r"peripheral/setups",
     views.PeripheralSetupViewSet,
-    base_name="api-peripheral-setups",
-)
+    base_name="api-peripheral-setups")
 router.register(
-    r"variables/sensor", views.SensorVariableViewSet, base_name="api-sensor-variables"
-)
+    r"variables/sensor", 
+    views.SensorVariableViewSet, 
+    base_name="api-sensor-variables")
 router.register(
     r"variables/actuator",
     views.ActuatorVariableViewSet,
-    base_name="api-actuator-variables",
-)
+    base_name="api-actuator-variables")
 router.register(
-    r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
-)
-router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
+    r"connect/status", 
+    views.ConnectGetStatus, 
+    base_name="api-connect-status")
+router.register(
+    r"connect/joinwifi", 
+    views.ConnectJoinWifi, 
+    base_name="api-join-wifi")
+router.register(
+    r"connect/joinwifiadvanced", 
+    views.ConnectJoinWifiAdvanced, 
+    base_name="api-join-wifi-adv")
 router.register(
     r"connect/deletewifis",
     views.ConnectDeleteWifis,
-    base_name="api-connect-deletewifis",
-)
+    base_name="api-connect-deletewifis")
 router.register(
     r"connect/registeriot",
     views.ConnectRegisterIoT,
-    base_name="api-connect-registeriot",
-)
+    base_name="api-connect-registeriot")
 router.register(
     r"connect/deleteiotreg",
     views.ConnectDeleteIoTreg,
-    base_name="api-connect-deleteiotreg",
-)
-router.register(r"upgrade", views.UpgradeNow, base_name="api-upgrade-now")
-router.register(r"upgradecheck", views.UpgradeCheck, base_name="api-upgrade-check")
-router.register(r"upgradestatus", views.UpgradeStatus, base_name="api-upgrade-status")
+    base_name="api-connect-deleteiotreg")
+router.register(
+    r"upgrade", 
+    views.UpgradeNow, 
+    base_name="api-upgrade-now")
+router.register(
+    r"upgradecheck", 
+    views.UpgradeCheck, 
+    base_name="api-upgrade-check")
+router.register(
+    r"upgradestatus", 
+    views.UpgradeStatus, 
+    base_name="api-upgrade-status")
 
 
 # Setup dashboard redirect

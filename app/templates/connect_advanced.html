@@ -9,15 +9,13 @@
     document.getElementById("device_IP").innerHTML = "{{IP}}";
 
     {% if is_wifi_bbb and not valid_internet_connection %}
-      $('#show_wifi').collapse('show');
+      $('#show_config_form').collapse('show');
       $('#show_connected_status').collapse('hide');
     {% else %}
+      $('#show_config_form').collapse('hide');
       $('#show_connected_status').collapse('show');
     {% endif %}
 
-    {% if not is_registered_with_IoT %}
-//debugrob, call after connect 
-    {% endif %}
 
 //debugrob, remove this later, for debugging
 var wifiSel = document.getElementById("wifiList");
@@ -25,27 +23,24 @@ var option = document.createElement("option");
 option.text = "MIT SECURE"; 
 option.value = option.text;
 wifiSel.add(option);
-
   }
 
   //--------------------------------------------------------------------------
   function joinWifi() {
     document.getElementById("status").innerHTML = 'Connecting, this will take a minute...'
-    var wifiSel = document.getElementById("wifiList");
-    if( null == wifiSel ) {
-      console.log("Error: could not get wifiList element")
-      return
-    }
+    var ssid_name = document.getElementById("ssid_name").value;
+    var passphrase = document.getElementById("passphrase").value;
+    var hiddenSSID = document.getElementById("hiddenSSID").value;
+    var security = document.getElementById("security").value;
+    var eap = document.getElementById("eap").value;
+    var identity = document.getElementById("identity").value;
+    var phase2 = document.getElementById("phase2").value;
 
-    var passwd = document.getElementById("wifi_p");
-    if( null == passwd ) {
-      console.log("Error: could not get wifi_p element")
-      return
-    }
-
-    joinWifiPromise(wifiSel.value, passwd.value)
+    joinWifiPromise(ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2)
       .then(function(joinWifiSuccess) {
-        document.getElementById("status").innerHTML = 'Initializing...';
+        {% if not is_registered_with_IoT %}
+        registerIoT();
+        {% endif %}
         return getStatusPromise();
       })
       .then(function(statusDict) {
@@ -57,17 +52,21 @@ wifiSel.add(option);
   }
 
   //--------------------------------------------------------------------------
-  function joinWifiPromise(wifi, passwd) {
+  function joinWifiPromise(ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2) {
     return new Promise(function (resolve, reject) {
-      // Do POST with selected wifi to API to connect.
-//debugrob: make advanced version that takes all args
+      // Do POST with form args to API to connect.
       $.ajax({
-        url: "/api/connect/joinwifi/",
+        url: "/api/connect/joinwifiadvanced/",
         type: "POST",
         data: {
           "csrfmiddlewaretoken": "{{ csrf_token }}",
-          "wifi": wifi,
-          "password": passwd
+          "ssid_name": ssid_name,
+          "passphrase": passphrase,
+          "hiddenSSID": hiddenSSID,
+          "security": security,
+          "eap": eap,
+          "identity": identity,
+          "phase2": phase2,
         },
         dataType: 'json',
         success: function(data) {
@@ -99,10 +98,10 @@ wifiSel.add(option);
 
           // update the page to match the status
           if(data['is_wifi_bbb'] && ! data['valid_internet_connection']) {
-            $('#show_wifi').collapse('show');
+            $('#show_config_form').collapse('show');
             $('#show_connected_status').collapse('hide');
           } else {
-            $('#show_wifi').collapse('hide');
+            $('#show_config_form').collapse('hide');
             $('#show_connected_status').collapse('show');
           }
           document.getElementById("delete_wifis_status").innerHTML = '';
@@ -112,7 +111,12 @@ wifiSel.add(option);
           for( i=wifiSel.length - 1; i >= 0; i-- ) { // must do in reverse
             wifiSel.remove(i);
           }
-          // add new wifis we just received
+          // add a first blank SSID
+          var option = document.createElement("option");
+          option.text = ''
+          option.value = ''
+          wifiSel.add(option);
+          // add new SSIDs we just received
           wifiList = data['wifis'];
           for( i=0; i < wifiList.length; i++ ) {
             wifi = wifiList[i];
@@ -122,9 +126,6 @@ wifiSel.add(option);
             wifiSel.add(option);
           }
 
-          if( ! data['is_registered_with_IoT']) {
-//debugrob, do iot reg
-          }
           document.getElementById("delete_iot_reg_status").innerHTML = '';
 
           var statusDict = data;
@@ -140,8 +141,6 @@ wifiSel.add(option);
   }
 
   //--------------------------------------------------------------------------
-//debugrob: this needs to be called if not IoT registered (or maybe always) after we successfully connect
-
   function registerIoT() {
     document.getElementById("status").innerHTML = 'Registering...';
     registerIoTPromise()
@@ -252,7 +251,7 @@ wifiSel.add(option);
 
   //--------------------------------------------------------------------------
   function makePasswordVisible() {
-    var pass = document.getElementById("wifi_p");
+    var pass = document.getElementById("passphrase");
     if (pass.type === "password") {
         pass.type = "text";
     } else {
@@ -274,7 +273,7 @@ wifiSel.add(option);
   <h2>Advanced wireless network configuration</h2>
   <div class="card" id="inet-card">
 
-      <div class="collapse" id="show_wifi">
+      <div class="collapse" id="show_config_form">
         <ul>
           <li><div><b>Access point name:</b> (also called an SSID)</div>
             <input type="text" id="ssid_name" style="width:200px"
@@ -290,13 +289,13 @@ wifiSel.add(option);
 
           <li><div><b>Hidden SSID:</b> (is the above SSID hidden?)</div>
             <select id="hiddenSSID" class="selectpicker" style="width:200px">
-              <option value="False" selected="selected">False</option>
-              <option value="True">True</option>
+              <option value="false" selected="selected">False</option>
+              <option value="true">True</option>
             </select>
             <p></p>
 
           <li><div><b>Passphrase:</b> (or password)</div>
-            <input type="password" id="wifi_p" autocomplete="new-password"
+            <input type="password" id="passphrase" autocomplete="new-password"
              onkeydown="if (event.keyCode==13) document.getElementById('butJoin').click()"
              placeholder='Passphrase' style="width:200px">
             <input type="checkbox" onclick="makePasswordVisible()"> Show passphrase
@@ -327,7 +326,7 @@ wifiSel.add(option);
             </select>
             <p></p>
 
-          <li><div><b>Identity:</b> (EAP identity string. Could be an email address or user name or other ID.)</div>
+          <li><div><b>Identity:</b> (EAP identity string. Could be an email address, user name or other ID.)</div>
             <input type="text" id="identity" style="width:200px"
              autocomplete="new-password" placeholder="Identity">
             <p></p>

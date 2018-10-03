@@ -58,6 +58,7 @@ class ConnectUtilities:
     @staticmethod
     def valid_internet_connection():
         """Checks if we have a valid internet connection and DNS?"""
+#debugrob, delete this debugging line
         return False #debugrob, delete this debugging line
         try:
             urllib.request.urlopen("http://google.com")
@@ -111,19 +112,32 @@ class ConnectUtilities:
         """Joins specified wifi access point."""
         result = False
         if ConnectUtilities.is_simulation_mode():
-            return result
+            return True
         try:
             if 0 == len(password):
                 password = ""
 
             cmd = ["scripts/connect_wifi.sh", wifi, password]
-            with subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            ) as proc1:
-                output = proc1.stdout.read().decode("utf-8")
-                output += proc1.stderr.read().decode("utf-8")
-                result = True
-                time.sleep(5)  # Time for networking stack to init
+            subprocess.run(cmd)
+            result = True
+            time.sleep(5)  # Time for networking stack to init
+        except:
+            pass
+        return result
+
+    @staticmethod
+    def join_wifi_advanced(ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2):
+        """Joins specified wifi access point with advanced config. args."""
+        result = False
+        if ConnectUtilities.is_simulation_mode():
+            return True
+        try:
+            if 0 == len(passphrase):
+                passphrase = ""
+            cmd = ["scripts/advanced_connect_wifi.sh", ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2]
+            subprocess.run(cmd)
+            result = True
+            time.sleep(5)  # Time for networking stack to init
         except:
             pass
         return result

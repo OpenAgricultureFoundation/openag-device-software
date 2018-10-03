@@ -697,9 +697,46 @@ class ConnectJoinWifi(viewsets.ViewSet):
         password = reqd["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        success = ConnectUtilities.join_wifi(wifi, password)
-        response = {"success": success}
+        result = ConnectUtilities.join_wifi(wifi, password)
+        response = {"success": result}
         logger.info("ConnectJoinWifi response={}".format(response))
+        if not result:
+            return Response(response, 400)
+        return Response(response)
+
+
+class ConnectJoinWifiAdvanced(viewsets.ViewSet):
+    """REST API to join a wifi. Request is POSTed with wifi and pass.
+    This class extends the ViewSet (not ModelViewSet) because it
+    dynamically gets its data and the Model gets data from the DB."""
+
+    @method_decorator(login_required)
+    def create(self, request):
+        extra = {"console_name": "views.ConnectJoinWifiAdvanced"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        # Get req parameters
+        try:
+            reqd = request.data.dict()
+        except Exception as e:
+            response = {"message": "Internal error: {}".format(e)}
+            return Response(response, 400)
+
+        ssid_name = reqd["ssid_name"]
+        passphrase = reqd["passphrase"]
+        hiddenSSID = reqd["hiddenSSID"]
+        security = reqd["security"]
+        eap = reqd["eap"]
+        identity = reqd["identity"]
+        phase2 = reqd["phase2"]
+
+        logger.info("ConnectJoinWifiAdvanced reqd={}".format(reqd))
+        result = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2)
+        response = {"success": result}
+        logger.info("ConnectJoinWifiAdvanced response={}".format(response))
+        if not result:
+            return Response(response, 400)
         return Response(response)
 
 
