@@ -15,6 +15,12 @@ eap=$5
 identity=$6
 phase2=$7
 
+# Passphrase / password is optional
+usingPass="Passphrase=$passphrase"
+if [ $passphrase != "" ]; then
+    usingPass=""
+fi
+
 # Only if security is WPA-EAP (ieee8021x) then we add the last 3 fields
 usingEAP="EAP=$eap
 Identity=$identity
@@ -29,9 +35,9 @@ sudo chmod 777 "/var/lib/connman/openag.config"
 echo "[service_wifi_openag]
 Type=wifi
 Name=$ssid_name
-Passphrase=$passphrase
 Hidden=$hiddenSSID
 Security=$security
+$usingPass
 $usingEAP
 "> "/var/lib/connman/openag.config"
 sleep 2
@@ -41,3 +47,5 @@ sleep 4
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $DIR/forward_ports.sh
  
+#connmanctl services
+#ifconfig wlan0
