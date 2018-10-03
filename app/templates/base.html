@@ -12,6 +12,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}OpenAg Brain{% endblock %}</title>
+
+    {% csrf_token %}
     
     {% block stylesheet %}
     <style type="text/css">
@@ -111,10 +113,7 @@
     </main>
     <footer>
     </footer>
-<!-- 
-    <script src="{% static 'bootstrap/js/jquery.min.js' %}"></script>
-    <script src="{% static 'bootstrap/js/bootstrap.bundle.min.js' %}"></script>
- -->
+
     {% block javascript %}{% endblock %}
   </body>
 </html>
