@@ -240,7 +240,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         if channel_name != None:
             channel_names = [channel_name]
         else:
-            channel_outputs = self.driver.build_channel_outputs(0)
+            channel_outputs = self.manager.driver.build_channel_outputs(0)
             channel_names = channel_outputs.keys()
 
         # Loop forever
