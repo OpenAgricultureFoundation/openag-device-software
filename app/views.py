@@ -32,6 +32,9 @@ from rest_framework.renderers import JSONRenderer
 # Import app common
 from app.common import Common
 
+# Import app forms
+from app import forms
+
 # Import app models
 from app.models import StateModel
 from app.models import EventModel
@@ -139,7 +142,6 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = EnvironmentSerializer
     permission_classes = [IsAuthenticated]
 
-    # @method_decorator(login_required)
     def get_queryset(self):
         queryset = EnvironmentModel.objects.all()
         return queryset
@@ -269,9 +271,11 @@ class Dashboard(APIView):
             recipes.append(SimpleRecipeViewer(recipe_object))
 
         # Get datetime picker form
-        from app import forms
-
         datetime_form = forms.DateTimeForm()
+
+        # Get resource viewer: TODO: This should access connect manager through
+        # coordinator manager. See viewers.py for example implementation
+        valid_internet_connection = ConnectUtilities.valid_internet_connection()
 
         # Build and return response
         response = {
@@ -280,6 +284,7 @@ class Dashboard(APIView):
             "current_recipe": current_recipe,
             "recipes": recipes,
             "datetime_form": datetime_form,
+            "valid_internet_connection": valid_internet_connection,
         }
         return Response(response)
 

@@ -176,8 +176,10 @@
 {% csrf_token %}
 
 <head>
-    <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    {{ datetime_form.media }}
+    {% if valid_internet_connection %}
+      <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+      {{ datetime_form.media }}
+    {% endif %}
 </head>
 
 <body>
@@ -214,11 +216,10 @@
                {% endfor %}
             </select>
 
-            <!-- Datetime Picker -->
-            <form method="post" action=".">
-                {% csrf_token %}
-                {{ datetime_form.as_p }}
-            </form>
+            <!-- Datetime picker, only avaliable if we have a valid internet connection -->
+            {% if valid_internet_connection %}
+              {{ datetime_form.as_p }}
+            {% endif %}
             <button class="btn" type="button" onClick="startRecipe()"><i class="icon-share"></i> Start Recipe </button>
 
             {% else %}
