@@ -26,16 +26,10 @@ Exiting.'
     exit 1
 fi
 
-# Have we downloaded the packages we need?
-echo ''
-echo 'Have you run the download_pip_packages.sh script?'
-if ! [ -d $DIR/../venv/pip_download ]; then
-    echo 'No, you havent, please run: ./scripts/download_pip_packages.sh
-Exiting.'
-    echo ''
-    exit 1
-fi
-echo ''
+
+# Downloaded the packages we need.
+$DIR/../scripts/download_pip_packages.sh
+
 
 # Install any new python modules
 echo 'Installing any new python modules into the virtual env we package...'
