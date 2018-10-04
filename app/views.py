@@ -761,14 +761,14 @@ class ConnectJoinWifiAdvanced(viewsets.ViewSet):
 
         ssid_name = reqd["ssid_name"]
         passphrase = reqd["passphrase"]
-        hiddenSSID = reqd["hiddenSSID"]
+        hidden_ssid = reqd["hidden_ssid"]
         security = reqd["security"]
         eap = reqd["eap"]
         identity = reqd["identity"]
         phase2 = reqd["phase2"]
 
         logger.info("ConnectJoinWifiAdvanced reqd={}".format(reqd))
-        result = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2)
+        result = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2)
         response = {"success": result}
         logger.info("ConnectJoinWifiAdvanced response={}".format(response))
         if not result:

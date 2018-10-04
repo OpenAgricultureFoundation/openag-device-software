@@ -2,14 +2,14 @@
  
 if [ $# -lt 7 ]; then
     echo "Please provide the following command line arguments:"
-    echo "  ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2"
+    echo "  ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2"
     exit 1
 fi
 
 # Mandatory command line args in order
 ssid_name=$1
 passphrase=$2
-hiddenSSID=$3
+hidden_ssid=$3
 security=$4
 eap=$5
 identity=$6
@@ -20,7 +20,7 @@ contents="[service_wifi_openag]
 Type=wifi
 Name=$ssid_name
 Security=$security
-Hidden=$hiddenSSID"
+Hidden=$hidden_ssid"
  
 # Passphrase / password is optional, use if the string is not zero length.
 if [ 0 -ne ${#passphrase} ]; then

@@ -124,7 +124,7 @@ class ConnectUtilities:
         return result
 
     @staticmethod
-    def join_wifi_advanced(ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2):
+    def join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2):
         """Joins specified wifi access point with advanced config. args."""
         result = False
         if ConnectUtilities.is_simulation_mode():
@@ -132,7 +132,7 @@ class ConnectUtilities:
         try:
             if 0 == len(passphrase):
                 passphrase = ""
-            cmd = ["scripts/advanced_connect_wifi.sh", ssid_name, passphrase, hiddenSSID, security, eap, identity, phase2]
+            cmd = ["scripts/advanced_connect_wifi.sh", ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2]
             subprocess.run(cmd)
             result = True
             time.sleep(5)  # Time for networking stack to init
