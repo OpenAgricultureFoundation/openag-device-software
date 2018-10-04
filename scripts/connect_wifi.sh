@@ -27,13 +27,13 @@ Name=$SSID
 Passphrase=$2
 "> "/var/lib/connman/$SSID.config.tmp"
 mv "/var/lib/connman/$SSID.config.tmp" "/var/lib/connman/$SSID.config"
-sleep 2
+sleep 30
  
 echo "Using sudo to configure your networking, please enter your password:"
 sudo service connman restart
 
 # We must restart autossh, otherwise serveo.net won't let us back in.
-sleep 4
+sleep 30
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $DIR/forward_ports.sh
  

@@ -38,6 +38,8 @@ class ConnectUtilities:
             status["is_registered_with_iot"] = \
                 ConnectUtilities.is_registered_with_iot()
             status["device_id"] = ConnectUtilities.get_device_id()
+            status["verification_code"] = \
+                ConnectUtilities.get_iot_verification_code()
 
             # Get the IoT connection status directly from its state dict
             iotv = IoTViewer()
@@ -118,7 +120,7 @@ class ConnectUtilities:
             cmd = ["scripts/connect_wifi.sh", wifi, password]
             subprocess.run(cmd)
             result = True
-            time.sleep(5)  # Time for networking stack to init
+            ConnectUtilities.register_iot() # automatically register
         except:
             pass
         return result
@@ -135,7 +137,7 @@ class ConnectUtilities:
             cmd = ["scripts/advanced_connect_wifi.sh", ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2]
             subprocess.run(cmd)
             result = True
-            time.sleep(5)  # Time for networking stack to init
+            ConnectUtilities.register_iot() # automatically register
         except:
             pass
         return result

@@ -13,4 +13,4 @@ source $DIR/venv/bin/activate
 
 # Collect static files
 cd ../
-sudo venv/bin/python3.6 manage.py collectstatic
+sudo venv/bin/python3.6 manage.py collectstatic --clear --link --noinput

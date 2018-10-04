@@ -10,6 +10,12 @@
     document.getElementById("device_UI").innerHTML = "{{device_UI}}";
     document.getElementById("device_UI").href = "{{device_UI}}";
 
+
+    {% if verification_code != None %}
+    document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
+    document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + "{{verification_code}}";
+    {% endif %}
+
     {% if is_bbb %}
       $('#is_bbb').collapse('show');
     {% endif %}
@@ -23,7 +29,7 @@
   }
 
   function joinWifi() {
-    document.getElementById("status").innerHTML = 'Connecting, this will take a minute...'
+    document.getElementById("status").innerHTML = 'Connecting, this will take a few minutes...'
     var wifiSel = document.getElementById("wifiList");
     if( null == wifiSel ) {
       console.log("Error: could not get wifiList element")
@@ -87,6 +93,11 @@
           document.getElementById("status").innerHTML = data['status'];
           document.getElementById("device_IP").innerHTML = data['IP'];
           document.getElementById("device_UI").innerHTML = data['device_UI'];
+
+          if( data['verification_code'] != "None" ) {
+            document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
+            document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
+          }
 
           // update the page to match the status
           if(data['is_bbb']) {
@@ -186,6 +197,7 @@
     <div class="collapse" id="show_dev_UI">
       <ul>
         <li><b>Device IP:</b> <span id="device_IP"></span>
+        <li><b>Web UI:</b> <a id="verification_code" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg web UI</a>
         <li><b>Remotely accessible Device UI:</b> <a id="device_UI" href="" target="_blank"></a>
         {% if error != None %}
         <li><b>Error:</b> {{ error }}
