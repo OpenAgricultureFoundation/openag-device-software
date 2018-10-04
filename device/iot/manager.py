@@ -88,20 +88,20 @@ class IoTManager:
                 recipe_uuid = recipe_dict["uuid"]
 
                 # First stop any recipe that may be running
-                self.ref_recipe.stop_recipe()
+                self.ref_recipe.events.stop_recipe()
 
                 # Put this recipe via recipe manager
-                self.ref_recipe.create_or_update_recipe(recipe_json)
+                self.ref_recipe.events.create_or_update_recipe(recipe_json)
 
                 # Start this recipe via recipe manager
-                self.ref_recipe.start_recipe(recipe_uuid)
+                self.ref_recipe.events.start_recipe(recipe_uuid)
 
                 # Record that we processed this command
                 self.iot.publish_command_reply(command, recipe_json)
                 return
 
             if command == IoTPubSub.CMD_STOP:
-                self.ref_recipe.stop_recipe()
+                self.ref_recipe.events.stop_recipe()
                 self.iot.publish_command_reply(command, "")
                 return
 

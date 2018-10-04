@@ -5,6 +5,7 @@ if [ $# -eq 0 ]; then
     echo "one_time_key_creation_and_iot_device_registration.sh: Error: missing data dir on the command line."
     exit 1
 fi
+mkdir -p $@
 cd $@
 
 # Get the Google root cert
