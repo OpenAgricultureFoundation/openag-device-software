@@ -43,9 +43,6 @@ def interpolate(x_list, y_list, x):
         x_list_copy = x_list.copy()
         y_list_copy = y_list.copy()
 
-    print("x_list_copy = {}".format(x_list_copy))
-    print("y_list_copy = {}".format(y_list_copy))
-
     # if x < smallest in list, make that the new x
     if x < x_list_copy[0]:
         x = x_list_copy[0]
@@ -61,25 +58,15 @@ def interpolate(x_list, y_list, x):
 
     # Get index of smallest element greater than x
     for index in range(len(x_list_copy)):
-        print("looking at index: {}".format(index))
         if x_list_copy[index] > x:
-            print("breaking because x_list_copy[index] > x")
-            print("x_list_copy[index] = {}".format(x_list_copy[index]))
             break
     index = index - 1
-
-    print("index = {}".format(index))
 
     # Get values for calculating slope
     x0 = x_list_copy[index]
     x1 = x_list_copy[index + 1]
     y0 = y_list_copy[index]
     y1 = y_list_copy[index + 1]
-
-    print("x0 = {}".format(x0))
-    print("x1 = {}".format(x1))
-    print("y0 = {}".format(y0))
-    print("y1 = {}".format(y1))
 
     # Calculate slope
     m = (y1 - y0) / (x1 - x0)

@@ -100,7 +100,7 @@ class ConnectManager:
         self.state.connect["IP"] = ConnectUtilities.get_IP()
         self.state.connect[
             "is_registered_with_IoT"
-        ] = ConnectUtilities.is_registered_with_IoT()
+        ] = ConnectUtilities.is_registered_with_iot()
         self.state.connect["device_id"] = ConnectUtilities.get_device_id()
         self.state.connect["iot_connection"] = self.state.iot[
             "connected"
