@@ -9,8 +9,6 @@
     document.getElementById("device_IP").innerHTML = "{{IP}}";
     document.getElementById("device_UI").innerHTML = "{{device_UI}}";
     document.getElementById("device_UI").href = "{{device_UI}}";
-    document.getElementById("device_id").innerHTML = "{{device_id}}";
-    document.getElementById("iot_connection").innerHTML = "{{iot_connection}}";
 
     {% if is_bbb %}
       $('#is_bbb').collapse('show');
@@ -21,13 +19,6 @@
       $('#show_dev_UI').collapse('hide');
     {% else %}
       $('#show_dev_UI').collapse('show');
-    {% endif %}
-
-    {% if is_registered_with_IoT %}
-      $('#register_iot_but').collapse('hide');
-      $('#verification_code').collapse('show');
-    {% elif valid_internet_connection %}
-      $('#register_iot_but').collapse('show');
     {% endif %}
   }
 
@@ -96,13 +87,6 @@
           document.getElementById("status").innerHTML = data['status'];
           document.getElementById("device_IP").innerHTML = data['IP'];
           document.getElementById("device_UI").innerHTML = data['device_UI'];
-          document.getElementById("device_id").innerHTML = data['device_id'];
-          document.getElementById("iot_connection").innerHTML = data['iot_connection'];
-
-          // if we have a valid iot connection, hide verification code
-          if( 'No' != data['iot_connection']) {
-            document.getElementById("verification_code").innerHTML = ''
-          }
 
           // update the page to match the status
           if(data['is_bbb']) {
@@ -115,7 +99,6 @@
             $('#show_wifi').collapse('hide');
             $('#show_dev_UI').collapse('show');
           }
-          document.getElementById("delete_wifis_status").innerHTML = '';
 
           // clean out the existing wifis
           var wifiSel = document.getElementById("wifiList");
@@ -132,14 +115,6 @@
             wifiSel.add(option);
           }
 
-          if(data['is_registered_with_IoT']) {
-            $('#register_iot_but').collapse('hide');
-            $('#verification_code').collapse('show');
-          } else if( data['valid_internet_connection']) {
-            $('#register_iot_but').collapse('show');
-          }
-          document.getElementById("delete_iot_reg_status").innerHTML = '';
-
           var statusDict = data;
           resolve(statusDict);
         },
@@ -152,112 +127,7 @@
     })
   }
 
-  function registerIoT() {
-    document.getElementById("reg_iot_status").innerHTML = 'Registering...';
-    registerIoTPromise()
-      .then(function(registerIoTSuccess) {
-        document.getElementById("reg_iot_status").innerHTML = 'Verifying...';
-
-        document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-        document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + registerIoTSuccess;
-      
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("reg_iot_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("reg_iot_status").innerHTML = 'Failed.';
-      })
-  }
-
-  function registerIoTPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/registeriot/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          var registerIoTSuccess = data;
-          resolve(registerIoTSuccess)
-        },
-        error: function(data) {
-          console.log("registerIoT failed")
-          reject(data)
-        }
-      });
-    })
-  }
-
-  function deleteWifis() {
-    document.getElementById("delete_wifis_status").innerHTML = 'Deleting...';
-    deleteWifisPromise()
-      .then(function(deleteWifiSuccess) {
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("delete_wifis_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("delete_wifis_status").innerHTML = error;
-      })
-  }
-
-  function deleteWifisPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/deletewifis/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          document.getElementById("delete_wifis_status").innerHTML = 'Verifying...';
-          var deleteWifiSuccess = data;
-          resolve(deleteWifiSuccess)
-        },
-        error: function(data) {
-          console.log("deleteWifis failed")
-          reject(data)
-        }
-      });
-    })
-  }
-
-  function deleteIoTreg() {
-    document.getElementById("delete_iot_reg_status").innerHTML = 'Deleting...';
-    deleteIoTregPromise()
-      .then(function(deleteIoTregSuccess) {
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("delete_iot_reg_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("delete_iot_reg_status").innerHTML = error;
-      })
-  }
-
-  function deleteIoTregPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/deleteiotreg/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          document.getElementById("delete_iot_reg_status").innerHTML = 'Verifying...';
-          var deleteIoTregSuccess = data;
-          resolve(deleteIoTregSuccess)
-        },
-        error: function(data) {
-          console.log("deleteIoTreg failed")
-          reject(data)
-        }
-      });
-    })
-  }
-
+  //--------------------------------------------------------------------------
   function makePasswordVisible() {
     var pass = document.getElementById("wifi_p");
     if (pass.type === "password") {
@@ -302,6 +172,10 @@
           style="width:200px" href="" role="button" onclick="joinWifi();">
           Join Wifi</a>
         </br>
+
+        <p>
+          If you have trouble connecting to your wireless network, please try the: <a href="/connect_advanced">Advanced wireless network configuration</a> 
+        </p>
       </div>
 
     </div>
@@ -318,32 +192,6 @@
         {% endif %}
       </ul>
     </div>
-  </div>
-
-  <div class="card" id="iot-card">
-    <h3>Cloud Registration</h3><br/>
-    <ul>
-      <li><b>Device ID:</b> <span id="device_id"></span>
-      <li><b>Cloud Connection:</b> <span id="iot_connection"></span>
-      <li> <a id="verification_code" class="collapse" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg cloud UI</a> 
-    </ul>
-    <div class="collapse" id="register_iot_but">
-      <a class="badge badge-secondary" data-toggle="collapse"
-         style="width:200px" href="" role="button" onclick="registerIoT();">
-        Register this device</a> <span id="reg_iot_status"></span>
-    </div>
-  </div>
-
-  <div class="card" id="adv-card">
-    <h3>Danger Zone</h3><br/>
-    <ul>
-      <li><a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="deleteWifis();">
-       Delete all wifi connections</a> <span id="delete_wifis_status"></span>
-      <li><a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="deleteIoTreg();">
-       Delete registration</a> <span id="delete_iot_reg_status"></span>
-    </ul>
   </div>
 
 </div>

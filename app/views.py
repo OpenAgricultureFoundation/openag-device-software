@@ -599,6 +599,7 @@ class IoT(APIView):
             "error": iotv.iot_dict["error"],
             "received_message_count": iotv.iot_dict["received_message_count"],
             "published_message_count": iotv.iot_dict["published_message_count"],
+            "device_id": os.environ.get("DEVICE_ID"),
         }
         return Response(response)
 
@@ -660,6 +661,23 @@ class Resource(APIView):
         return Response(response)
 
 
+class ConnectAdvanced(APIView):
+    """UI page fields the advanced wireless connection page."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "connect_advanced.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        extra = {"console_name": "views.ConnectAdvanced"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtilities.get_status()
+        logger.info("ConnectAdvanced response={}".format(response))
+        return Response(response)
+
+
 class Connect(APIView):
     """UI page fields for ConnectManager."""
 
@@ -706,18 +724,55 @@ class ConnectJoinWifi(viewsets.ViewSet):
 
         # Get req parameters
         try:
-            reqd = request.data.dict()
+            request_data = request.data.dict()
         except Exception as e:
             response = {"message": "Internal error: {}".format(e)}
             return Response(response, 400)
 
-        wifi = reqd["wifi"]
-        password = reqd["password"]
+        wifi = request_data["wifi"]
+        password = request_data["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        success = ConnectUtilities.join_wifi(wifi, password)
-        response = {"success": success}
+        is_successful = ConnectUtilities.join_wifi(wifi, password)
+        response = {"success": is_successful}
         logger.info("ConnectJoinWifi response={}".format(response))
+        if not is_successful:
+            return Response(response, 400)
+        return Response(response)
+
+
+class ConnectJoinWifiAdvanced(viewsets.ViewSet):
+    """REST API to join a wifi. Request is POSTed with wifi and pass.
+    This class extends the ViewSet (not ModelViewSet) because it
+    dynamically gets its data and the Model gets data from the DB."""
+
+    @method_decorator(login_required)
+    def create(self, request):
+        extra = {"console_name": "views.ConnectJoinWifiAdvanced"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        # Get req parameters
+        try:
+            request_data = request.data.dict()
+        except Exception as e:
+            response = {"message": "Internal error: {}".format(e)}
+            return Response(response, 400)
+
+        ssid_name = request_data["ssid_name"]
+        passphrase = request_data["passphrase"]
+        hidden_ssid = request_data["hidden_ssid"]
+        security = request_data["security"]
+        eap = request_data["eap"]
+        identity = request_data["identity"]
+        phase2 = request_data["phase2"]
+
+        logger.info("ConnectJoinWifiAdvanced request_data={}".format(request_data))
+        is_successful = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2)
+        response = {"success": is_successful}
+        logger.info("ConnectJoinWifiAdvanced response={}".format(response))
+        if not is_successful:
+            return Response(response, 400)
         return Response(response)
 
 

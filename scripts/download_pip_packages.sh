@@ -8,3 +8,9 @@ cd $TOPDIR
 # Cache all downloaded pip packages, so we can put in our deb. pkg.
 source venv/bin/activate
 pip3 download -d venv/pip_download -r requirements.txt
+
+# Also install any new packages we have downloaded (could used by the next step).
+pip3 install -f venv/pip_download -r requirements.txt 
+
+# Cache any static resources we use (bootstrap, etc)
+python3.6 manage.py collectstatic
