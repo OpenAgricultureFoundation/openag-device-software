@@ -207,19 +207,19 @@
             </p>
             {% if current_recipe.recipe_uuid == None %}
             <select id="recipe_uuid">
-               {% for recipe in recipes %}
-               {% if recipe.uuid == selected_recipe.uuid %}
-               <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.name}} </option>
-               {% else %}
-               <option value="{{recipe.uuid}}"> Recipe: {{recipe.name}} </option>
-               {% endif %}
-               {% endfor %}
+              {% for recipe in recipes %}
+                {% if recipe.uuid == selected_recipe.uuid %}
+                  <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.name}} </option>
+                {% else %}
+                  <option value="{{recipe.uuid}}"> Recipe: {{recipe.name}} </option>
+                {% endif %}
+              {% endfor %}
             </select>
 
             <!-- Datetime picker, only avaliable if we have a valid internet connection -->
-            {% if valid_internet_connection %}
-              {{ datetime_form.as_p }}
-            {% endif %}
+              {% if valid_internet_connection %}
+                {{ datetime_form.as_p }}
+              {% endif %}
             <button class="btn" type="button" onClick="startRecipe()"><i class="icon-share"></i> Start Recipe </button>
 
             {% else %}

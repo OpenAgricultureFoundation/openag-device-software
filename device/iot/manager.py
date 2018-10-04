@@ -92,7 +92,7 @@ class IoTManager:
 
                 # Make sure we have a valid recipe uuid
                 if (
-                    "uuid" not in recipe_dcit
+                    "uuid" not in recipe_dict
                     or None == recipe_dict["uuid"]
                     or 0 == len(recipe_dict["uuid"])
                 ):
