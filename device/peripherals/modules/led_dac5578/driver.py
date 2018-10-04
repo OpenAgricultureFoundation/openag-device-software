@@ -314,6 +314,7 @@ class LEDDAC5578Driver:
 
     def translate_setpoints(self, par_setpoints: Dict) -> Dict:
         """Translates par setpoints to dac setpoints."""
+        self.logger.debug("Translating setpoints")
 
         # Build interpolation lists
         dac_list = []
@@ -322,6 +323,9 @@ class LEDDAC5578Driver:
             dac_list.append(float(dac_percent))
             par_list.append(float(par_percent))
 
+        self.logger.debug("dac_list = {}".format(dac_list))
+        self.logger.debug("par_list = {}".format(par_list))
+
         # Get dac setpoints
         dac_setpoints = {}
         for key, par_setpoint in par_setpoints.items():
@@ -329,6 +333,9 @@ class LEDDAC5578Driver:
             dac_setpoints[key] = dac_setpoint
 
         # Successfully translated dac setpoints
+        self.logger.debug(
+            "Translated setpoints from {} to {}".format(par_setpoints, dac_setpoints)
+        )
         return dac_setpoints
 
     def translate_setpoint(self, par_setpoint: float) -> float:
