@@ -140,20 +140,17 @@ class IoTPubSub:
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
                         valuesJson += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                            vname,
-                            val,
+                            vname, val
                         )
 
                     elif isinstance(val, int):
                         valuesJson += "{'name':'%s', 'type':'int', 'value':%s}" % (
-                            vname,
-                            val,
+                            vname, val
                         )
 
                     else:  # assume str
                         valuesJson += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                            vname,
-                            val,
+                            vname, val
                         )
 
                 valuesJson += "]}"
@@ -552,6 +549,7 @@ def on_publish(unused_client, ref_self, unused_mid):
 
 def on_message(unused_client, ref_self, message):
     """Callback when the device receives a message on a subscription."""
+    ref_self.logger.debug("Received a new message on a subscription")
     ref_self.messageCount = ref_self.messageCount + 1
 
     payload = message.payload.decode("utf-8")
