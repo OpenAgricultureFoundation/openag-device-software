@@ -27,23 +27,24 @@ class ConnectUtilities:
 
             # This never changes, initialized by ConnectionManager,
             # and read from the state dict here.
-            status["is_bbb"] = cv.connect_dict["is_bbb"]
+            #status["is_bbb"] = cv.connect_dict["is_bbb"]
+            status["is_bbb"] = ConnectUtilities.is_bbb()
 
             # These change dynamically, so get each time.
             status["device_UI"] = ConnectUtilities.get_remote_UI_URL()
             status["is_wifi_bbb"] = ConnectUtilities.is_wifi_bbb()
             status["wifis"] = ConnectUtilities.get_wifis()
             status["IP"] = ConnectUtilities.get_IP()
-            status["is_registered_with_IoT"] = ConnectUtilities.is_registered_with_IoT()
+            status["is_registered_with_iot"] = \
+                ConnectUtilities.is_registered_with_iot()
             status["device_id"] = ConnectUtilities.get_device_id()
 
             # Get the IoT connection status directly from its state dict
             iotv = IoTViewer()
             status["iot_connection"] = iotv.iot_dict["connected"]
 
-            status[
-                "valid_internet_connection"
-            ] = ConnectUtilities.valid_internet_connection()
+            status["valid_internet_connection"] = \
+                ConnectUtilities.valid_internet_connection()
             if ConnectUtilities.valid_internet_connection():
                 status["status"] = "Connected"
             else:
@@ -56,7 +57,7 @@ class ConnectUtilities:
 
     @staticmethod
     def valid_internet_connection():
-        """Checks if we have a valid internet connection and DNS?0"""
+        """Checks if we have a valid internet connection and DNS?"""
         try:
             urllib.request.urlopen("http://google.com")
             return True
@@ -64,8 +65,18 @@ class ConnectUtilities:
             return False
 
     @staticmethod
+    def is_simulation_mode():
+        if os.environ.get("SIMULATE") == "true":
+            return True
+        return False
+
+    @staticmethod
     def is_bbb():
         """Checks if current device is a beaglebone."""
+        # We are in simulation mode, so pretend we are a BBB
+        if ConnectUtilities.is_simulation_mode():
+            return True
+
         try:
             # Command and list of args as list of string
             cmd = ["cat", "/etc/dogtag"]
@@ -98,20 +109,33 @@ class ConnectUtilities:
     def join_wifi(wifi, password):
         """Joins specified wifi access point."""
         result = False
-        if not ConnectUtilities.is_bbb():
-            return result
+        if ConnectUtilities.is_simulation_mode():
+            return True
         try:
             if 0 == len(password):
                 password = ""
 
             cmd = ["scripts/connect_wifi.sh", wifi, password]
-            with subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            ) as proc1:
-                output = proc1.stdout.read().decode("utf-8")
-                output += proc1.stderr.read().decode("utf-8")
-                result = True
-                time.sleep(5)  # Time for networking stack to init
+            subprocess.run(cmd)
+            result = True
+            time.sleep(5)  # Time for networking stack to init
+        except:
+            pass
+        return result
+
+    @staticmethod
+    def join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2):
+        """Joins specified wifi access point with advanced config. args."""
+        result = False
+        if ConnectUtilities.is_simulation_mode():
+            return True
+        try:
+            if 0 == len(passphrase):
+                passphrase = ""
+            cmd = ["scripts/advanced_connect_wifi.sh", ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2]
+            subprocess.run(cmd)
+            result = True
+            time.sleep(5)  # Time for networking stack to init
         except:
             pass
         return result
@@ -119,7 +143,7 @@ class ConnectUtilities:
     @staticmethod
     def delete_wifi_connections():
         """Deletes all wifi connections."""
-        if not ConnectUtilities.is_bbb():
+        if ConnectUtilities.is_simulation_mode():
             return False
         try:
             # First we must disconnect from any active wifis
@@ -140,8 +164,10 @@ class ConnectUtilities:
     @staticmethod
     def is_wifi_bbb():
         """Checks if bbb is a wifi model."""
-        if not ConnectUtilities.is_bbb():
-            return False
+        # We are in simulation mode, so pretend we are a BBB wifi.
+        if ConnectUtilities.is_simulation_mode():
+            return True
+
         try:
             # Command and list of args as list of string
             cmd = ["ifconfig", "wlan0"]
@@ -169,9 +195,9 @@ class ConnectUtilities:
 
     @staticmethod
     def get_remote_UI_URL():
-        """Get the URL for remote access to the device UI e.g. 1712EW004671.serveo.net"""
-
-        if not ConnectUtilities.is_bbb():
+        """Get the URL for remote access to the device UI 
+           e.g. 1712EW004671.serveo.net"""
+        if ConnectUtilities.is_simulation_mode():
             return "This is not a beaglebone"
         try:
             # Get this BBB's serial number
@@ -190,7 +216,7 @@ class ConnectUtilities:
         return ""
 
     @staticmethod
-    def is_registered_with_IoT():
+    def is_registered_with_iot():
         """Checks if IoT registration is valid."""
         if (
             os.path.exists(REG_DATA_DIR + "device_id.bash")
@@ -204,7 +230,7 @@ class ConnectUtilities:
     @staticmethod
     def get_device_id():
         """Gets device ID string."""
-        if not ConnectUtilities.is_registered_with_IoT():
+        if not ConnectUtilities.is_registered_with_iot():
             return None
         return ConnectUtilities.get_device_id_from_file()
 
@@ -225,7 +251,7 @@ class ConnectUtilities:
     def get_all_wifis():
         """Gets a list of all local wifis."""
         wifis = []
-        if not ConnectUtilities.is_bbb():
+        if ConnectUtilities.is_simulation_mode():
             return wifis
         try:
             # Command and list of args as list of strings
@@ -288,10 +314,15 @@ class ConnectUtilities:
 
     @staticmethod
     def register_iot():
-        """Registers device with IoT. Returns registration verification code for success 
-        or None."""
+        """Registers device with IoT. 
+           Returns registration verification code for success or None."""
+
         if not ConnectUtilities.valid_internet_connection():
             return None
+
+        if ConnectUtilities.is_registered_with_iot():
+            return ConnectUtilities.get_iot_verification_code()
+
         try:
             cmd = ["mkdir", "-p", REG_DATA_DIR]
             subprocess.run(cmd)
@@ -302,10 +333,21 @@ class ConnectUtilities:
             ]
             subprocess.run(cmd)
 
+            return ConnectUtilities.get_iot_verification_code()
+        except:
+            pass
+        return None
+
+    @staticmethod
+    def get_iot_verification_code():
+        """Returns the IoT verification code needed to pair a device with 
+           a cloud user account. """
+        try:
             fn = REG_DATA_DIR + "verification_code.txt"
             verification_code = open(fn).read()
-            os.remove(fn)
             return verification_code
         except:
             pass
         return None
+
+

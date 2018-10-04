@@ -60,9 +60,7 @@
               <ul class="dropdown-menu bg-dark">
                 <li><a class="nav-link" href="{% url 'device-config' %}">Config</a></li>
                 <li><a class="nav-link" href="{% url 'connect' %}">Connect</a></li>
-<!-- rob: TODO add a remote menu to provision ngrok link
-                <li><a class="nav-link" href="#">Remote (TBD)</a></li>
--->
+                <li><a class="nav-link" href="{% url 'connect_advanced' %}">Connect (advanced)</a></li>
                 <li><a class="nav-link" href="{% url 'upgrade' %}">Upgrade</a></li>
               </ul>
             </li>
