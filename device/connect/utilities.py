@@ -347,7 +347,7 @@ class ConnectUtilities:
         try:
             fn = REG_DATA_DIR + "verification_code.txt"
             verification_code = open(fn).read()
-            return verification_code
+            return verification_code.strip()
         except:
             pass
         return None
