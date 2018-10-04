@@ -19,27 +19,21 @@ if [ $SSIDLEN -eq 0 ]; then
     exit 1
 fi
  
-echo "Using sudo to configure your networking, please enter your password:"
-sudo touch "/var/lib/connman/$SSID.config"
-sudo chmod 777 "/var/lib/connman/$SSID.config"
+touch "/var/lib/connman/$SSID.config.tmp"
+chmod 777 "/var/lib/connman/$SSID.config.tmp"
 echo "[service_$1]
 Type=wifi
 Name=$SSID
 Passphrase=$2
-"> "/var/lib/connman/$SSID.config"
-sleep 2
+"> "/var/lib/connman/$SSID.config.tmp"
+mv "/var/lib/connman/$SSID.config.tmp" "/var/lib/connman/$SSID.config"
+sleep 30
  
-connmanctl connect $1
-sleep 2
-connmanctl config $1 --autoconnect yes > /dev/null 2>&1
-connmanctl disable wifi > /dev/null 2>&1
-sleep 1
-connmanctl enable wifi > /dev/null 2>&1
+echo "Using sudo to configure your networking, please enter your password:"
+sudo service connman restart
 
 # We must restart autossh, otherwise serveo.net won't let us back in.
-sleep 4
+sleep 30
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 $DIR/forward_ports.sh
  
-#connmanctl services
-#ifconfig wlan0

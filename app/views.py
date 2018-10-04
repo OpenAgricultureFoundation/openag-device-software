@@ -32,6 +32,9 @@ from rest_framework.renderers import JSONRenderer
 # Import app common
 from app.common import Common
 
+# Import app forms
+from app import forms
+
 # Import app models
 from app.models import StateModel
 from app.models import EventModel
@@ -70,7 +73,11 @@ from app.viewers import CultivationMethodsViewer
 from app.viewers import IoTViewer
 from app.viewers import ResourceViewer
 
-from device.connect import utilities as connect_utilities
+# TODO: fix this!!!
+# from device.connect import utilities as connect_utilities # Should be this
+from device.connect.utilities import ConnectUtilities
+
+# Import upgrade utilities
 from device.upgrade.utilities import UpgradeUtilities
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
@@ -139,7 +146,6 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = EnvironmentSerializer
     permission_classes = [IsAuthenticated]
 
-    # @method_decorator(login_required)
     def get_queryset(self):
         queryset = EnvironmentModel.objects.all()
         return queryset
@@ -244,6 +250,31 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+class Home(APIView):
+    """UI page for home."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "home.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+
+        # Get internet connectivity. TODO: This should access connect manager through
+        # coordinator manager. See viewers.py for example implementation
+        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+
+        from django.shortcuts import redirect, reverse
+
+        if valid_internet_connection:
+            return redirect(reverse("dashboard"))
+        else:
+            return redirect(reverse("connect"))
+
+        # Build and return response
+        response = {"valid_internet_connection": valid_internet_connection}
+        return Response()
+
+
 class Dashboard(APIView):
     """UI page for dashboard."""
 
@@ -268,12 +299,21 @@ class Dashboard(APIView):
         for recipe_object in recipe_objects:
             recipes.append(SimpleRecipeViewer(recipe_object))
 
+        # Get datetime picker form
+        datetime_form = forms.DateTimeForm()
+
+        # Get resource viewer: TODO: This should access connect manager through
+        # coordinator manager. See viewers.py for example implementation
+        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+
         # Build and return response
         response = {
             "current_device": current_device,
             "current_environment": current_environment,
             "current_recipe": current_recipe,
             "recipes": recipes,
+            "datetime_form": datetime_form,
+            "valid_internet_connection": valid_internet_connection,
         }
         return Response(response)
 
@@ -563,6 +603,7 @@ class IoT(APIView):
             "error": iotv.iot_dict["error"],
             "received_message_count": iotv.iot_dict["received_message_count"],
             "published_message_count": iotv.iot_dict["published_message_count"],
+            "device_id": os.environ.get("DEVICE_ID"),
         }
         return Response(response)
 
@@ -624,6 +665,23 @@ class Resource(APIView):
         return Response(response)
 
 
+class ConnectAdvanced(APIView):
+    """UI page fields the advanced wireless connection page."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "connect_advanced.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+        extra = {"console_name": "views.ConnectAdvanced"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        response = ConnectUtilities.get_status()
+        logger.info("ConnectAdvanced response={}".format(response))
+        return Response(response)
+
+
 class Connect(APIView):
     """UI page fields for ConnectManager."""
 
@@ -636,7 +694,7 @@ class Connect(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = connect_utilities.get_status()
+        response = ConnectUtilities.get_status()
         logger.info("Connect response={}".format(response))
         return Response(response)
 
@@ -652,7 +710,7 @@ class ConnectGetStatus(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = connect_utilities.get_status()
+        response = ConnectUtilities.get_status()
         logger.info("ConnectGetStatus response={}".format(response))
         return Response(response)
 
@@ -670,18 +728,57 @@ class ConnectJoinWifi(viewsets.ViewSet):
 
         # Get req parameters
         try:
-            reqd = request.data.dict()
+            request_data = request.data.dict()
         except Exception as e:
             response = {"message": "Internal error: {}".format(e)}
             return Response(response, 400)
 
-        wifi = reqd["wifi"]
-        password = reqd["password"]
+        wifi = request_data["wifi"]
+        password = request_data["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        success = connect_utilities.join_wifi(wifi, password)
-        response = {"success": success}
+        is_successful = ConnectUtilities.join_wifi(wifi, password)
+        response = {"success": is_successful}
         logger.info("ConnectJoinWifi response={}".format(response))
+        if not is_successful:
+            return Response(response, 400)
+        return Response(response)
+
+
+class ConnectJoinWifiAdvanced(viewsets.ViewSet):
+    """REST API to join a wifi. Request is POSTed with wifi and pass.
+    This class extends the ViewSet (not ModelViewSet) because it
+    dynamically gets its data and the Model gets data from the DB."""
+
+    @method_decorator(login_required)
+    def create(self, request):
+        extra = {"console_name": "views.ConnectJoinWifiAdvanced"}
+        logger = logging.getLogger(__name__)
+        logger = logging.LoggerAdapter(logger, extra)
+
+        # Get req parameters
+        try:
+            request_data = request.data.dict()
+        except Exception as e:
+            response = {"message": "Internal error: {}".format(e)}
+            return Response(response, 400)
+
+        ssid_name = request_data["ssid_name"]
+        passphrase = request_data["passphrase"]
+        hidden_ssid = request_data["hidden_ssid"]
+        security = request_data["security"]
+        eap = request_data["eap"]
+        identity = request_data["identity"]
+        phase2 = request_data["phase2"]
+
+        logger.info("ConnectJoinWifiAdvanced request_data={}".format(request_data))
+        is_successful = ConnectUtilities.join_wifi_advanced(
+            ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
+        )
+        response = {"success": is_successful}
+        logger.info("ConnectJoinWifiAdvanced response={}".format(response))
+        if not is_successful:
+            return Response(response, 400)
         return Response(response)
 
 
@@ -695,7 +792,7 @@ class ConnectDeleteWifis(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = connect_utilities.delete_wifi_connections()
+        response = ConnectUtilities.delete_wifi_connections()
         logger.info("ConnectDeleteWifis response={}".format(response))
         return Response(response)
 
@@ -710,7 +807,7 @@ class ConnectRegisterIoT(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = connect_utilities.register_iot()
+        response = ConnectUtilities.register_iot()
         logger.info("ConnectRegisterIoT response={}".format(response))
         return Response(response)
 
@@ -725,7 +822,7 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = connect_utilities.delete_iot_registration()
+        response = ConnectUtilities.delete_iot_registration()
         logger.info("ConnectDeleteIoTreg response={}".format(response))
         return Response(response)
 

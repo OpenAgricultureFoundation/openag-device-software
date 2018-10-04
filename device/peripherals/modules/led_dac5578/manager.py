@@ -563,88 +563,76 @@ class LEDDAC5578Manager(manager.PeripheralManager):
         self.logger.debug("Pre-processing fade event request")
 
         # Require mode to be in manual
-        if self.mode != modes.MANUAL:
+        if self.mode != Modes.MANUAL:
             return "Must be in manual mode", 400
 
+        # Add event request to event queue
+        request = {"type": FADE_EVENT}
+        self.queue.put(request)
+
         # Return not implemented yet
-        return "Not implemented yet", 500
+        return "Fading", 200
 
     def _fade(self, channel_name: Optional[str] = None) -> None:
         """Processes fade event request."""
-        self.logger.critical("Not implemented")
+        self.logger.debug("Fading")
 
-        # self.logger.debug("Fading")
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            self.logger.critical("Tried to fade from {} mode".format(self.mode))
 
-        # # Require mode to be in manual
-        # if self.mode != modes.MANUAL:
-        #     self.logger.critical("Tried to fade from {} mode".format(self.mode))
+        # Turn off channels
+        try:
+            self.driver.turn_off()
+        except Exception as e:
+            self.logger.exception("Unable to fade driver")
+            return
 
-        # # Turn off channels
-        # try:
-        #     self.driver.turn_off()
-        # except Exception as e:
-        #     self.logger.exception("Unable to fade driver")
-        #     return
+        # Set channel or channels
+        if channel_name != None:
+            channel_names = [channel_name]
+        else:
+            channel_outputs = self.driver.build_channel_outputs(0)
+            channel_names = channel_outputs.keys()
 
-        # # Set channel or channels
-        # if channel_name != None:
-        #     channel_names = [channel_name]
-        # else:
-        #     channel_outputs = self.driver.build_channel_outputs(0)
-        #     channel_names = channel_outputs.keys()
+        # Loop forever
+        while True:
 
-        # # Loop forever
-        # while True:
+            # Loop through all channels
+            for channel_name in channel_names:
 
-        #     # Loop through all channels
-        #     for channel_name in channel_names:
+                # Fade up
+                for value in range(0, 110, 10):
 
-        #         # Fade up
-        #         for value in range(0, 100, 10):
+                    # Set driver output
+                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    try:
+                        self.driver.set_output(channel_name, value)
+                    except Exception as e:
+                        self.logger.exception("Unable to fade driver")
+                        return
 
-        #             # Set driver output
-        #             self.logger.info("Channel {}: {}%".format(channel_name, value))
-        #             try:
-        #                 self.driver.set_output(channel_name, value)
-        #             except Exception as e:
-        #                 self.logger.exception("Unable to fade driver")
-        #                 return
+                    # Check for events
+                    if not self.queue.empty():
+                        return
 
-        #             # Check for new events
-        #             if self.request != None:
-        #                 request = self.request
-        #                 self.request = None
-        #                 self.process_event(request)
-        #                 return
+                    # Update every 100ms
+                    time.sleep(0.1)
 
-        #             # Check for new modes
-        #             if self.mode != modes.MANUAL:
-        #                 return
+                # Fade down
+                for value in range(100, -10, -10):
 
-        #             # Update every 100ms
-        #             time.sleep(0.1)
+                    # Set driver output
+                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    try:
+                        self.driver.set_output(channel_name, value)
+                    except Exception as e:
+                        self.logger.exception("Unable to fade driver")
+                        return
 
-        #         # Fade down
-        #         for value in range(100, 0, -10):
+                    # Check for events
+                    if not self.queue.empty():
+                        return
 
-        #             # Set driver output
-        #             self.logger.info("Channel {}: {}%".format(channel_name, value))
-        #             try:
-        #                 self.driver.set_output(channel_name, value)
-        #             except Exception as e:
-        #                 self.logger.exception("Unable to fade driver")
-        #                 return
-
-        #             # Check for new events
-        #             if self.request != None:
-        #                 request = self.request
-        #                 self.request = None
-        #                 self.process_event(request)
-        #                 return
-
-        #             # Check for new modes
-        #             if self.mode != modes.MANUAL:
-        #                 return
-
-        #             # Update every 100ms
-        #             time.sleep(0.1)
+                    # Update every 100ms
+                    time.sleep(0.1)

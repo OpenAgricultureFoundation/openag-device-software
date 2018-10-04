@@ -66,6 +66,11 @@ router.register(
 )
 router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
 router.register(
+    r"connect/joinwifiadvanced",
+    views.ConnectJoinWifiAdvanced,
+    base_name="api-join-wifi-adv",
+)
+router.register(
     r"connect/deletewifis",
     views.ConnectDeleteWifis,
     base_name="api-connect-deletewifis",
@@ -86,7 +91,7 @@ router.register(r"upgradestatus", views.UpgradeStatus, base_name="api-upgrade-st
 
 
 # Setup dashboard redirect
-def redirect_to_dashboard(request):
+def redirect_to_connect_or_dashboard(request):
 
     # if we have a valid internet connection, go to the dashboard
     if connect_utilities.valid_internet_connection():
@@ -94,11 +99,6 @@ def redirect_to_dashboard(request):
     else:
         # otherwise, let the user set up their wifi connection
         return HttpResponseRedirect(reverse("connect"))
-
-
-# Setup dashboard redirect
-def redirect_to_login(request):
-    return HttpResponseRedirect(reverse("login"))
 
 
 # Setup url patterns
@@ -114,10 +114,16 @@ urlpatterns = [
         {"template_name": "login.html", "redirect_authenticated_user": True},
         name="login",
     ),
+    url(
+        r"^accounts/login/$",
+        auth_views.login,
+        {"template_name": "login.html", "redirect_authenticated_user": True},
+        name="login",
+    ),
     url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
     url(r"^password/$", views.change_password, name="change_password"),
     # App specific
-    url(r"^$", redirect_to_dashboard, name="home"),
+    # url(r"^$", views.Home.as_view(), name="home"),
     url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
     url(r"^config/$", views.DeviceConfig.as_view(), name="device-config"),
     url(r"^peripherals/$", views.Peripherals.as_view(), name="peripherals"),
@@ -129,9 +135,14 @@ urlpatterns = [
     url(r"^environments/$", views.Environments.as_view(), name="environments"),
     url(r"^iot/$", views.IoT.as_view(), name="iot"),
     url(r"^resource/$", views.Resource.as_view(), name="resource"),
-    url(r"^connect/$", views.Connect.as_view(), name="connect"),
+    url(r"^$", views.Connect.as_view(), name="connect"),
+    url(
+        r"^connect_advanced/$", views.ConnectAdvanced.as_view(), name="connect_advanced"
+    ),
     url(r"^upgrade/$", views.Upgrade.as_view(), name="upgrade"),
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(
+    settings.STATIC_URL, document_root=settings.STATIC_ROOT
+)

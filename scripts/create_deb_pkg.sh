@@ -26,22 +26,21 @@ Exiting.'
     exit 1
 fi
 
-# Have we downloaded the packages we need?
-echo ''
-echo 'Have you run the download_pip_packages.sh script?'
-if ! [ -d $DIR/../venv/pip_download ]; then
-    echo 'No, you havent, please run: ./scripts/download_pip_packages.sh
-Exiting.'
-    echo ''
-    exit 1
-fi
-echo ''
+
+# Downloaded the packages we need.
+$DIR/../scripts/download_pip_packages.sh
+
 
 # Install any new python modules
 echo 'Installing any new python modules into the virtual env we package...'
 echo ''
 source venv/bin/activate
 pip3 install -f venv/pip_download -r requirements.txt 
+
+
+echo 'Caching static web files (bootstrap, FA, etc.)'
+echo ''
+python3.6 manage.py collectstatic --clear --link --noinput
 
 
 echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."

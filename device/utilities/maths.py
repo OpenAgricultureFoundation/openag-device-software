@@ -64,8 +64,8 @@ def interpolate(
         return y_list_copy[index]
 
     # Get index of smallest element greater than x
-    for index in range(len(x_list)):
-        if x_list[index] > x:  # type: ignore
+    for index in range(len(x_list_copy)):
+        if x_list_copy[index] > x:
             break
     index = index - 1
 
@@ -77,6 +77,8 @@ def interpolate(
 
     # Calculate slope
     m = (y1 - y0) / (x1 - x0)  # type: ignore
+
+    print("m = {}".format(m))
 
     # Calculate adjusted position
     delta = x - x0  # type: ignore

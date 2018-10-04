@@ -13,10 +13,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os, sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -25,7 +22,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "flnh=1!tsz^4&grtw&0$2&6#n*@aybhg-vdpa-i1rc&pyv$+9c"
 
 ALLOWED_HOSTS = ["*"]
-
 
 # Application definition
 
@@ -37,6 +33,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "bootstrap",
+    "fontawesome",
     "app",
     "device",
     "device.coordinator",
@@ -55,7 +53,15 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+# Configure static file storage
+STATIC_URL = "/app/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+TEMPUS_DOMINUS_LOCALIZE = True
 
 ROOT_URLCONF = "app.urls"
 
@@ -238,20 +244,17 @@ LOGGING = {
         "app": {"handlers": ["app_console", "app_file"], "level": LOG_LEVEL},
         "device": {"handlers": ["device_console", "device_file"], "level": LOG_LEVEL},
         "coordinator": {
-            "handlers": ["device_console", "coordinator_file"],
-            "level": LOG_LEVEL,
+            "handlers": ["device_console", "coordinator_file"], "level": LOG_LEVEL
         },
         "peripherals": {
-            "handlers": ["device_console", "peripheral_files"],
-            "level": LOG_LEVEL,
+            "handlers": ["device_console", "peripheral_files"], "level": LOG_LEVEL
         },
         "event": {"handlers": ["device_console", "event_file"], "level": LOG_LEVEL},
         "recipe": {"handlers": ["device_console", "recipe_file"], "level": LOG_LEVEL},
         "i2c": {"handlers": ["device_console", "i2c_file"], "level": LOG_LEVEL},
         "iot": {"handlers": ["device_console", "iot_file"], "level": LOG_LEVEL},
         "resource": {
-            "handlers": ["device_console", "resource_file"],
-            "level": LOG_LEVEL,
+            "handlers": ["device_console", "resource_file"], "level": LOG_LEVEL
         },
         "connect": {"handlers": ["device_console", "connect_file"], "level": LOG_LEVEL},
         "upgrade": {"handlers": ["device_console", "upgrade_file"], "level": LOG_LEVEL},
@@ -272,13 +275,3 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
-
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'app/static/'))
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "app/static")]
-STATIC_URL = "/app/static/"
-# STATIC_ROOT = "/var/www/example.com/static/"

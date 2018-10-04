@@ -92,7 +92,7 @@ class IoTManager:
 
                 # Make sure we have a valid recipe uuid
                 if (
-                    "uuid" not in recipe_dict
+                    "uuid" not in recipe_dcit
                     or None == recipe_dict["uuid"]
                     or 0 == len(recipe_dict["uuid"])
                 ):
@@ -149,7 +149,7 @@ class IoTManager:
             return
         self.iot.connected = value
 
-    def publish_message(name, msg_json):
+    def publish_message(self, name, msg_json):
         """ Send a command reply. """
         if self.iot is None:
             return
@@ -322,8 +322,11 @@ class IoTManager:
                 for image_file in image_file_list:
 
                     # Is this file open by a process? (fswebcam)
-                    if 0 == os.system(
-                        "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                    if (
+                        0
+                        == os.system(
+                            "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                        )
                     ):
                         continue  # Yes, so skip it and try the next one.
 
