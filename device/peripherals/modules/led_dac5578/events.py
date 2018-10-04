@@ -250,7 +250,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             for channel_name in channel_names:
 
                 # Fade up
-                for value in range(0, 100, 10):
+                for value in range(0, 110, 10):
 
                     # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
@@ -268,7 +268,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                     time.sleep(0.1)
 
                 # Fade down
-                for value in range(100, 0, -10):
+                for value in range(100, -10, -10):
 
                     # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
