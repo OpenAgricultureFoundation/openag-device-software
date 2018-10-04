@@ -724,19 +724,19 @@ class ConnectJoinWifi(viewsets.ViewSet):
 
         # Get req parameters
         try:
-            reqd = request.data.dict()
+            request_data = request.data.dict()
         except Exception as e:
             response = {"message": "Internal error: {}".format(e)}
             return Response(response, 400)
 
-        wifi = reqd["wifi"]
-        password = reqd["password"]
+        wifi = request_data["wifi"]
+        password = request_data["password"]
 
         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        result = ConnectUtilities.join_wifi(wifi, password)
-        response = {"success": result}
+        is_successful = ConnectUtilities.join_wifi(wifi, password)
+        response = {"success": is_successful}
         logger.info("ConnectJoinWifi response={}".format(response))
-        if not result:
+        if not is_successful:
             return Response(response, 400)
         return Response(response)
 
@@ -754,24 +754,24 @@ class ConnectJoinWifiAdvanced(viewsets.ViewSet):
 
         # Get req parameters
         try:
-            reqd = request.data.dict()
+            request_data = request.data.dict()
         except Exception as e:
             response = {"message": "Internal error: {}".format(e)}
             return Response(response, 400)
 
-        ssid_name = reqd["ssid_name"]
-        passphrase = reqd["passphrase"]
-        hidden_ssid = reqd["hidden_ssid"]
-        security = reqd["security"]
-        eap = reqd["eap"]
-        identity = reqd["identity"]
-        phase2 = reqd["phase2"]
+        ssid_name = request_data["ssid_name"]
+        passphrase = request_data["passphrase"]
+        hidden_ssid = request_data["hidden_ssid"]
+        security = request_data["security"]
+        eap = request_data["eap"]
+        identity = request_data["identity"]
+        phase2 = request_data["phase2"]
 
-        logger.info("ConnectJoinWifiAdvanced reqd={}".format(reqd))
-        result = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2)
-        response = {"success": result}
+        logger.info("ConnectJoinWifiAdvanced request_data={}".format(request_data))
+        is_successful = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2)
+        response = {"success": is_successful}
         logger.info("ConnectJoinWifiAdvanced response={}".format(response))
-        if not result:
+        if not is_successful:
             return Response(response, 400)
         return Response(response)
 

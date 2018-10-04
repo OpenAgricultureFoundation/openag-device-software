@@ -35,8 +35,8 @@ class ConnectUtilities:
             status["is_wifi_bbb"] = ConnectUtilities.is_wifi_bbb()
             status["wifis"] = ConnectUtilities.get_wifis()
             status["IP"] = ConnectUtilities.get_IP()
-            status["is_registered_with_IoT"] = \
-                ConnectUtilities.is_registered_with_IoT()
+            status["is_registered_with_iot"] = \
+                ConnectUtilities.is_registered_with_iot()
             status["device_id"] = ConnectUtilities.get_device_id()
 
             # Get the IoT connection status directly from its state dict
@@ -216,7 +216,7 @@ class ConnectUtilities:
         return ""
 
     @staticmethod
-    def is_registered_with_IoT():
+    def is_registered_with_iot():
         """Checks if IoT registration is valid."""
         if (
             os.path.exists(REG_DATA_DIR + "device_id.bash")
@@ -230,7 +230,7 @@ class ConnectUtilities:
     @staticmethod
     def get_device_id():
         """Gets device ID string."""
-        if not ConnectUtilities.is_registered_with_IoT():
+        if not ConnectUtilities.is_registered_with_iot():
             return None
         return ConnectUtilities.get_device_id_from_file()
 
@@ -320,7 +320,7 @@ class ConnectUtilities:
         if not ConnectUtilities.valid_internet_connection():
             return None
 
-        if ConnectUtilities.is_registered_with_IoT():
+        if ConnectUtilities.is_registered_with_iot():
             return ConnectUtilities.get_iot_verification_code()
 
         try:
