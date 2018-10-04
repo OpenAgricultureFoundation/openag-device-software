@@ -43,11 +43,6 @@ echo ''
 source venv/bin/activate
 pip3 install -f venv/pip_download -r requirements.txt 
 
-# Cache any files so the device UI will render without an internet connection
-echo 'Caching any static web resources we use (bootstrap, etc)'
-echo ''
-python3.6 manage.py collectstatic
-
 
 echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."
 echo ""

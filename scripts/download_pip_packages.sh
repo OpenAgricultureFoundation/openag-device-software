@@ -9,11 +9,6 @@ cd $TOPDIR
 source venv/bin/activate
 pip3 download -d venv/pip_download -r requirements.txt
 
-# Also install any new packages we have downloaded (used by the next step)
-pip3 install -f venv/pip_download -r requirements.txt 
-
 # Make sure our default user can access all files when running django
 sudo chown -R debian:debian .
 
-# Cache any static resources we use (bootstrap, etc)
-python3.6 manage.py collectstatic
