@@ -37,67 +37,57 @@ router.register(r"recipe", views.RecipeViewSet, base_name="api-recipe")
 router.register(
     r"recipe/transitions",
     views.RecipeTransitionViewSet,
-    base_name="api-recipe-transition")
+    base_name="api-recipe-transition",
+)
 router.register(
-    r"config/device", 
-    views.DeviceConfigViewSet, 
-    base_name="api-config-device")
-router.register(
-    r"cultivars", 
-    views.CultivarViewSet, 
-    base_name="api-cultivars")
+    r"config/device", views.DeviceConfigViewSet, base_name="api-config-device"
+)
+router.register(r"cultivars", views.CultivarViewSet, base_name="api-cultivars")
 router.register(
     r"cultivation-methods",
     views.CultivationMethodViewSet,
-    base_name="api-cultivation-methods")
+    base_name="api-cultivation-methods",
+)
 router.register(
     r"peripheral/setups",
     views.PeripheralSetupViewSet,
-    base_name="api-peripheral-setups")
+    base_name="api-peripheral-setups",
+)
 router.register(
-    r"variables/sensor", 
-    views.SensorVariableViewSet, 
-    base_name="api-sensor-variables")
+    r"variables/sensor", views.SensorVariableViewSet, base_name="api-sensor-variables"
+)
 router.register(
     r"variables/actuator",
     views.ActuatorVariableViewSet,
-    base_name="api-actuator-variables")
+    base_name="api-actuator-variables",
+)
 router.register(
-    r"connect/status", 
-    views.ConnectGetStatus, 
-    base_name="api-connect-status")
+    r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
+)
+router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
 router.register(
-    r"connect/joinwifi", 
-    views.ConnectJoinWifi, 
-    base_name="api-join-wifi")
-router.register(
-    r"connect/joinwifiadvanced", 
-    views.ConnectJoinWifiAdvanced, 
-    base_name="api-join-wifi-adv")
+    r"connect/joinwifiadvanced",
+    views.ConnectJoinWifiAdvanced,
+    base_name="api-join-wifi-adv",
+)
 router.register(
     r"connect/deletewifis",
     views.ConnectDeleteWifis,
-    base_name="api-connect-deletewifis")
+    base_name="api-connect-deletewifis",
+)
 router.register(
     r"connect/registeriot",
     views.ConnectRegisterIoT,
-    base_name="api-connect-registeriot")
+    base_name="api-connect-registeriot",
+)
 router.register(
     r"connect/deleteiotreg",
     views.ConnectDeleteIoTreg,
-    base_name="api-connect-deleteiotreg")
-router.register(
-    r"upgrade", 
-    views.UpgradeNow, 
-    base_name="api-upgrade-now")
-router.register(
-    r"upgradecheck", 
-    views.UpgradeCheck, 
-    base_name="api-upgrade-check")
-router.register(
-    r"upgradestatus", 
-    views.UpgradeStatus, 
-    base_name="api-upgrade-status")
+    base_name="api-connect-deleteiotreg",
+)
+router.register(r"upgrade", views.UpgradeNow, base_name="api-upgrade-now")
+router.register(r"upgradecheck", views.UpgradeCheck, base_name="api-upgrade-check")
+router.register(r"upgradestatus", views.UpgradeStatus, base_name="api-upgrade-status")
 
 
 # Setup dashboard redirect
@@ -124,10 +114,16 @@ urlpatterns = [
         {"template_name": "login.html", "redirect_authenticated_user": True},
         name="login",
     ),
+    url(
+        r"^accounts/login/$",
+        auth_views.login,
+        {"template_name": "login.html", "redirect_authenticated_user": True},
+        name="login",
+    ),
     url(r"^logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
     url(r"^password/$", views.change_password, name="change_password"),
     # App specific
-    url(r"^$", views.Home.as_view(), name="home"),
+    # url(r"^$", views.Home.as_view(), name="home"),
     url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
     url(r"^config/$", views.DeviceConfig.as_view(), name="device-config"),
     url(r"^peripherals/$", views.Peripherals.as_view(), name="peripherals"),
@@ -139,8 +135,10 @@ urlpatterns = [
     url(r"^environments/$", views.Environments.as_view(), name="environments"),
     url(r"^iot/$", views.IoT.as_view(), name="iot"),
     url(r"^resource/$", views.Resource.as_view(), name="resource"),
-    url(r"^connect/$", views.Connect.as_view(), name="connect"),
-    url(r"^connect_advanced/$", views.ConnectAdvanced.as_view(), name="connect_advanced"),
+    url(r"^$", views.Connect.as_view(), name="connect"),
+    url(
+        r"^connect_advanced/$", views.ConnectAdvanced.as_view(), name="connect_advanced"
+    ),
     url(r"^upgrade/$", views.Upgrade.as_view(), name="upgrade"),
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
