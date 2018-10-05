@@ -549,7 +549,6 @@ def on_publish(unused_client, ref_self, unused_mid):
 
 def on_message(unused_client, ref_self, message):
     """Callback when the device receives a message on a subscription."""
-    ref_self.logger.debug("Received a new message on a subscription")
     ref_self.messageCount = ref_self.messageCount + 1
 
     payload = message.payload.decode("utf-8")
@@ -589,7 +588,7 @@ def on_message(unused_client, ref_self, message):
         # Parse the config message to get the commands in it
         ref_self.parse_config_message(payload_dict)
     else:
-        ref_self.logger.debug("Ignoring this old config message.\n")
+        ref_self.logger.debug("Ignoring this old config message. messageVersion={} <= lastConfigVersion={}\n".format(messageVersion, ref_self.lastConfigVersion))
 
 
 def on_log(unused_client, ref_self, level, buf):
