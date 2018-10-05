@@ -46,6 +46,13 @@ if [[ $RET = *"error"* ]]; then
   exit 1
 fi
 
+# Must zero out the last IoT message received, so we process messages.
+if [[ "$OSTYPE" == "linux"* ]]; then
+  sudo -u postgres psql openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 0;"
+else # we are on OSX
+  psql postgres openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 1;"
+fi
+
 # Save this devices ID to a file that the brain startup script will read.
 echo "export DEVICE_ID=EDU-$CKSUM-$MAC" > device_id.bash
 
