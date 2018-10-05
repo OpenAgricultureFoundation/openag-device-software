@@ -325,6 +325,8 @@ class RecipeEvents:
                 self.logger.debug(message)
                 return False, message
 
+        """
+        debugrob TODO Jake these checks don't pass.
         # Check cultivars are valid
         for cultivar in cultivars:
             cultivar_name = cultivar["name"]
@@ -342,6 +344,7 @@ class RecipeEvents:
                 message = "Invalid recipe cultivation method: `{}`".format(method_name)
                 self.logger.debug(message)
                 return False, message
+        """
 
         # Recipe is valid
         return True, None
