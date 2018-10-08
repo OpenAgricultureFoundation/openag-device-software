@@ -842,6 +842,8 @@ class Upgrade(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
+
+        # Initialize logger
         extra = {"console_name": "views.Update"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
@@ -850,9 +852,14 @@ class Upgrade(APIView):
         app_config = apps.get_app_config(APP_NAME)
         upgrade = app_config.coordinator.upgrade
 
-        # Get upgrade status
-        response = {"status": upgrade.status}
-        logger.info("Upgrade status response={}".format(response))
+        # Build and return response
+        response = {
+            "status": upgrade.status,
+            "current_version": upgrade.current_version,
+            "upgrade_version": upgrade.upgrade_version,
+            "upgrade_available": upgrade.upgrade_available,
+        }
+        logger.info("Upgrade response: {}".format(response))
         return Response(response)
 
 
