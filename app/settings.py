@@ -244,17 +244,20 @@ LOGGING = {
         "app": {"handlers": ["app_console", "app_file"], "level": LOG_LEVEL},
         "device": {"handlers": ["device_console", "device_file"], "level": LOG_LEVEL},
         "coordinator": {
-            "handlers": ["device_console", "coordinator_file"], "level": LOG_LEVEL
+            "handlers": ["device_console", "coordinator_file"],
+            "level": LOG_LEVEL,
         },
         "peripherals": {
-            "handlers": ["device_console", "peripheral_files"], "level": LOG_LEVEL
+            "handlers": ["device_console", "peripheral_files"],
+            "level": LOG_LEVEL,
         },
         "event": {"handlers": ["device_console", "event_file"], "level": LOG_LEVEL},
         "recipe": {"handlers": ["device_console", "recipe_file"], "level": LOG_LEVEL},
         "i2c": {"handlers": ["device_console", "i2c_file"], "level": LOG_LEVEL},
         "iot": {"handlers": ["device_console", "iot_file"], "level": LOG_LEVEL},
         "resource": {
-            "handlers": ["device_console", "resource_file"], "level": LOG_LEVEL
+            "handlers": ["device_console", "resource_file"],
+            "level": LOG_LEVEL,
         },
         "connect": {"handlers": ["device_console", "connect_file"], "level": LOG_LEVEL},
         "upgrade": {"handlers": ["device_console", "upgrade_file"], "level": LOG_LEVEL},

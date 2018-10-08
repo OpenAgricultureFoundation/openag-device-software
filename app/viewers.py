@@ -229,7 +229,6 @@ class RecipeViewer:
 
 
 class SimpleRecipeViewer:
-
     def __init__(self, recipe_object):
         self.recipe_dict = json_.loads(recipe_object.json)
         self.uuid = self.recipe_dict["uuid"]
@@ -279,7 +278,6 @@ class DeviceConfigViewer:
 
 
 class CultivarsViewer:
-
     def __init__(self):
         cultivars = CultivarModel.objects.all()
         cultivar_dict = []
@@ -289,7 +287,6 @@ class CultivarsViewer:
 
 
 class CultivationMethodsViewer:
-
     def __init__(self):
         cultivation_methods = CultivationMethodModel.objects.all()
         cultivation_methods_dict = []
