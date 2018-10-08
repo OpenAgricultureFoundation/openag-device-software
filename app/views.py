@@ -62,26 +62,29 @@ from app.serializers import ActuatorVariableSerializer
 from app.serializers import DeviceConfigSerializer
 
 # Import app viewers
-from app.viewers import DeviceViewer
-from app.viewers import EventViewer
-from app.viewers import RecipeViewer
-from app.viewers import SimpleRecipeViewer
-from app.viewers import DeviceConfigViewer
-from app.viewers import EnvironmentViewer
-from app.viewers import CultivarsViewer
-from app.viewers import CultivationMethodsViewer
-from app.viewers import IoTViewer
-from app.viewers import ResourceViewer
+from app.viewers import (
+    DeviceViewer,
+    EventViewer,
+    RecipeViewer,
+    SimpleRecipeViewer,
+    DeviceConfigViewer,
+    EnvironmentViewer,
+    CultivarsViewer,
+    CultivationMethodsViewer,
+    IoTViewer,
+    ResourceViewer,
+)
+
+# Import django app
+from django.apps import apps
 
 # TODO: fix this!!!
 # from device.connect import utilities as connect_utilities # Should be this
 from device.connect.utilities import ConnectUtilities
 
-# Import upgrade utilities
-from device.upgrade.utilities import UpgradeUtilities
-
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
+APP_NAME = "app"
 
 LOG_DIR = "data/logs/"
 IMAGE_DIR = "data/images/"
@@ -166,7 +169,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """ API endpoint to create a recipe. """
         permission_classes = [IsAuthenticated, IsAdminUser]
         recipe_viewer = RecipeViewer()
-        response, status = recipe_viewer.create(request.data)  # was data.dict()
+        response, status = recipe_viewer.create(request.data)
         return Response(response, status)
 
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
@@ -827,6 +830,10 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
         return Response(response)
 
 
+# TODO: Combine upgrade views into a single viewset class. See recipe view set
+# for guidance.
+
+
 class Upgrade(APIView):
     """UI page fields for ConnectManager."""
 
@@ -839,7 +846,12 @@ class Upgrade(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = UpgradeUtilities.get_status()
+        # Get upgrade manager
+        app_config = apps.get_app_config(APP_NAME)
+        upgrade = app_config.coordinator.upgrade
+
+        # Get upgrade status
+        response = {"status": upgrade.status}
         logger.info("Upgrade status response={}".format(response))
         return Response(response)
 
@@ -854,7 +866,14 @@ class UpgradeNow(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeNow"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtilities.update_software()
+
+        # Get upgrade manager
+        app_config = apps.get_app_config(APP_NAME)
+        upgrade = app_config.coordinator.upgrade
+
+        # Upgrade software
+        upgrade.upgrade_software()
+        response = {"status", upgrade.status}
         logger.info("UpgradeNow response={}".format(response))
         return Response(response)
 
@@ -867,7 +886,13 @@ class UpgradeCheck(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeCheck"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtilities.check()
+
+        # Get upgrade manager
+        app_config = apps.get_app_config(APP_NAME)
+        upgrade = app_config.coordinator.upgrade
+
+        # Check for upgrade
+        response = {"upgrade_available": upgrade.check_for_upgrade()}
         logger.info("UpgradeCheck response={}".format(response))
         return Response(response)
 
@@ -880,7 +905,13 @@ class UpgradeStatus(viewsets.ViewSet):
         extra = {"console_name": "views.UpgradeStatus"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
-        response = UpgradeUtilities.get_status()
+
+        # Get upgrade manager
+        app_config = apps.get_app_config(APP_NAME)
+        upgrade = app_config.coordinator.upgrade
+
+        # Get status
+        response = {"status": upgrade.status}
         logger.info("UpgradeStatus response={}".format(response))
         return Response(response)
 

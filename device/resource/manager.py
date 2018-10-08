@@ -68,8 +68,7 @@ class ResourceManager(manager.StateMachineManager):
 
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
-            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR],
-            modes.ERROR: [modes.SHUTDOWN],
+            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR], modes.ERROR: [modes.SHUTDOWN]
         }
 
         # Initialize state machine mode
@@ -108,58 +107,58 @@ class ResourceManager(manager.StateMachineManager):
 
     @property
     def status(self) -> str:
-        """Gets status value."""
+        """Gets value from shared state."""
         return self.state.resource.get("status")  # type: ignore
 
     @status.setter
     def status(self, value: str) -> None:
-        """Safely updates status in shared state."""
+        """Safely updates value in shared state."""
         with self.state.lock:
             self.state.resource["status"] = value
 
     @property
     def error(self) -> str:
-        """Gets error value."""
+        """Gets value from shared state."""
         return self.state.resource.get("error")  # type: ignore
 
     @error.setter
     def error(self, value: str) -> None:
-        """Safely updates error in shared state."""
+        """Safely updates value in shared state."""
         with self.state.lock:
             self.state.resource["error"] = value
 
     @property
     def free_disk(self) -> str:
-        """Gets free disk value."""
+        """Gets value from shared state."""
         # TODO: Fix name
         return self.state.resource.get("available_disk_space")  # type: ignore
 
     @free_disk.setter
     def free_disk(self, value: str) -> None:
-        """Safely updates free disk in shared state."""
+        """Safely updates value in shared state."""
         with self.state.lock:
             # TODO: Fix name
             self.state.resource["available_disk_space"] = value
 
     @property
     def free_memory(self) -> str:
-        """Gets free memory value."""
+        """Gets value from shared state."""
         return self.state.resource.get("free_memory")  # type: ignore
 
     @free_memory.setter
     def free_memory(self, value: str) -> None:
-        """Safely updates free memory in shared state."""
+        """Safely updates value in shared state."""
         with self.state.lock:
             self.state.resource["free_memory"] = value
 
     @property
     def database_size(self) -> str:
-        """Gets database size value."""
+        """Gets value from shared state."""
         return self.state.resource.get("database_size")  # type: ignore
 
     @database_size.setter
     def database_size(self, value: str) -> None:
-        """Safely updates database size in shared state."""
+        """Safely updates value in shared state."""
         with self.state.lock:
             self.state.resource["database_size"] = value
 
@@ -190,6 +189,7 @@ class ResourceManager(manager.StateMachineManager):
 
     def run_normal_mode(self) -> None:
         """Runs normal mode."""
+        self.logger.debug("Entered NORMAL")
 
         # Initialize last update time
         last_update_time = 0.0

@@ -2,25 +2,23 @@
 
 {% block javascript %}
 <script>
-  //--------------------------------------------------------------------------
   window.onload = function() {
 
     document.getElementById("status").innerHTML = "{{status}}";
     document.getElementById("current_version").innerHTML = "{{current_version}}";
     document.getElementById("upgrade_version").innerHTML = "{{upgrade_version}}";
 
-    {% if show_upgrade %}
-      $('#show_upgrade_but').collapse('show');
-      $('#check_but').collapse('hide');
+    {% if upgrade_available %}
+      $('#upgrade_available_button').collapse('show');
+      $('#check_for_upgrades_button').collapse('hide');
     {% else %}
-      $('#check_but').collapse('show');
+      $('#check_for_upgrades_button').collapse('show');
     {% endif %}
   }
 
-  //--------------------------------------------------------------------------
   function upgrade() {
     document.getElementById("status").innerHTML = 'Upgrading to latest version, restarting in 2 minutes...';
-    $('#show_upgrade_but').collapse('hide');
+    $('#upgrade_available_button').collapse('hide');
     upgradePromise()
       .then(function(upgradeSuccess) {
         document.getElementById("status").innerHTML = upgradeSuccess;
@@ -30,7 +28,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function upgradePromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -50,14 +47,13 @@
     })
   }
 
-  //--------------------------------------------------------------------------
   function check() {
     document.getElementById("status").innerHTML = 'Checking for updates, this will take 2 minutes...';
-    $('#check_but').collapse('hide');
+    $('#check_for_upgrades_button').collapse('hide');
     checkPromise()
       .then(function(checkSuccess) {
         document.getElementById("status").innerHTML = checkSuccess;
-        $('#check_but').collapse('show');
+        $('#check_for_upgrades_button').collapse('show');
         return getStatusPromise();
       })
       .catch(function(error) {
@@ -65,7 +61,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function checkPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -85,7 +80,6 @@
     })
   }
 
-  //--------------------------------------------------------------------------
   function getStatusPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -97,12 +91,12 @@
 
           document.getElementById("current_version").innerHTML = data['current_version'];
           document.getElementById("upgrade_version").innerHTML = data['upgrade_version'];
-          if( data['show_upgrade'] ) {
-            $('#show_upgrade_but').collapse('show');
-            $('#check_but').collapse('hide');
+          if( data['upgrade_available'] ) {
+            $('#upgrade_available_button').collapse('show');
+            $('#check_for_upgrades_button').collapse('hide');
           } else {
-            $('#show_upgrade_but').collapse('hide');
-            $('#check_but').collapse('show');
+            $('#upgrade_available_button').collapse('hide');
+            $('#check_for_upgrades_button').collapse('show');
           }
 
           var statusDict = data;
@@ -135,12 +129,12 @@
               <li><b>Error:</b> {{ error }}
               {% endif %}
             </ul>
-            <div class="collapse" id="show_upgrade_but">
+            <div class="collapse" id="upgrade_available_button">
               <a class="badge badge-secondary" data-toggle="collapse"
                  style="width:200px" href="" role="button" 
                  onclick="upgrade();">Upgrade the software</a> 
             </div>
-            <div class="collapse" id="check_but">
+            <div class="collapse" id="check_for_upgrades_button">
               <a class="badge badge-secondary" data-toggle="collapse"
                  style="width:200px" href="" role="button" 
                  onclick="check();">Check for available upgrade</a> 

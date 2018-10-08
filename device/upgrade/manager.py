@@ -1,97 +1,276 @@
-# Import python modules
-import logging
-import threading
-import time
-import platform
-from device.upgrade.utilities import UpgradeUtilities
+# Import standard python modules
+import time, platform, subprocess
+
+# Import python types
+from typing import Dict, List
+
+# Import device utilities
+from device.utilities import logger
+from device.utilities.statemachine import manager, modes
+from device.utilities.state.main import State
 
 
-# TODO Notes:
-# Remove redundant functions accross connect, iot, update, resource, and upgrade
-# We may just want many of these functions in the manager or in device utilities
-# Adjust function and variable names to match python conventions
-# Add static type checking
-# Write tests
-# Catch specific exceptions
-# Pull out file path strings to top of file
-# Inherit from state machine manager
-# Always use get method to access dicts unless checking for KeyError (rare cases)
-# Always use decorators to access shared state w/state.lock
-# Use consistent names for class variables and state variables
-# Always logger class from device utilities
-# Make logic easy to read (descriptive variables, frequent comments, minimized nesting)
+# TODO: Catch specific exceptions
+# TODO: Write tests
 
 
-class UpgradeManager:
-    """Manage software upgrades."""
+class UpgradeManager(manager.StateMachineManager):
+    """Manages software upgrades."""
 
-    # Initialize logger
-    extra = {"console_name": "UpgradeManager", "file_name": "upgrade"}
-    logger = logging.getLogger("upgrade")
-    logger = logging.LoggerAdapter(logger, extra)
+    # Initialize class behavior
+    autoupgrade = True
 
-    # Place holder for thread object.
-    thread = None
-
-    def __init__(self, state):
+    def __init__(self, state: State) -> None:
         """Initializes upgrade manager."""
+
+        # Initialize parent class
+        super().__init__()
+
+        # Initialize parameters
+        self.state = state
+
+        # Initialize logger
+        self.logger = logger.Logger("Upgrade", "upgrade")
         self.logger.debug("Initializing manager")
 
-        # Initialize state
-        self.state = state
-        UpgradeUtilities.save_state(state)
-        self.error = None
-        status = "Initializing..."
-        self.status = status
-        self.state.upgrade["current_version"] = status
-        self.state.upgrade["upgrade_version"] = status
-        self.state.upgrade["show_upgrade"] = False
-        self._stop_event = threading.Event()  # so we can stop this thread
+        # Initialize state machine transitions
+        self.transitions: Dict[str, List[str]] = {
+            modes.INIT: [modes.NORMAL, modes.SHUTDOWN, modes.ERROR],
+            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.SHUTDOWN],
+        }
+
+        # Initialize state machine mode
+        self.mode = modes.INIT
 
     @property
-    def error(self):
-        """ Gets error value. """
-        return self._error
-
-    @error.setter
-    def error(self, value):
-        """ Safely updates shared state. """
-        self._error = value
-        with self.state.lock:
-            self.state.upgrade["error"] = value
-
-    @property
-    def status(self):
-        """ Gets status value. """
-        return self.state.upgrade.get("status")
+    def status(self) -> str:
+        """Gets value."""
+        return self.state.upgrade.get("status", "None")  # type: ignore
 
     @status.setter
-    def status(self, value):
-        """ Safely updates shared state. """
+    def status(self, value: str) -> None:
+        """Safely updates value in shared state."""
         with self.state.lock:
             self.state.upgrade["status"] = value
 
-    def spawn(self):
-        self.logger.info("Spawning upgrade manager thread")
-        self.thread = threading.Thread(target=self.thread_proc)
-        self.thread.daemon = True
-        self.thread.start()
+    @property
+    def current_version(self) -> str:
+        """Gets value from shared state."""
+        return self.state.upgrade.get("current_version", "Unknown")  # type: ignore
 
-    def stop(self):
-        self.logger.info("Stopping upgrade manager thread")
-        self._stop_event.set()
+    @current_version.setter
+    def current_version(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.upgrade["current_version"] = value
 
-    def stopped(self):
-        return self._stop_event.is_set()
+    @property
+    def upgrade_version(self) -> str:
+        """Gets value from shared state."""
+        return self.state.upgrade.get("upgrade_version", "Unknown")  # type: ignore
 
-    def thread_proc(self):
+    @upgrade_version.setter
+    def upgrade_version(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.upgrade["upgrade_version"] = value
+
+    @property
+    def upgrade_available(self) -> bool:
+        """Gets value from shared state."""
+        return self.state.upgrade.get("upgrade_available", False)  # type: ignore
+
+    @upgrade_available.setter
+    def upgrade_available(self, value: bool) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.upgrade["upgrade_available"] = value
+
+    ##### STATE MACHINE FUNCTIONS ######################################################
+
+    def run(self) -> None:
+        """Runs state machine."""
+
+        # Loop forever
         while True:
-            if self.stopped():
-                break
-            time.sleep(30)  # allow time to start the django UI
-            self.update()
-            time.sleep(86400)  # idle for one day
 
-    def update(self):
-        self.logger.info("Checking for software update")
-        UpgradeUtilities.update_dict()
+            # Check if manager is shutdown
+            if self.is_shutdown:
+                break
+
+            # Check for mode transitions
+            if self.mode == modes.INIT:
+                self.run_init_mode()
+            elif self.mode == modes.NORMAL:
+                self.run_normal_mode()
+            elif self.mode == modes.ERROR:
+                self.run_error_mode()  # defined in parent classs
+            elif self.mode == modes.SHUTDOWN:
+                self.run_shutdown_mode()  # defined in parent class
+            else:
+                self.logger.critical("Invalid state machine mode")
+                self.mode = modes.INVALID
+                self.is_shutdown = True
+                break
+
+    def run_init_mode(self) -> None:
+        """Runs initialization mode."""
+        self.logger.debug("Entered INIT")
+
+        # Initialize state variables
+        self.status = "Initializing"
+
+        # Wait for django UI to startup
+        time.sleep(30)  # seconds
+
+        # Transition to normal mode on next state machine update
+        self.mode = modes.NORMAL
+
+    def run_normal_mode(self) -> None:
+        """Runs normal mode."""
+        self.logger.debug("Entered NORMAL")
+
+        # Initialize last update time
+        last_update_time = 0.0
+        update_interval = 86400  # seconds -> every day
+
+        # Loop forever
+        while True:
+
+            # Check for software update every update interval
+            if time.time() - last_update_time > update_interval:
+                last_update_time = time.time()
+
+                # Check for software upgrade and upgrade if available
+                self.upgrade_available = self._upgrade_available()
+                if self.upgrade_available and self.autoupgrade:
+                    self.upgrade_software()
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.NORMAL):
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+    ##### HELPER FUNCTIONS #############################################################
+
+    def _upgrade_available(self) -> bool:
+        """Checks for a software upgrade by updating the list of available packages then 
+        getting the verison information for the openagbrain package. Takes a few minutes
+        to execute."""
+        message = "Checking for software upgrades"
+        self.logger.debug(message)
+        self.status = message
+
+        # Update list of all available packages
+        try:
+            command = ["sudo", "apt-get", "update"]
+            subprocess.run(command)
+        except:
+            message = "Unable to update list of available packages"
+            self.status = message
+            self.logger.exception(message)
+            self.mode = modes.ERROR
+            return False
+
+        # Initialize package version info
+        installed_version = "Unknown"
+        candidate_version = "Unknown"
+
+        # Get package version info
+        try:
+            command = ["apt-cache", "policy", "openagbrain"]
+            with subprocess.Popen(
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ) as process1:
+                output = process1.stdout.read().decode("utf-8")
+                output += process1.stderr.read().decode("utf-8")
+                lines = output.splitlines()
+                for line in lines:
+                    tokens = line.split()
+                    for token in tokens:
+                        if token.startswith("Installed:"):
+                            installed_version = tokens[1]
+                            break
+                        elif token.startswith("Candidate:"):
+                            candidate_version = tokens[1]
+                            break
+        except:
+            message = "Unable to get package version info"
+            self.status = message
+            self.logger.exception(message)
+            self.current_version = installed_version
+            self.upgrade_version = candidate_version
+            self.mode = modes.ERROR
+            return False
+
+        # Update package version info in shared state
+        self.current_version = installed_version
+        self.upgrade_version = candidate_version
+
+        # Verify package info is known
+        if self.current_version == "Unknown" or self.upgrade_version == "Unknown":
+            message = "Unknown package version"
+            self.status = message
+            self.logger.error(message)
+            self.mode = modes.ERROR
+            return False
+
+        # Check if software is up to date
+        if self.current_version == self.upgrade_version:
+            message = "Software is up to date"
+            self.status = message
+            self.logger.info(message)
+            return False
+
+        # Software update is available
+        message = "Software update is available"
+        self.status = message
+        self.logger.info(message)
+        return True
+
+    def upgrade_software(self) -> None:
+        """Upgrades our debian package to the latest version available. Writes upgrade 
+        commands to a temporary file that is executed a minute later. This is necessary 
+        because if we call 'sudo apt-get install -y openagbrain' from inside the django
+        process we will create a deadlock where apt can't complete the install because 
+        it is run as a child of the process it has to terminate."""
+        self.logger.info("Upgrading software")
+
+        # Create at-commands file
+        try:
+            filepath = "/tmp/openagbrain-at-commands"
+            with open(filepath, "w") as f:
+                f.write("systemctl stop rc.local\n")
+                f.write("apt-get install -y openagbrain\n")
+        except:
+            message = "Unable to create at-commands file"
+            self.status = message
+            self.logger.exception(message)
+            self.mode = modes.ERROR
+            return
+
+        # Execute at commands
+        try:
+            command = [
+                "at", "-f", "/tmp/openagbrain-at-commands", "now", "+", "1", "minute"
+            ]
+            subprocess.Popen(command)
+            self.status = "Upgrading software, will restart in 2 minutes"
+            self.upgrade_available = False
+        except:
+            message = "Unable to execute at-commands"
+            self.status = message
+            self.logger.exception(message)
+            self.upgrade_available = False
+            self.mode = modes.ERROR
+
+    def check_for_upgrades(self) -> bool:
+        """Checks for upgrades."""
+        self.upgrade_available = self._upgrade_available()
+        return self.upgrade_available
