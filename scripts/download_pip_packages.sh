@@ -10,5 +10,6 @@ source venv/bin/activate
 pip3 download -d venv/pip_download -r requirements.txt
 
 # Make sure our default user can access all files when running django
-sudo chown -R debian:debian .
-
+if [[ "$OSTYPE" == "linux"* ]]; then
+  sudo chown -R debian:debian .
+fi
