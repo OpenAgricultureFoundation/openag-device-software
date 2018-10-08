@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Get the path to THIS script
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Save the path to THIS script (before we go changing dirs)
+TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# The top of our source tree is the parent of this scripts dir
+TOPDIR+=/..
+cd $TOPDIR
 
 # If there is a current python virtual environment, deactivate it.
 if ! [ -z "${VIRTUAL_ENV}" ] ; then
@@ -9,8 +12,7 @@ if ! [ -z "${VIRTUAL_ENV}" ] ; then
 fi
 
 # Activate the python env for this bash process
-source $DIR/venv/bin/activate
+source $TOPDIR/venv/bin/activate
 
 # Collect static files
-cd ../
 sudo venv/bin/python3.6 manage.py collectstatic --clear --link --noinput

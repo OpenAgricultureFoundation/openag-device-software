@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# This script creates a debian package of the OpenAg Brain python app for
+# installation on a Beaglebone that controls a Food Computer.
+
+if [ $# -lt 2 ]; then
+    echo "Error: missing two mandatory command line args."
+    echo "Usage: major.minor patch"
+    echo "Example to produce version 2.3.1 (or 2.3-1 in deb format):  2.3 1"
+    exit 1
+fi
+
 if [[ "$OSTYPE" != "linux"* ]]; then
     echo "This script can only be run on a BBB."
     exit 1
@@ -46,16 +56,6 @@ python3.6 manage.py collectstatic --clear --link --noinput
 echo "Your editor will open in a minute, you should summarize why you are making this release, then save and close the editor to continue building the package."
 echo ""
 
-
-# This script creates a debian package of the OpenAg Brain python app for
-# installation on a Beaglebone that controls a Food Computer.
-
-if [ $# -lt 2 ]; then
-    echo "Error: missing two mandatory command line args."
-    echo "Usage: major.minor patch"
-    echo "Example to produce version 2.3.1 (or 2.3-1 in deb format):  2.3 1"
-    exit 1
-fi
 
 PACKAGE="openagbrain"
 MAJMIN=$1

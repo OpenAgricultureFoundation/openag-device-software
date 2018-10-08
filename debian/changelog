@@ -1,3 +1,13 @@
+openagbrain (1.0-1) stable; urgency=medium
+
+  * Cached static resources.
+  * Advanced connection page.
+  * Nicer menu.
+  * Mobile friendly.
+  * New type system.
+
+ -- rob baynes <rbaynes@mit.edu>  Thu, 04 Oct 2018 20:49:28 +0000
+
 openagbrain (1.0-0) stable; urgency=medium
 
   * Fixed image bug #91. 
