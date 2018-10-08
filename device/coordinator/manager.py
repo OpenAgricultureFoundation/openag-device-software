@@ -9,8 +9,8 @@ from app import models
 
 # Import device utilities
 from device.utilities.statemachine.manager import StateMachineManager
-from device.state.main import State
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.state.main import State
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 from device.utilities.accessors import set_nested_dict_safely
 from device.utilities.logger import Logger
 

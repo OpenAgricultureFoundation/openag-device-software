@@ -8,8 +8,8 @@ os.chdir(ROOT_DIR)
 
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
-from device.state.main import State
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.state.main import State
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral manager
 from device.peripherals.modules.atlas_do.manager import AtlasDOManager

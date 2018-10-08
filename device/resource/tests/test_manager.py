@@ -5,7 +5,7 @@ import os, sys, pytest, logging, time
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import device utilities
-from device.state.main import State
+from device.utilities.state.main import State
 from device.utilities.statemachine import modes, events
 
 # Import device managers

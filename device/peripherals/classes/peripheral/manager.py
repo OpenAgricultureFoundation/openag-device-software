@@ -7,8 +7,8 @@ from typing import Dict, Optional, List, Any, Tuple
 # Import device utilities
 from device.utilities import logger
 from device.utilities.statemachine.manager import StateMachineManager
-from device.communication.i2c.mux_simulator import MuxSimulator
-from device.state.main import State
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.state.main import State
 
 # Import manager elements
 from device.peripherals.classes.peripheral import modes, events

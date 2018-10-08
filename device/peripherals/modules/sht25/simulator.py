@@ -5,7 +5,7 @@ from typing import Any
 from device.utilities.bitwise import byte_str
 
 # Import simulator elements
-from device.communication.i2c.peripheral_simulator import (
+from device.utilities.communication.i2c.peripheral_simulator import (
     PeripheralSimulator,
     verify_mux,
 )

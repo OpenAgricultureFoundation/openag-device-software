@@ -2,7 +2,7 @@
 import subprocess, socket, json, os, platform, time, uuid, urllib.request
 
 # Import  device utilities
-from device.state.main import State
+from device.utilities.state.main import State
 
 # Import app viewers
 from app.viewers import UpgradeViewer

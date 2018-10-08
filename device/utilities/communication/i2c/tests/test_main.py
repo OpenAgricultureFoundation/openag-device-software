@@ -6,10 +6,10 @@ from unittest import TestCase
 from device.utilities.bitwise import byte_str
 
 # Import i2c elements
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import ReadError, WriteError
-from device.communication.i2c.mux_simulator import MuxSimulator
-from device.communication.i2c.peripheral_simulator import PeripheralSimulator
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.exceptions import ReadError, WriteError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.peripheral_simulator import PeripheralSimulator
 
 # Enable logging output
 logging.basicConfig(level=logging.DEBUG)

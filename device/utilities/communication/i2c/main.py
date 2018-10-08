@@ -3,11 +3,11 @@ import fcntl, io, time, logging, struct, threading
 from typing import Optional, List
 
 # # Import package elements
-from device.communication.i2c.device_io import DeviceIO
-from device.communication.i2c.utilities import make_i2c_rdwr_data
-from device.communication.i2c.peripheral_simulator import PeripheralSimulator
-from device.communication.i2c.mux_simulator import MuxSimulator
-from device.communication.i2c.exceptions import (
+from device.utilities.communication.i2c.device_io import DeviceIO
+from device.utilities.communication.i2c.utilities import make_i2c_rdwr_data
+from device.utilities.communication.i2c.peripheral_simulator import PeripheralSimulator
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.exceptions import (
     InitError,
     WriteError,
     ReadError,

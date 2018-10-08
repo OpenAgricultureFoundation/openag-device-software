@@ -10,13 +10,13 @@ from device.utilities.logger import Logger
 from device.utilities.bitwise import byte_str
 
 # Import i2c package elements
-from device.communication.i2c.exceptions import (
+from device.utilities.communication.i2c.exceptions import (
     InitError,
     WriteError,
     ReadError,
     MuxError,
 )
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Initialize type checking variables
 F = TypeVar("F", bound=Callable[..., Any])

@@ -8,8 +8,8 @@ os.chdir(ROOT_DIR)
 
 # Import device utilities
 from device.utilities import accessors
-from device.state.main import State
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.state.main import State
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import manager elements
 from device.peripherals.classes.peripheral import modes

@@ -10,7 +10,7 @@ os.chdir(root_dir)
 from device.utilities.accessors import get_peripheral_config
 
 # Import mux simulator
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.led_dac5578.driver import LEDDAC5578Driver

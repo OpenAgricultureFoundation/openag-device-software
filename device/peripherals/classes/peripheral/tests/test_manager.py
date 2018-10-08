@@ -9,7 +9,7 @@ os.chdir(root_dir)
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities.accessors import get_peripheral_config
-from device.state.main import State
+from device.utilities.state.main import State
 
 # Import manager elements
 from device.peripherals.classes.peripheral.manager import PeripheralManager

@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 # Import device utilities
 from device.utilities.bitwise import byte_str
-from device.communication.i2c.peripheral_simulator import (
+from device.utilities.communication.i2c.peripheral_simulator import (
     PeripheralSimulator,
     verify_mux,
 )

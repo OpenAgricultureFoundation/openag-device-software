@@ -5,7 +5,7 @@ import os, sys, pytest, threading
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import device state
-from device.state.main import State
+from device.utilities.state.main import State
 
 
 # def test_state():

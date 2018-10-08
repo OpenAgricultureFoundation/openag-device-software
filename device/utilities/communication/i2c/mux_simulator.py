@@ -8,7 +8,7 @@ from typing import Optional, Dict
 from device.utilities.logger import Logger
 
 # Import i2c package elements
-from device.communication.i2c.exceptions import MuxError
+from device.utilities.communication.i2c.exceptions import MuxError
 
 
 class MuxSimulator(object):

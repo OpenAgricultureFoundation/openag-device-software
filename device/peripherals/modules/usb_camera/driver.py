@@ -6,9 +6,9 @@ from typing import Optional, Tuple, Dict, Any, List
 
 # Import device utilities
 from device.utilities import logger, accessors
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.exceptions import I2CError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver

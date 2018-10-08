@@ -4,7 +4,7 @@ import pytest, os
 # from device.managers.device import DeviceManager
 # from device.utilities.modes import Modes
 # from device.utilities.errors import Errors
-# from device.state.main import State
+# from device.utilities.state.main import State
 
 
 # def make_a_state():

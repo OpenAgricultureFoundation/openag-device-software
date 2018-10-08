@@ -9,7 +9,7 @@ from device.utilities.logger import Logger
 from device.utilities.statemachine.manager import StateMachineManager
 
 # Import device state
-from device.state.main import State
+from device.utilities.state.main import State
 
 # Import database models
 from app import models

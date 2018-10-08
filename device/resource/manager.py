@@ -13,7 +13,7 @@ from app.models import EnvironmentModel, EventModel
 # Import device utilities
 from device.utilities import logger, accessors, constants
 from device.utilities.statemachine import manager, modes
-from device.state.main import State
+from device.utilities.state.main import State
 
 # Import device managers
 from device.iot.manager import IoTManager

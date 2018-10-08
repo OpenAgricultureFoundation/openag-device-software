@@ -7,7 +7,7 @@ sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 # Import driver elements
 from device.peripherals.classes.atlas.driver import AtlasDriver
 from device.peripherals.classes.atlas.simulator import AtlasSimulator
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 
 def test_init() -> None:

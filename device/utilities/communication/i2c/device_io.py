@@ -7,13 +7,17 @@ from types import TracebackType
 from device.utilities.logger import Logger
 
 # Import i2c package elements
-from device.communication.i2c.exceptions import (
+from device.utilities.communication.i2c.exceptions import (
     InitError,
     WriteError,
     ReadError,
     MuxError,
 )
-from device.communication.i2c.utilities import make_i2c_rdwr_data, c_uint8, pointer
+from device.utilities.communication.i2c.utilities import (
+    make_i2c_rdwr_data,
+    c_uint8,
+    pointer,
+)
 
 
 # Initialize I2C communication options

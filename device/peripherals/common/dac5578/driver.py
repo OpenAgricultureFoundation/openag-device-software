@@ -7,9 +7,9 @@ from typing import NamedTuple, Optional, Dict
 # Import device utilities
 from device.utilities.logger import Logger
 from device.utilities import bitwise
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.exceptions import I2CError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import driver elements
 from device.peripherals.common.dac5578.simulator import DAC5578Simulator

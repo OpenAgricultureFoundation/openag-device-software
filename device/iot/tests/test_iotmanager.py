@@ -2,7 +2,7 @@ import pytest, os, time
 
 # Import the IoT manager class
 from device.iot.manager import IoTManager
-from device.state.main import State
+from device.utilities.state.main import State
 
 
 # # Need a mock class to pass into the IoTManager, which makes calls to it.

@@ -10,7 +10,7 @@ sys.path.append(root_dir)
 os.chdir(root_dir)
 
 # Import mux simulator
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.usb_camera.driver import USBCameraDriver

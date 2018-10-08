@@ -8,9 +8,9 @@ from typing import Optional, Tuple, NamedTuple
 from device.utilities.logger import Logger
 from device.utilities import logger, maths
 
-# from device.communication.i2c.main import I2C
-# from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
+# from device.utilities.communication.i2c.main import I2C
+# from device.utilities.communication.i2c.exceptions import I2CError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import driver elements
 from device.peripherals.classes.atlas import driver
