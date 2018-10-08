@@ -553,9 +553,9 @@ class RecipeManager(StateMachineManager):
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            models.RecipeTransitionModel.objects.filter(minute__lte=minute)
-            .order_by("-minute")
-            .first()
+            models.RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
+                "-minute"
+            ).first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:
@@ -716,6 +716,19 @@ class RecipeManager(StateMachineManager):
                 self.logger.debug(message)
                 return False, message
 
+        """
+        TODO: Reinstate these checks once cloud system has support for enforcing
+        uniqueness of cultivars and cultivation methods. While we are at it, my as 
+        well do the same for variable types so can create "scientific" recipes from 
+        the cloud UI and send complete recipes. Cloud system will need a way to manage
+        recipes and recipe derivatives. R.e. populating cultivars table, might just 
+        want to scrape seedsavers or leverage another existing organism database. 
+        Probably also want to think about organismal groups (i.e. classifications).
+        Classifications could the standard scientific (Kingdom , Phylum, etc.) or a more
+        user-friendly group (e.g. Leafy Greens, Six-Week Grows, Exotic Plants, 
+        Pre-Historic Plants, etc.)
+
+
         # Check cultivars are valid
         for cultivar in cultivars:
             cultivar_name = cultivar["name"]
@@ -735,6 +748,8 @@ class RecipeManager(StateMachineManager):
                 message = "Invalid recipe cultivation method: `{}`".format(method_name)
                 self.logger.debug(message)
                 return False, message
+
+        """
 
         # Recipe is valid
         return True, None

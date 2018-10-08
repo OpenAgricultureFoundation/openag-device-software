@@ -65,7 +65,7 @@ def interpolate(
 
     # Get index of smallest element greater than x
     for index in range(len(x_list_copy)):
-        if x_list_copy[index] > x:
+        if x_list_copy[index] > x:  # type: ignore
             break
     index = index - 1
 
