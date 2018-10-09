@@ -2,13 +2,15 @@
 import time, platform, subprocess
 
 # Import python types
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 # Import device utilities
 from device.utilities import logger
 from device.utilities.statemachine import manager, modes
 from device.utilities.state.main import State
 
+# Import package elements
+from device.upgrade import events
 
 # TODO: Catch specific exceptions
 # TODO: Write tests
@@ -17,10 +19,7 @@ from device.utilities.state.main import State
 class UpgradeManager(manager.StateMachineManager):
     """Manages software upgrades."""
 
-    # Initialize class behavior
-    autoupgrade = True
-
-    def __init__(self, state: State) -> None:
+    def __init__(self, state: State, autoupgrade: bool = False) -> None:
         """Initializes upgrade manager."""
 
         # Initialize parent class
@@ -28,6 +27,7 @@ class UpgradeManager(manager.StateMachineManager):
 
         # Initialize parameters
         self.state = state
+        self.autoupgrade = autoupgrade
 
         # Initialize logger
         self.logger = logger.Logger("Upgrade", "upgrade")
@@ -121,8 +121,8 @@ class UpgradeManager(manager.StateMachineManager):
         # Initialize state variables
         self.status = "Initializing"
 
-        # Wait for django UI to startup
-        time.sleep(30)  # seconds
+        # TODO: Should we wait for django UI to startup?
+        # time.sleep(30)  # second
 
         # Transition to normal mode on next state machine update
         self.mode = modes.NORMAL
@@ -144,7 +144,7 @@ class UpgradeManager(manager.StateMachineManager):
 
                 # Check for software upgrade and upgrade if available
                 self.upgrade_available = self._upgrade_available()
-                if self.upgrade_available and self.autoupgrade:
+                if self.autoupgrade and self.upgrade_available:
                     self.upgrade_software()
 
             # Check for events
@@ -172,7 +172,7 @@ class UpgradeManager(manager.StateMachineManager):
             command = ["sudo", "apt-get", "update"]
             subprocess.run(command)
         except:
-            message = "Unable to update list of available packages"
+            message = "Unable to check for software upgrades, unable to update list of available packages"
             self.status = message
             self.logger.exception(message)
             self.mode = modes.ERROR
@@ -201,7 +201,7 @@ class UpgradeManager(manager.StateMachineManager):
                             candidate_version = tokens[1]
                             break
         except:
-            message = "Unable to get package version info"
+            message = "Unable to check for software upgrades, unable to get package version info"
             self.status = message
             self.logger.exception(message)
             self.current_version = installed_version
@@ -215,7 +215,7 @@ class UpgradeManager(manager.StateMachineManager):
 
         # Verify package info is known
         if self.current_version == "Unknown" or self.upgrade_version == "Unknown":
-            message = "Unknown package version"
+            message = "Unable to check for software upgrades, unknown package version"
             self.status = message
             self.logger.error(message)
             self.mode = modes.ERROR
@@ -241,6 +241,7 @@ class UpgradeManager(manager.StateMachineManager):
         process we will create a deadlock where apt can't complete the install because 
         it is run as a child of the process it has to terminate."""
         self.logger.info("Upgrading software")
+        self.status = "Upgrading software"
 
         # Create at-commands file
         try:
@@ -249,7 +250,7 @@ class UpgradeManager(manager.StateMachineManager):
                 f.write("systemctl stop rc.local\n")
                 f.write("apt-get install -y openagbrain\n")
         except:
-            message = "Unable to create at-commands file"
+            message = "Unable to upgrade software, failed to create at-commands file"
             self.status = message
             self.logger.exception(message)
             self.mode = modes.ERROR
@@ -270,7 +271,36 @@ class UpgradeManager(manager.StateMachineManager):
             self.upgrade_available = False
             self.mode = modes.ERROR
 
-    def check_for_upgrades(self) -> bool:
-        """Checks for upgrades."""
+    ##### EVENT FUNCTIONS ##############################################################
+
+    def check(self) -> Tuple[str, int]:
+        """Checks for software upgrade. Can take a few minutes."""
+        self.logger.debug("Checking for software upgrade")
+
+        # Check for upgrade
         self.upgrade_available = self._upgrade_available()
-        return self.upgrade_available
+
+        # Check for errors
+        if self.mode == modes.ERROR:
+            message = "Unable to check for software upgrade"
+            return message, 500
+
+        # Successfully checked for upgrade
+        message = "Successfully checked for software upgrade"
+        return message, 200
+
+    def upgrade(self) -> None:
+        """Upgrades software. Can take a few minutes."""
+        self.logger.debug("Upgrading software")
+
+        # Upgrade software
+        self.upgrade_software()
+
+        # Check for errors
+        if self.mode == modes.ERROR:
+            message = "Unable to upgrade software"
+            return message, 500
+
+        # Successfully upgraded software
+        message = "Successfully upgraded software"
+        return message, 200

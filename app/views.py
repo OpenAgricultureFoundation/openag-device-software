@@ -19,7 +19,6 @@ from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-
 # Import standard django rest modules
 from rest_framework import viewsets
 from rest_framework.renderers import TemplateHTMLRenderer
@@ -78,9 +77,13 @@ from app.viewers import (
 # Import django app
 from django.apps import apps
 
+# Import device utilities
+from device.utilities import logger
+
 # TODO: fix this!!!
 # from device.connect import utilities as connect_utilities # Should be this
 from device.connect.utilities import ConnectUtilities
+
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
 
@@ -830,23 +833,14 @@ class ConnectDeleteIoTreg(viewsets.ViewSet):
         return Response(response)
 
 
-# TODO: Combine upgrade views into a single viewset class. See recipe view set
-# for guidance.
-
-
 class Upgrade(APIView):
-    """UI page fields for ConnectManager."""
+    """UI page for device upgrades."""
 
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "upgrade.html"
 
     @method_decorator(login_required)
     def get(self, request):
-
-        # Initialize logger
-        extra = {"console_name": "views.Update"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
 
         # Get upgrade manager
         app_config = apps.get_app_config(APP_NAME)
@@ -859,68 +853,80 @@ class Upgrade(APIView):
             "upgrade_version": upgrade.upgrade_version,
             "upgrade_available": upgrade.upgrade_available,
         }
-        logger.info("Upgrade response: {}".format(response))
         return Response(response)
 
 
-class UpgradeNow(viewsets.ViewSet):
-    """REST API to upgrade our debian package.
-    This class extends the ViewSet (not ModelViewSet) because it
-    dynamically gets its data and the Model gets data from the DB."""
+class UpgradeViewSet(viewsets.ModelViewSet):
+    """View set for interactions with device upgrades."""
 
-    @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.UpgradeNow"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
+    # Initialize logger
+    logger = logger.Logger("Upgrade", "app")
+
+    # @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    # def info(self, request):
+    #     """Gets for software upgrade info."""
+    #     self.logger.debug("Getting software upgrade info")
+
+    #     # Get upgrade manager
+    #     app_config = apps.get_app_config(APP_NAME)
+    #     upgrade = app_config.coordinator.upgrade
+
+    #     # Get upgrade info
+    #     response, status = upgrade.info()
+
+    #     # Return response
+    #     self.logger.debug("Returning response: {}".format(response))
+    #     return Response(response, status)
+
+    @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def check(self, request):
+        """Checks for software upgrades."""
+        self.logger.debug("Checking for software upgrades")
+
+        # Get upgrade manager
+        app_config = apps.get_app_config(APP_NAME)
+        upgrade = app_config.coordinator.upgrade
+
+        # Check for upgrades
+        message, status = upgrade.check()
+
+        # Build response message
+        response = {
+            "message": message,
+            "status": upgrade.status,
+            "upgrade_available": upgrade.upgrade_available,
+            "current_version": upgrade.current_version,
+            "upgrade_version": upgrade.upgrade_version,
+        }
+
+        # Return response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
+
+    @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def upgrade(self, request):
+        """Upgrades software."""
+        self.logger.debug("Upgrading software")
 
         # Get upgrade manager
         app_config = apps.get_app_config(APP_NAME)
         upgrade = app_config.coordinator.upgrade
 
         # Upgrade software
-        upgrade.upgrade_software()
-        response = {"status", upgrade.status}
-        logger.info("UpgradeNow response={}".format(response))
-        return Response(response)
+        message, status = upgrade.upgrade_software()
 
+        # Build response message
+        response = {
+            "message": message,
+            "status": upgrade.status,
+            "upgrade_available": upgrade.upgrade_available,
+            "current_version": upgrade.current_version,
+            "upgrade_version": upgrade.upgrade_version,
+        }
 
-class UpgradeCheck(viewsets.ViewSet):
-    """REST API to check for upgrades to our debian package. """
-
-    @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.UpgradeCheck"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
-
-        # Get upgrade manager
-        app_config = apps.get_app_config(APP_NAME)
-        upgrade = app_config.coordinator.upgrade
-
-        # Check for upgrade
-        response = {"upgrade_available": upgrade.check_for_upgrade()}
-        logger.info("UpgradeCheck response={}".format(response))
-        return Response(response)
-
-
-class UpgradeStatus(viewsets.ViewSet):
-    """REST API to get the current software version status. """
-
-    @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.UpgradeStatus"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
-
-        # Get upgrade manager
-        app_config = apps.get_app_config(APP_NAME)
-        upgrade = app_config.coordinator.upgrade
-
-        # Get status
-        response = {"status": upgrade.status}
-        logger.info("UpgradeStatus response={}".format(response))
-        return Response(response)
+        # Return response
+        logger.info("Returning response: {}".format(response))
+        return Response(response, status)
 
 
 class Manual(APIView):

@@ -3,119 +3,79 @@
 {% block javascript %}
 <script>
   window.onload = function() {
+    var status = "{{status}}";
+    var upgradeAvailable = "{{upgrade_available}}";
+    var currentVersion = "{{current_version}}";
+    var upgradeVersion = "{{upgrade_version}}";
+    updateView(status, upgradeAvailable, currentVersion, upgradeVersion);
+  }
 
-    document.getElementById("status").innerHTML = "{{status}}";
-    document.getElementById("current_version").innerHTML = "{{current_version}}";
-    document.getElementById("upgrade_version").innerHTML = "{{upgrade_version}}";
+  function updateView(status, upgradeAvailable, currentVersion, upgradeVersion) {
+    console.log("Updating view");
 
-    {% if upgrade_available %}
-      $('#upgrade_available_button').collapse('show');
-      $('#check_for_upgrades_button').collapse('hide');
+    // Display upgrade info
+    document.getElementById("status").innerHTML = status;
+    document.getElementById("current_version").innerHTML = currentVersion;
+    document.getElementById("upgrade_version").innerHTML = upgradeVersion;
+    
+    // Display upgrade or check-for-upgrade button
+    {% if upgradeAvailable %}
+      $('#upgrade-button').collapse('show');
+      $('#check-for-upgrades-button').collapse('hide');
     {% else %}
-      $('#check_for_upgrades_button').collapse('show');
+      $('#check-for-upgrades-button').collapse('show');
     {% endif %}
+
   }
 
-  function upgrade() {
-    document.getElementById("status").innerHTML = 'Upgrading to latest version, restarting in 2 minutes...';
-    $('#upgrade_available_button').collapse('hide');
-    upgradePromise()
-      .then(function(upgradeSuccess) {
-        document.getElementById("status").innerHTML = upgradeSuccess;
-      })
-      .catch(function(error) {
-        document.getElementById("status").innerHTML = 'Failed: ' + error;
-      })
+
+  function checkForSoftwareUpgrades() {
+    console.log("Checking for software upgrades")
+    document.getElementById("status").innerHTML = 'Checking for software upgrades, this can take a few minutes...';
+    $('#check-for-upgrades-button').collapse('hide');
+    $.ajax({
+      url: "/api/upgrade/check/",
+      type: "GET",
+      data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+      dataType: 'json',
+      success: function(data) {
+        console.log(data['message'])
+        updateView(data['status'], data['upgrade_available'], data['current_version'], data['upgrade_version']);
+      },
+      error: function(data) {
+        response_dict = JSON.parse(data.responseText)
+        message = response_dict["message"]
+        console.log(message);
+        updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
+      }
+    });
   }
 
-  function upgradePromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/upgrade/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          var upgradeSuccess = data['status'];
-          resolve(upgradeSuccess)
-        },
-        error: function(data) {
-          console.log("Upgrade failed: " + data['error'])
-          reject(data)
-        }
-      });
-    })
+  function upgradeSoftware() {
+    console.log("Upgrading software")
+    document.getElementById("status").innerHTML = 'Upgrading to latest version, restarting in a few minutes...';
+    $('#upgrade-button').collapse('hide');
+    $.ajax({
+      url: "/api/upgrade/upgrade/",
+      type: "GET",
+      data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+      dataType: 'json',
+      success: function(data) {
+        console.log(data['message'])
+        updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
+      },
+      error: function(data) {
+        response_dict = JSON.parse(data.responseText)
+        message = response_dict["message"]
+        console.log(message);
+        updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
+      }
+    });
   }
-
-  function check() {
-    document.getElementById("status").innerHTML = 'Checking for updates, this will take 2 minutes...';
-    $('#check_for_upgrades_button').collapse('hide');
-    checkPromise()
-      .then(function(checkSuccess) {
-        document.getElementById("status").innerHTML = checkSuccess;
-        $('#check_for_upgrades_button').collapse('show');
-        return getStatusPromise();
-      })
-      .catch(function(error) {
-        document.getElementById("status").innerHTML = 'Failed: ' + error;
-      })
-  }
-
-  function checkPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/upgradecheck/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          var checkSuccess = data['status'];
-          resolve(checkSuccess)
-        },
-        error: function(data) {
-          console.log("Check failed: " + data['error'])
-          reject(data)
-        }
-      });
-    })
-  }
-
-  function getStatusPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/upgradestatus/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: "json",
-        success: function(data) {
-
-          document.getElementById("current_version").innerHTML = data['current_version'];
-          document.getElementById("upgrade_version").innerHTML = data['upgrade_version'];
-          if( data['upgrade_available'] ) {
-            $('#upgrade_available_button').collapse('show');
-            $('#check_for_upgrades_button').collapse('hide');
-          } else {
-            $('#upgrade_available_button').collapse('hide');
-            $('#check_for_upgrades_button').collapse('show');
-          }
-
-          var statusDict = data;
-          resolve(statusDict);
-        },
-        error: function(data) {
-          console.log("Promise Error: getStatus failed");
-          document.getElementById("status").innerHTML = 'Could not get status.';
-          reject(data);
-        }
-      });
-    })
-  }
-
 </script>
 {% endblock %}
 
 {% block content %}
-
 <html>
    <body>
       <div class="upgrade">
@@ -125,22 +85,21 @@
               <li><b>Status:</b> <span id="status"></span>
               <li><b>Current Software Version:</b> <span id="current_version"></span>
               <li><b>Available Software Upgrade to Version:</b> <span id="upgrade_version"></span>
-              {% if error != None %}
-              <li><b>Error:</b> {{ error }}
-              {% endif %}
             </ul>
-            <div class="collapse" id="upgrade_available_button">
+            <div class="collapse" id="upgrade-button">
               <a class="badge badge-secondary" data-toggle="collapse"
                  style="width:200px" href="" role="button" 
-                 onclick="upgrade();">Upgrade the software</a> 
+                 onclick="upgradeSoftware();">Upgrade the software</a> 
             </div>
-            <div class="collapse" id="check_for_upgrades_button">
+            <div class="collapse" id="check-for-upgrades-button">
               <a class="badge badge-secondary" data-toggle="collapse"
                  style="width:200px" href="" role="button" 
-                 onclick="check();">Check for available upgrade</a> 
+                 onclick="checkForSoftwareUpgrades();">Check for available upgrade</a> 
             </div>
          </div>
       </div>
    </body>
 </html>
 {% endblock %}
+
+
