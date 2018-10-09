@@ -29,7 +29,6 @@ cp -R app/ \
   device/ \
   docs/ \
   scripts/ \
-  tests/ \
   venv/ \
   $DEST
 

@@ -1,3 +1,9 @@
+openagbrain (1.0-2) stable; urgency=medium
+
+  * Fixed images page. 
+
+ -- rob baynes <rbaynes@mit.edu>  Tue, 09 Oct 2018 19:11:02 +0000
+
 openagbrain (1.0-1) stable; urgency=medium
 
   * Cached static resources.
