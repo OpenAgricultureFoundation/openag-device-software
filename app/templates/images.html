@@ -25,7 +25,7 @@
   function showImage() {
     var slider = $("#imageSlider");
     var img = document.getElementById("image");
-    img.src = "/app/static/stored_images/" + images[ slider.val() ];
+    img.src = "/app/static/images/" + images[ slider.val() ];
     var fn = $("#file_name");
     var fntext = images[ slider.val() ];
     fntext = fntext.replace( /_/g, ' ' );
