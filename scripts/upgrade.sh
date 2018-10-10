@@ -14,11 +14,12 @@ if [[ "$OSTYPE" == "linux"* ]]; then
   # Fix up some directories and files that may be owned by root
   sudo chmod -f -R 777 logs/ images/ 
   sudo chown -R debian:debian .
-
-  # For upgrade to version 1.0.2 we need to fixup the symlink to images
-  sudo ln -sf $TOPDIR/data/images/stored $TOPDIR/app/staticfiles/images
-  sudo rm -f $TOPDIR/app/static/stored_images
 fi
+
+# For upgrade to version 1.0.2 we need to fixup the symlink to images
+sudo rm -f $TOPDIR/app/staticfiles/images
+sudo ln -sf $TOPDIR/data/images/stored $TOPDIR/app/staticfiles/images
+sudo rm -f $TOPDIR/app/static/stored_images
 
 # Install any new python modules
 source venv/bin/activate
