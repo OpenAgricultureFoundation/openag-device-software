@@ -10,11 +10,21 @@ from device.utilities.statemachine import manager, modes
 from device.utilities.state.main import State
 
 # Import manager elements
-from device.utilities import network
+from device.utilities import network as network_utilities
 
 # TODO: Should we rename this to network manager?
-# Answer: Depends if we want to interact with iot
-# If
+# Answer: Depends if we want to interact with iot, e.g. respawn on reconnect
+# Or iot manager just watches network manager? or calls network utility?
+# Would rather keep seperate unless have a good reason to merge them
+
+# TODO: Should we bring persist ports for port forwarding? Probably want as much of
+# the code to live in python land as possible so we don't have to keep track of bash
+# scripts and managing crontabs?
+
+# TODO: Should we break out the bash scripts so we're never even calling them, just
+# the commands inside of them?
+
+# TODO: The other consideration would be to build a single system manager? Idk...
 
 
 class ConnectManager(manager.StateMachineManager):
@@ -223,9 +233,9 @@ class ConnectManager(manager.StateMachineManager):
 
     def update_connection(self) -> None:
         """Updates connection state."""
-        self.internet_is_connected = network.internet_is_connected()
-        self.ip_address = network.get_ip_address()
-        self.wifi_access_points = network.get_wifi_access_points()
+        self.internet_is_connected = network_utilities.internet_is_connected()
+        self.ip_address = network_utilities.get_ip_address()
+        self.wifi_access_points = network_utilities.get_wifi_access_points()
 
     ##### EVENT FUNCTIONS ##############################################################
 
@@ -243,7 +253,7 @@ class ConnectManager(manager.StateMachineManager):
 
         # Join wifi
         try:
-            network.join_wifi()
+            network_utilities.join_wifi()
         except Exception as e:
             message = "Unable to join wifi, unhandled exception: {}".format(type(e))
             self.logger.exception(message)
