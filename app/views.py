@@ -913,7 +913,7 @@ class UpgradeViewSet(viewsets.ModelViewSet):
         upgrade = app_config.coordinator.upgrade
 
         # Upgrade software
-        message, status = upgrade.upgrade_software()
+        message, status = upgrade.upgrade()
 
         # Build response message
         response = {
@@ -925,7 +925,7 @@ class UpgradeViewSet(viewsets.ModelViewSet):
         }
 
         # Return response
-        logger.info("Returning response: {}".format(response))
+        self.logger.info("Returning response: {}".format(response))
         return Response(response, status)
 
 
