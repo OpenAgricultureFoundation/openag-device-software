@@ -6,11 +6,11 @@ from typing import Dict, List, Tuple
 
 # Import device utilities
 from device.utilities import logger
-from device.utilities.statemachine import manager, modes
+from device.utilities.statemachine import manager
 from device.utilities.state.main import State
 
 # Import package elements
-from device.upgrade import events
+from device.upgrade import events, modes
 
 # TODO: Catch specific exceptions
 # TODO: Write tests
@@ -35,13 +35,18 @@ class UpgradeManager(manager.StateMachineManager):
 
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
-            modes.INIT: [modes.NORMAL, modes.SHUTDOWN, modes.ERROR],
-            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR],
+            modes.AUTOMATIC: [modes.MANUAL, modes.SHUTDOWN, modes.ERROR],
+            modes.MANUAL: [modes.AUTOMATIC, modes.SHUTDOWN, modes.ERROR],
             modes.ERROR: [modes.SHUTDOWN],
         }
 
         # Initialize state machine mode
-        self.mode = modes.INIT
+        if self.autoupgrade:
+            self.status = "Awaiting automatic check for upgrades"
+            self.mode = modes.AUTOMATIC
+        else:
+            self.status = "Awating manual check for upgrades"
+            self.mode = modes.MANUAL
 
     @property
     def status(self) -> str:
@@ -100,10 +105,10 @@ class UpgradeManager(manager.StateMachineManager):
                 break
 
             # Check for mode transitions
-            if self.mode == modes.INIT:
-                self.run_init_mode()
-            elif self.mode == modes.NORMAL:
-                self.run_normal_mode()
+            if self.mode == modes.AUTOMATIC:
+                self.run_automatic_mode()
+            elif self.mode == modes.MANUAL:
+                self.run_manual_mode()
             elif self.mode == modes.ERROR:
                 self.run_error_mode()  # defined in parent classs
             elif self.mode == modes.SHUTDOWN:
@@ -114,22 +119,9 @@ class UpgradeManager(manager.StateMachineManager):
                 self.is_shutdown = True
                 break
 
-    def run_init_mode(self) -> None:
-        """Runs initialization mode."""
-        self.logger.debug("Entered INIT")
-
-        # Initialize state variables
-        self.status = "Initializing"
-
-        # TODO: Should we wait for django UI to startup?
-        # time.sleep(30)  # second
-
-        # Transition to normal mode on next state machine update
-        self.mode = modes.NORMAL
-
-    def run_normal_mode(self) -> None:
+    def run_automatic_mode(self) -> None:
         """Runs normal mode."""
-        self.logger.debug("Entered NORMAL")
+        self.logger.debug("Entered AUTOMATIC")
 
         # Initialize last update time
         last_update_time = 0.0
@@ -151,11 +143,32 @@ class UpgradeManager(manager.StateMachineManager):
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(modes.NORMAL):
+            if self.new_transition(modes.AUTOMATIC):
                 break
 
             # Update every 100ms
             time.sleep(0.1)
+
+    def run_manual_mode(self) -> None:
+        """Runs manual mode."""
+        self.logger.debug("Entered MANUAL")
+
+        # Initialize last update time
+        last_update_time = 0.0
+        update_interval = 86400  # seconds -> every day
+
+        # Loop forever
+        while True:
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.MANUAL):
+                break
+
+            # Update every minute
+            time.sleep(60)
 
     ##### HELPER FUNCTIONS #############################################################
 

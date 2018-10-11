@@ -4,7 +4,8 @@
 <script>
   window.onload = function() {
     var status = "{{status}}";
-    var upgradeAvailable = "{{upgrade_available}}";
+    var upgradeAvailable = ("{{upgrade_available}}" == "True")
+    console.log(upgradeAvailable);
     var currentVersion = "{{current_version}}";
     var upgradeVersion = "{{upgrade_version}}";
     updateView(status, upgradeAvailable, currentVersion, upgradeVersion);
@@ -12,6 +13,7 @@
 
   function updateView(status, upgradeAvailable, currentVersion, upgradeVersion) {
     console.log("Updating view");
+    console.log(upgradeAvailable);
 
     // Display upgrade info
     document.getElementById("status").innerHTML = status;
@@ -19,15 +21,15 @@
     document.getElementById("upgrade_version").innerHTML = upgradeVersion;
     
     // Display upgrade or check-for-upgrade button
-    {% if upgradeAvailable %}
+    if (upgradeAvailable) {
       $('#upgrade-button').collapse('show');
       $('#check-for-upgrades-button').collapse('hide');
-    {% else %}
+    }
+    else {
+      $('#upgrade-button').collapse('hide');
       $('#check-for-upgrades-button').collapse('show');
-    {% endif %}
-
+    }
   }
-
 
   function checkForSoftwareUpgrades() {
     console.log("Checking for software upgrades")
