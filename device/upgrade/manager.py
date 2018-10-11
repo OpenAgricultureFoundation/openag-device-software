@@ -12,9 +12,6 @@ from device.utilities.state.main import State
 # Import package elements
 from device.upgrade import events, modes
 
-# TODO: Catch specific exceptions
-# TODO: Write tests
-
 
 class UpgradeManager(manager.StateMachineManager):
     """Manages software upgrades."""
@@ -272,7 +269,13 @@ class UpgradeManager(manager.StateMachineManager):
         # Execute at commands
         try:
             command = [
-                "at", "-f", "/tmp/openagbrain-at-commands", "now", "+", "1", "minute"
+                "at",
+                "-f",
+                "/tmp/openagbrain-at-commands",
+                "now",
+                "+",
+                "1",
+                "minute",
             ]
             subprocess.Popen(command)
             self.status = "Upgrading software, will restart in 2 minutes"
@@ -302,7 +305,7 @@ class UpgradeManager(manager.StateMachineManager):
         message = "Successfully checked for software upgrade"
         return message, 200
 
-    def upgrade(self) -> None:
+    def upgrade(self) -> Tuple[str, int]:
         """Upgrades software. Can take a few minutes."""
         self.logger.debug("Upgrading software")
 
