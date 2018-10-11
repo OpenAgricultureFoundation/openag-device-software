@@ -5,142 +5,153 @@
   
   window.onload = function() {
 
-    document.getElementById("status").innerHTML = "{{status}}";
-    document.getElementById("device_IP").innerHTML = "{{IP}}";
-    document.getElementById("device_UI").innerHTML = "{{device_UI}}";
-    document.getElementById("device_UI").href = "{{device_UI}}";
+    var status = "{{ status }}"
+    var internetIsConnected = ("{{ internet_is_connected }}" == "True")
+    var wifiAccessPoints = []
+    var ipAddress = "{{ ip_address }}"
+
+    updateView(status, internetIsConnected, ipAddress, wifiAccessPoints)
+
+  }
+
+  function updateView(status, internetIsConnected, ipAddress) {
+    console.log("Updating view");
+
+    // Display connection info
+    document.getElementById("status").innerHTML = status;
+    document.getElementById("ip-address").innerHTML = ipAddress;
+    document.getElementById("remote-device-ui-url").innerHTML = remoteDeviceUI;
+    document.getElementById("remote-device-ui-url").href = remoteDeviceUI;
+    document.getElementById("web-ui-url").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
+    // document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
 
 
-    {% if verification_code != None %}
-    document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-    document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + "{{verification_code}}";
-    {% endif %}
+    // Remove stale wifi access point selections
+    console.log("Removing stale wifi access point selections")
+    var wifiAccessPointSelect = document.getElementById("wifiAccessPointSelect");
+    for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
+      wifiAccessPointSelect.remove(i);
+    }
+    
+    // Add updated wifi access point selections
+    console.log("Adding updated wifi access point selections")
+    for( i=0; i < wifiAccessPoints.length; i++ ) {
+      wifiAccessPoint = wifiAccessPoints[i];
+      var option = document.createElement("option");
+      option.text = wifiAccessPoint.ssid;
+      option.value = wifiAccessPoint.service;
+      wifiAccessPointSelect.add(option);
+    }
 
-    {% if is_bbb %}
-      $('#is_bbb').collapse('show');
-    {% endif %}
-
-    {% if is_wifi_bbb and not valid_internet_connection %}
-      $('#show_wifi').collapse('show');
-      $('#show_dev_UI').collapse('hide');
-    {% else %}
-      $('#show_dev_UI').collapse('show');
-    {% endif %}
   }
 
   function joinWifi() {
+    console.log("Joining wifi")
+    
+    // Update status
     document.getElementById("status").innerHTML = 'Connecting, this will take a few minutes...'
-    var wifiSel = document.getElementById("wifiList");
-    if( null == wifiSel ) {
-      console.log("Error: could not get wifiList element")
+
+    // Get wifi name
+    var wifiName = document.getElementById("wifiAccessPoints");
+    if( wifiName == null ) {
+      console.log("Error: could not get wifiAccessPoints element")
       return
     }
 
-    var passwd = document.getElementById("wifi_p");
-    if( null == passwd ) {
-      console.log("Error: could not get wifi_p element")
+    // Get wifi password
+    var wifiPassword = document.getElementById("wifi-password");
+    if( wifiPassword == null ) {
+      console.log("Error: could not get wifi-password element")
       return
     }
 
-    joinWifiPromise(wifiSel.value, passwd.value)
-      .then(function(joinWifiSuccess) {
-        document.getElementById("status").innerHTML = 'Initializing...';
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        // success!  nothing to do here.
-      })
-      .catch(function(error) {
-        console.log('joinWifi Error: '+error);
-      })
+    // Send join wifi request
+    console.log("Sending join wifi request")
+    $.ajax({
+      url: "/api/connect/joinwifi/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+        "wifi": wifiName.value,
+        "password": wifiPassword.value
+      },
+      dataType: 'json',
+      success: function(data) {
+        console.log(data['message'])
+        console.log(data)
+
+        // TODO: updateView(data['status'], data['upgrade_available'], data['current_version'], data['upgrade_version']);
+      },
+      error: function(data) {
+        response_dict = JSON.parse(data.responseText)
+        message = response_dict["message"]
+        console.log(message);
+        console.log(response_dict)
+
+        // TODO: updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
+      }
+    });
   }
 
-  function joinWifiPromise(wifi, passwd) {
-    return new Promise(function (resolve, reject) {
-      // Do POST with selected wifi to API to connect.
-      $.ajax({
-        url: "/api/connect/joinwifi/",
-        type: "POST",
-        data: {
-          "csrfmiddlewaretoken": "{{ csrf_token }}",
-          "wifi": wifi,
-          "password": passwd
-        },
-        dataType: 'json',
-        success: function(data) {
-          // Get response message
-          var joinWifiSuccess = data.success;
-          console.log("joinWifiPromise succeeded: "+joinWifiSuccess);
-          resolve(joinWifiSuccess);
-        },
-        error: function(data) {
-          console.log("joinWifiPromise failed");
-          reject(data);
-        }
-       });
-     })
-     console.log("joinWifi func done.")
-  }
 
-  function getStatusPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/status/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: "json",
-        success: function(data) {
-          document.getElementById("status").innerHTML = data['status'];
-          document.getElementById("device_IP").innerHTML = data['IP'];
-          document.getElementById("device_UI").innerHTML = data['device_UI'];
+  // function getStatusPromise() {
+  //   return new Promise(function (resolve, reject) {
+  //     $.ajax({
+  //       url: "/api/connect/status/",
+  //       type: "GET",
+  //       data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
+  //       dataType: "json",
+  //       success: function(data) {
+  //         document.getElementById("status").innerHTML = data['status'];
+  //         document.getElementById("ip_address").innerHTML = data['ip_address'];
+  //         document.getElementById("remote-device-ui-url").innerHTML = data['remote-device-ui-url'];
 
-          if( data['verification_code'] != "None" ) {
-            document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-            document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
-          }
+  //         if( data['verification_code'] != "None" ) {
+  //           document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
+  //           document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
+  //         }
 
-          // update the page to match the status
-          if(data['is_bbb']) {
-            $('#is_bbb').collapse('show');
-          }
-          if(data['is_wifi_bbb'] && ! data['valid_internet_connection']) {
-            $('#show_wifi').collapse('show');
-            $('#show_dev_UI').collapse('hide');
-          } else {
-            $('#show_wifi').collapse('hide');
-            $('#show_dev_UI').collapse('show');
-          }
+  //         // update the page to match the status
+  //         if(data['is_bbb']) {
+  //           $('#is_bbb').collapse('show');
+  //         }
+  //         if(data['is_wifi_bbb'] && ! data['internet_is_connected']) {
+  //           $('#show_wifi').collapse('show');
+  //           $('#show_dev_UI').collapse('hide');
+  //         } else {
+  //           $('#show_wifi').collapse('hide');
+  //           $('#show_dev_UI').collapse('show');
+  //         }
 
-          // clean out the existing wifis
-          var wifiSel = document.getElementById("wifiList");
-          for( i=wifiSel.length - 1; i >= 0; i-- ) { // must do in reverse
-            wifiSel.remove(i);
-          }
-          // add new wifis we just received
-          wifiList = data['wifis'];
-          for( i=0; i < wifiList.length; i++ ) {
-            wifi = wifiList[i];
-            var option = document.createElement("option");
-            option.text = wifi.ssid;
-            option.value = wifi.service;
-            wifiSel.add(option);
-          }
+  //         // clean out the existing wifis
+  //         var wifiName = document.getElementById("wifiAccessPoints");
+  //         for( i=wifiName.length - 1; i >= 0; i-- ) { // must do in reverse
+  //           wifiName.remove(i);
+  //         }
+  //         // add new wifis we just received
+  //         wifiAccessPoints = data['wifis'];
+  //         for( i=0; i < wifiAccessPoints.length; i++ ) {
+  //           wifi = wifiAccessPoints[i];
+  //           var option = document.createElement("option");
+  //           option.text = wifi.ssid;
+  //           option.value = wifi.service;
+  //           wifiName.add(option);
+  //         }
 
-          var statusDict = data;
-          resolve(statusDict);
-        },
-        error: function(data) {
-          console.log("Promise Error: getStatus failed");
-          document.getElementById("status").innerHTML = 'Could not get status.';
-          reject(data);
-        }
-      });
-    })
-  }
+  //         var statusDict = data;
+  //         resolve(statusDict);
+  //       },
+  //       error: function(data) {
+  //         console.log("Promise Error: getStatus failed");
+  //         document.getElementById("status").innerHTML = 'Could not get status.';
+  //         reject(data);
+  //       }
+  //     });
+  //   })
+  // }
 
-  //--------------------------------------------------------------------------
   function makePasswordVisible() {
-    var pass = document.getElementById("wifi_p");
+    var pass = document.getElementById("wifi-password");
     if (pass.type === "password") {
         pass.type = "text";
     } else {
@@ -151,57 +162,55 @@
 </script>
 {% endblock %}
 
+
+
 {% block content %}
 
 {% csrf_token %}
 
 <html>
-<!-- holds list of available wifis before we put them in a drop list -->
-<input type="hidden" id="wifis" name="variable" value="{{ wifis }}">
+
+<input type="hidden" id="wifi-access-points" name="variable" value="{{ wifi_access_points }}">
 
 <body>
+
 <div class="connect">
+  
   <h2>Connect</h2>
-  <div class="card" id="inet-card">
+  <div class="card" id="connect-card">
+    
     <h3>Networking</h3></br>
+    <div class="collapse" id="networking-collapse">
+      <select id="wifi-access-points" class="selectpicker" style="width:200px">
+        {% for wifi_access_point in wifi_access_points %}
+        <option value={{wifi_access_point.service}}>{{wifi_assess_point.ssid}}</option>
+        {% endfor %}
+      </select>
+      <p>
+        <input type="password" id="wifi-password" 
+         onkeydown="if (event.keyCode==13) document.getElementById('join-wifi-button').click()"
+         placeholder='Wifi Password' style="width:200px">
+        <input type="checkbox" onclick="makePasswordVisible()"> Show Password
+      </p>
+      <a class="badge badge-secondary" data-toggle="collapse" id="join-wifi-button"
+        style="width:200px" href="" role="button" onclick="joinWifi();">
+        Join Wifi</a>
+      </br>
 
-    <div class="collapse" id="is_bbb">
-
-      <div class="collapse" id="show_wifi">
-        <select id="wifiList" class="selectpicker" style="width:200px">
-          {% for wifi in wifis %}
-          <option value={{wifi.service}}>{{wifi.ssid}}</option>
-          {% endfor %}
-        </select>
-        <p>
-          <input type="password" id="wifi_p" 
-           onkeydown="if (event.keyCode==13) document.getElementById('butJoin').click()"
-           placeholder='Wifi Password' style="width:200px">
-          <input type="checkbox" onclick="makePasswordVisible()"> Show Password
-        </p>
-        <a class="badge badge-secondary" data-toggle="collapse" id="butJoin"
-          style="width:200px" href="" role="button" onclick="joinWifi();">
-          Join Wifi</a>
-        </br>
-
-        <p>
-          If you have trouble connecting to your wireless network, please try the: <a href="/connect_advanced">Advanced wireless network configuration</a> 
-        </p>
-      </div>
-
+      <p>
+        If you have trouble connecting to your wireless network, please try the: <a href="/connect/advanced">Advanced wireless network configuration</a> 
+      </p>
     </div>
 
     <p>
       <b>Status:</b> <span id="status"></span>
     </p>
-    <div class="collapse" id="show_dev_UI">
+
+    <div class="collapse" id="device-ui-collapse">
       <ul>
-        <li><b>Device IP:</b> <span id="device_IP"></span>
-        <li><b>Web UI:</b> <a id="verification_code" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg web UI</a>
-        <li><b>Remotely accessible Device UI:</b> <a id="device_UI" href="" target="_blank"></a>
-        {% if error != None %}
-        <li><b>Error:</b> {{ error }}
-        {% endif %}
+        <li><b>Device IP Address:</b> <span id="ip-address"></span>
+        <li><b>Web UI:</b> <a id="web-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg Web UI</a>
+        <li><b>Remotely Accessible Device UI:</b> <a id="remote-device-ui-url" href="" target="_blank"></a>
       </ul>
     </div>
   </div>

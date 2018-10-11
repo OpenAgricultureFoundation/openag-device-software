@@ -78,11 +78,11 @@ from app.viewers import (
 from django.apps import apps
 
 # Import device utilities
-from device.utilities import logger
+from device.utilities import logger, connect
 
 # TODO: fix this!!!
 # from device.connect import utilities as connect_utilities # Should be this
-from device.connect.utilities import ConnectUtilities
+# from device.connect.utilities import ConnectUtilities
 
 
 # TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
@@ -671,23 +671,6 @@ class Resource(APIView):
         return Response(response)
 
 
-class ConnectAdvanced(APIView):
-    """UI page fields the advanced wireless connection page."""
-
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = "connect_advanced.html"
-
-    @method_decorator(login_required)
-    def get(self, request):
-        extra = {"console_name": "views.ConnectAdvanced"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
-
-        response = ConnectUtilities.get_status()
-        logger.info("ConnectAdvanced response={}".format(response))
-        return Response(response)
-
-
 class Connect(APIView):
     """UI page fields for ConnectManager."""
 
@@ -705,50 +688,121 @@ class Connect(APIView):
         return Response(response)
 
 
-class ConnectGetStatus(viewsets.ViewSet):
-    """REST API to get all connect status fields shown.
-    This class extends the ViewSet (not ModelViewSet) because it
-    dynamically gets its data and the Model gets data from the DB."""
+class ConnectAdvanced(APIView):
+    """UI page fields the advanced wireless connection page."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "connect_advanced.html"
 
     @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.ConnectGetStatus"}
+    def get(self, request):
+        extra = {"console_name": "views.ConnectAdvanced"}
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
         response = ConnectUtilities.get_status()
-        logger.info("ConnectGetStatus response={}".format(response))
+        logger.info("ConnectAdvanced response={}".format(response))
         return Response(response)
 
 
-class ConnectJoinWifi(viewsets.ViewSet):
-    """REST API to join a wifi. Request is POSTed with wifi and pass.
-    This class extends the ViewSet (not ModelViewSet) because it
-    dynamically gets its data and the Model gets data from the DB."""
+class ConnectViewSet(viewsets.ModelViewSet):
+    """View set for connecting device to internet and google cloud platform."""
 
-    @method_decorator(login_required)
-    def create(self, request):
-        extra = {"console_name": "views.ConnectJoinWifi"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
+    # Initialize logger
+    logger = logger.Logger("Connect", "app")
 
-        # Get req parameters
+    @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def getwifis(self, request):
+        """Gets wifi access points."""
+        self.logger.debug("Getting wifi access points")
+
+        # Get wifi access points
         try:
-            request_data = request.data.dict()
+            wifi_access_points = connect.get_wifi_access_points()
+            message = "Successfully got wifi access points"
+            status = 200
         except Exception as e:
-            response = {"message": "Internal error: {}".format(e)}
-            return Response(response, 400)
+            wifi_access_points = []
+            message = "Unable to get wifis, unhandled exception: `{}`".format(type(e))
+            status = 500
 
-        wifi = request_data["wifi"]
-        password = request_data["password"]
+        # Build and return response
+        response = {"message": message, "wifi_access_points": wifi_access_points}
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
 
-        logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-        is_successful = ConnectUtilities.join_wifi(wifi, password)
-        response = {"success": is_successful}
-        logger.info("ConnectJoinWifi response={}".format(response))
-        if not is_successful:
-            return Response(response, 400)
-        return Response(response)
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def joinwifi(self, request):
+        """Checks for software upgrades."""
+        self.logger.debug("Joining wifi")
+
+        # Get request parameters
+        try:
+            wifi = request["wifi"]
+            password = request["password"]
+        except KeyError as e:
+            message = "Unable to get request parameter `{}`".format(e)
+            return Response({"message": message}, 400)
+
+        # Join wifi
+        try:
+            connect.join_wifi(wifi, password)
+            message = "Successfully joined wifi"
+            status = 200
+        except Exception as e:
+            message = "Unable to join wifi, unhandled exception: `{}`".format(type(e))
+            status = 500
+
+        # Build and return response
+        response = {"message": message}
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
+
+
+# class ConnectGetStatus(viewsets.ViewSet):
+#     """REST API to get all connect status fields shown.
+#     This class extends the ViewSet (not ModelViewSet) because it
+#     dynamically gets its data and the Model gets data from the DB."""
+
+#     @method_decorator(login_required)
+#     def list(self, request):
+#         extra = {"console_name": "views.ConnectGetStatus"}
+#         logger = logging.getLogger(__name__)
+#         logger = logging.LoggerAdapter(logger, extra)
+
+#         response = ConnectUtilities.get_status()
+#         logger.info("ConnectGetStatus response={}".format(response))
+#         return Response(response)
+
+
+# class ConnectJoinWifi(viewsets.ViewSet):
+#     """REST API to join a wifi. Request is POSTed with wifi and pass.
+#     This class extends the ViewSet (not ModelViewSet) because it
+#     dynamically gets its data and the Model gets data from the DB."""
+
+#     @method_decorator(login_required)
+#     def create(self, request):
+#         extra = {"console_name": "views.ConnectJoinWifi"}
+#         logger = logging.getLogger(__name__)
+#         logger = logging.LoggerAdapter(logger, extra)
+
+#         # Get req parameters
+#         try:
+#             request_data = request.data.dict()
+#         except Exception as e:
+#             response = {"message": "Internal error: {}".format(e)}
+#             return Response(response, 400)
+
+#         wifi = request_data["wifi"]
+#         password = request_data["password"]
+
+#         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
+#         is_successful = ConnectUtilities.join_wifi(wifi, password)
+#         response = {"success": is_successful}
+#         logger.info("ConnectJoinWifi response={}".format(response))
+#         if not is_successful:
+#             return Response(response, 400)
+#         return Response(response)
 
 
 class ConnectJoinWifiAdvanced(viewsets.ViewSet):

@@ -26,8 +26,8 @@ from django.conf.urls.static import static
 from app import views
 from app.router import Router
 
-from device.connect import utilities as connect_utilities
-
+# Import device utilities
+from device.utilities import connect
 
 # Setup REST framework routes
 router = Router()
@@ -93,7 +93,7 @@ router.register(r"upgrade", views.UpgradeViewSet, base_name="api-upgrade")
 def redirect_to_connect_or_dashboard(request):
 
     # if we have a valid internet connection, go to the dashboard
-    if connect_utilities.valid_internet_connection():
+    if connect.valid_internet_connection():
         return HttpResponseRedirect(reverse("dashboard"))
     else:
         # otherwise, let the user set up their wifi connection
@@ -142,4 +142,6 @@ urlpatterns = [
     url(r"^manual/$", views.Manual.as_view(), name="manual"),
     url(r"^entry/$", views.Entry.as_view(), name="entry"),
     url(r"^scratchpad/$", views.Scratchpad.as_view(), name="entry"),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(
+    settings.STATIC_URL, document_root=settings.STATIC_ROOT
+)

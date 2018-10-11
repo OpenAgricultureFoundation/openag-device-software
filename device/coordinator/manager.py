@@ -85,7 +85,7 @@ class CoordinatorManager(StateMachineManager):
         self.recipe = RecipeManager(self.state)
         self.iot = IoTManager(self.state, self.recipe)  # type: ignore
         self.resource = ResourceManager(self.state, self.iot)  # type: ignore
-        self.connect = ConnectManager(self.state, self.iot)  # type: ignore
+        self.connect = ConnectManager(self.state)  # type: ignore
         self.upgrade = UpgradeManager(self.state)  # type: ignore
 
         # Initialize state machine transitions

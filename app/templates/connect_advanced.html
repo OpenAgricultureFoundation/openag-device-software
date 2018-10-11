@@ -2,7 +2,7 @@
 
 {% block javascript %}
 <script>
-  //--------------------------------------------------------------------------
+  
   window.onload = function() {
 
     document.getElementById("status").innerHTML = "{{status}}";
@@ -24,7 +24,6 @@
     {% endif %}
   }
 
-  //--------------------------------------------------------------------------
   function joinWifi() {
     document.getElementById("status").innerHTML = 'Connecting, this will take a few minutes...'
     var SSIDName = document.getElementById("SSIDName").value;
@@ -48,7 +47,6 @@
       })
   }
 
-  //--------------------------------------------------------------------------
   function joinWifiPromise(SSIDName, passphrase, hiddenSSID, security, eap, identity, phase2) {
     return new Promise(function (resolve, reject) {
       // Do POST with form args to API to connect.
@@ -81,7 +79,6 @@
      console.log("joinWifi func done.")
   }
 
-  //--------------------------------------------------------------------------
   function getStatusPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
@@ -143,7 +140,7 @@
     })
   }
 
-  //--------------------------------------------------------------------------
+  
   function deleteWifis() {
     document.getElementById("delete_wifis_status").innerHTML = 'Deleting...';
     deleteWifisPromise()
@@ -158,7 +155,7 @@
       })
   }
 
-  //--------------------------------------------------------------------------
+  
   function deleteWifisPromise() {
     return new Promise(function (resolve, reject) {
       $.ajax({
