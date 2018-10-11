@@ -2,7 +2,7 @@
  
 if [ $# -lt 7 ]; then
     echo "Please provide the following command line arguments:"
-    echo "  ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2"
+    echo "  ssid_name passphrase hidden_ssid security eap identity phase2"
     exit 1
 fi
 
