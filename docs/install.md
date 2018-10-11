@@ -29,7 +29,7 @@ cd ~/openag-device-software
 
 ### Run the software in simulation mode (no I2C devices required):
 ```
-./simulate.sh
+sudo ./simulate.sh
 ```
 
 
