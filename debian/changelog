@@ -1,3 +1,9 @@
+openagbrain (1.0-3) stable; urgency=medium
+
+  * Use busybox to vend images shown on the images page. 
+
+ -- rob baynes <rbaynes@mit.edu>  Thu, 11 Oct 2018 15:23:50 +0000
+
 openagbrain (1.0-2) stable; urgency=medium
 
   * Fixed images page. 
