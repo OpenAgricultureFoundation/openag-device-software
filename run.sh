@@ -10,6 +10,12 @@ Exiting.'
     exit 1
 fi
 
+# Only if we are on linux, we run a light weight web server to vend images.
+if [[ "$OSTYPE" == "linux"* ]]; then
+    pkill busybox
+    busybox httpd -p 8080 -h $DIR/data/images/stored/
+fi
+
 # If there is a current python virtual environment, deactivate it.
 if ! [ -z "${VIRTUAL_ENV}" ] ; then
     deactivate

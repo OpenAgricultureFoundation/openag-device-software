@@ -25,10 +25,13 @@
   function showImage() {
     var slider = $("#imageSlider");
     var img = document.getElementById("image");
-    img.src = "/app/static/images/" + images[ slider.val() ];
+    // images are served by busybox, see run.sh
+    var url = "{{ request.META.HTTP_REFERER }}";
+    url = url.replace( /\/$/, ':8080/'); // replace last '/' with :port
+    img.src = url + images[ slider.val() ];
     var fn = $("#file_name");
     var fntext = images[ slider.val() ];
-    fntext = fntext.replace( /_/g, ' ' );
+    fntext = fntext.replace( /_/g, ' ' ); // replace all '_' with ' '
     fntext = fntext.replace( '.png', '' );
     fn.text( fntext );
   }
