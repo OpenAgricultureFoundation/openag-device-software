@@ -16,9 +16,8 @@ if [[ "$OSTYPE" == "linux"* ]]; then
   sudo chown -R debian:debian .
 fi
 
-# For upgrade to version 1.0.2 we need to fixup the symlink to images
+# For upgrade to version 1.0.4 we need to remove old symlinks
 sudo rm -f $TOPDIR/app/staticfiles/images
-sudo ln -sf $TOPDIR/data/images/stored $TOPDIR/app/staticfiles/images
 sudo rm -f $TOPDIR/app/static/stored_images
 
 # Install any new python modules
@@ -61,26 +60,31 @@ if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
   echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
 fi
 
-# Remove rc.local
-sudo rm -f /etc/rc.local
 
-# Sym link to data/config/rc.local.<run_context>
-DEVICE_CONFIG_PATH=$TOPDIR/data/config
-if [ ! -f $DEVICE_CONFIG_PATH/develop ]; then
-  echo "Sym linking rc.local.production"
-  sudo ln -s $DEVICE_CONFIG_PATH/rc.local.production /etc/rc.local
-else
-  echo "Sym linking rc.local.development"
-  sudo ln -s $DEVICE_CONFIG_PATH/rc.local.development /etc/rc.local
+if [[ "$OSTYPE" == "linux"* ]]; then
+
+  # Remove rc.local
+  sudo rm -f /etc/rc.local
+
+  # Sym link to data/config/rc.local.<run_context>
+  DEVICE_CONFIG_PATH=$TOPDIR/data/config
+  if [ ! -f $DEVICE_CONFIG_PATH/develop ]; then
+    echo "Sym linking rc.local.production"
+    sudo ln -s $DEVICE_CONFIG_PATH/rc.local.production /etc/rc.local
+  else
+    echo "Sym linking rc.local.development"
+    sudo ln -s $DEVICE_CONFIG_PATH/rc.local.development /etc/rc.local
+  fi
+
+  # Install a new system log config file, to avoid filling the disk
+  sudo cp $DEVICE_CONFIG_PATH/rsyslog /etc/logrotate.d/
+  sudo service rsyslog restart
+
+  # Reload rc.local daemon
+  sudo systemctl daemon-reload
+
+  # Start the OpenAg Brain as a service running as rc.local
+  sudo service rc.local start
+  sudo systemctl status rc.local --no-pager
 fi
 
-# Install a new system log config file, to avoid filling the disk
-sudo cp $DEVICE_CONFIG_PATH/rsyslog /etc/logrotate.d/
-sudo service rsyslog restart
-
-# Reload rc.local daemon
-sudo systemctl daemon-reload
-
-# Start the OpenAg Brain as a service running as rc.local
-sudo service rc.local start
-sudo systemctl status rc.local --no-pager

@@ -25,6 +25,10 @@
   function showImage() {
     var slider = $("#imageSlider");
     var img = document.getElementById("image");
+
+//debugrob
+console.log("debugrob request.META={{ request.META }}");
+
     // images are served by busybox, see run.sh
     var url = "{{ request.META.HTTP_REFERER }}";
     url = url.replace( /\/$/, ':8080/'); // replace last '/' with :port
