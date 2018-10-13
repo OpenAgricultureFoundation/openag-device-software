@@ -85,6 +85,6 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
   # Start the OpenAg Brain as a service running as rc.local
   sudo service rc.local start
-  sudo systemctl status rc.local --no-pager
+  sudo systemctl status rc.local -l --no-pager
 fi
 
