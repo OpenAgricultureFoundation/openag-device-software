@@ -200,7 +200,7 @@ class ConnectUtilities:
         """Get the URL for remote access to the device UI 
            e.g. 1712EW004671.serveo.net"""
         if ConnectUtilities.is_simulation_mode():
-            return "This is not a beaglebone"
+            return "Not available in simulation mode"
         try:
             # Get this BBB's serial number
             serial = "oops"
