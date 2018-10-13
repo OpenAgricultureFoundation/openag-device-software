@@ -24,8 +24,6 @@ from device.utilities import network as network_utilities
 # TODO: Should we break out the bash scripts so we're never even calling them, just
 # the commands inside of them?
 
-# TODO: The other consideration would be to build a single system manager? Idk...
-
 
 class ConnectManager(manager.StateMachineManager):
     """ Sets up and manages internet and IoT connections. """
@@ -259,10 +257,20 @@ class ConnectManager(manager.StateMachineManager):
             self.logger.exception(message)
             return message, 500
 
-        # Give network time to reset
-        # TODO: Should probably use internet_is_connected function with a 5 sec
-        # timeout instead
-        time.sleep(5)
+        # Wait for internet connection to be established
+        timeout = 5  # seconds
+        start_time = time.time()
+        while not network_utilities.internet_is_connected():
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                message = "Did not connect to internet within {} ".format(timeout)
+                message += "seconds of joining wifi, recheck if internet is connected"
+                self.logger.warning(message)
+                return message, 202
+
+            # Recheck if internet is connected every second
+            time.sleep(1)
 
         # Succesfully joined wifi
         return "Successfully joined wifi", 200

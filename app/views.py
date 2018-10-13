@@ -1,3 +1,5 @@
+# TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
+
 # Import standard python modules
 import os, json, logging, shutil
 from operator import itemgetter
@@ -74,38 +76,16 @@ from app.viewers import (
     ResourceViewer,
 )
 
-# Import django app
+# Import django app, required for accessing state machine manager objects
 from django.apps import apps
 
 # Import device utilities
-from device.utilities import logger, connect
+from device.utilities import logger, network, system
 
-# TODO: fix this!!!
-# from device.connect import utilities as connect_utilities # Should be this
-# from device.connect.utilities import ConnectUtilities
-
-
-# TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
-
+# Initialize file paths
 APP_NAME = "app"
-
 LOG_DIR = "data/logs/"
 IMAGE_DIR = "data/images/"
-
-
-def change_password(request):
-    if request.method == "POST":
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Important!
-            messages.success(request, "Your password was successfully updated!")
-            return redirect("change_password")
-        else:
-            messages.error(request, "Please correct the error below.")
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, "accounts/change_password.html", {"form": form})
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -401,13 +381,13 @@ class RecipeBuilder(APIView):
         cultivation_methods_viewer = CultivationMethodsViewer()
         cultivation_methods = cultivation_methods_viewer.json
 
-        return Response(
-            {
-                "recipes": recipes,
-                "cultivars": cultivars,
-                "cultivation_methods": cultivation_methods,
-            }
-        )
+        # Build and return response
+        response = {
+            "recipes": recipes,
+            "cultivars": cultivars,
+            "cultivation_methods": cultivation_methods,
+        }
+        return Response(response)
 
 
 class Events(APIView):
@@ -708,11 +688,15 @@ class ConnectAdvanced(APIView):
 class ConnectViewSet(viewsets.ModelViewSet):
     """View set for connecting device to internet and google cloud platform."""
 
+    # TODO: This should probably be NetworkViewSet
+
     # Initialize logger
-    logger = logger.Logger("Connect", "app")
+    logger = logger.Logger("ConnectViewSet", "app")
+
+    # TODO: Make info route (basically network exclusive functions from getStatus)
 
     @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
-    def getwifis(self, request):
+    def wifis(self, request):
         """Gets wifi access points."""
         self.logger.debug("Getting wifi access points")
 
@@ -1014,3 +998,18 @@ class Scratchpad(APIView):
     @method_decorator(login_required)
     def get(self, request):
         return Response()
+
+
+def change_password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, "Your password was successfully updated!")
+            return redirect("change_password")
+        else:
+            messages.error(request, "Please correct the error below.")
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, "accounts/change_password.html", {"form": form})

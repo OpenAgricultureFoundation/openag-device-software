@@ -14,7 +14,7 @@ CONNECT_WIFI_SCRIPT_PATH = "scripts/connect_wifi.sh"
 DELETE_WIFI_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
 
 # Initialize logger
-logger = Logger("ConnectUtility", "connect")
+logger = Logger("NetoworkUtility", "connect")
 
 
 def internet_is_connected() -> bool:
@@ -48,8 +48,8 @@ def get_wifi_access_points(
     logger.debug("Getting wifi access points")
 
     # Check system is a beaglebone wifi
-    if not system.is_bbb_wifi():
-        logger.error("Unable to get wifi access points, system not a beaglebone wifi")
+    if not system.is_wifi_bbb():
+        logger.error("Unable to get wifi access points, system not a wifi beaglebone")
         return []
 
     # Build command
@@ -121,8 +121,8 @@ def join_wifi(wifi: str, password: str) -> bool:
     logger.debug("Joining wifi")
 
     # Check system is a beaglebone wifi
-    if not system.is_bbb_wifi():
-        logger.error("Unable to join wifi, system not a beaglebone wifi")
+    if not system.is_wifi_bbb():
+        logger.error("Unable to join wifi, system not a wifi beaglebone")
         return False
 
     # Not sure why we are doing this?
@@ -153,8 +153,8 @@ def delete_wifi_connections() -> bool:
     logger.debug("Deleting wifi connections")
 
     # Check system is a beaglebone wifi
-    if not system.is_bbb_wifi():
-        logger.error("Unable to delete wifi connections, system not a beaglebone wifi")
+    if not system.is_wifi_bbb():
+        logger.error("Unable to delete wifi connections, system not a wifi beaglebone")
         return False
 
     # Disconnect from active wifi access points
