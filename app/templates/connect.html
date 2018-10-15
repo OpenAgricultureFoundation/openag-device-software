@@ -4,7 +4,6 @@
 <script>
   
   window.onload = function() {
-    // document.getElementById("status").innerHTML = "Initializing"
     getInfoAndUpdateView()
   }
 
@@ -163,57 +162,51 @@
     });
   }
 
-
-
-  // function joinWifi() {
-  //   console.log("Joining wifi")
+  function joinWifi() {
+    console.log("Joining wifi")
     
-  //   // Update status
-  //   document.getElementById("status").innerHTML = 'Joining wifi, this will take a few minutes...'
+    // Update status
+    document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
 
-  //   // Get wifi name
-  //   var wifiName = document.getElementById("wifiAccessPoints");
-  //   if( wifiName == null ) {
-  //     console.log("Error: could not get wifiAccessPoints element")
-  //     return
-  //   }
+    // Get wifi name
+    var wifiName = document.getElementById("wifiAccessPoints");
+    if( wifiName == null ) {
+      console.log("Error: could not get wifiAccessPoints element");
+      return;
+    }
 
-  //   // Get wifi password
-  //   var wifiPassword = document.getElementById("wifi-password");
-  //   if( wifiPassword == null ) {
-  //     console.log("Error: could not get wifi-password element")
-  //     return
-  //   }
+    // Get wifi password
+    var wifiPassword = document.getElementById("wifi-password");
+    if( wifiPassword == null ) {
+      console.log("Error: could not get wifi-password element");
+      return;
+    }
 
-  //   // Send join wifi request
-  //   console.log("Sending join wifi request")
-  //   $.ajax({
-  //     url: "/api/connect/joinwifi/",
-  //     type: "POST",
-  //     data: {
-  //       "csrfmiddlewaretoken": "{{ csrf_token }}",
-  //       "wifi": wifiName.value,
-  //       "password": wifiPassword.value
-  //     },
-  //     dataType: 'json',
-  //     success: function(data) {
-  //       console.log(data['message'])
-  //       console.log(data)
-
-  //       // TODO: updateView(data['status'], data['upgrade_available'], data['current_version'], data['upgrade_version']);
-  //     },
-  //     error: function(data) {
-  //       response_dict = JSON.parse(data.responseText)
-  //       message = response_dict["message"]
-  //       console.log(message);
-  //       console.log(response_dict)
-
-  //       // TODO: updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
-  //     }
-  //   });
-  // }
-
-
+    // Send join wifi request
+    console.log("Sending join wifi request");
+    $.ajax({
+      url: "/api/connect/joinwifi/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+        "wifi": wifiName.value,
+        "password": wifiPassword.value
+      },
+      dataType: 'json',
+      success: function(data) {
+        console.log("Successfully joined wifi");
+        getInfoAndUpdateView();
+      },
+      error: function(data) {
+        console.log("Unable to join wifi");
+        response_dict = JSON.parse(data.responseText);
+        message = response_dict["message"];
+        console.log(message);
+        console.log(response_dict);
+        getInfoAndUpdateView();
+      }
+    });
+  }
 
   function makePasswordVisible() {
     var pass = document.getElementById("wifi-password");

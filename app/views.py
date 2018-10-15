@@ -743,29 +743,9 @@ class NetworkViewSet(viewsets.ModelViewSet):
         self.logger.debug("Returning response: {}".format(response))
         return Response(response, 200)
 
-    # @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
-    # def wifis(self, request):
-    #     """Gets wifi access points."""
-    #     self.logger.debug("Getting wifi access points")
-
-    #     # Get wifi access points
-    #     try:
-    #         wifi_access_points = connect.get_wifi_access_points()
-    #         message = "Successfully got wifi access points"
-    #         status = 200
-    #     except Exception as e:
-    #         wifi_access_points = []
-    #         message = "Unable to get wifis, unhandled exception: `{}`".format(type(e))
-    #         status = 500
-
-    #     # Build and return response
-    #     response = {"message": message, "wifi_access_points": wifi_access_points}
-    #     self.logger.debug("Returning response: {}".format(response))
-    #     return Response(response, status)
-
     @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
     def joinwifi(self, request):
-        """Checks for software upgrades."""
+        """Joins wifi network."""
         self.logger.debug("Joining wifi")
 
         # Get request parameters
@@ -778,7 +758,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
 
         # Join wifi
         try:
-            connect.join_wifi(wifi, password)
+            network_utilities.join_wifi(wifi, password)
             message = "Successfully joined wifi"
             status = 200
         except Exception as e:
@@ -790,51 +770,26 @@ class NetworkViewSet(viewsets.ModelViewSet):
         self.logger.debug("Returning response: {}".format(response))
         return Response(response, status)
 
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def deletewifis(self, request):
+        """Deletes stored wifi access points."""
+        self.logger.debug("Deleting wifi connection")
 
-# class ConnectGetStatus(viewsets.ViewSet):
-#     """REST API to get all connect status fields shown.
-#     This class extends the ViewSet (not ModelViewSet) because it
-#     dynamically gets its data and the Model gets data from the DB."""
+        # Join wifi
+        try:
+            network_utilities.delete_wifi_connections()
+            message = "Successfully deleted wifi connections"
+            status = 200
+        except Exception as e:
+            message = "Unable to delete wifis, unhandled exception: `{}`".format(
+                type(e)
+            )
+            status = 500
 
-#     @method_decorator(login_required)
-#     def list(self, request):
-#         extra = {"console_name": "views.ConnectGetStatus"}
-#         logger = logging.getLogger(__name__)
-#         logger = logging.LoggerAdapter(logger, extra)
-
-#         response = ConnectUtilities.get_status()
-#         logger.info("ConnectGetStatus response={}".format(response))
-#         return Response(response)
-
-
-# class ConnectJoinWifi(viewsets.ViewSet):
-#     """REST API to join a wifi. Request is POSTed with wifi and pass.
-#     This class extends the ViewSet (not ModelViewSet) because it
-#     dynamically gets its data and the Model gets data from the DB."""
-
-#     @method_decorator(login_required)
-#     def create(self, request):
-#         extra = {"console_name": "views.ConnectJoinWifi"}
-#         logger = logging.getLogger(__name__)
-#         logger = logging.LoggerAdapter(logger, extra)
-
-#         # Get req parameters
-#         try:
-#             request_data = request.data.dict()
-#         except Exception as e:
-#             response = {"message": "Internal error: {}".format(e)}
-#             return Response(response, 400)
-
-#         wifi = request_data["wifi"]
-#         password = request_data["password"]
-
-#         logger.info("ConnectJoinWifi wifi={} pass={}".format(wifi, password))
-#         is_successful = ConnectUtilities.join_wifi(wifi, password)
-#         response = {"success": is_successful}
-#         logger.info("ConnectJoinWifi response={}".format(response))
-#         if not is_successful:
-#             return Response(response, 400)
-#         return Response(response)
+        # Build and return response
+        response = {"message": message}
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
 
 
 class ConnectJoinWifiAdvanced(viewsets.ViewSet):
@@ -871,21 +826,6 @@ class ConnectJoinWifiAdvanced(viewsets.ViewSet):
         logger.info("ConnectJoinWifiAdvanced response={}".format(response))
         if not is_successful:
             return Response(response, 400)
-        return Response(response)
-
-
-class ConnectDeleteWifis(viewsets.ViewSet):
-    """REST API to disconnect any active network connections and delete all
-    wifi configurations made by the user. Called with GET."""
-
-    @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.ConnectDeleteWifis"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
-
-        response = ConnectUtilities.delete_wifi_connections()
-        logger.info("ConnectDeleteWifis response={}".format(response))
         return Response(response)
 
 

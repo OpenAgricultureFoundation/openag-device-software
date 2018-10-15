@@ -4,7 +4,6 @@ import subprocess
 # Import device utilities
 from device.utilities.logger import Logger
 
-
 # Initialize logger
 logger = Logger("SystemUtility", "system")
 logger.debug("Initializing utility")

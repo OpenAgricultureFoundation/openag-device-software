@@ -59,22 +59,10 @@ router.register(
     base_name="api-actuator-variables",
 )
 
-
-# router.register(
-#     r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
-# )
-# router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
-
-
 router.register(
     r"connect/joinwifiadvanced",
     views.ConnectJoinWifiAdvanced,
     base_name="api-join-wifi-adv",
-)
-router.register(
-    r"connect/deletewifis",
-    views.ConnectDeleteWifis,
-    base_name="api-connect-deletewifis",
 )
 router.register(
     r"connect/registeriot",
