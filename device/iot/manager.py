@@ -6,10 +6,7 @@ from device.utilities.accessors import get_nested_dict_safely
 
 # Import the IoT communications class
 from device.iot.pubsub import IoTPubSub
-from device.utilities import system as system_utilities
 
-# Initialize file paths
-IMAGE_DIR = "data/images/"
 
 # TODO Notes:
 # Remove redundant functions accross connect, iot, update, resource, and upgrade
@@ -23,116 +20,372 @@ IMAGE_DIR = "data/images/"
 # Always use get method to access dicts unless checking for KeyError (rare cases)
 # Always use decorators to access shared state w/state.lock
 # Use logger class from device utilities
+# Reset IotManager or MQTT / Pubsub connection on network reconnect?
 
 
-class IoTManager:
+# Import device utilities
+from device.utilities.statemachine import manager
+from device.utilities.state.main import State
+from device.utilities import system as system_utilities
+
+# Import device managers
+from device.recipe.manager import RecipeManager
+
+# Import manager elements
+from device.iot import modes
+
+# Initialize file paths
+DEVICE_ID_PATH = "data/registration/device_id.txt"
+IMAGES_DIR = "data/images/"
+STORED_IMAGES_DIR = "data/images/stored/"
+
+
+class IotManager(manager.StateMachineManager):
     """Manages IoT communications to the Google cloud backend MQTT service."""
-
-    # Initialize logger
-    extra = {"console_name": "IoT", "file_name": "IoT"}
-    logger = logging.getLogger("iot")
-    logger = logging.LoggerAdapter(logger, extra)
-
-    # Place holder for thread object.
-    thread = None
 
     # Keep track of the previous values that we have published.
     # We only publish a value if it changes.
-    prev_vars = None
-    sentAboutJson = False
+    prev_env_vars = None
     last_status = datetime.datetime.utcnow()
-    status_publish_freq_secs = 300
 
-    def __init__(self, state, ref_recipe):
-        """ Class constructor """
-        self.iot = None
+    def __init__(self, state: State, recipe: RecipeManager) -> None:
+        """Initializes iot manager."""
+
+        # Initialize parent class
+        super().__init__()
+
+        # Initialize parameters
         self.state = state
-        self.error = None
-        self.ref_recipe = ref_recipe
+        self.recipe = recipe
 
-        # Initialize our state.  These are filled in by the IoTPubSub class
-        self.state.iot = {
-            "error": self.error,
-            "connected": "No",
-            "received_message_count": 0,
-            "published_message_count": 0,
+        # Initialize logger
+        self.logger = logger.Logger("IotManager", "iot")
+        self.logger.debug("Initializing manager")
+
+        # Initialize our state variables
+        self.received_message_count = 0
+        self.published_message_count = 0
+
+        # Initialize state machine transitions
+        self.transitions: Dict[str, List[str]] = {
+            modes.INIT: [
+                modes.REGISTERED, modes.UNREGISTERED, modes.ERROR, modes.SHUTDOWN
+            ],
+            modes.UNREGISTERED: [modes.REGISTERED, modes.ERROR, modes.SHUTDOWN],
+            modes.REGISTERED: [modes.INIT, modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.SHUTDOWN],
         }
 
-        self._stop_event = threading.Event()  # so we can stop this thread
-        self.reset()
-
-    # @property
-    # def is_registered(self) -> bool:
-    #     """Gets value."""
-    #     return self.state.connect.get("is_registered_with_IoT")  # type: ignore
-
-    # @is_registered.setter
-    # def is_registered(self, value: bool) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["is_registered_with_IoT"] = value
-
-    # @property
-    # def device_id(self) -> str:
-    #     """Gets value."""
-    #     return self.state.connect.get("device_id")  # type: ignore
-
-    # @device_id.setter
-    # def device_id(self, value: str) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["device_id"] = value
-
-    # @property
-    # def iot_connection(self) -> bool:
-    #     """Gets value."""
-    #     return self.state.connect.get("iot_connection")  # type: ignore
-
-    # @iot_connection.setter
-    # def iot_connection(self, value: bool) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["iot_connection"] = value
-
-    # THIS WAS IN RESOURCE MANAGER
-    # def update_connection(self) -> None:
-    #     """Updates connection information."""
-    #     self.logger.debug("Updating connection")
-
-    #     # Update connection status
-    #     self.connected = network_utilities.is_connected()
-
-    #     # Reset iot manager on reconnect event
-    #     if self.reconnected:
-    #         self.iot.reset()  # type: ignore
+        # Initialize state machine mode
+        self.mode = modes.INIT
 
     @property
-    def remote_device_ui_url(self) -> str:
+    def is_registered(self) -> bool:
         """Gets value."""
-        return self.state.connect.get("remote_device_ui_url")  # type: ignore
+        return self.state.iot.get("is_registered", False)  # type: ignore
 
-    @remote_device_ui_url.setter
-    def remote_device_ui_url(self, value: str) -> None:
+    @is_registered.setter
+    def is_registered(self, value: bool) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
-            self.state.connect["remote_device_ui_url"] = value
+            self.state.iot["is_registered"] = value
 
-    def reset(self):
+    @property
+    def device_id(self) -> str:
+        """Gets value."""
+        return self.state.iot.get("device_id", "Unknown")  # type: ignore
+
+    @device_id.setter
+    def device_id(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["device_id"] = value
+
+    @property
+    def received_message_count(self) -> int:
+        """Gets value."""
+        return self.state.iot.get("received_message_count", 0)  # type: ignore
+
+    @received_message_count.setter
+    def received_message_count(self, value: int) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["received_message_count"] = value
+
+    @property
+    def published_message_count(self) -> int:
+        """Gets value."""
+        return self.state.iot.get("published_message_count", 0)  # type: ignore
+
+    @published_message_count.setter
+    def published_message_count(self, value: int) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["published_message_count"] = value
+
+    ##### STATE MACHINE FUNCTIONS ######################################################
+
+    def run(self) -> None:
+        """Runs state machine."""
+
+        # Loop forever
+        while True:
+
+            # Check if manager is shutdown
+            if self.is_shutdown:
+                break
+
+            # Check for mode transitions
+            if self.mode == modes.INIT:
+                self.run_init_mode()
+            elif self.mode == modes.UNREGISTERED:
+                self.run_unregistered_mode()
+            elif self.mode == modes.REGISTERED:
+                self.run_registered_mode()
+            elif self.mode == modes.ERROR:
+                self.run_error_mode()  # defined in parent classs
+            elif self.mode == modes.SHUTDOWN:
+                self.run_shutdown_mode()  # defined in parent class
+            else:
+                self.logger.critical("Invalid state machine mode")
+                self.mode = modes.INVALID
+                self.is_shutdown = True
+                break
+
+    def run_init_mode(self) -> None:
+        """Runs init mode."""
+        self.logger.debug("Entered INIT")
+
+        # Connect to mqtt service
+        self.mqtt = MQTT(..., ..., ...)
+
+        # Publish boot message
+        self.publish_boot_message()
+
+        # Transition to normal mode on next state machine update
+        self.mode = modes.NORMAL
+
+    def run_unregistered_mode(self) -> None:
+        """Runs unregistered mode."""
+        self.logger.debug("Entered UNREGISTERED")
+
+        # Initialize timing variables
+        last_update_time = 0.0
+        update_interval = 15  # seconds
+
+        # Loop forever
+        while True:
+
+            # Update registration every update interval
+            if time.time() - last_update_time > update_interval:
+                last_update_time = time.time()
+                self.update_registration()
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.NORMAL):
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+    def run_registered_mode(self) -> None:
+        """Runs registered mode."""
+        self.logger.debug("Entered REGISTERED")
+
+        # Initialize timing variables
+        last_update_time = 0.0
+        update_interval = 300  # seconds -> 5 minutes
+
+        # Loop forever
+        while True:
+
+            # Publish system summary and images every update interval
+            if time.time() - last_update_time > update_interval:
+                last_update_time = time.time()
+                self.publish_system_summary()
+                self.publish_images()
+
+            # Process network events?
+            self.iot.process_network_events()
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.NORMAL):
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+    ##### HELPER FUNCTIONS #############################################################
+
+    def publish_boot_message(self) -> None:
+        """Publishes boot message."""
+        self.logger.debug("Publishing boot message")
+
+        # Build boot message
+        boot_message = {
+            "device_config": system_utilities.device_config_name(),
+            "package_version": self.state.upgrade.get("current_version"),
+            "IP": self.state.network.get("ip_address"),
+        }
+
+        # Publish boot message
+        self.logger.debug("Publised boot message: {}".format(boot_message))
+        self.iot.publish_command_reply("boot", json.dumps(boot_message))
+
+    def update_registration(self) -> None:
+        """Updates registration information."""
+        self.logger.debug("Updating registration")
+
+        # Get device id from file if exists
+        self.device_id = self._device_id()
+
+        # Update environment variable, do we actually need this?
+        os.environ["DEVICE_ID"] = device_id
+
+        # Check if device id is valid
+        if self.device_id != "Unknown":
+
+            # Transition to registered mode on next state machine update
+            self.mode = modes.REGISTERED
+
+    def _device_id(self) -> str:
+        """Gets device id if it exists at device id path."""
+        self.logger.debug("Getting device id")
+
+        # Get device id
+        if os.path.exists(DEVICE_ID_PATH):
+            with open(DEVICE_ID_PATH) as f:
+                device_id = f.readline().strip()
+        else:
+            device_id = "Unknown"
+
+        # Successfully got device id
+        self.logger.debug("Device ID: {}".format(device_id))
+        return device_id
+
+    def publish_system_summary(self) -> None:
+        """Publishes system summary."""
+        self.logger.debug("Publishing summary")
+
+        # Build summary
+        recipe_percent_complete_string = self.state.recipe.get(
+            "percent_complete_string"
+        )
+        recipe_time_remaining_minutes = self.state.recipe.get("time_remaining_minutes")
+        recipe_time_remaining_string = self.state.recipe.get("time_remaining_string")
+        recipe_time_elapsed_string = self.state.recipe.get("time_elapsed_string")
+        summary = {
+            "timestamp": time.strftime("%FT%XZ", time.gmtime()),
+            "IP": system_utilities.ip_address(),
+            "package_version": self.state.upgrade.get("current_version"),
+            "device_config": system_utilities.device_config_name(),
+            "internet_connection": self.state.network.get("is_connected"),
+            "memory_available": self.state.resource.get("free_memory"),
+            "disk_available": self.state.resource.get("available_disk_space"),
+            "iot_received_message_count": self.received_message_count,
+            "iot_published_message_count": self.published_message_count,
+            "recipe_percent_complete": self.state.recipe.get("percent_complete"),
+            "recipe_percent_complete_string": recipe_perent_complete_string,
+            "recipe_time_remaining_minutes": recipe_time_remaining_minutes,
+            "recipe_time_remaining_string": recipe_time_remaining_string,
+            "recipe_time_elapsed_string": recipe_time_elapsed_string,
+        }
+
+        # Publish summary
+        self.logger.debug("Publishing summary: {}".format(summary))
+        self.iot.publish_command_reply("status", json.dumps(summary))
+
+    def publish_environmental_variables(self):
+        """Publishes environmental variables."""
+        self.logger.debug("Publishing environmental variables")
+
+        # Get environmental variables
+        keys = ["reported_sensor_stats", "individual", "instantaneous"]
+        environment_variables = get_nested_dict_safely(self.state.environment, keys)
+
+        # Ensure environment variables is a dict
+        if environment_variables == None:
+            environment_variables = {}
+
+        # Keep a copy of the first set of values (usually None). Why?
+        if self.prev_environment_variables is None:
+            self.environment_variables = copy.deepcopy(environment_variables)
+
+        # For each value, only publish the ones that have changed.
+        for name, value in environment_variables.items():
+            if self.prev_environment_variables[name] != value:
+                self.environment_variables[name] = copy.deepcopy(value)
+                self.iot.publish_env_var(name, value)
+
+    def publish_images(self) -> None:
+        """Publishes images in the images directory. On successful publish, moves them 
+        to the stored images directory."""
+        self.logger.debug("Publishing images")
+
+        # Check for images to publish
+        try:
+            image_file_list = glob.glob(IMAGES_DIR + "*.png")
+            for image_file in image_file_list:
+
+                # Is this file open by a process? (fswebcam)
+                if os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file)) == 0:
+                    continue  # Yes, so skip it and try the next one.
+
+                # 2018-06-15-T18:34:45Z_Camera-Top.png
+                fn1 = image_file.split("_")
+                fn2 = fn1[1]  # Camera-Top.png
+                fn3 = fn2.split(".")
+                camera_name = fn3[0]  # Camera-Top
+
+                # Get the file contents
+                f = open(image_file, "rb")
+                file_bytes = f.read()
+                f.close()
+
+                # If the size is < 200KB, then it is garbage we delete
+                # (based on the 1280x1024 average file size)
+                if len(file_bytes) < 200000:
+                    os.remove(image_file)
+                    continue
+
+                self.iot.publish_binary_image(camera_name, "png", file_bytes)
+
+                # Check if stored directory exists, if not create it
+                if not os.path.isdir(STORED_IMAGES_DIR):
+                    os.mkdir(STORED_IMAGES_DIR)
+
+                # Move image from image directory once processed
+                stored_image_file = image_file.replace(IMAGES_DIR, STORED_IMAGES_DIR)
+                shutil.move(image_file, stored_image_file)
+
+        except Exception as e:
+            message = "Unable to publish images, unhandled exception: {}".format(e)
+            self.logger.exception(message)
+
+    ##### EVENT FUNCTIONS ##############################################################
+
+    def reset(self) -> None:
+        """Resets iot pubsub. TODO: Should probably be in the pubsub (or mqtt) class."""
         try:
             # Pass in the callback that receives commands
             self.iot = IoTPubSub(self, self.command_received, self.state.iot)
-        except (Exception) as e:
+        except Exception as e:
             self.iot = None
-            self.error = str(e)
-            # exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.error("Couldn't create IoT connection: {}".format(e))
-            # traceback.print_tb( exc_traceback, file=sys.stdout )
+            message = "Unable to reset, unhandled exception".format(type(e))
+            self.logger.exception(message)
+            self.mode = modes.ERROR
 
-    def kill_iot_pubsub(self, msg):
-        """Kills IoT pubsub."""
-        self.iot = None
-        self.error = msg
-        self.logger.error("Killing IoTPubSub: {}".format(msg))
+    def publish_message(self, name, msg_json) -> None:
+        """Send a command reply. TODO: Not sure where this is used."""
+        if self.iot is None:
+            return
+        self.iot.publish_command_reply(name, msg_json)
 
     def command_received(self, command, arg0, arg1):
         """Process commands received from the backend (UI). This is a callback that is 
@@ -157,20 +410,20 @@ class IoTManager:
                 recipe_uuid = recipe_dict["uuid"]
 
                 # First stop any recipe that may be running
-                self.ref_recipe.stop_recipe()
+                self.recipe.stop_recipe()
 
                 # Put this recipe via recipe manager
-                self.ref_recipe.create_or_update_recipe(recipe_json)
+                self.recipe.create_or_update_recipe(recipe_json)
 
                 # Start this recipe via recipe manager
-                self.ref_recipe.start_recipe(recipe_uuid)
+                self.recipe.start_recipe(recipe_uuid)
 
                 # Record that we processed this command
                 self.iot.publish_command_reply(command, recipe_json)
                 return
 
             if command == IoTPubSub.CMD_STOP:
-                self.ref_recipe.stop_recipe()
+                self.recipe.stop_recipe()
                 self.iot.publish_command_reply(command, "")
                 return
 
@@ -180,259 +433,3 @@ class IoTManager:
             self.logger.critical("Exception in command_received(): %s" % e)
             traceback.print_tb(exc_traceback, file=sys.stdout)
             return False
-
-    @property
-    def error(self):
-        """Gets error value."""
-        return self._error
-
-    @error.setter
-    def error(self, value):
-        """Safely updates recipe error in shared state."""
-        self._error = value
-        with threading.Lock():
-            self.state.iot["error"] = value
-
-    @property
-    def connected(self):
-        if self.iot is None:
-            return False
-        return self.iot.connected
-
-    @connected.setter
-    def connected(self, value):
-        if self.iot is None:
-            return
-        self.iot.connected = value
-
-    def publish_message(self, name, msg_json):
-        """ Send a command reply. """
-        if self.iot is None:
-            return
-        self.iot.publish_command_reply(name, msg_json)
-
-    def spawn(self):
-        self.logger.info("Spawning IoT thread")
-        self.thread = threading.Thread(target=self.thread_proc)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def stop(self):
-        self.logger.info("Stopping IoT thread")
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
-
-    def publish(self):
-        if self.iot is None:
-            return
-
-        # Safely get vars dict
-        vars_dict = get_nested_dict_safely(
-            self.state.environment,
-            ["reported_sensor_stats", "individual", "instantaneous"],
-        )
-
-        # Check if vars is empty, if so turn into a dict
-        if vars_dict == None:
-            vars_dict = {}
-
-        # Keep a copy of the first set of values (usually None).
-        if self.prev_vars is None:
-            self.prev_vars = copy.deepcopy(vars_dict)
-
-        # for each value, only publish the ones that have changed.
-        for var in vars_dict:
-            if self.prev_vars[var] != vars_dict[var]:
-                self.prev_vars[var] = copy.deepcopy(vars_dict[var])
-                self.iot.publish_env_var(var, vars_dict[var])
-
-    def get_ip(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            s.connect(("8.8.8.8", 80))
-        except:
-            pass
-        ip = s.getsockname()[0]
-        s.close()
-        return ip
-
-    def thread_proc(self):
-        while True:
-
-            # Make sure we have a valid registration + device id
-            # export DEVICE_ID=EDU-BD9BC8B7-f4-5e-ab-3f-07-fd
-            device_id = system_utilities.get_device_id_from_file()
-            if device_id is None:
-                time.sleep(15)
-                self.logger.error("Missing device id file.")
-                self.clean_up_images()  # don't fill the disk!
-                continue
-            os.environ["DEVICE_ID"] = device_id
-
-            # Re-connect to IoT if we lose it (or never had it to begin with)
-            if self.iot is None:
-                time.sleep(15)
-                self.reset()
-                continue
-
-            # Publish a boot message
-            DEVICE_CONFIG_PATH = "data/config/device.txt"
-            if not self.sentAboutJson:
-                self.sentAboutJson = True
-                try:
-                    # Get device config
-                    device = None
-                    if os.path.exists(DEVICE_CONFIG_PATH):
-                        with open(DEVICE_CONFIG_PATH) as f:
-                            device = f.readline().strip()
-
-                    about_dict = {
-                        "package_version": self.state.upgrade.get(
-                            "current_version", "unknown"
-                        ),
-                        "device_config": device,
-                        "IP": self.get_ip(),
-                    }
-                    about_json = json.dumps(about_dict)
-                    self.iot.publish_command_reply("boot", about_json)
-
-                except:
-                    self._error = "Unable to send boot message."
-                    self.logger.critical(self._error)
-
-            # Publish status every 5 minutes
-            secs_since_last_status = (
-                datetime.datetime.utcnow() - self.last_status
-            ).seconds
-            if secs_since_last_status > self.status_publish_freq_secs:
-                try:
-                    self.last_status = datetime.datetime.utcnow()
-                    status_dict = {}
-                    status_dict["timestamp"] = time.strftime("%FT%XZ", time.gmtime())
-                    status_dict["IP"] = self.get_ip()
-
-                    # get the current version from the upgrade state
-                    status_dict["package_version"] = self.state.upgrade.get(
-                        "current_version", "unknown"
-                    )
-
-                    device = None
-                    if os.path.exists(DEVICE_CONFIG_PATH):
-                        with open(DEVICE_CONFIG_PATH) as f:
-                            device = f.readline().strip()
-                    status_dict["device_config"] = device
-
-                    status_dict["status"] = self.state.resource.get("status", "")
-                    status_dict["internet_connection"] = self.state.resource[
-                        "internet_connection"
-                    ]
-                    status_dict["memory_available"] = self.state.resource["free_memory"]
-                    status_dict["disk_available"] = self.state.resource[
-                        "available_disk_space"
-                    ]
-
-                    status_dict["iot_status"] = self.state.iot["connected"]
-                    status_dict["iot_received_message_count"] = self.state.iot[
-                        "received_message_count"
-                    ]
-                    status_dict["iot_published_message_count"] = self.state.iot[
-                        "published_message_count"
-                    ]
-
-                    status_dict["recipe_percent_complete"] = self.state.recipe[
-                        "percent_complete"
-                    ]
-                    status_dict["recipe_percent_complete_string"] = self.state.recipe[
-                        "percent_complete_string"
-                    ]
-                    status_dict["recipe_time_remaining_minutes"] = self.state.recipe[
-                        "time_remaining_minutes"
-                    ]
-                    status_dict["recipe_time_remaining_string"] = self.state.recipe[
-                        "time_remaining_string"
-                    ]
-                    status_dict["recipe_time_elapsed_string"] = self.state.recipe[
-                        "time_elapsed_string"
-                    ]
-
-                    status_json = json.dumps(status_dict)
-                    self.iot.publish_command_reply("status", status_json)
-                except:
-                    self._error = "Unable to send status message."
-                    self.logger.critical(self._error)
-
-            if self.stopped():
-                break
-
-            # Send and receive messages over IoT
-            try:
-                self.iot.process_network_events()
-            except:
-                pass
-
-            # Check for images to publish
-            try:
-                image_file_list = glob.glob(IMAGE_DIR + "*.png")
-                for image_file in image_file_list:
-
-                    # Is this file open by a process? (fswebcam)
-                    if (
-                        0
-                        == os.system(
-                            "lsof -f -- {} > /dev/null 2>&1".format(image_file)
-                        )
-                    ):
-                        continue  # Yes, so skip it and try the next one.
-
-                    # 2018-06-15-T18:34:45Z_Camera-Top.png
-                    fn1 = image_file.split("_")
-                    fn2 = fn1[1]  # Camera-Top.png
-                    fn3 = fn2.split(".")
-                    camera_name = fn3[0]  # Camera-Top
-
-                    # Get the file contents
-                    f = open(image_file, "rb")
-                    file_bytes = f.read()
-                    f.close()
-
-                    # If the size is < 200KB, then it is garbage we delete
-                    # (based on the 1280x1024 average file size)
-                    if len(file_bytes) < 200000:
-                        os.remove(image_file)
-                        continue
-
-                    self.iot.publish_binary_image(camera_name, "png", file_bytes)
-
-                    # Check if stored directory exists, if not create it
-                    if not os.path.isdir(IMAGE_DIR + "stored"):
-                        os.mkdir(IMAGE_DIR + "stored")
-
-                    # Move image from image directory once processed
-                    stored_image_file = image_file.replace(
-                        IMAGE_DIR, IMAGE_DIR + "stored/"
-                    )
-                    shutil.move(image_file, stored_image_file)
-
-            except Exception as e:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                self.logger.critical("Exception: {}".format(e))
-                traceback.print_tb(exc_traceback, file=sys.stdout)
-
-            # idle for a bit
-            time.sleep(1)
-
-    def clean_up_images(self):
-        """If we are not registered for a long time, the camera peripheral will still 
-        be taking pictures every hour by default.  So to avoid filling up the small 
-        disk, we remove any images that build up."""
-        try:
-            image_file_list = glob.glob(IMAGE_DIR + "*.png")
-            for image_file in image_file_list:
-                # Is this file open by a process? (fswebcam)
-                if 0 == os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file)):
-                    continue  # Yes, so skip it and try the next one.
-                os.remove(image_file)
-        except Exception as e:
-            self.logger.error("clean_up_images: {}".format(e))

@@ -27,7 +27,7 @@ class NetworkManager(manager.StateMachineManager):
     _connected: bool = False
 
     def __init__(self, state: State) -> None:
-        """Initializes connect manager."""
+        """Initializes network manager."""
 
         # Initialize parent class
         super().__init__()
@@ -36,7 +36,7 @@ class NetworkManager(manager.StateMachineManager):
         self.state = state
 
         # Initialize logger
-        self.logger = logger.Logger("NetoworkManager", "network")
+        self.logger = logger.Logger("NetworkManager", "network")
         self.logger.debug("Initializing manager")
 
         # Initialize reported metrics
@@ -48,6 +48,7 @@ class NetworkManager(manager.StateMachineManager):
             modes.DISCONNECTED: [modes.CONNECTED, modes.SHUTDOWN, modes.ERROR],
             modes.ERROR: [modes.SHUTDOWN],
         }
+
         # Initialize state machine mode
         self.mode = modes.DISCONNECTED
 
@@ -121,7 +122,7 @@ class NetworkManager(manager.StateMachineManager):
             # Check for mode transitions
             if self.mode == modes.CONNECTED:
                 self.run_connected_mode()
-            if self.mode == modes.DISCONNECTED:
+            elif self.mode == modes.DISCONNECTED:
                 self.run_disconnected_mode()
             elif self.mode == modes.ERROR:
                 self.run_error_mode()  # defined in parent classs

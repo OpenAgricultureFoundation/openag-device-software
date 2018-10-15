@@ -4,6 +4,9 @@ import subprocess
 # Import device utilities
 from device.utilities.logger import Logger
 
+# Initialize file paths
+DEVICE_CONFIG_PATH = "data/config/device.txt"
+
 # Initialize logger
 logger = Logger("SystemUtility", "system")
 logger.debug("Initializing utility")
@@ -125,5 +128,21 @@ def remote_device_ui_url() -> str:
     return "Remote device UI currently only supported for beaglebones"
 
 
-def get_device_id_from_file() -> str:
+def get_device_id_from_file() -> str:  # Should probably be in iot?
     return "JIBBIES"
+
+
+def device_config_name() -> str:
+    """Gets device config name from file."""
+    logger.debug("Getting device config name")
+
+    # Get device config name
+    if os.path.exists(DEVICE_CONFIG_PATH):
+        with open(DEVICE_CONFIG_PATH) as f:
+            device_config_name = f.readline().strip()
+    else:
+        device_config_name = "unspecified"
+
+    # Successfully got device config name
+    logger.debug("Device config name: {}".format(device_config_name))
+    return device_config_name
