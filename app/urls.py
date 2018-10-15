@@ -26,9 +26,6 @@ from django.conf.urls.static import static
 from app import views
 from app.router import Router
 
-# Import device utilities
-from device.utilities import connect
-
 # Setup REST framework routes
 router = Router()
 router.register(r"state", views.StateViewSet, base_name="api-state")
@@ -61,10 +58,14 @@ router.register(
     views.ActuatorVariableViewSet,
     base_name="api-actuator-variables",
 )
-router.register(
-    r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
-)
-router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
+
+
+# router.register(
+#     r"connect/status", views.ConnectGetStatus, base_name="api-connect-status"
+# )
+# router.register(r"connect/joinwifi", views.ConnectJoinWifi, base_name="api-join-wifi")
+
+
 router.register(
     r"connect/joinwifiadvanced",
     views.ConnectJoinWifiAdvanced,
@@ -86,18 +87,20 @@ router.register(
     base_name="api-connect-deleteiotreg",
 )
 
+router.register(r"system", views.SystemViewSet, base_name="api-system")
+router.register(r"network", views.NetworkViewSet, base_name="api-network")
 router.register(r"upgrade", views.UpgradeViewSet, base_name="api-upgrade")
 
 
-# Setup dashboard redirect
-def redirect_to_connect_or_dashboard(request):
+# # Setup dashboard redirect
+# def redirect_to_connect_or_dashboard(request):
 
-    # if we have a valid internet connection, go to the dashboard
-    if connect.valid_internet_connection():
-        return HttpResponseRedirect(reverse("dashboard"))
-    else:
-        # otherwise, let the user set up their wifi connection
-        return HttpResponseRedirect(reverse("connect"))
+#     # if we have a valid internet connection, go to the dashboard
+#     if connect.valid_internet_connection():
+#         return HttpResponseRedirect(reverse("dashboard"))
+#     else:
+#         # otherwise, let the user set up their wifi connection
+#         return HttpResponseRedirect(reverse("connect"))
 
 
 # Setup url patterns

@@ -14,11 +14,11 @@ CONNECT_WIFI_SCRIPT_PATH = "scripts/connect_wifi.sh"
 DELETE_WIFI_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
 
 # Initialize logger
-logger = Logger("NetoworkUtility", "connect")
+logger = Logger("NetoworkUtility", "network")
 
 
-def internet_is_connected() -> bool:
-    """Checks if device is connected to the internet."""
+def is_connected() -> bool:
+    """Checks if connected to network."""
     try:
         urllib.request.urlopen("http://google.com")
         return True
@@ -47,8 +47,8 @@ def get_wifi_access_points(
     """Gets wifi access points. Currently only works for wifi beaglebones."""
     logger.debug("Getting wifi access points")
 
-    # Check system is a beaglebone wifi
-    if not system.is_wifi_bbb():
+    # Check system is a wifi beaglebone
+    if not system.is_wifi_beaglebone():
         logger.error("Unable to get wifi access points, system not a wifi beaglebone")
         return []
 
@@ -120,8 +120,8 @@ def join_wifi(wifi: str, password: str) -> bool:
     Returns true on success, false on failure"""
     logger.debug("Joining wifi")
 
-    # Check system is a beaglebone wifi
-    if not system.is_wifi_bbb():
+    # Check system is a wifi beaglebone
+    if not system.is_wifi_beaglebone():
         logger.error("Unable to join wifi, system not a wifi beaglebone")
         return False
 
@@ -152,8 +152,8 @@ def delete_wifi_connections() -> bool:
     re-raise exception."""
     logger.debug("Deleting wifi connections")
 
-    # Check system is a beaglebone wifi
-    if not system.is_wifi_bbb():
+    # Check system is a wifi beaglebone
+    if not system.is_wifi_beaglebone():
         logger.error("Unable to delete wifi connections, system not a wifi beaglebone")
         return False
 

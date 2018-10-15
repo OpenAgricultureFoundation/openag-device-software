@@ -80,7 +80,9 @@ from app.viewers import (
 from django.apps import apps
 
 # Import device utilities
-from device.utilities import logger, network, system
+from device.utilities import logger
+from device.utilities import system as system_utilities
+from device.utilities import network as network_utilities
 
 # Initialize file paths
 APP_NAME = "app"
@@ -247,18 +249,18 @@ class Home(APIView):
 
         # Get internet connectivity. TODO: This should access connect manager through
         # coordinator manager. See viewers.py for example implementation
-        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+        network_is_connected = network_utilities.is_connected()
 
         from django.shortcuts import redirect, reverse
 
-        if valid_internet_connection:
+        if network_is_connected:
             return redirect(reverse("dashboard"))
         else:
             return redirect(reverse("connect"))
 
-        # Build and return response
-        response = {"valid_internet_connection": valid_internet_connection}
-        return Response()
+        # # Build and return response
+        # response = {"valid_internet_connection": network_is_connected}
+        # return Response()
 
 
 class Dashboard(APIView):
@@ -290,7 +292,7 @@ class Dashboard(APIView):
 
         # Get resource viewer: TODO: This should access connect manager through
         # coordinator manager. See viewers.py for example implementation
-        valid_internet_connection = ConnectUtilities.valid_internet_connection()
+        network_is_connected = network_utilities.is_connected()
 
         # Build and return response
         response = {
@@ -299,7 +301,7 @@ class Dashboard(APIView):
             "current_recipe": current_recipe,
             "recipes": recipes,
             "datetime_form": datetime_form,
-            "valid_internet_connection": valid_internet_connection,
+            "valid_internet_connection": network_is_connected,
         }
         return Response(response)
 
@@ -663,9 +665,9 @@ class Connect(APIView):
         logger = logging.getLogger(__name__)
         logger = logging.LoggerAdapter(logger, extra)
 
-        response = ConnectUtilities.get_status()
-        logger.info("Connect response={}".format(response))
-        return Response(response)
+        # response = ConnectUtilities.get_status()
+        # logger.info("Connect response={}".format(response))
+        return Response({})
 
 
 class ConnectAdvanced(APIView):
@@ -685,35 +687,81 @@ class ConnectAdvanced(APIView):
         return Response(response)
 
 
-class ConnectViewSet(viewsets.ModelViewSet):
-    """View set for connecting device to internet and google cloud platform."""
-
-    # TODO: This should probably be NetworkViewSet
+class SystemViewSet(viewsets.ModelViewSet):
+    """View set for system interactions."""
 
     # Initialize logger
-    logger = logger.Logger("ConnectViewSet", "app")
-
-    # TODO: Make info route (basically network exclusive functions from getStatus)
+    logger = logger.Logger("SystemViewSet", "app")
 
     @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
-    def wifis(self, request):
-        """Gets wifi access points."""
-        self.logger.debug("Getting wifi access points")
+    def info(self, request):
+        """Gets system info."""
+        self.logger.debug("Getting system info")
 
-        # Get wifi access points
         try:
-            wifi_access_points = connect.get_wifi_access_points()
-            message = "Successfully got wifi access points"
-            status = 200
+            response = {
+                "message": "Successfully got system info",
+                "is_beaglebone": system_utilities.is_beaglebone(),
+                "is_wifi_beaglebone": system_utilities.is_wifi_beaglebone(),
+                "beaglebone_serial_number": system_utilities.beaglebone_serial_number(),
+                "remote_device_ui_url": system_utilities.remote_device_ui_url(),
+            }
+            self.logger.debug("Returning response: {}".format(response))
+            return Response(response, 200)
         except Exception as e:
-            wifi_access_points = []
-            message = "Unable to get wifis, unhandled exception: `{}`".format(type(e))
-            status = 500
+            message = "Unable to get system info, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.exception(message)
+            return Response({"message": message}, 500)
 
-        # Build and return response
-        response = {"message": message, "wifi_access_points": wifi_access_points}
+
+class NetworkViewSet(viewsets.ModelViewSet):
+    """View set for network interactions."""
+
+    # Initialize logger
+    logger = logger.Logger("NetworkViewSet", "app")
+
+    @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def info(self, request):
+        """Gets network info."""
+        self.logger.debug("Getting network info")
+
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
+
+        # Build response
+        response = {
+            "message": "Successfully got network info",
+            "is_connected": network_manager.is_connected,
+            "ip_address": network_manager.ip_address,
+            "wifi_access_points": network_manager.wifi_access_points,
+        }
+
+        # Return response
         self.logger.debug("Returning response: {}".format(response))
-        return Response(response, status)
+        return Response(response, 200)
+
+    # @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    # def wifis(self, request):
+    #     """Gets wifi access points."""
+    #     self.logger.debug("Getting wifi access points")
+
+    #     # Get wifi access points
+    #     try:
+    #         wifi_access_points = connect.get_wifi_access_points()
+    #         message = "Successfully got wifi access points"
+    #         status = 200
+    #     except Exception as e:
+    #         wifi_access_points = []
+    #         message = "Unable to get wifis, unhandled exception: `{}`".format(type(e))
+    #         status = 500
+
+    #     # Build and return response
+    #     response = {"message": message, "wifi_access_points": wifi_access_points}
+    #     self.logger.debug("Returning response: {}".format(response))
+    #     return Response(response, status)
 
     @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
     def joinwifi(self, request):

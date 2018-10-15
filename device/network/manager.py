@@ -2,20 +2,16 @@
 import logging, threading, time, platform
 
 # Import python types
-from typing import Dict
+from typing import Dict, Any, Tuple
 
 # Import device utilities
 from device.utilities import logger, accessors, constants
-from device.utilities.statemachine import manager, modes
+from device.utilities.statemachine import manager
 from device.utilities.state.main import State
-
-# Import manager elements
 from device.utilities import network as network_utilities
 
-# TODO: Should we rename this to network manager?
-# Answer: Depends if we want to interact with iot, e.g. respawn on reconnect
-# Or iot manager just watches network manager? or calls network utility?
-# Would rather keep seperate unless have a good reason to merge them
+# Import manager elements
+from device.network import modes
 
 # TODO: Should we bring persist ports for port forwarding? Probably want as much of
 # the code to live in python land as possible so we don't have to keep track of bash
@@ -25,8 +21,8 @@ from device.utilities import network as network_utilities
 # the commands inside of them?
 
 
-class ConnectManager(manager.StateMachineManager):
-    """ Sets up and manages internet and IoT connections. """
+class NetworkManager(manager.StateMachineManager):
+    """Manages network connections."""
 
     _connected: bool = False
 
@@ -40,7 +36,7 @@ class ConnectManager(manager.StateMachineManager):
         self.state = state
 
         # Initialize logger
-        self.logger = logger.Logger("Connect", "connect")
+        self.logger = logger.Logger("NetoworkManager", "network")
         self.logger.debug("Initializing manager")
 
         # Initialize reported metrics
@@ -48,18 +44,20 @@ class ConnectManager(manager.StateMachineManager):
 
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
-            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR], modes.ERROR: [modes.SHUTDOWN]
+            modes.CONNECTED: [modes.DISCONNECTED, modes.SHUTDOWN, modes.ERROR],
+            modes.DISCONNECTED: [modes.CONNECTED, modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.SHUTDOWN],
         }
         # Initialize state machine mode
-        self.mode = modes.NORMAL
+        self.mode = modes.DISCONNECTED
 
     @property
-    def internet_is_connected(self) -> bool:
+    def is_connected(self) -> bool:
         """Gets internet connection status."""
-        return self.state.connect.get("internet_is_connected", False)
+        return self.state.network.get("is_connected", False)
 
-    @internet_is_connected.setter
-    def internet_is_connected(self, value: bool) -> None:
+    @is_connected.setter
+    def is_connected(self, value: bool) -> None:
         """Sets connection status, updates reconnection status, and logs changes."""
 
         # Set previous and current connection state
@@ -70,11 +68,13 @@ class ConnectManager(manager.StateMachineManager):
         if prev_connected != self._connected and self._connected:
             self.logger.info("Connected to internet")
             self.reconnected = True
+            self.mode = modes.CONNECTED
 
         # Check for new disconnection
         elif prev_connected != self._connected and not self._connected:
             self.logger.info("Disconnected from internet")
             self.reconnected = False
+            self.mode = modes.DISCONNECTED
 
         # No change to connection
         else:
@@ -82,95 +82,29 @@ class ConnectManager(manager.StateMachineManager):
 
         # Update connection status in shared state
         with self.state.lock:
-            self.state.resource["internet_is_connected"] = value
+            self.state.network["is_connected"] = value
 
     @property
     def wifi_access_points(self) -> bool:
         """Gets value."""
-        return self.state.connect.get("wifi_access_points")  # type: ignore
+        return self.state.network.get("wifi_access_points")  # type: ignore
 
     @wifi_access_points.setter
     def wifi_access_points(self, value: bool) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
-            self.state.connect["wifi_access_points"] = value
+            self.state.network["wifi_access_points"] = value
 
     @property
     def ip_address(self) -> bool:
         """Gets value."""
-        return self.state.connect.get("ip_address")  # type: ignore
+        return self.state.network.get("ip_address")  # type: ignore
 
     @ip_address.setter
     def ip_address(self, value: bool) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
-            self.state.connect["ip_address"] = value
-
-    @property
-    def remote_device_ui_url(self) -> str:
-        """Gets value."""
-        return self.state.connect.get("remote_device_ui_url")  # type: ignore
-
-    @remote_device_ui_url.setter
-    def remote_device_ui_url(self, value: str) -> None:
-        """Safely updates value in shared state."""
-        with self.state.lock:
-            self.state.connect["remote_device_ui_url"] = value
-
-    # @property
-    # def is_bbb(self) -> bool:
-    #     """Gets value."""
-    #     return self.state.connect.get("is_bbb")  # type: ignore
-
-    # @is_bbb.setter
-    # def is_bbb(self, value: bool) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["is_bbb"] = value
-
-    # @property
-    # def is_wifi_bbb(self) -> bool:
-    #     """Gets value."""
-    #     return self.state.connect.get("is_wifi_bbb")  # type: ignore
-
-    # @is_wifi_bbb.setter
-    # def is_wifi_bbb(self, value: bool) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["is_wifi_bbb"] = value
-
-    # @property
-    # def is_iot_registered(self) -> bool:
-    #     """Gets value."""
-    #     return self.state.connect.get("is_registered_with_IoT")  # type: ignore
-
-    # @is_iot_registered.setter
-    # def is_iot_registered(self, value: bool) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["is_registered_with_IoT"] = value
-
-    # @property
-    # def device_id(self) -> str:
-    #     """Gets value."""
-    #     return self.state.connect.get("device_id")  # type: ignore
-
-    # @device_id.setter
-    # def device_id(self, value: str) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["device_id"] = value
-
-    # @property
-    # def iot_connection(self) -> bool:
-    #     """Gets value."""
-    #     return self.state.connect.get("iot_connection")  # type: ignore
-
-    # @iot_connection.setter
-    # def iot_connection(self, value: bool) -> None:
-    #     """Safely updates value in shared state."""
-    #     with self.state.lock:
-    #         self.state.connect["iot_connection"] = value
+            self.state.network["ip_address"] = value
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 
@@ -185,8 +119,10 @@ class ConnectManager(manager.StateMachineManager):
                 break
 
             # Check for mode transitions
-            if self.mode == modes.NORMAL:
-                self.run_normal_mode()
+            if self.mode == modes.CONNECTED:
+                self.run_connected_mode()
+            if self.mode == modes.DISCONNECTED:
+                self.run_disconnected_mode()
             elif self.mode == modes.ERROR:
                 self.run_error_mode()  # defined in parent classs
             elif self.mode == modes.SHUTDOWN:
@@ -197,20 +133,16 @@ class ConnectManager(manager.StateMachineManager):
                 self.is_shutdown = True
                 break
 
-    def run_normal_mode(self) -> None:
+    def run_connected_mode(self) -> None:
         """Runs normal mode."""
+        self.logger.debug("Entered CONNECTED")
 
-        # Initialize last update time
+        # Initialize timing variables
         last_update_time = 0.0
+        update_interval = 300  # seconds -> 5 minutes
 
         # Loop forever
         while True:
-
-            # Set resource update interval
-            if not self.internet_is_connected:
-                update_interval = 5  # seconds
-            else:
-                update_interval = 300  # seconds -> 5 minutes
 
             # Update connection and storage state every update interval
             if time.time() - last_update_time > update_interval:
@@ -221,7 +153,33 @@ class ConnectManager(manager.StateMachineManager):
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(modes.NORMAL):
+            if self.new_transition(modes.CONNECTED):
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+    def run_disconnected_mode(self) -> None:
+        """Runs normal mode."""
+        self.logger.debug("Entered DISCONNECTED")
+
+        # Initialize timing variables
+        last_update_time = 0.0
+        update_interval = 5  # seconds
+
+        # Loop forever
+        while True:
+
+            # Update connection and storage state every update interval
+            if time.time() - last_update_time > update_interval:
+                last_update_time = time.time()
+                self.update_connection()
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.DISCONNECTED):
                 break
 
             # Update every 100ms
@@ -231,7 +189,7 @@ class ConnectManager(manager.StateMachineManager):
 
     def update_connection(self) -> None:
         """Updates connection state."""
-        self.internet_is_connected = network_utilities.internet_is_connected()
+        self.is_connected = network_utilities.is_connected()
         self.ip_address = network_utilities.get_ip_address()
         self.wifi_access_points = network_utilities.get_wifi_access_points()
 
@@ -260,7 +218,7 @@ class ConnectManager(manager.StateMachineManager):
         # Wait for internet connection to be established
         timeout = 5  # seconds
         start_time = time.time()
-        while not network_utilities.internet_is_connected():
+        while not network_utilities.is_connected():
 
             # Check for timeout
             if time.time() - start_time > timeout:

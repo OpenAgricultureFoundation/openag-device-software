@@ -6,7 +6,7 @@ from device.utilities.accessors import get_nested_dict_safely
 
 # Import the IoT communications class
 from device.iot.pubsub import IoTPubSub
-from device.connect import utilities
+from device.utilities import system as system_utilities
 
 # Initialize file paths
 IMAGE_DIR = "data/images/"
@@ -60,6 +60,62 @@ class IoTManager:
 
         self._stop_event = threading.Event()  # so we can stop this thread
         self.reset()
+
+    # @property
+    # def is_registered(self) -> bool:
+    #     """Gets value."""
+    #     return self.state.connect.get("is_registered_with_IoT")  # type: ignore
+
+    # @is_registered.setter
+    # def is_registered(self, value: bool) -> None:
+    #     """Safely updates value in shared state."""
+    #     with self.state.lock:
+    #         self.state.connect["is_registered_with_IoT"] = value
+
+    # @property
+    # def device_id(self) -> str:
+    #     """Gets value."""
+    #     return self.state.connect.get("device_id")  # type: ignore
+
+    # @device_id.setter
+    # def device_id(self, value: str) -> None:
+    #     """Safely updates value in shared state."""
+    #     with self.state.lock:
+    #         self.state.connect["device_id"] = value
+
+    # @property
+    # def iot_connection(self) -> bool:
+    #     """Gets value."""
+    #     return self.state.connect.get("iot_connection")  # type: ignore
+
+    # @iot_connection.setter
+    # def iot_connection(self, value: bool) -> None:
+    #     """Safely updates value in shared state."""
+    #     with self.state.lock:
+    #         self.state.connect["iot_connection"] = value
+
+    # THIS WAS IN RESOURCE MANAGER
+    # def update_connection(self) -> None:
+    #     """Updates connection information."""
+    #     self.logger.debug("Updating connection")
+
+    #     # Update connection status
+    #     self.connected = network_utilities.is_connected()
+
+    #     # Reset iot manager on reconnect event
+    #     if self.reconnected:
+    #         self.iot.reset()  # type: ignore
+
+    @property
+    def remote_device_ui_url(self) -> str:
+        """Gets value."""
+        return self.state.connect.get("remote_device_ui_url")  # type: ignore
+
+    @remote_device_ui_url.setter
+    def remote_device_ui_url(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.connect["remote_device_ui_url"] = value
 
     def reset(self):
         try:
@@ -207,7 +263,7 @@ class IoTManager:
 
             # Make sure we have a valid registration + device id
             # export DEVICE_ID=EDU-BD9BC8B7-f4-5e-ab-3f-07-fd
-            device_id = utilities.get_device_id_from_file()
+            device_id = system_utilities.get_device_id_from_file()
             if device_id is None:
                 time.sleep(15)
                 self.logger.error("Missing device id file.")
@@ -322,8 +378,11 @@ class IoTManager:
                 for image_file in image_file_list:
 
                     # Is this file open by a process? (fswebcam)
-                    if 0 == os.system(
-                        "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                    if (
+                        0
+                        == os.system(
+                            "lsof -f -- {} > /dev/null 2>&1".format(image_file)
+                        )
                     ):
                         continue  # Yes, so skip it and try the next one.
 

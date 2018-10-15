@@ -4,37 +4,94 @@
 <script>
   
   window.onload = function() {
+    // document.getElementById("status").innerHTML = "Initializing"
+    getInfoAndUpdateView()
+  }
 
-    var status = "{{ status }}"
-    var internetIsConnected = ("{{ internet_is_connected }}" == "True")
-    var wifiAccessPoints = []
-    var ipAddress = "{{ ip_address }}"
+  function getInfoAndUpdateView() {
+    console.log("Getting info and updating view")
 
-    updateView(status, internetIsConnected, ipAddress, wifiAccessPoints)
+    // Initialize system and network info
+    var systemInfo = {};
+    var networkInfo = {};
+
+    // Get system info
+    getSystemInfo()
+      .then(function(systemInfo) {
+        var systemInfo = systemInfo;
+        
+        // Get network info
+        getNetworkInfo()
+          .then(function(networkInfo) {
+            var networkInfo = networkInfo;
+
+            // Update view
+            iotInfo = {"isRegistered": false, "verificationCode": "FAKECODE"}
+            updateView(systemInfo, networkInfo, iotInfo)
+          })
+      })
+      .catch(function(error) {
+        console.log("Error: " + error);
+      })
+  }
+
+  function updateView(systemInfo, networkInfo, iotInfo) {
+    console.log("Updating view");
+    console.log(systemInfo)
+    console.log(networkInfo)
+    console.log(iotInfo)
+
+    // Update view for connected network and registered iot
+    if (networkInfo["isConnected"] && iotInfo["isRegistered"]) {
+      document.getElementById("status").innerHTML = "Successfully connected!"
+      document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
+      document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("cloud-ui-url").innerHTML = "https://openag-v1.appspot.com/login/";
+      document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login/";
+      $('#connection-info-collapse').collapse("show");
+      $('#configure-wifi-collapse').collapse("hide");
+    }
+
+    // Update view for connected network and unregistered iot
+    else if (networkInfo["isConnected"] && !iotInfo["isRegistered"]) {
+      document.getElementById("status").innerHTML = "Connected to network, iot registration required"
+      document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
+      document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("cloud-ui-url").innerHTML = "Please click here to create your user account, and connect your PFC to the OpenAg Cloud";
+      document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login?vcode=" + iotInfo["verificationCode"];
+      $('#connection-info-collapse').collapse("show");
+      $('#configure-wifi-collapse').collapse("hide");
+    }
+
+    // Update view for disconnected network and non-wifi-beaglebone system
+    else if (!networkInfo["isConnected"] && !systemInfo["isWifiBeaglebone"]) {
+        document.getElementById("status").innerHTML = "Unable to connect, not a wifi beaglebone"
+        $("#configure-wifi-collapse").collapse("hide");
+        $("#connection-info-collapse").collapse("hide");
+    }
+
+    // Update view for disconnected network and wifi-beaglebone system
+    else if (!networkInfo["isConnected"] && systemInfo["isWifiBeaglebone"]) {
+      document.getElementById("status").innerHTML = "Please configure your wifi network"
+      updateWifiAccessPoints(networkInfo["wifiAccessPoints"])
+      $("#configure-wifi-collapse").collapse("show");
+      $("#network-info-collapse").collapse("hide");
+    }
 
   }
 
-  function updateView(status, internetIsConnected, ipAddress) {
-    console.log("Updating view");
-
-    // Display connection info
-    document.getElementById("status").innerHTML = status;
-    document.getElementById("ip-address").innerHTML = ipAddress;
-    document.getElementById("remote-device-ui-url").innerHTML = remoteDeviceUI;
-    document.getElementById("remote-device-ui-url").href = remoteDeviceUI;
-    document.getElementById("web-ui-url").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-    // document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
-
+  function updateWifiAccessPoints(wifiAccessPoints) {
+    console.log("Updating wifi access points")
 
     // Remove stale wifi access point selections
-    console.log("Removing stale wifi access point selections")
     var wifiAccessPointSelect = document.getElementById("wifiAccessPointSelect");
     for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
       wifiAccessPointSelect.remove(i);
     }
     
     // Add updated wifi access point selections
-    console.log("Adding updated wifi access point selections")
     for( i=0; i < wifiAccessPoints.length; i++ ) {
       wifiAccessPoint = wifiAccessPoints[i];
       var option = document.createElement("option");
@@ -42,113 +99,121 @@
       option.value = wifiAccessPoint.service;
       wifiAccessPointSelect.add(option);
     }
-
   }
 
-  function joinWifi() {
-    console.log("Joining wifi")
-    
-    // Update status
-    document.getElementById("status").innerHTML = 'Connecting, this will take a few minutes...'
+  function getSystemInfo() {
+    console.log("Getting system info")
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/system/info/",
+        type: "GET",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log("Got system info")
+          var systemInfo = {
+            "isBeaglebone": data["is_beaglebone"],
+            "isWifiBeaglebone": data["is_wifi_beaglebone"],
+            "beagleboneSerialNumber": data["beaglebone_serial_number"],
+            "remoteDeviceUiUrl": data["remote_device_ui_url"]
+          };
+          resolve(systemInfo);
+        },
+        error: function(data) {
+          response_dict = JSON.parse(data.responseText);
+          message = response_dict["message"];
+          console.log(message);
+          var systemInfo = {};
+          reject(systemInfo);
+        }
+      });
+    });
+  }
 
-    // Get wifi name
-    var wifiName = document.getElementById("wifiAccessPoints");
-    if( wifiName == null ) {
-      console.log("Error: could not get wifiAccessPoints element")
-      return
-    }
-
-    // Get wifi password
-    var wifiPassword = document.getElementById("wifi-password");
-    if( wifiPassword == null ) {
-      console.log("Error: could not get wifi-password element")
-      return
-    }
-
-    // Send join wifi request
-    console.log("Sending join wifi request")
-    $.ajax({
-      url: "/api/connect/joinwifi/",
-      type: "POST",
-      data: {
-        "csrfmiddlewaretoken": "{{ csrf_token }}",
-        "wifi": wifiName.value,
-        "password": wifiPassword.value
-      },
-      dataType: 'json',
-      success: function(data) {
-        console.log(data['message'])
-        console.log(data)
-
-        // TODO: updateView(data['status'], data['upgrade_available'], data['current_version'], data['upgrade_version']);
-      },
-      error: function(data) {
-        response_dict = JSON.parse(data.responseText)
-        message = response_dict["message"]
-        console.log(message);
-        console.log(response_dict)
-
-        // TODO: updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
-      }
+  function getNetworkInfo() {
+    console.log("Getting network info")
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/network/info/",
+        type: "GET",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log("Got network info")
+          var networkInfo = {
+            "isConnected": data["is_connected"],
+            "ipAddress": data["ip_address"],
+            "wifiAccessPoints": data["wifi_access_points"]
+          }
+          resolve(networkInfo);
+        },
+        error: function(data) {
+          console.log("Unable to get network info")
+          response_dict = JSON.parse(data.responseText)
+          message = response_dict["message"]
+          console.log(message);
+          var networkInfo = {};
+          reject(networkInfo);
+        }
+      });
     });
   }
 
 
-  // function getStatusPromise() {
-  //   return new Promise(function (resolve, reject) {
-  //     $.ajax({
-  //       url: "/api/connect/status/",
-  //       type: "GET",
-  //       data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-  //       dataType: "json",
-  //       success: function(data) {
-  //         document.getElementById("status").innerHTML = data['status'];
-  //         document.getElementById("ip_address").innerHTML = data['ip_address'];
-  //         document.getElementById("remote-device-ui-url").innerHTML = data['remote-device-ui-url'];
 
-  //         if( data['verification_code'] != "None" ) {
-  //           document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-  //           document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
-  //         }
+  // function joinWifi() {
+  //   console.log("Joining wifi")
+    
+  //   // Update status
+  //   document.getElementById("status").innerHTML = 'Joining wifi, this will take a few minutes...'
 
-  //         // update the page to match the status
-  //         if(data['is_bbb']) {
-  //           $('#is_bbb').collapse('show');
-  //         }
-  //         if(data['is_wifi_bbb'] && ! data['internet_is_connected']) {
-  //           $('#show_wifi').collapse('show');
-  //           $('#show_dev_UI').collapse('hide');
-  //         } else {
-  //           $('#show_wifi').collapse('hide');
-  //           $('#show_dev_UI').collapse('show');
-  //         }
+  //   // Get wifi name
+  //   var wifiName = document.getElementById("wifiAccessPoints");
+  //   if( wifiName == null ) {
+  //     console.log("Error: could not get wifiAccessPoints element")
+  //     return
+  //   }
 
-  //         // clean out the existing wifis
-  //         var wifiName = document.getElementById("wifiAccessPoints");
-  //         for( i=wifiName.length - 1; i >= 0; i-- ) { // must do in reverse
-  //           wifiName.remove(i);
-  //         }
-  //         // add new wifis we just received
-  //         wifiAccessPoints = data['wifis'];
-  //         for( i=0; i < wifiAccessPoints.length; i++ ) {
-  //           wifi = wifiAccessPoints[i];
-  //           var option = document.createElement("option");
-  //           option.text = wifi.ssid;
-  //           option.value = wifi.service;
-  //           wifiName.add(option);
-  //         }
+  //   // Get wifi password
+  //   var wifiPassword = document.getElementById("wifi-password");
+  //   if( wifiPassword == null ) {
+  //     console.log("Error: could not get wifi-password element")
+  //     return
+  //   }
 
-  //         var statusDict = data;
-  //         resolve(statusDict);
-  //       },
-  //       error: function(data) {
-  //         console.log("Promise Error: getStatus failed");
-  //         document.getElementById("status").innerHTML = 'Could not get status.';
-  //         reject(data);
-  //       }
-  //     });
-  //   })
+  //   // Send join wifi request
+  //   console.log("Sending join wifi request")
+  //   $.ajax({
+  //     url: "/api/connect/joinwifi/",
+  //     type: "POST",
+  //     data: {
+  //       "csrfmiddlewaretoken": "{{ csrf_token }}",
+  //       "wifi": wifiName.value,
+  //       "password": wifiPassword.value
+  //     },
+  //     dataType: 'json',
+  //     success: function(data) {
+  //       console.log(data['message'])
+  //       console.log(data)
+
+  //       // TODO: updateView(data['status'], data['upgrade_available'], data['current_version'], data['upgrade_version']);
+  //     },
+  //     error: function(data) {
+  //       response_dict = JSON.parse(data.responseText)
+  //       message = response_dict["message"]
+  //       console.log(message);
+  //       console.log(response_dict)
+
+  //       // TODO: updateView(response_dict['status'], response_dict['upgrade_available'], response_dict['current_version'], response_dict['upgrade_version']);
+  //     }
+  //   });
   // }
+
+
 
   function makePasswordVisible() {
     var pass = document.getElementById("wifi-password");
@@ -161,7 +226,6 @@
 
 </script>
 {% endblock %}
-
 
 
 {% block content %}
@@ -180,18 +244,25 @@
   <div class="card" id="connect-card">
     
     <h3>Networking</h3></br>
-    <div class="collapse" id="networking-collapse">
+
+    <p>
+      <b>Status:</b> <span id="status"></span>
+    </p>
+    
+    <div class="collapse" id="configure-wifi-collapse">
       <select id="wifi-access-points" class="selectpicker" style="width:200px">
         {% for wifi_access_point in wifi_access_points %}
         <option value={{wifi_access_point.service}}>{{wifi_assess_point.ssid}}</option>
         {% endfor %}
       </select>
+
       <p>
         <input type="password" id="wifi-password" 
          onkeydown="if (event.keyCode==13) document.getElementById('join-wifi-button').click()"
          placeholder='Wifi Password' style="width:200px">
         <input type="checkbox" onclick="makePasswordVisible()"> Show Password
       </p>
+
       <a class="badge badge-secondary" data-toggle="collapse" id="join-wifi-button"
         style="width:200px" href="" role="button" onclick="joinWifi();">
         Join Wifi</a>
@@ -202,17 +273,16 @@
       </p>
     </div>
 
-    <p>
-      <b>Status:</b> <span id="status"></span>
-    </p>
-
-    <div class="collapse" id="device-ui-collapse">
+    
+    <div class="collapse" id="connection-info-collapse">
       <ul>
         <li><b>Device IP Address:</b> <span id="ip-address"></span>
-        <li><b>Web UI:</b> <a id="web-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg Web UI</a>
+        <li><b>Web UI:</b> <a id="cloud-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg Web UI</a>
         <li><b>Remotely Accessible Device UI:</b> <a id="remote-device-ui-url" href="" target="_blank"></a>
       </ul>
     </div>
+
+  </div>
   </div>
 
 </div>

@@ -6,7 +6,8 @@ from device.utilities.logger import Logger
 
 
 # Initialize logger
-logger = Logger("SystemUtility", "connect")  # TODO: fix this log file
+logger = Logger("SystemUtility", "system")
+logger.debug("Initializing utility")
 
 
 def is_beaglebone() -> bool:
@@ -74,7 +75,7 @@ def is_wifi_beaglebone() -> bool:
     return True
 
 
-def get_beaglebone_serial_number() -> str:
+def beaglebone_serial_number() -> str:
     """Gets the beaglebone serial number."""
     logger.debug("Getting beaglebone serial number")
 
@@ -106,3 +107,24 @@ def get_beaglebone_serial_number() -> str:
     # Successfully got serial number
     logger.debug("Successfully got serial number: {}".format(serial_number))
     return serial_number
+
+
+def remote_device_ui_url() -> str:
+    """Gets remote device ui url. Currently only works for beaglebones."""
+    logger.debug("Getting remote device ui url")
+
+    # TODO: Make this more flexible...e.g. if system not a beaglebone, generate a
+    # unique ui url...be able to handle ngrok if enabled...
+
+    # Check if device is a beaglebone
+    if is_beaglebone():
+        serial_number = beaglebone_serial_number()
+        url = "{}.serveo.net".format(serial_number)
+        return url
+
+    # Device is not a beaglebone
+    return "Remote device UI currently only supported for beaglebones"
+
+
+def get_device_id_from_file() -> str:
+    return "JIBBIES"

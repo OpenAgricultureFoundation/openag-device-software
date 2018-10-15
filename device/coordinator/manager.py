@@ -18,7 +18,7 @@ from device.utilities.logger import Logger
 from device.recipe.manager import RecipeManager
 from device.iot.manager import IoTManager
 from device.resource.manager import ResourceManager
-from device.connect.manager import ConnectManager
+from device.network.manager import NetworkManager
 from device.upgrade.manager import UpgradeManager
 
 # Import manager elements
@@ -85,7 +85,7 @@ class CoordinatorManager(StateMachineManager):
         self.recipe = RecipeManager(self.state)
         self.iot = IoTManager(self.state, self.recipe)  # type: ignore
         self.resource = ResourceManager(self.state, self.iot)  # type: ignore
-        self.connect = ConnectManager(self.state)  # type: ignore
+        self.network = NetworkManager(self.state)  # type: ignore
         self.upgrade = UpgradeManager(self.state)  # type: ignore
 
         # Initialize state machine transitions
@@ -246,7 +246,7 @@ class CoordinatorManager(StateMachineManager):
         self.recipe.spawn()
         self.iot.spawn()
         self.resource.spawn()
-        self.connect.spawn()
+        self.network.spawn()
         self.upgrade.spawn()
 
         # Create and spawn peripherals
@@ -356,7 +356,7 @@ class CoordinatorManager(StateMachineManager):
                 controllers=json.dumps(self.state.controllers),
                 iot=json.dumps(self.state.iot),
                 resource=json.dumps(self.state.resource),
-                connect=json.dumps(self.state.connect),
+                connect=json.dumps(self.state.network),
                 upgrade=json.dumps(self.state.upgrade),
             )
         else:
@@ -368,7 +368,7 @@ class CoordinatorManager(StateMachineManager):
                 controllers=json.dumps(self.state.controllers),
                 iot=json.dumps(self.state.iot),
                 resource=json.dumps(self.state.resource),
-                connect=json.dumps(self.state.connect),
+                connect=json.dumps(self.state.network),  # TODO: migrate this
                 upgrade=json.dumps(self.state.upgrade),
             )
 
