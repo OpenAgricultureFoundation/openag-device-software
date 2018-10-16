@@ -128,10 +128,6 @@ def remote_device_ui_url() -> str:
     return "Remote device UI currently only supported for beaglebones"
 
 
-def get_device_id_from_file() -> str:  # Should probably be in iot?
-    return "JIBBIES"
-
-
 def device_config_name() -> str:
     """Gets device config name from file."""
     logger.debug("Getting device config name")

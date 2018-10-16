@@ -70,9 +70,8 @@ class IoTPubSub:
     encryptionAlgorithm = "RS256"  # for JWT (RSA 256 bit)
     args = None  # Class configuration
 
-    def __init__(self, ref_iot_manager, command_received_callback, state_dict):
+    def __init__(self, command_received_callback, state_dict):
         """Initializes IoT manager."""
-        self.ref_iot_manager = ref_iot_manager
         self.command_received_callback = command_received_callback
         self.state_dict = state_dict  # items that are shown in the UI
         self.args = self.get_env_vars()  # get our settings from env. vars.
@@ -123,11 +122,53 @@ class IoTPubSub:
             self.args.mqtt_bridge_port,
         )
 
-    def kill_ourselves(self, msg):
-        """Used by the phao callbacks if we need to tell the manager to recreate us."""
+    @property
+    def lastConfigVersion(self):
+        """Get the last version of a config message (command) we received."""
+        return self._lastConfigVersion
 
-        self.state_dict["connected"] = "No"
-        self.ref_iot_manager.kill_iot_pubsub(msg)
+    @lastConfigVersion.setter
+    def lastConfigVersion(self, value):
+        """Save the last version of a config message (command) we received."""
+        self._lastConfigVersion = value
+        try:
+            c = IoTConfigModel.objects.latest()
+            c.last_config_version = value
+            c.save()
+        except:
+            IoTConfigModel.objects.create(last_config_version=value)
+
+    @property
+    def connected(self):
+        return self._connected
+
+    @connected.setter
+    def connected(self, value):
+        self._connected = value
+        if value:
+            self.state_dict["connected"] = datetime.datetime.utcnow().strftime(
+                "%Y-%m-%d-T%H:%M:%SZ"
+            )
+        else:
+            self.state_dict["connected"] = "No"
+
+    @property
+    def messageCount(self):
+        return self._messageCount
+
+    @messageCount.setter
+    def messageCount(self, value):
+        self._messageCount = value
+        self.state_dict["received_message_count"] = value
+
+    @property
+    def publishCount(self):
+        return self._publishCount
+
+    @publishCount.setter
+    def publishCount(self, value):
+        self._publishCount = value
+        self.state_dict["published_message_count"] = value
 
     def publish_env_var(self, var_name, values_dict, message_type="EnvVar"):
         """Publish a single environment variable."""
@@ -327,54 +368,6 @@ class IoTPubSub:
                 )
         except (Exception) as e:
             self.logger.critical("Exception processing network events:", e)
-
-    @property
-    def lastConfigVersion(self):
-        """Get the last version of a config message (command) we received."""
-        return self._lastConfigVersion
-
-    @lastConfigVersion.setter
-    def lastConfigVersion(self, value):
-        """Save the last version of a config message (command) we received."""
-        self._lastConfigVersion = value
-        try:
-            c = IoTConfigModel.objects.latest()
-            c.last_config_version = value
-            c.save()
-        except:
-            IoTConfigModel.objects.create(last_config_version=value)
-
-    @property
-    def connected(self):
-        return self._connected
-
-    @connected.setter
-    def connected(self, value):
-        self._connected = value
-        if value:
-            self.state_dict["connected"] = datetime.datetime.utcnow().strftime(
-                "%Y-%m-%d-T%H:%M:%SZ"
-            )
-        else:
-            self.state_dict["connected"] = "No"
-
-    @property
-    def messageCount(self):
-        return self._messageCount
-
-    @messageCount.setter
-    def messageCount(self, value):
-        self._messageCount = value
-        self.state_dict["received_message_count"] = value
-
-    @property
-    def publishCount(self):
-        return self._publishCount
-
-    @publishCount.setter
-    def publishCount(self, value):
-        self._publishCount = value
-        self.state_dict["published_message_count"] = value
 
     ####################################################################
     # Private internal classes / methods below here.  Don't call them. #

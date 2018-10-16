@@ -1,12 +1,20 @@
 # Import standard python modules
-import copy, glob, json, logging, os, shutil, sys, threading, datetime, time, traceback, ast, socket
+import sys, os, subprocess, copy, glob, json, shutil, time, datetime
+
+# Import python types
+from typing import Dict, Any, Optional, List
 
 # Import device utilities
-from device.utilities.accessors import get_nested_dict_safely
+from device.utilities.statemachine import manager
+from device.utilities.state.main import State
+from device.utilities import logger, accessors, system, network
 
-# Import the IoT communications class
+# Import device managers
+from device.recipe.manager import RecipeManager
+
+# Import manager elements
+from device.iot import modes
 from device.iot.pubsub import IoTPubSub
-
 
 # TODO Notes:
 # Remove redundant functions accross connect, iot, update, resource, and upgrade
@@ -22,22 +30,16 @@ from device.iot.pubsub import IoTPubSub
 # Use logger class from device utilities
 # Reset IotManager or MQTT / Pubsub connection on network reconnect?
 
-
-# Import device utilities
-from device.utilities.statemachine import manager
-from device.utilities.state.main import State
-from device.utilities import system as system_utilities
-
-# Import device managers
-from device.recipe.manager import RecipeManager
-
-# Import manager elements
-from device.iot import modes
-
 # Initialize file paths
-DEVICE_ID_PATH = "data/registration/device_id.txt"
+REGISTRATION_DATA_DIR = "data/registration/"
+DEVICE_ID_PATH = REGISTRATION_DATA_DIR + "device_id.bash"
+ROOTS_PATH = REGISTRATION_DATA_DIR + "roots.pem"
+RSA_CERT_PATH = REGISTRATION_DATA_DIR + "rsa_cert.pem"
+RSA_PRIVATE_PATH = REGISTRATION_DATA_DIR + "rsa_private.pem"
+VERIFICATION_CODE_PATH = REGISTRATION_DATA_DIR + "verification_code.txt"
 IMAGES_DIR = "data/images/"
 STORED_IMAGES_DIR = "data/images/stored/"
+REGISTER_SCRIPT_PATH = "scripts/one_time_key_creation_and_iot_device_registration.sh"
 
 
 class IotManager(manager.StateMachineManager):
@@ -229,7 +231,7 @@ class IotManager(manager.StateMachineManager):
 
         # Build boot message
         boot_message = {
-            "device_config": system_utilities.device_config_name(),
+            "device_config": system.device_config_name(),
             "package_version": self.state.upgrade.get("current_version"),
             "IP": self.state.network.get("ip_address"),
         }
@@ -242,11 +244,15 @@ class IotManager(manager.StateMachineManager):
         """Updates registration information."""
         self.logger.debug("Updating registration")
 
+        # TODO: This should check if system is connected to internet, if so try to
+        # register, then update state vars and transition to registered mode on
+        # success or else handle exception on error."""
+
         # Get device id from file if exists
         self.device_id = self._device_id()
 
         # Update environment variable, do we actually need this?
-        os.environ["DEVICE_ID"] = device_id
+        os.environ["DEVICE_ID"] = self.device_id
 
         # Check if device id is valid
         if self.device_id != "Unknown":
@@ -261,7 +267,9 @@ class IotManager(manager.StateMachineManager):
         # Get device id
         if os.path.exists(DEVICE_ID_PATH):
             with open(DEVICE_ID_PATH) as f:
-                device_id = f.readline().strip()
+                contents = f.read()
+                index = contents.find("=")
+                device_id = contents[index + 1:].strip()
         else:
             device_id = "Unknown"
 
@@ -282,16 +290,16 @@ class IotManager(manager.StateMachineManager):
         recipe_time_elapsed_string = self.state.recipe.get("time_elapsed_string")
         summary = {
             "timestamp": time.strftime("%FT%XZ", time.gmtime()),
-            "IP": system_utilities.ip_address(),
+            "IP": system.ip_address(),
             "package_version": self.state.upgrade.get("current_version"),
-            "device_config": system_utilities.device_config_name(),
+            "device_config": system.device_config_name(),
             "internet_connection": self.state.network.get("is_connected"),
             "memory_available": self.state.resource.get("free_memory"),
             "disk_available": self.state.resource.get("available_disk_space"),
             "iot_received_message_count": self.received_message_count,
             "iot_published_message_count": self.published_message_count,
             "recipe_percent_complete": self.state.recipe.get("percent_complete"),
-            "recipe_percent_complete_string": recipe_perent_complete_string,
+            "recipe_percent_complete_string": recipe_percent_complete_string,
             "recipe_time_remaining_minutes": recipe_time_remaining_minutes,
             "recipe_time_remaining_string": recipe_time_remaining_string,
             "recipe_time_elapsed_string": recipe_time_elapsed_string,
@@ -301,13 +309,15 @@ class IotManager(manager.StateMachineManager):
         self.logger.debug("Publishing summary: {}".format(summary))
         self.iot.publish_command_reply("status", json.dumps(summary))
 
-    def publish_environmental_variables(self):
+    def publish_environmental_variables(self) -> None:
         """Publishes environmental variables."""
         self.logger.debug("Publishing environmental variables")
 
         # Get environmental variables
         keys = ["reported_sensor_stats", "individual", "instantaneous"]
-        environment_variables = get_nested_dict_safely(self.state.environment, keys)
+        environment_variables = accessors.get_nested_dict_safely(
+            self.state.environment, keys
+        )
 
         # Ensure environment variables is a dict
         if environment_variables == None:
@@ -429,7 +439,81 @@ class IotManager(manager.StateMachineManager):
 
             self.logger.error("command_received: Unknown command: {}".format(command))
         except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.logger.critical("Exception in command_received(): %s" % e)
-            traceback.print_tb(exc_traceback, file=sys.stdout)
+            message = "Unable to receive command, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.message(message)
             return False
+
+    ##### UTILITY-LIKE FUNCTIONS #######################################################
+
+    def _is_registered(self) -> bool:
+        """Checks if device is registered."""
+        self.logger.debug("Checking if device is registered")
+
+        # Check if file paths exists
+        if (
+            os.path.exists(DEVICE_ID_PATH)
+            and os.path.exists(ROOTS_PATH)
+            and os.path.exists(RSA_CERT_PATH)
+            and os.path.exists(RSA_PRIVATE_PATH)
+        ):
+            self.logger.debug("Device is registered")
+            return True
+
+        # Device is not registered
+        self.logger.debug("Device is not registered")
+        return False
+
+    def register(self) -> Optional[str]:
+        """Registers device with iot. Returns verification code on success, None on
+        failure. TODO: This should re-raise re-named exception instead of returning
+        None."""
+        self.logger.debug("Registering device")
+
+        # Check network is connected
+        if not network.is_connected():
+            self.logger.debug("Unable to register, network is not connected")
+            return None
+
+        # Build commands
+        make_directory_command = ["mkdir", "-p", REGISTRATION_DATA_DIR]
+        register_command = [REGISTER_SCRIPT_PATH, REGISTRATION_DATA_DIR]
+
+        # Execute commands
+        # Not sure why we delete the verification code...
+        try:
+            subprocess.run(make_directory_command)
+            subprocess.run(register_command)
+            verification_code = open(VERIFICATION_CODE_PATH).read()
+            os.remove(VERIFICATION_CODE_PATH)
+        except Exception as e:
+            message = "Unable to register, unhandled exception: {}".format(type(e))
+            self.logger.exception(message)
+            return None
+
+        # Successfully registered
+        message = "Successfully registered, verification code: {}".format(
+            verification_code
+        )
+        self.logger.debug(message)
+        return verification_code
+
+    def _delete_registration(self) -> None:
+        """Deletes registration data."""
+        self.logger.debug("Deleting registration data")
+
+        # TODO: We should probably do this with python functions
+
+        # Build command
+        command = ["rm", "-fr", REGISTRATION_DATA_DIR]
+
+        # Execute command
+        try:
+            with subprocess.run(command):
+                self.logger.debug("Successfully deleted iot registration data")
+        except Exception as e:
+            message = "Unable to delete iot registration data, unhandled exception".format(
+                type(e)
+            )
+            self.logger.exception(message)
