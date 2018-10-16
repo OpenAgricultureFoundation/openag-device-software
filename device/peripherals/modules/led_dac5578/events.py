@@ -246,29 +246,11 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         # Loop forever
         while True:
 
-            # Loop through all channels
-            for channel_name in channel_names:
+            # Fade up
+            for value in range(0, 105, 5):
 
-                # Fade up
-                for value in range(0, 110, 10):
-
-                    # Set driver output
-                    self.logger.info("Channel {}: {}%".format(channel_name, value))
-                    try:
-                        self.manager.driver.set_output(channel_name, value)
-                    except Exception as e:
-                        self.logger.exception("Unable to fade driver")
-                        return
-
-                    # Check for events
-                    if not self.queue.empty():
-                        return
-
-                    # Update every 100ms
-                    time.sleep(0.1)
-
-                # Fade down
-                for value in range(100, -10, -10):
+                # Loop through all channels
+                for channel_name in channel_names:
 
                     # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
@@ -282,5 +264,26 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                     if not self.queue.empty():
                         return
 
-                    # Update every 100ms
-                    time.sleep(0.1)
+                # Update every 50ms
+                time.sleep(0.05)
+
+            # Fade down
+            for value in range(100, -5, -5):
+
+                # Loop through all channels
+                for channel_name in channel_names:
+
+                    # Set driver output
+                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    try:
+                        self.manager.driver.set_output(channel_name, value)
+                    except Exception as e:
+                        self.logger.exception("Unable to fade driver")
+                        return
+
+                    # Check for events
+                    if not self.queue.empty():
+                        return
+
+                # Update every 50ms
+                time.sleep(0.05)
