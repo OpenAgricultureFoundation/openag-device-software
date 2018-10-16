@@ -249,13 +249,34 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             # Loop through all channels
             for channel_name in channel_names:
 
-                # Fade up
-                for value in range(0, 105, 5):
+                # Fade up at exp(1.6)
+                steps = [
+                    0,
+                    1,
+                    3,
+                    5,
+                    9,
+                    13,
+                    17,
+                    22,
+                    27,
+                    33,
+                    39,
+                    46,
+                    53,
+                    60,
+                    68,
+                    76,
+                    84,
+                    93,
+                    100,
+                ]
+                for step in steps:
 
                     # Set driver output
-                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    self.logger.info("Channel {}: {}%".format(channel_name, step))
                     try:
-                        self.manager.driver.set_output(channel_name, value)
+                        self.manager.driver.set_output(channel_name, step)
                     except Exception as e:
                         self.logger.exception("Unable to fade driver")
                         return
@@ -264,16 +285,37 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                     if not self.queue.empty():
                         return
 
-                # Update every 50ms
-                time.sleep(0.05)
+                # Update every 1ms
+                time.sleep(0.001)
 
-                # Fade down
-                for value in range(100, -5, -5):
+                # Fade down at exp(1.6)
+                steps = [
+                    100,
+                    93,
+                    84,
+                    76,
+                    68,
+                    60,
+                    53,
+                    46,
+                    39,
+                    33,
+                    27,
+                    22,
+                    17,
+                    13,
+                    9,
+                    5,
+                    3,
+                    1,
+                    0,
+                ]
+                for step in steps:
 
                     # Set driver output
-                    self.logger.info("Channel {}: {}%".format(channel_name, value))
+                    self.logger.info("Channel {}: {}%".format(channel_name, step))
                     try:
-                        self.manager.driver.set_output(channel_name, value)
+                        self.manager.driver.set_output(channel_name, step)
                     except Exception as e:
                         self.logger.exception("Unable to fade driver")
                         return
@@ -282,5 +324,5 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                     if not self.queue.empty():
                         return
 
-                # Update every 50ms
-                time.sleep(0.05)
+                # Update every 1ms
+                time.sleep(0.001)
