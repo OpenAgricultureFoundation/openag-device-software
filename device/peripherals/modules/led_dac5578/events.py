@@ -21,6 +21,7 @@ TURN_ON_EVENT = "Turn On"
 TURN_OFF_EVENT = "Turn Off"
 SET_CHANNEL_EVENT = "Set Channel"
 FADE_EVENT = "Fade"
+SUNRISE_EVENT = "Sunrise"
 
 
 class LEDDAC5578Events(PeripheralEvents):  # type: ignore
@@ -42,6 +43,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             return self.set_channel(request)
         elif request["type"] == FADE_EVENT:
             return self.fade()
+        elif request["type"] == SUNRISE_EVENT:
+            return self.sunrise()
         else:
             return "Unknown event request type", 400
 
@@ -55,6 +58,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self._set_channel(request)
         elif request["type"] == FADE_EVENT:
             self._fade()
+        elif request["type"] == SUNRISE_EVENT:
+            self._sunrise()
         else:
             message = "Invalid event request type in queue: {}".format(request["type"])
             self.logger.error(message)
@@ -326,3 +331,78 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 
                 # Update every 1ms
                 time.sleep(0.001)
+
+    def sunrise(self) -> Tuple[str, int]:
+        """Pre-processes sunrise event request."""
+        self.logger.debug("Pre-processing sunrise event request")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            return "Must be in manual mode", 400
+
+        # Get channel names from config
+        channel_outputs = self.manager.driver.build_channel_outputs(0)
+        channel_names = channel_outputs.keys()
+
+        # Check required channels exist in config
+        required_channel_names = ["R", "FR", "WW", "CW", "G", "B"]
+        for channel_name in required_channel_names:
+            if channel_name not in channel_names:
+                message = "Config must have channel named: {}".format(channel_name)
+                return message, 500
+
+        # Add event request to event queue
+        request = {"type": SUNRISE_EVENT}
+        self.queue.put(request)
+
+        # Return not implemented yet
+        return "Starting sunrise demo", 200
+
+    def _sunrise(self) -> None:
+        """Processes sunrise event request."""
+        self.logger.debug("Starting sunrise demo")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            self.logger.critical(
+                "Tried to start sunrise demo from {} mode".format(self.mode)
+            )
+
+        # Turn off channels
+        try:
+            self.manager.driver.turn_off()
+        except Exception as e:
+            self.logger.exception("Unable to run sunrise demo driver")
+            return
+
+        # Set channel or channels
+        channel_outputs = self.manager.driver.build_channel_outputs(0)
+        channel_names = channel_outputs.keys()
+
+        # Loop forever
+        while True:
+
+            # Check for events
+            if not self.queue.empty():
+                return
+
+            # Turn on red channel
+            try:
+                self.manager.driver.set_output("R", 100)
+            except Exception as e:
+                self.logger.exception("Unable to run sunrise demo")
+                return
+
+            # Update every 100ms
+            time.sleep(0.5)
+
+            # Check for events
+            if not self.queue.empty():
+                return
+
+            # Turn on warm white channel
+            try:
+                self.manager.driver.set_output("WW", 100)
+            except Exception as e:
+                self.logger.exception("Unable to run sunrise demo")
+                return
