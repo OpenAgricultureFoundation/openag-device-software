@@ -246,11 +246,11 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         # Loop forever
         while True:
 
-            # Fade up
-            for value in range(0, 105, 5):
+            # Loop through all channels
+            for channel_name in channel_names:
 
-                # Loop through all channels
-                for channel_name in channel_names:
+                # Fade up
+                for value in range(0, 105, 5):
 
                     # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
@@ -267,11 +267,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                 # Update every 50ms
                 time.sleep(0.05)
 
-            # Fade down
-            for value in range(100, -5, -5):
-
-                # Loop through all channels
-                for channel_name in channel_names:
+                # Fade down
+                for value in range(100, -5, -5):
 
                     # Set driver output
                     self.logger.info("Channel {}: {}%".format(channel_name, value))
