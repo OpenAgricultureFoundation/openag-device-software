@@ -375,34 +375,54 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self.logger.exception("Unable to run sunrise demo driver")
             return
 
-        # Set channel or channels
-        channel_outputs = self.manager.driver.build_channel_outputs(0)
-        channel_names = channel_outputs.keys()
+        delay_fast = 0.001
+        pause = 0.5
+        steps_delta_slow = 1
+        steps_delta_fast = 10
+        steps_min = 0
+        steps_max = 100
+        channel_lists = [["FR"], ["R"], ["WW"], [ "CW" ]]
 
-        # Loop forever
-        while True:
+        try:
+            while True: # Loop forever
+                if not self.queue.empty(): # Check for events
+                    return
 
-            # Check for events
-            if not self.queue.empty():
-                return
+                for channel_list in channel_lists: # sun RISE
+                    delta = steps_delta_fast # multiple channels, so go fast
+                    if 1 == len(channel_list):
+                        # one channel, so go slow
+                        delta = steps_delta_slow
 
-            # Turn on red channel
-            try:
-                self.manager.driver.set_output("R", 100)
-            except Exception as e:
-                self.logger.exception("Unable to run sunrise demo")
-                return
+                    for channel in channel_list:
+                        step = steps_min
+                        while step <= steps_max:
+                            self.manager.driver.set_output(channel, step)
+                            print('{} {}'.format(channel, step))
+                            step += delta
+                            time.sleep(delay_fast)
+                        self.manager.driver.set_output(channel, steps_max)
+                print('pause')
+                time.sleep(pause) # pause at noon
 
-            # Update every 100ms
-            time.sleep(0.5)
+                for channel_list in reversed(channel_lists): # sun SET
+                    delta = steps_delta_fast # multiple channels, so go fast
+                    if 1 == len(channel_list):
+                        # one channel, so go slow
+                        delta = steps_delta_slow
 
-            # Check for events
-            if not self.queue.empty():
-                return
+                    for channel in channel_list:
+                        step = steps_max
+                        while step >= steps_min:
+                            self.manager.driver.set_output(channel, step)
+                            print('{} {}'.format(channel, step))
+                            step -= delta
+                            time.sleep(delay_fast)
+                        self.manager.driver.set_output(channel, steps_min)
+                print('pause')
+                time.sleep(pause) # pause at midnight
 
-            # Turn on warm white channel
-            try:
-                self.manager.driver.set_output("WW", 100)
-            except Exception as e:
-                self.logger.exception("Unable to run sunrise demo")
-                return
+        except Exception as e:
+            self.logger.exception("Unable to run sunrise demo")
+            return
+
