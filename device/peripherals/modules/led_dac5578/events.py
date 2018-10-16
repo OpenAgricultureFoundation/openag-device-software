@@ -383,8 +383,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         # Initialize sunrise properties
         delay_fast = 0.001
         pause = 0.5
-        steps_delta_slow = 1
-        steps_delta_fast = 10
+        step_delta_slow = 1
+        step_delta_fast = 10
         steps_min = 0
         steps_max = 100
         channel_lists = [["FR"], ["R"], ["WW"], ["CW"]]
@@ -396,10 +396,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             for channel_list in channel_lists:
 
                 # Set step delta
-                if len(channel_list) == 1:
-                    step_delta = steps_delta_slow
-                else:
-                    step_delta = steps_delta_dast
+                step_delta = step_delta_fast
 
                 # Run through all channels in list
                 for channel in channel_list:
@@ -449,10 +446,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             for channel_list in reversed(channel_lists):
 
                 # Set step delta
-                if len(channel_list) == 1:
-                    step_delta = steps_delta_slow
-                else:
-                    step_delta = steps_delta_dast
+                step_delta = step_delta_fast
 
                 # Run through all channels in list
                 for channel in channel_list:
