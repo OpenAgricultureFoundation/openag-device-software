@@ -380,36 +380,122 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self.logger.exception("Unable to run sunrise demo driver")
             return
 
-        # Set channel or channels
-        channel_outputs = self.manager.driver.build_channel_outputs(0)
-        channel_names = channel_outputs.keys()
+        # Initialize sunrise properties
+        delay_fast = 0.001
+        pause = 0.5
+        steps_delta_slow = 1
+        steps_delta_fast = 10
+        steps_min = 0
+        steps_max = 100
+        channel_lists = [["FR"], ["R"], ["WW"], ["CW"]]
 
         # Loop forever
         while True:
 
+            # Simulate sunrise
+            for channel_list in channel_lists:
+
+                # Set step delta
+                if len(channel_list) == 1:
+                    step_delta = steps_delta_slow
+                else:
+                    step_delta = steps_delta_dast
+
+                # Run through all channels in list
+                for channel in channel_list:
+
+                    # Run through all steps
+                    step = steps_min
+                    while step <= steps_max:
+
+                        # Set output on driver
+                        message = "Setting channel {} to {}%".format(channel, step)
+                        self.logger.debug(message)
+                        try:
+                            self.manager.driver.set_output(channel, step)
+                        except Exception as e:
+                            message = "Unable to set output, unhandled exception: {}".format(
+                                type(e)
+                            )
+                            self.logger.exception(message)
+
+                        # Increment step
+                        step += step_delta
+
+                        # Check for events
+                        if not self.queue.empty():
+                            return
+
+                        # Wait delay time
+                        time.sleep(delay_fast)
+
+                    # Set step max
+                    try:
+                        self.manager.driver.set_output(channel, steps_max)
+                    except Exception as e:
+                        message = "Unable to set output, unhandled exception: {}".format(
+                            type(e)
+                        )
+                        self.logger.exception(message)
+
+            # Simulate noon
+            time.sleep(pause)
+
             # Check for events
             if not self.queue.empty():
                 return
 
-            # Turn on red channel
-            try:
-                self.manager.driver.set_output("R", 100)
-            except Exception as e:
-                self.logger.exception("Unable to run sunrise demo")
-                return
+            # Simulate sunset
+            for channel_list in reversed(channel_lists):
 
-            # Update every 100ms
-            time.sleep(0.5)
+                # Set step delta
+                if len(channel_list) == 1:
+                    step_delta = steps_delta_slow
+                else:
+                    step_delta = steps_delta_dast
+
+                # Run through all channels in list
+                for channel in channel_list:
+
+                    # Run through all steps
+                    step = steps_max
+                    while step >= steps_min:
+
+                        # Set output on driver
+                        message = "Setting channel {} to {}%".format(channel, step)
+                        self.logger.debug(message)
+                        try:
+                            self.manager.driver.set_output(channel, step)
+                        except Exception as e:
+                            message = "Unable to set output, unhandled exception: {}".format(
+                                type(e)
+                            )
+                            self.logger.exception(message)
+
+                        # Decrement step
+                        step -= step_delta
+
+                        # Check for events
+                        if not self.queue.empty():
+                            return
+
+                        # Wait delay time
+                        time.sleep(delay_fast)
+
+                    # Set step min
+                    try:
+                        self.manager.driver.set_output(channel, steps_min)
+                    except Exception as e:
+                        message = "Unable to set output, unhandled exception: {}".format(
+                            type(e)
+                        )
+                        self.logger.exception(message)
+
+            # Simulate mignight
+            time.sleep(pause)
 
             # Check for events
             if not self.queue.empty():
-                return
-
-            # Turn on warm white channel
-            try:
-                self.manager.driver.set_output("WW", 100)
-            except Exception as e:
-                self.logger.exception("Unable to run sunrise demo")
                 return
 
     def orbit(self) -> Tuple[str, int]:
