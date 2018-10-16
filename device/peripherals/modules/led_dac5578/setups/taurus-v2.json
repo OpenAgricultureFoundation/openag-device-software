@@ -229,6 +229,13 @@
 		    "value": null,
 		    "sequence": null,
 		    "is_manual": true
+		},
+		{
+		    "name": "Orbit",
+		    "description": "Simulates Earth orbiting around the Sun",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
 		}
 	],
 	"info": {

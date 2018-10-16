@@ -22,6 +22,7 @@ TURN_OFF_EVENT = "Turn Off"
 SET_CHANNEL_EVENT = "Set Channel"
 FADE_EVENT = "Fade"
 SUNRISE_EVENT = "Sunrise"
+ORBIT_EVENT = "Orbit"
 
 
 class LEDDAC5578Events(PeripheralEvents):  # type: ignore
@@ -45,6 +46,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             return self.fade()
         elif request["type"] == SUNRISE_EVENT:
             return self.sunrise()
+        elif request["type"] == ORBIT_EVENT:
+            return self.orbit()
         else:
             return "Unknown event request type", 400
 
@@ -60,6 +63,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self._fade()
         elif request["type"] == SUNRISE_EVENT:
             self._sunrise()
+        elif request["type"] == ORBIT_EVENT:
+            self._orbit()
         else:
             message = "Invalid event request type in queue: {}".format(request["type"])
             self.logger.error(message)
@@ -406,3 +411,81 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             except Exception as e:
                 self.logger.exception("Unable to run sunrise demo")
                 return
+
+    def orbit(self) -> Tuple[str, int]:
+        """Pre-processes orbit event request."""
+        self.logger.debug("Pre-processing orbit event request")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            return "Must be in manual mode", 400
+
+        # Get channel names from config
+        channel_outputs = self.manager.driver.build_channel_outputs(0)
+        channel_names = channel_outputs.keys()
+
+        # Check required channels exist in config
+        required_channel_names = ["R", "FR", "WW", "CW", "G", "B"]
+        for channel_name in required_channel_names:
+            if channel_name not in channel_names:
+                message = "Config must have channel named: {}".format(channel_name)
+                return message, 500
+
+        # Add event request to event queue
+        request = {"type": ORBIT_EVENT}
+        self.queue.put(request)
+
+        # Return not implemented yet
+        return "Starting orbit demo", 200
+
+    def _orbit(self) -> None:
+        """Processes sunrise event request."""
+        self.logger.debug("Starting orbit demo")
+
+        # Require mode to be in manual
+        if self.mode != Modes.MANUAL:
+            self.logger.critical(
+                "Tried to start orbit demo from {} mode".format(self.mode)
+            )
+
+        # Turn off channels
+        try:
+            self.manager.driver.turn_off()
+        except Exception as e:
+            self.logger.exception("Unable to run orbit demo")
+            return
+
+        # Set channel or channels
+        channel_outputs = self.manager.driver.build_channel_outputs(0)
+        channel_names = channel_outputs.keys()
+
+        # Loop forever
+        while True:
+
+            # Check for events
+            if not self.queue.empty():
+                return
+
+            # Loop through each panel
+            for panel in self.manager.driver.panels:
+
+                # Turn on red channel
+                par_setpoint = 100
+                channel_name = "R"
+                try:
+                    self.logger.debug("Setting panel {} red".format(panel.name))
+                    channel_number = self.manager.driver.get_channel_number(
+                        channel_name
+                    )
+                    dac_setpoint = self.manager.driver.translate_setpoint(par_setpoint)
+                    panel.driver.write_output(channel_number, dac_setpoint)
+                except:
+                    self.logger.exception("Unable to run orbit demo")
+                    return
+
+                # Check for events
+                if not self.queue.empty():
+                    return
+
+                # Update every 0.5
+                time.sleep(0.5)
