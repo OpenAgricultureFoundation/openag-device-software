@@ -10,7 +10,7 @@
             "parameters": {
                "setup": {
                     "name": "LED Panel Taurus Actuator",
-                    "file_name": "led_dac5578/setups/taurus-v2"
+                    "file_name": "led_dac5578/setups/libra-v1"
                 },
                 "variables": {
                     "sensor": {
@@ -24,10 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Left", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2},
-                        {"name": "LEDPanel-CenterLeft", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
-                        {"name": "LEDPanel-CenterRight", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
-                        {"name": "LEDPanel-Right", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5}
+                        {"name": "LEDPanels", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4}
                     ]
                 }
             }

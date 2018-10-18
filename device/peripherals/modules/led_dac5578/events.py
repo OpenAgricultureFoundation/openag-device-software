@@ -22,7 +22,6 @@ TURN_OFF_EVENT = "Turn Off"
 SET_CHANNEL_EVENT = "Set Channel"
 FADE_EVENT = "Fade"
 SUNRISE_EVENT = "Sunrise"
-ORBIT_EVENT = "Orbit"
 
 
 class LEDDAC5578Events(PeripheralEvents):  # type: ignore
@@ -46,8 +45,6 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             return self.fade()
         elif request["type"] == SUNRISE_EVENT:
             return self.sunrise()
-        elif request["type"] == ORBIT_EVENT:
-            return self.orbit()
         else:
             return "Unknown event request type", 400
 
@@ -63,8 +60,6 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self._fade()
         elif request["type"] == SUNRISE_EVENT:
             self._sunrise()
-        elif request["type"] == ORBIT_EVENT:
-            self._orbit()
         else:
             message = "Invalid event request type in queue: {}".format(request["type"])
             self.logger.error(message)
@@ -246,96 +241,76 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self.logger.exception("Unable to fade driver")
             return
 
-        # Set channel or channels
-        if channel_name != None:
-            channel_names = [channel_name]
-        else:
-            channel_outputs = self.manager.driver.build_channel_outputs(0)
-            channel_names = channel_outputs.keys()
+        #delay = 0.01 # too fast
+        #delay = 0.05 # a bit choppy
+        delay = 0.025 
+
+        # Fade up at exp(1.6)
+        steps_up1 = [ 0, 1, 2, 3, 4, 5, 6,  7,  8,  9, 10, 11, 13, 14, 15, 17, 18, 20, 21, 23, 25, 27, 29, 30, 33, 35, 37, 39, 41, 43, 46, 48, 50, 53, 55, 58, 60, 62, 64, 68, 71, 73, 76, 78, 81, 84, 87, 90, 93, 95, 97, 100 ] 
+        steps_up2 = [ 0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 20, 22, 24, 27, 30, 33, 36, 39, 43, 46, 49, 53, 56, 60, 64, 68, 72, 76, 80, 84, 88, 93, 97, 100 ] 
+        steps_up3 = [ 0, 1, 3, 5, 9, 13, 17, 22, 27, 33, 39, 46, 53, 60, 68, 76, 84, 93, 100 ] 
+
+        # Group channels by type 
+        channels = self.manager.driver.get_channels()
+        channels_by_type = {} # dict of channel types > list
+        for cname in channels:
+            cdict = channels[cname]
+            ctype = cdict.get('type')
+            if not ctype:
+                continue
+            channel_list = channels_by_type.get(ctype, [])
+            channel_list.append(cname)
+            channels_by_type[ctype] = channel_list
 
         # Loop forever
         while True:
 
-            # Loop through all channels
-            for channel_name in channel_names:
+            # Get list of all channels of the same type
+            for channel_type in channels_by_type:
 
-                # Fade up at exp(1.6)
-                steps = [
-                    0,
-                    1,
-                    3,
-                    5,
-                    9,
-                    13,
-                    17,
-                    22,
-                    27,
-                    33,
-                    39,
-                    46,
-                    53,
-                    60,
-                    68,
-                    76,
-                    84,
-                    93,
-                    100,
-                ]
+                steps = steps_up1
+                if 3 == len(channels_by_type[channel_type]):
+                    steps = steps_up3
+                elif 2 == len(channels_by_type[channel_type]):
+                    steps = steps_up2
+
+                # Loop up through all channels (of the same type) at same time
                 for step in steps:
+                    for channel_name in channels_by_type[channel_type]:
 
-                    # Set driver output
-                    self.logger.info("Channel {}: {}%".format(channel_name, step))
-                    try:
-                        self.manager.driver.set_output(channel_name, step)
-                    except Exception as e:
-                        self.logger.exception("Unable to fade driver")
-                        return
+                        start_time = get_start_time()
 
-                    # Check for events
-                    if not self.queue.empty():
-                        return
+                        # Set driver output
+                        self.logger.info("Channel {}: {}%".format(channel_name, step))
+                        try:
+                            self.manager.driver.set_output(channel_name, step)
+                        except Exception as e:
+                            self.logger.exception("Unable to fade driver")
+                            return
 
-                # Update every 1ms
-                time.sleep(0.001)
+                        if not self.queue.empty(): # Check for events
+                            return
 
-                # Fade down at exp(1.6)
-                steps = [
-                    100,
-                    93,
-                    84,
-                    76,
-                    68,
-                    60,
-                    53,
-                    46,
-                    39,
-                    33,
-                    27,
-                    22,
-                    17,
-                    13,
-                    9,
-                    5,
-                    3,
-                    1,
-                    0,
-                ]
-                for step in steps:
+                        delay_until(start_time, delay)
 
-                    # Set driver output
-                    self.logger.info("Channel {}: {}%".format(channel_name, step))
-                    try:
-                        self.manager.driver.set_output(channel_name, step)
-                    except Exception as e:
-                        self.logger.exception("Unable to fade driver")
-                        return
+                # Loop down through all channels (of the same type) at same time
+                for step in reversed(steps):
+                    for channel_name in reversed(channels_by_type[channel_type]):
 
-                    # Check for events
-                    if not self.queue.empty():
-                        return
+                        start_time = get_start_time()
+                        # Set driver output
+                        self.logger.info("Channel {}: {}%".format(channel_name, step))
+                        try:
+                            self.manager.driver.set_output(channel_name, step)
+                        except Exception as e:
+                            self.logger.exception("Unable to fade driver")
+                            return
 
-                # Update every 1ms
-                time.sleep(0.001)
+                        if not self.queue.empty(): # Check for events
+                            return
+
+                        delay_until(start_time, delay)
+
 
     def sunrise(self) -> Tuple[str, int]:
         """Pre-processes sunrise event request."""
@@ -383,6 +358,8 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
         # Initialize sunrise properties
         delay_fast = 0.001
         pause = 0.5
+        delay_fast = 0.01
+        pause = 1.0
         step_delta_slow = 1
         step_delta_fast = 10
         steps_min = 0
@@ -492,80 +469,15 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             if not self.queue.empty():
                 return
 
-    def orbit(self) -> Tuple[str, int]:
-        """Pre-processes orbit event request."""
-        self.logger.debug("Pre-processing orbit event request")
 
-        # Require mode to be in manual
-        if self.mode != Modes.MANUAL:
-            return "Must be in manual mode", 400
+def get_start_time() -> float:
+    return time.time()
 
-        # Get channel names from config
-        channel_outputs = self.manager.driver.build_channel_outputs(0)
-        channel_names = channel_outputs.keys()
+def delay_until(start_time: float, delay: float) -> None:
+    now = time.time()
+    if now - start_time < delay:
+        time.sleep( delay - (now - start_time)) 
+    return
 
-        # Check required channels exist in config
-        required_channel_names = ["R", "FR", "WW", "CW", "G", "B"]
-        for channel_name in required_channel_names:
-            if channel_name not in channel_names:
-                message = "Config must have channel named: {}".format(channel_name)
-                return message, 500
 
-        # Add event request to event queue
-        request = {"type": ORBIT_EVENT}
-        self.queue.put(request)
 
-        # Return not implemented yet
-        return "Starting orbit demo", 200
-
-    def _orbit(self) -> None:
-        """Processes sunrise event request."""
-        self.logger.debug("Starting orbit demo")
-
-        # Require mode to be in manual
-        if self.mode != Modes.MANUAL:
-            self.logger.critical(
-                "Tried to start orbit demo from {} mode".format(self.mode)
-            )
-
-        # Turn off channels
-        try:
-            self.manager.driver.turn_off()
-        except Exception as e:
-            self.logger.exception("Unable to run orbit demo")
-            return
-
-        # Set channel or channels
-        channel_outputs = self.manager.driver.build_channel_outputs(0)
-        channel_names = channel_outputs.keys()
-
-        # Loop forever
-        while True:
-
-            # Check for events
-            if not self.queue.empty():
-                return
-
-            # Loop through each panel
-            for panel in self.manager.driver.panels:
-
-                # Turn on red channel
-                par_setpoint = 100
-                channel_name = "R"
-                try:
-                    self.logger.debug("Setting panel {} red".format(panel.name))
-                    channel_number = self.manager.driver.get_channel_number(
-                        channel_name
-                    )
-                    dac_setpoint = self.manager.driver.translate_setpoint(par_setpoint)
-                    panel.driver.write_output(channel_number, dac_setpoint)
-                except:
-                    self.logger.exception("Unable to run orbit demo")
-                    return
-
-                # Check for events
-                if not self.queue.empty():
-                    return
-
-                # Update every 0.5
-                time.sleep(0.5)
