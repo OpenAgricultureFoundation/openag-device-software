@@ -13,8 +13,8 @@ from device.utilities import logger, accessors, system, network
 from device.recipe.manager import RecipeManager
 
 # Import manager elements
-from device.iot import modes
-from device.iot.pubsub import IoTPubSub
+from device.iot import modes, commands
+from device.iot.pubsub import PubSub
 
 # TODO Notes:
 # Remove redundant functions accross connect, iot, update, resource, and upgrade
@@ -47,7 +47,7 @@ class IotManager(manager.StateMachineManager):
 
     # Keep track of the previous values that we have published.
     # We only publish a value if it changes.
-    prev_env_vars = None
+    prev_environment_variables = {}
     last_status = datetime.datetime.utcnow()
 
     def __init__(self, state: State, recipe: RecipeManager) -> None:
@@ -158,14 +158,17 @@ class IotManager(manager.StateMachineManager):
         """Runs init mode."""
         self.logger.debug("Entered INIT")
 
-        # Connect to mqtt service
-        self.pubsub = PubSub(..., ...)
+        # Connect to pubsub service
+        self.pubsub = PubSub(self.state, self.command_received)
 
         # Publish boot message
         self.publish_boot_message()
 
-        # Transition to normal mode on next state machine update
-        self.mode = modes.NORMAL
+        # Give othe managers time to initialize
+        time.sleep(10)  # seconds
+
+        # Transition to unregistered mode on next state machine update
+        self.mode = modes.UNREGISTERED
 
     def run_unregistered_mode(self) -> None:
         """Runs unregistered mode."""
@@ -173,7 +176,7 @@ class IotManager(manager.StateMachineManager):
 
         # Initialize timing variables
         last_update_time = 0.0
-        update_interval = 15  # seconds
+        update_interval = 60  # seconds
 
         # Loop forever
         while True:
@@ -187,7 +190,7 @@ class IotManager(manager.StateMachineManager):
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(modes.NORMAL):
+            if self.new_transition(modes.UNREGISTERED):
                 break
 
             # Update every 100ms
@@ -208,16 +211,17 @@ class IotManager(manager.StateMachineManager):
             if time.time() - last_update_time > update_interval:
                 last_update_time = time.time()
                 self.publish_system_summary()
-                self.publish_images()
+                self.publish_environmental_variables()  # TODO: Should we make this every minute?
+                # self.publish_images()
 
             # Process network events?
-            self.iot.process_network_events()
+            # self.pubsub.process_network_events()
 
             # Check for events
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(modes.NORMAL):
+            if self.new_transition(modes.REGISTERED):
                 break
 
             # Update every 100ms
@@ -238,7 +242,7 @@ class IotManager(manager.StateMachineManager):
 
         # Publish boot message
         self.logger.debug("Publised boot message: {}".format(boot_message))
-        self.iot.publish_command_reply("boot", json.dumps(boot_message))
+        self.pubsub.publish_command_reply("boot", json.dumps(boot_message))
 
     def update_registration(self) -> None:
         """Updates registration information."""
@@ -279,7 +283,7 @@ class IotManager(manager.StateMachineManager):
 
     def publish_system_summary(self) -> None:
         """Publishes system summary."""
-        self.logger.debug("Publishing summary")
+        self.logger.debug("Publishing system summary")
 
         # Build summary
         recipe_percent_complete_string = self.state.recipe.get(
@@ -290,7 +294,7 @@ class IotManager(manager.StateMachineManager):
         recipe_time_elapsed_string = self.state.recipe.get("time_elapsed_string")
         summary = {
             "timestamp": time.strftime("%FT%XZ", time.gmtime()),
-            "IP": system.ip_address(),
+            "IP": self.state.network.get("ip_address"),
             "package_version": self.state.upgrade.get("current_version"),
             "device_config": system.device_config_name(),
             "internet_connection": self.state.network.get("is_connected"),
@@ -307,7 +311,7 @@ class IotManager(manager.StateMachineManager):
 
         # Publish summary
         self.logger.debug("Publishing summary: {}".format(summary))
-        self.iot.publish_command_reply("status", json.dumps(summary))
+        self.pubsub.publish_command_reply("status", json.dumps(summary))
 
     def publish_environmental_variables(self) -> None:
         """Publishes environmental variables."""
@@ -324,14 +328,14 @@ class IotManager(manager.StateMachineManager):
             environment_variables = {}
 
         # Keep a copy of the first set of values (usually None). Why?
-        if self.prev_environment_variables is None:
+        if self.prev_environment_variables == {}:
             self.environment_variables = copy.deepcopy(environment_variables)
 
         # For each value, only publish the ones that have changed.
         for name, value in environment_variables.items():
-            if self.prev_environment_variables[name] != value:
+            if self.prev_environment_variables.get(name) != value:
                 self.environment_variables[name] = copy.deepcopy(value)
-                self.iot.publish_env_var(name, value)
+                self.pubsub.publish_environmenal_variable(name, value)
 
     def publish_images(self) -> None:
         """Publishes images in the images directory. On successful publish, moves them 
@@ -364,7 +368,7 @@ class IotManager(manager.StateMachineManager):
                     os.remove(image_file)
                     continue
 
-                self.iot.publish_binary_image(camera_name, "png", file_bytes)
+                self.pubsub.publish_binary_image(camera_name, "png", file_bytes)
 
                 # Check if stored directory exists, if not create it
                 if not os.path.isdir(STORED_IMAGES_DIR):
@@ -381,31 +385,31 @@ class IotManager(manager.StateMachineManager):
     ##### EVENT FUNCTIONS ##############################################################
 
     def reset(self) -> None:
-        """Resets iot pubsub. TODO: Should probably be in the pubsub (or mqtt) class."""
+        """Resets iot pubsub. TODO: Should probably be in the pubsub class."""
         try:
             # Pass in the callback that receives commands
-            self.iot = IoTPubSub(self, self.command_received, self.state.iot)
+            self.pubsub = PubSub(self.state, self.command_received)
         except Exception as e:
-            self.iot = None
+            self.pubsub = None
             message = "Unable to reset, unhandled exception".format(type(e))
             self.logger.exception(message)
             self.mode = modes.ERROR
 
     def publish_message(self, name, msg_json) -> None:
         """Send a command reply. TODO: Not sure where this is used."""
-        if self.iot is None:
+        if self.pubsub is None:
             return
-        self.iot.publish_command_reply(name, msg_json)
+        self.pubsub.publish_command_reply(name, msg_json)
 
     def command_received(self, command, arg0, arg1):
         """Process commands received from the backend (UI). This is a callback that is 
         called by the IoTPubSub class when this device receives commands from the UI."""
 
-        if None == self.iot:
+        if self.pubsub == None:
             return
 
         try:
-            if command == IoTPubSub.CMD_START:
+            if command == commands.START_RECIPE:
                 recipe_json = arg0
                 recipe_dict = json.loads(arg0)
 
@@ -429,15 +433,15 @@ class IotManager(manager.StateMachineManager):
                 self.recipe.start_recipe(recipe_uuid)
 
                 # Record that we processed this command
-                self.iot.publish_command_reply(command, recipe_json)
+                self.pubsub.publish_command_reply(command, recipe_json)
                 return
 
-            if command == IoTPubSub.CMD_STOP:
+            if command == commands.STOP_RECIPE:
                 self.recipe.stop_recipe()
-                self.iot.publish_command_reply(command, "")
+                self.pubsub.publish_command_reply(command, "")
                 return
 
-            self.logger.error("command_received: Unknown command: {}".format(command))
+            self.logger.error("Received unknown command: {}".format(command))
         except Exception as e:
             message = "Unable to receive command, unhandled exception: {}".format(
                 type(e)

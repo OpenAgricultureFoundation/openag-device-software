@@ -36,6 +36,9 @@ rbaynes 2018-09-21
 import base64, datetime, json, logging, math, os, ssl, sys, time, traceback, jwt
 import paho.mqtt.client as mqtt
 
+# Import python types
+from typing import Dict, Tuple, Optional, Any, NamedTuple
+
 # Import device utilities
 from device.utilities import logger
 from device.utilities.state.main import State
@@ -43,12 +46,8 @@ from device.utilities.state.main import State
 # Import app models (TODO: Remove this)
 from app.models import IoTConfigModel
 
-# Initialize commands
-START_RECIPE_COMMAND = "START_RECIPE"
-STOP_RECIPE_COMMAND = "STOP_RECIPE"
-STATUS_COMMAND = "STATUS"
-NOOP_COMMAND = "NOOP"
-RESET_COMMAND = "RESET"
+# Import app elements
+from device.iot import commands
 
 
 class MQTTConfig(NamedTuple):
@@ -57,18 +56,20 @@ class MQTTConfig(NamedTuple):
     cloud_region: str
     registry_id: str
     device_id: str
+    client_id: str
     private_key_filepath: str
-    encryption_algorithm: str
     ca_certs: str
+    config_topic: str
+    event_topic: str
     mqtt_bridge_hostname: str = "mqtt.googleapis.com"
     mqtt_bridge_port: int = 443
     jwt_encryption_algorithm: str = "RS256"
-    jwt_time_to_live_minutes: int: 60
+    jwt_time_to_live_minutes: int = 60
 
 
 class JsonWebToken(NamedTuple):
     """Dataclass for json web token."""
-    encoded: Any # TODO: Get type
+    encoded: Any  # TODO: Get type
     issued_timestamp: float
     expiration_timestamp: float
 
@@ -88,13 +89,15 @@ class PubSub:
         self.command_received_callback = command_received_callback
 
         # Initialize mqtt client
-        mqtt_config = self.load_mqtt_config()
-        self.mqtt_client, self.json_web_token = self.create_mqtt_client(mqtt_config)
-
+        self.mqtt_config = self.load_mqtt_config()
+        self.logger.debug(self.mqtt_config)
+        self.mqtt_client, self.json_web_token = self.create_mqtt_client(
+            self.mqtt_config
+        )
 
     ##### MQTT FUNCTIONS #############################################################
 
-    def load_mqtt_config(self) -> None:
+    def load_mqtt_config(self) -> Optional[MQTTConfig]:
         """Loads mqtt config."""
         self.logger.debug("Loading mqtt config")
 
@@ -122,47 +125,49 @@ class PubSub:
         # Initialize event topic
         test_event_topic = os.environ.get("IOT_TEST_TOPIC")
         if test_event_topic is not None:
-            event_topic = "/devices/{}/{}".format(self.device_id, test_event_topic)
+            event_topic = "/devices/{}/{}".format(device_id, test_event_topic)
         else:
-            event_topic = "/devices/{}/events".format(self.device_id)
+            event_topic = "/devices/{}/events".format(device_id)
 
         # Build mqtt config object
         config = MQTTConfig(
-            project_id = project_id,
-            cloud_region = cloud_region,
-            registry_id = registry_id,
-            device_id = device_id,
-            private_key_filepath = private_key_filepath,
-            ca_certs = ca_certs,
-            client_id = client_id,
-            config_topic = config_topic,
-            event_topic = event_topic,
+            project_id=project_id,
+            cloud_region=cloud_region,
+            registry_id=registry_id,
+            device_id=device_id,
+            private_key_filepath=private_key_filepath,
+            ca_certs=ca_certs,
+            client_id=client_id,
+            config_topic=config_topic,
+            event_topic=event_topic,
         )
 
         # Successfully loaded mqtt config
         self.logger.debug("Loaded mqtt config: {}".format(config))
-
+        return config
 
     def create_mqtt_client(self, config: MQTTConfig) -> Tuple[mqtt.Client, str]:
         """Creates an mqtt client. Returns client and assocaited json web token."""
         self.logger.debug("Creating mqtt client")
-        
+
+        self.logger.debug(config)
+
         # Initialize client object
         client = mqtt.Client(client_id=config.client_id)
 
         # Create json web token
         json_web_token = self.create_json_web_token(
-            project_id=config.project_id, 
-            private_key_filepath=config.private_key_filepath, 
-            encrypytion_algorithm=config.jwt_encryption_algorithm,
+            project_id=config.project_id,
+            private_key_filepath=config.private_key_filepath,
+            encryption_algorithm=config.jwt_encryption_algorithm,
             time_to_live_minutes=config.jwt_time_to_live_minutes,
         )
 
         # Pass json web token to google cloud iot core, note username is ignored
-        client.username_pw_set(username="unused", password=self.jwt.encoded)
+        client.username_pw_set(username="unused", password=json_web_token.encoded)
 
         # Enable SSL/TLS support
-        client.tls_set(ca_certs=ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
+        client.tls_set(ca_certs=config.ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
 
         # Register message callbacks
         client.on_connect = self.on_connect
@@ -172,65 +177,142 @@ class PubSub:
 
         # Connect to the Google MQTT bridge
         client.connect(config.mqtt_bridge_hostname, config.mqtt_bridge_port)
-        
+
         # Subscribe to the config topic
-        client.subscribe(config.mqtt_config_topic, qos=1)
+        client.subscribe(config.config_topic, qos=1)
 
         # Successfully created mqtt client
         self.logger.debug("Successfully created mqtt client")
         return client, json_web_token
 
-
     def create_json_web_token(
-            self, 
-            project_id: str, 
-            private_key_filepathpath: str, 
-            encryption_algorithm: str,
-            time_to_live_minutes: int,
-        ) -> Optional[JsonWebToken]:
-            """Creates a json web token."""
-            self.logger.debug("Creating json web token")
+        self,
+        project_id: str,
+        private_key_filepath: str,
+        encryption_algorithm: str,
+        time_to_live_minutes: int,
+    ) -> Optional[JsonWebToken]:
+        """Creates a json web token."""
+        self.logger.debug("Creating json web token")
 
-            # Initialize token variables
-            issued_timestamp = datetime.datetime.utcnow()
-            time_delta = datetime.timedelta(minutes=time_to_live_minutes)
-            expiration_timestamp = issued_timestamp + time_delta
+        # Initialize token variables
+        issued_timestamp = datetime.datetime.utcnow()
+        time_delta = datetime.timedelta(minutes=time_to_live_minutes)
+        expiration_timestamp = issued_timestamp + time_delta
 
-            # Build token
-            token = {
-                "iat": issued_timestamp, "exp": expiration_timestamp, "aud": project_id
-            }
+        # Build token
+        token = {
+            "iat": issued_timestamp, "exp": expiration_timestamp, "aud": project_id
+        }
 
-            # Load private key
-            try:
-                with open(private_key_filepathpath, "r") as f:
-                    private_key = f.read()
-            except Exception as e:
-                message = "Unable to create json web token, unable to load private key, unhandled exception: {}".format(
-                    type(e)
-                )
-                self.logger.exception(message)
-                return None
-
-            # Encode token
-            encoded_jwt = jwt.encode(token, private_key, algorithm=encryption_algorithm)
-
-            # Build json web token object
-            json_web_token = JsonWebToken(
-                encoded = encoded_jwt,
-                issued_time = issued_time,
-                expiration_time = expiration_time,
+        # Load private key
+        try:
+            with open(private_key_filepath, "r") as f:
+                private_key = f.read()
+        except Exception as e:
+            message = "Unable to create json web token, unable to load private key, unhandled exception: {}".format(
+                type(e)
             )
+            self.logger.exception(message)
+            return None
 
-            # Successfully encoded json web token
-            self.logger.debug("Successfully created json web token")
-            return json_web_token
+        # Encode token
+        encoded_jwt = jwt.encode(token, private_key, algorithm=encryption_algorithm)
 
+        # Build json web token object
+        json_web_token = JsonWebToken(
+            encoded=encoded_jwt,
+            issued_timestamp=issued_timestamp,
+            expiration_timestamp=expiration_timestamp,
+        )
+
+        # Successfully encoded json web token
+        self.logger.debug("Successfully created json web token")
+        return json_web_token
+
+    ##### MQTT CALLBACK FUNCTIONS ######################################################
+
+    def on_connect(self, unused_client, unused_flags, rc):
+        """Paho callback for when a device connects."""
+        self.logger.debug("Called on connect callback")
+        # self.logger.debug("on_connect: {}".format(mqtt.connack_string(rc)))
+        # ref_self.state["error"] = None
+
+    def on_disconnect(self, unused_client, rc):
+        """Paho callback for when a device disconnects."""
+        self.logger.debug("Called on disconnect callback")
+        # ref_self.connected = False
+        # logger.debug("on_disconnect: {}".format(stringify_paho_error(rc)))
+        # ref_self.kill_ourselves("IoT disconnected")
+        # ref_self.state["error"] = stringify_paho_error(rc)
+
+    def on_publish(self, unused_client, unused_mid):
+        """Paho callback when a message is sent to the broker."""
+        self.logger.debug("Called on publish function")
+        # ref_self.publish_count = ref_self.publish_count + 1
+        # logger.debug("on_publish")
+
+    def on_message(self, unused_client, message):
+        """Callback when the device receives a message on a subscription."""
+        self.logger.debug("Called on message function")
+
+        # ref_self.message_count = ref_self.message_count + 1
+
+        # payload = message.payload.decode("utf-8")
+        # # message is a paho.mqtt.client.MQTTMessage, these are all properties:
+        # logger.debug(
+        #     "Received message:\n  {}\n  topic={}\n  Qos={}\n  "
+        #     "mid={}\n  retain={}".format(
+        #         payload,
+        #         message.topic,
+        #         str(message.qos),
+        #         str(message.mid),
+        #         str(message.retain),
+        #     )
+        # )
+
+        # # Make sure there is a payload, it could be the first empty config message
+        # if len(payload) == 0:
+        #     logger.debug("on_message: empty payload.")
+        #     return
+
+        # # Convert the payload to a dict and get the last config message version
+        # message_version = 0  # starts before the first config version # of 1
+        # try:
+        #     payload_dict = json.loads(payload)
+        #     if "last_config_version" in payload_dict:
+        #         message_version = int(payload_dict["last_config_version"])
+        # except Exception as e:
+        #     logger.debug("on_message: Exception parsing payload: {}".format(e))
+        #     return
+
+        # # The broker will keep sending config messages everytime we connect.
+        # # So compare this message (if a config message) to the last config
+        # # version we have seen.
+        # if message_version > ref_self.last_config_version:
+        #     ref_self.last_config_version = message_version
+
+        #     # Parse the config message to get the commands in it
+        #     ref_self.process_config_message(payload_dict)
+        # else:
+        #     logger.debug(
+        #         "Ignoring this old config message. message_version={} <= last_config_version={}\n".format(
+        #             message_version, ref_self.last_config_version
+        #         )
+        #     )
+
+    def on_log(self, unused_client, level, buf):
+        self.logger.debug("Called on log callback")
+        # logger.debug("'{}' {}".format(buf, level))
+
+    def on_subscribe(self, unused_client, mid, granted_qos):
+        self.logger.debug("Called on subscribe callback")
+        # logger.debug("on_subscribe")
 
     ##### PUBLISH FUNCTIONS ############################################################
 
-    def publish_env_var(
-        self, var_name: str, values_dict: Dict, message_type: str = "EnvVar"
+    def publish_environmenal_variable(
+        self, variable_name: str, values_dict: Dict, message_type: str = "EnvVar"
     ) -> bool:
         """Publish a single environment variable."""
         self.logger.debug("Publishing environment variable: {}".format(variable_name))
@@ -244,7 +326,7 @@ class PubSub:
         # Initialize publish message
         message = {}
         message["messageType"] = message_type
-        message["var"] = var_name
+        message["var"] = variable_name
 
         try:
             # command replies only have one value, so make it simple.
@@ -285,7 +367,7 @@ class PubSub:
             # Publish the message to the MQTT topic. qos=1 means at least once
             # delivery. Cloud IoT Core also supports qos=0 for at most once
             # delivery.
-            self.mqtt_client.publish(self.mqtt_topic, message_json, qos=1)
+            self.mqtt_client.publish(self.mqtt_config.event_topic, message_json, qos=1)
 
         except Exception as e:
             message = "Unable to publish environment variables, unhandled exception: {}".format(
@@ -296,7 +378,7 @@ class PubSub:
 
         # Successfully published environment variables
         message = "Published environment variable payload '{}'' to {}".format(
-            message_json, self.mqtt_topic
+            message_json, self.mqtt_config.event_topic
         )
         self.logger.debug(message)
         return True
@@ -305,7 +387,7 @@ class PubSub:
         """Publish a reply to a command that was received and successfully processed as 
         an environment variable."""
         try:
-            if None == command_name or 0 == len(command_name):publish_env_varpublish_env_var
+            if None == command_name or 0 == len(command_name):
                 self.logger.error("publish_command_reply: missing command_name")
                 return False
 
@@ -314,8 +396,8 @@ class PubSub:
                 return False
 
             # publish the command reply as an env. var.
-            self.publish_env_var(
-                var_name=command_name,
+            self.publish_environmenal_variable(
+                variable_name=command_name,
                 values_dict=values_json_string,
                 message_type="CommandReply",
             )
@@ -330,6 +412,8 @@ class PubSub:
         is 256KB, so we may have to send multiple messages,This size is enforced by 
         the Google hosted MQTT server we connect to.
         See 'Telemetry event payload' https://cloud.google.com/iot/quotas"""
+        self.logger.debug("Publishing binary image")
+
         if (
             None == variable_name
             or 0 == len(variable_name)
@@ -382,7 +466,9 @@ class PubSub:
 
                 # Publish this chunk
                 message_json = json.dumps(message_obj)
-                self.mqtt_client.publish(self.mqtt_topic, message_json, qos=1)
+                self.mqtt_client.publish(
+                    self.mqtt_config.event_topic, message_json, qos=1
+                )
                 self.logger.info(
                     "publish_binary_image: sent image chunk "
                     "{} of {} for {} in {} bytes".format(
@@ -426,7 +512,7 @@ class PubSub:
             return
 
         # Validate command message
-        valid_commands = [self.START_RECIPE_COMMAND, self.STOP_RECIPE_COMMAND]
+        valid_commands = [commands.START_RECIPE, commands.STOP_RECIPE]
         if command not in valid_commands:
             message = "Unable to process command message, `{}` not a valid command".format(
                 command
@@ -477,118 +563,31 @@ class PubSub:
     def process_network_events(self):
         """Call this function repeatedly from a thread proc or event loop to allow 
         processing of IoT messages."""
-        try:
-            # Let the mqtt client process any data it has received or needs to publish
-            if self.mqtt_client is None:
-                return
-            self.mqtt_client.loop()
 
-            seconds_since_issue = (datetime.datetime.utcnow() - self.jwt_iat).seconds
+        ...
 
-            # Refresh the JWT if it is about to expire
-            if seconds_since_issue > 60 * self.jwt_exp_mins:
-                self.logger.debug(
-                    "Refreshing token after {}s".format(seconds_since_issue)
-                )
-                self.jwt_iat = datetime.datetime.utcnow()
+        # try:
+        #     # Let the mqtt client process any data it has received or needs to publish
+        #     if self.mqtt_client is None:
+        #         return
+        #     self.mqtt_client.loop()
 
-                # Renew our client with the new token
-                self.mqtt_client = create_mqtt_client(
-                    self,
-                    self.project_id,
-                    self.cloud_region,
-                    self.registry_id,
-                    self.device_id,
-                    self.private_key_filepath,
-                    self.encryption_algorithm,
-                    self.ca_certs,
-                    self.mqtt_bridge_hostname,
-                    self.mqtt_bridge_port,
-                )
-        except Exception as e:
-            self.logger.critical("Exception processing network events:", e)
+        #     seconds_since_issue = (datetime.datetime.utcnow() - self.jwt_iat).seconds
 
-    ##### MQTT FUNCTIONS ###############################################################
+        #     # Refresh the JWT if it is about to expire
+        #     if seconds_since_issue > 60 * self.jwt_exp_mins:
+        #         self.logger.debug(
+        #             "Refreshing token after {}s".format(seconds_since_issue)
+        #         )
+        #         self.jwt_iat = datetime.datetime.utcnow()
 
-
-    def on_connect(unused_client, ref_self, unused_flags, rc):
-        """Paho callback for when a device connects."""
-        ref_self.connected = True
-        logger.debug("on_connect: {}".format(mqtt.connack_string(rc)))
-        # ref_self.state["error"] = None
-
-
-    def on_disconnect(unused_client, ref_self, rc):
-        """Paho callback for when a device disconnects."""
-        ref_self.connected = False
-        logger.debug("on_disconnect: {}".format(stringify_paho_error(rc)))
-        ref_self.kill_ourselves("IoT disconnected")
-        # ref_self.state["error"] = stringify_paho_error(rc)
-
-
-    def on_publish(unused_client, ref_self, unused_mid):
-        """Paho callback when a message is sent to the broker."""
-        ref_self.publish_count = ref_self.publish_count + 1
-        logger.debug("on_publish")
-
-
-    def on_message(unused_client, ref_self, message):
-        """Callback when the device receives a message on a subscription."""
-        ref_self.message_count = ref_self.message_count + 1
-
-        payload = message.payload.decode("utf-8")
-        # message is a paho.mqtt.client.MQTTMessage, these are all properties:
-        logger.debug(
-            "Received message:\n  {}\n  topic={}\n  Qos={}\n  "
-            "mid={}\n  retain={}".format(
-                payload,
-                message.topic,
-                str(message.qos),
-                str(message.mid),
-                str(message.retain),
-            )
-        )
-
-        # Make sure there is a payload, it could be the first empty config message
-        if len(payload) == 0:
-            logger.debug("on_message: empty payload.")
-            return
-
-        # Convert the payload to a dict and get the last config message version
-        message_version = 0  # starts before the first config version # of 1
-        try:
-            payload_dict = json.loads(payload)
-            if "last_config_version" in payload_dict:
-                message_version = int(payload_dict["last_config_version"])
-        except Exception as e:
-            logger.debug("on_message: Exception parsing payload: {}".format(e))
-            return
-
-        # The broker will keep sending config messages everytime we connect.
-        # So compare this message (if a config message) to the last config
-        # version we have seen.
-        if message_version > ref_self.last_config_version:
-            ref_self.last_config_version = message_version
-
-            # Parse the config message to get the commands in it
-            ref_self.process_config_message(payload_dict)
-        else:
-            logger.debug(
-                "Ignoring this old config message. message_version={} <= last_config_version={}\n".format(
-                    message_version, ref_self.last_config_version
-                )
-            )
-
-
-    def on_log(unused_client, ref_self, level, buf):
-        logger.debug("'{}' {}".format(buf, level))
-
-
-    def on_subscribe(unused_client, ref_self, mid, granted_qos):
-        logger.debug("on_subscribe")
-
+        #         # Renew our client with the new token
+        #         self.mqtt_client, self.json_web_token = self.create_mqtt_client(
+        #             self.mqtt_config
+        #         )
+        # except Exception as e:
+        #     self.logger.critical("Exception processing network events:", e)
 
     def stringify_paho_error(rc):
         """Convert a Paho error to a human readable string."""
         return "{}: {}".format(rc, mqtt.error_string(rc))
-

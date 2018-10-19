@@ -16,7 +16,7 @@ from device.utilities.logger import Logger
 
 # Import device managers
 from device.recipe.manager import RecipeManager
-from device.iot.manager import IoTManager
+from device.iot.manager import IotManager
 from device.resource.manager import ResourceManager
 from device.network.manager import NetworkManager
 from device.upgrade.manager import UpgradeManager
@@ -83,7 +83,7 @@ class CoordinatorManager(StateMachineManager):
 
         # Initialize managers
         self.recipe = RecipeManager(self.state)
-        self.iot = IoTManager(self.state, self.recipe)  # type: ignore
+        self.iot = IotManager(self.state, self.recipe)  # type: ignore
         self.resource = ResourceManager(self.state, self.iot)  # type: ignore
         self.network = NetworkManager(self.state)  # type: ignore
         self.upgrade = UpgradeManager(self.state)  # type: ignore
@@ -278,9 +278,11 @@ class CoordinatorManager(StateMachineManager):
                 self.store_environment()
 
             # Once a minute, publish any changed values
-            if time.time() - self.latest_publish_timestamp > 60:
-                self.latest_publish_timestamp = time.time()
-                self.iot.publish()
+            # if time.time() - self.latest_publish_timestamp > 60:
+            #     self.latest_publish_timestamp = time.time()
+            #     self.iot.publish_environmental_variables()
+
+            # Don't need this, iot manager handles this update
 
             # Check for events
             self.check_events()

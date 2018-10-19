@@ -16,7 +16,7 @@ from device.utilities.statemachine import manager, modes
 from device.utilities.state.main import State
 
 # Import device managers
-from device.iot.manager import IoTManager
+from device.iot.manager import IotManager
 from device.utilities import network as network_utilities
 
 # Initialize file paths
@@ -45,7 +45,7 @@ SYSTEM_LOGS_PATH = "/var/log/"
 class ResourceManager(manager.StateMachineManager):
     """Manages critical resources: disk space and database capacity."""
 
-    def __init__(self, state: State, iot: IoTManager) -> None:
+    def __init__(self, state: State, iot: IotManager) -> None:
         """Initializes manager."""
 
         # Initialize parent class
