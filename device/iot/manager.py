@@ -159,7 +159,7 @@ class IotManager(manager.StateMachineManager):
         self.logger.debug("Entered INIT")
 
         # Connect to mqtt service
-        self.mqtt = MQTT(..., ..., ...)
+        self.pubsub = PubSub(..., ...)
 
         # Publish boot message
         self.publish_boot_message()
