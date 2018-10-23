@@ -10,13 +10,15 @@
   function getInfoAndUpdateView() {
     console.log("Getting info and updating view")
 
-    // Initialize system and network info
+    // Initialize info vars
     var systemInfo = {};
     var networkInfo = {};
+    var iotInfo = {};
 
     // Get system info
     getSystemInfo()
       .then(function(systemInfo) {
+
         var systemInfo = systemInfo;
         
         // Get network info
@@ -24,9 +26,14 @@
           .then(function(networkInfo) {
             var networkInfo = networkInfo;
 
-            // Update view
-            iotInfo = {"isRegistered": false, "verificationCode": "FAKECODE"}
-            updateView(systemInfo, networkInfo, iotInfo)
+            // Get iot info
+            getIotInfo()
+              .then(function(iotInfo) {
+                var iotInfo = iotInfo;
+
+                // Update view
+                updateView(systemInfo, networkInfo, iotInfo)
+              })
           })
       })
       .catch(function(error) {
@@ -162,6 +169,36 @@
     });
   }
 
+  function getIotInfo() {
+    console.log("Getting iot info")
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/iot/info/",
+        type: "GET",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log("Got system info")
+          var iotInfo = {
+            "isRegistered": data["is_registered"],
+            "pubsubIsConnected": data["pubsub_is_connected"],
+            "verificationCode": data["verification_code"]
+          };
+          resolve(iotInfo);
+        },
+        error: function(data) {
+          response_dict = JSON.parse(data.responseText);
+          message = response_dict["message"];
+          console.log(message);
+          var iotInfo = {};
+          reject(iotInfo);
+        }
+      });
+    });
+  }
+
   function joinWifi() {
     console.log("Joining wifi")
     
@@ -185,7 +222,7 @@
     // Send join wifi request
     console.log("Sending join wifi request");
     $.ajax({
-      url: "/api/connect/joinwifi/",
+      url: "/api/network/joinwifi/",
       type: "POST",
       data: {
         "csrfmiddlewaretoken": "{{ csrf_token }}",

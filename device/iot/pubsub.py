@@ -46,7 +46,7 @@ class JsonWebToken(NamedTuple):
 
 
 class PubSub:
-    """Not really sure what this class does."""
+    """Handles communication with Google Cloud Platform's Iot Pub/Sub via MQTT."""
 
     def __init__(self, state: State, command_received_callback) -> None:
         """Initializes pubsub."""
@@ -61,9 +61,12 @@ class PubSub:
 
         # Initialize mqtt client
         self.mqtt_config = self.load_mqtt_config()
-        self.mqtt_client, self.json_web_token = self.create_mqtt_client(
-            self.mqtt_config
-        )
+        if self.mqtt_config != None:
+            self.mqtt_client, self.json_web_token = self.create_mqtt_client(
+                self.mqtt_config
+            )
+        else:
+            self.mqtt_client = None
 
     @property
     def is_connected(self) -> bool:
@@ -127,7 +130,7 @@ class PubSub:
             private_key_filepath = os.environ["IOT_PRIVATE_KEY"]
             ca_certs = os.environ["CA_CERTS"]
         except KeyError as e:
-            message = "Unable to load iot settings, key `{}` is required".format(e)
+            message = "Unable to load iot settings, key {} is required".format(e)
             self.logger.critical(message)
             return None
 
@@ -165,7 +168,6 @@ class PubSub:
     def create_mqtt_client(self, config: MQTTConfig) -> Tuple[mqtt.Client, str]:
         """Creates an mqtt client. Returns client and assocaited json web token."""
         self.logger.debug("Creating mqtt client")
-        # self.logger.debug("config = {}".format(config))
 
         # Initialize client object
         client = mqtt.Client(client_id=config.client_id, userdata=self)

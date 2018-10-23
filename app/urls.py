@@ -59,37 +59,10 @@ router.register(
     base_name="api-actuator-variables",
 )
 
-router.register(
-    r"connect/joinwifiadvanced",
-    views.ConnectJoinWifiAdvanced,
-    base_name="api-join-wifi-adv",
-)
-router.register(
-    r"connect/registeriot",
-    views.ConnectRegisterIoT,
-    base_name="api-connect-registeriot",
-)
-router.register(
-    r"connect/deleteiotreg",
-    views.ConnectDeleteIoTreg,
-    base_name="api-connect-deleteiotreg",
-)
-
 router.register(r"system", views.SystemViewSet, base_name="api-system")
 router.register(r"network", views.NetworkViewSet, base_name="api-network")
 router.register(r"upgrade", views.UpgradeViewSet, base_name="api-upgrade")
-
-
-# # Setup dashboard redirect
-# def redirect_to_connect_or_dashboard(request):
-
-#     # if we have a valid internet connection, go to the dashboard
-#     if connect.valid_internet_connection():
-#         return HttpResponseRedirect(reverse("dashboard"))
-#     else:
-#         # otherwise, let the user set up their wifi connection
-#         return HttpResponseRedirect(reverse("connect"))
-
+router.register(r"iot", views.IotViewSet, base_name="api-iot")
 
 # Setup url patterns
 urlpatterns = [

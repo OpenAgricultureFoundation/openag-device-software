@@ -17,18 +17,11 @@ from device.iot import modes, commands
 from device.iot.pubsub import PubSub
 
 # TODO Notes:
-# Remove redundant functions accross connect, iot, update, resource, and upgrade
-# Adjust function and variable names to match python conventions
 # Add static type checking
 # Write tests
 # Catch specific exceptions
-# Pull out file path strings to top of file
-# We may just want many of these functions in the manager or in device utilities
-# Inherit from state machine manager
-# Always use get method to access dicts unless checking for KeyError (rare cases)
-# Always use decorators to access shared state w/state.lock
-# Use logger class from device utilities
 # Reset IotManager or MQTT / Pubsub connection on network reconnect?
+# Run through all state tverification_coderansitions and make sure they are reasonable
 
 # Initialize file paths
 REGISTRATION_DATA_DIR = "data/registration/"
@@ -83,14 +76,22 @@ class IotManager(manager.StateMachineManager):
 
     @property
     def is_registered(self) -> bool:
-        """Gets value."""
-        return self.state.iot.get("is_registered", False)  # type: ignore
+        """Gets value. TODO: Move this from file based to state based."""
+        return self._is_registered()
 
-    @is_registered.setter
-    def is_registered(self, value: bool) -> None:
-        """Safely updates value in shared state."""
-        with self.state.lock:
-            self.state.iot["is_registered"] = value
+    @property
+    def verification_code(self) -> str:
+        """Gets value. TODO: Move this from file based to state based."""
+        try:
+            with open(VERIFICATION_CODE_PATH) as f:
+                code = f.read().strip()
+            return code
+        except Exception as e:
+            message = "Unable to get verification code, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.exception(message)
+            return "INVALID"
 
     @property
     def pubsub_is_connected(self) -> bool:
@@ -205,7 +206,7 @@ class IotManager(manager.StateMachineManager):
                 last_update_time = time.time()
                 self.publish_system_summary()
                 self.publish_environmental_variables()  # TODO: Should we make this every minute?
-                # self.publish_images()
+                self.publish_images()
 
             # Process network events
             self.pubsub.process_network_events()
@@ -499,7 +500,7 @@ class IotManager(manager.StateMachineManager):
         self.logger.debug(message)
         return verification_code
 
-    def _delete_registration(self) -> None:
+    def unregister(self) -> None:
         """Deletes registration data."""
         self.logger.debug("Deleting registration data")
 

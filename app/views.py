@@ -574,28 +574,6 @@ class Environments(APIView):
         return Response({"environments": environments})
 
 
-class IoT(APIView):
-    """UI page for IoT."""
-
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = "iot.html"
-
-    @method_decorator(login_required)
-    def get(self, request):
-
-        iotv = IoTViewer()
-
-        # Build and return response
-        response = {
-            "status": iotv.iot_dict["connected"],
-            "error": iotv.iot_dict["error"],
-            "received_message_count": iotv.iot_dict["received_message_count"],
-            "published_message_count": iotv.iot_dict["published_message_count"],
-            "device_id": os.environ.get("DEVICE_ID"),
-        }
-        return Response(response)
-
-
 class Images(APIView):
     """UI page for ImageManager."""
 
@@ -661,12 +639,6 @@ class Connect(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        extra = {"console_name": "views.Connect"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
-
-        # response = ConnectUtilities.get_status()
-        # logger.info("Connect response={}".format(response))
         return Response({})
 
 
@@ -678,12 +650,28 @@ class ConnectAdvanced(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        extra = {"console_name": "views.ConnectAdvanced"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
+        return Response({})
 
-        response = ConnectUtilities.get_status()
-        logger.info("ConnectAdvanced response={}".format(response))
+
+class IoT(APIView):
+    """UI page for IoT."""
+
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = "iot.html"
+
+    @method_decorator(login_required)
+    def get(self, request):
+
+        iotv = IoTViewer()
+
+        # Build and return response
+        response = {
+            "status": iotv.iot_dict["connected"],
+            "error": iotv.iot_dict["error"],
+            "received_message_count": iotv.iot_dict["received_message_count"],
+            "published_message_count": iotv.iot_dict["published_message_count"],
+            "device_id": os.environ.get("DEVICE_ID"),
+        }
         return Response(response)
 
 
@@ -770,6 +758,40 @@ class NetworkViewSet(viewsets.ModelViewSet):
         self.logger.debug("Returning response: {}".format(response))
         return Response(response, status)
 
+    def joinwifiadvanced(self, request):
+        """Joins wifi network with advanced config."""
+        self.logger.debug("Joining wifi")
+
+        # Get request parameters
+        try:
+            ssid_name = request["ssid_name"]
+            passphrase = request["passphrase"]
+            hidden_ssid = request["hidden_ssid"]
+            security = request["security"]
+            eap = request["eap"]
+            identity = request["identity"]
+            phase2 = request["phase2"]
+        except KeyError as e:
+            message = "Unable to get request parameter `{}`".format(e)
+            return Response({"message": message}, 400)
+
+        # Join wifi advanced
+        try:
+            network_utilities.join_wifi_advanced(
+                ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
+            )
+            message = "Successfully joined wifi advanced"
+            status = 200
+        except Exception as e:
+            message = "Unable to join wifi, unhandled exception: `{}`".format(type(e))
+            logger.exception(message)
+            status = 500
+
+        # Build and return response
+        response = {"message": message}
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
+
     @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
     def deletewifis(self, request):
         """Deletes stored wifi access points."""
@@ -792,71 +814,70 @@ class NetworkViewSet(viewsets.ModelViewSet):
         return Response(response, status)
 
 
-class ConnectJoinWifiAdvanced(viewsets.ViewSet):
-    """REST API to join a wifi. Request is POSTed with wifi and pass.
-    This class extends the ViewSet (not ModelViewSet) because it
-    dynamically gets its data and the Model gets data from the DB."""
+class IotViewSet(viewsets.ModelViewSet):
+    """View set for iot interactions."""
 
-    @method_decorator(login_required)
-    def create(self, request):
-        extra = {"console_name": "views.ConnectJoinWifiAdvanced"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
+    # Initialize logger
+    logger = logger.Logger("IotViewSet", "app")
 
-        # Get req parameters
-        try:
-            request_data = request.data.dict()
-        except Exception as e:
-            response = {"message": "Internal error: {}".format(e)}
-            return Response(response, 400)
+    @list_route(methods=["GET"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def info(self, request):
+        """Gets iot info."""
+        self.logger.debug("Getting iot info")
 
-        ssid_name = request_data["ssid_name"]
-        passphrase = request_data["passphrase"]
-        hidden_ssid = request_data["hidden_ssid"]
-        security = request_data["security"]
-        eap = request_data["eap"]
-        identity = request_data["identity"]
-        phase2 = request_data["phase2"]
+        # Get iot manager
+        app_config = apps.get_app_config(APP_NAME)
+        iot_manager = app_config.coordinator.iot
 
-        logger.info("ConnectJoinWifiAdvanced request_data={}".format(request_data))
-        is_successful = ConnectUtilities.join_wifi_advanced(
-            ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
-        )
-        response = {"success": is_successful}
-        logger.info("ConnectJoinWifiAdvanced response={}".format(response))
-        if not is_successful:
-            return Response(response, 400)
-        return Response(response)
+        # Build response
+        response = {
+            "message": "Successfully got iot info",
+            "is_registered": iot_manager.is_registered,
+            "pubsub_is_connected": iot_manager.pubsub_is_connected,
+            "verification_code": iot_manager.verification_code,
+        }
 
+        # Return response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, 200)
 
-class ConnectRegisterIoT(viewsets.ViewSet):
-    """REST API to register this machine with the IoT backend.
-    Called with GET."""
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def register(self, request):
+        """Registers device with google cloud platform."""
+        self.logger.debug("Registering device with iot cloud")
 
-    @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.ConnectRegisterIoT"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
+        # Get iot manager
+        app_config = apps.get_app_config(APP_NAME)
+        iot_manager = app_config.coordinator.iot
 
-        response = ConnectUtilities.register_iot()
-        logger.info("ConnectRegisterIoT response={}".format(response))
-        return Response(response)
+        # Register device
+        iot_manager.register()
 
+        # Build response
+        response = {"message": "Successfully registered"}
 
-class ConnectDeleteIoTreg(viewsets.ViewSet):
-    """REST API to delete the current IoT registration (directory).
-    Called with GET."""
+        # Return response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, 200)
 
-    @method_decorator(login_required)
-    def list(self, request):
-        extra = {"console_name": "views.ConnectDeleteIoTreg"}
-        logger = logging.getLogger(__name__)
-        logger = logging.LoggerAdapter(logger, extra)
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def unregister(self, request):
+        """Unregisters device with google cloud platform."""
+        self.logger.debug("Unregistering device with iot cloud")
 
-        response = ConnectUtilities.delete_iot_registration()
-        logger.info("ConnectDeleteIoTreg response={}".format(response))
-        return Response(response)
+        # Get iot manager
+        app_config = apps.get_app_config(APP_NAME)
+        iot_manager = app_config.coordinator.iot
+
+        # Unregister device
+        iot_manager.unregister()
+
+        # Build response
+        response = {"message": "Successfully unregistered"}
+
+        # Return response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, 200)
 
 
 class Upgrade(APIView):

@@ -140,10 +140,49 @@ def join_wifi(wifi: str, password: str) -> bool:
             output = process1.stdout.read().decode("utf-8")
             output += process1.stderr.read().decode("utf-8")
             return True
-            # time.sleep(5)  # Time for networking stack to init # This shouldn't be here
     except Exception as e:
         logger.exception("Unable to join wifi, unhandled exception: {}".format(type(e)))
         return False
+
+
+def join_wifi_advanced(
+    ssid_name: str,
+    passphrase: str,
+    hidden_ssid: str,
+    security: str,
+    eap: str,
+    identity: str,
+    phase2: str,
+) -> None:
+    """Joins specified wifi access point with advanced config args."""
+    logger.debug("Joining wifi advanced")
+
+    # Ensure passphrase is a string?
+    if len(passphrase) == 0:
+        passphrase = ""
+
+    # Build command
+    command = [
+        "scripts/advanced_connect_wifi.sh",
+        ssid_name,
+        passphrase,
+        hidden_ssid,
+        security,
+        eap,
+        identity,
+        phase2,
+    ]
+
+    # Execute command
+    try:
+        subprocess.run(cmd)
+    except Exception as e:
+        message = "Unable to join wifi advanced, unhandled exception".format(type(e))
+        logger.exception(message)
+        raise
+
+    # Successfully joined wifi advanced
+    return True
 
 
 def delete_wifi_connections() -> bool:

@@ -2,219 +2,296 @@
 
 {% block javascript %}
 <script>
-  
+
   window.onload = function() {
-
-    document.getElementById("status").innerHTML = "{{status}}";
-    document.getElementById("deviceIP").innerHTML = "{{IP}}";
-    document.getElementById("device_UI").innerHTML = "{{device_UI}}";
-    document.getElementById("device_UI").href = "{{device_UI}}";
-
-    {% if verification_code != None %}
-    document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-    document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + "{{verification_code}}";
-    {% endif %}
-
-    {% if is_wifi_bbb and not valid_internet_connection %}
-      $('#showConfigForm').collapse('show');
-      $('#showConnectedStatus').collapse('hide');
-    {% else %}
-      $('#showConfigForm').collapse('hide');
-      $('#showConnectedStatus').collapse('show');
-    {% endif %}
+    getInfoAndUpdateView()
   }
 
-  function joinWifi() {
-    document.getElementById("status").innerHTML = 'Connecting, this will take a few minutes...'
-    var SSIDName = document.getElementById("SSIDName").value;
-    var passphrase = document.getElementById("passphrase").value;
-    var hiddenSSID = document.getElementById("hiddenSSID").value;
+  function getInfoAndUpdateView() {
+    console.log("Getting info and updating view")
+
+    // Initialize info vars
+    var systemInfo = {};
+    var networkInfo = {};
+    var iotInfo = {};
+
+    // Get system info
+    getSystemInfo()
+      .then(function(systemInfo) {
+        var systemInfo = systemInfo;
+        
+        // Get network info
+        getNetworkInfo()
+          .then(function(networkInfo) {
+            var networkInfo = networkInfo;
+
+            // Get iot info
+            getIotInfo()
+              .then(function(iotInfo) {
+                var iotInfo = iotInfo;
+
+                // Update view
+                updateView(systemInfo, networkInfo, iotInfo)
+              })
+          })
+      })
+      .catch(function(error) {
+        console.log("Error: " + error);
+      })
+  }
+
+  function updateView(systemInfo, networkInfo, iotInfo) {
+    console.log("Updating view");
+    console.log(systemInfo)
+    console.log(networkInfo)
+    console.log(iotInfo)
+
+    // Update view for connected network and registered iot
+    if (networkInfo["isConnected"] && iotInfo["isRegistered"]) {
+      document.getElementById("status").innerHTML = "Successfully connected!"
+      document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
+      document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("cloud-ui-url").innerHTML = "https://openag-v1.appspot.com/login/";
+      document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login/";
+      $('#connection-info-collapse').collapse("show");
+      $('#configure-wifi-collapse').collapse("hide");
+    }
+
+    // Update view for connected network and unregistered iot
+    else if (networkInfo["isConnected"] && !iotInfo["isRegistered"]) {
+      document.getElementById("status").innerHTML = "Connected to network, iot registration required"
+      document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
+      document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
+      document.getElementById("cloud-ui-url").innerHTML = "Please click here to create your user account, and connect your PFC to the OpenAg Cloud";
+      document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login?vcode=" + iotInfo["verificationCode"];
+      $('#connection-info-collapse').collapse("show");
+      $('#configure-wifi-collapse').collapse("hide");
+    }
+
+    // Update view for disconnected network and non-wifi-beaglebone system
+    else if (!networkInfo["isConnected"] && !systemInfo["isWifiBeaglebone"]) {
+        document.getElementById("status").innerHTML = "Unable to connect, not a wifi beaglebone"
+        $("#configure-wifi-collapse").collapse("hide");
+        $("#connection-info-collapse").collapse("hide");
+    }
+
+    // Update view for disconnected network and wifi-beaglebone system
+    else if (!networkInfo["isConnected"] && systemInfo["isWifiBeaglebone"]) {
+      document.getElementById("status").innerHTML = "Please configure your wifi network"
+      updateWifiAccessPoints(networkInfo["wifiAccessPoints"])
+      $("#configure-wifi-collapse").collapse("show");
+      $("#network-info-collapse").collapse("hide");
+    }
+
+    // Remove
+    $("#configure-wifi-collapse").collapse("show");
+
+  }
+
+  function getSystemInfo() {
+    console.log("Getting system info")
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/system/info/",
+        type: "GET",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log("Got system info")
+          var systemInfo = {
+            "isBeaglebone": data["is_beaglebone"],
+            "isWifiBeaglebone": data["is_wifi_beaglebone"],
+            "beagleboneSerialNumber": data["beaglebone_serial_number"],
+            "remoteDeviceUiUrl": data["remote_device_ui_url"]
+          };
+          resolve(systemInfo);
+        },
+        error: function(data) {
+          response_dict = JSON.parse(data.responseText);
+          message = response_dict["message"];
+          console.log(message);
+          var systemInfo = {};
+          reject(systemInfo);
+        }
+      });
+    });
+  }
+
+  function getNetworkInfo() {
+    console.log("Getting network info")
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/network/info/",
+        type: "GET",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log("Got network info")
+          var networkInfo = {
+            "isConnected": data["is_connected"],
+            "ipAddress": data["ip_address"],
+            "wifiAccessPoints": data["wifi_access_points"]
+          }
+          resolve(networkInfo);
+        },
+        error: function(data) {
+          console.log("Unable to get network info")
+          response_dict = JSON.parse(data.responseText)
+          message = response_dict["message"]
+          console.log(message);
+          var networkInfo = {};
+          reject(networkInfo);
+        }
+      });
+    });
+  }
+
+  function getIotInfo() {
+    console.log("Getting iot info")
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        url: "/api/iot/info/",
+        type: "GET",
+        data: {
+          "csrfmiddlewaretoken": "{{ csrf_token }}"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log("Got system info")
+          var iotInfo = {
+            "isRegistered": data["is_registered"],
+            "pubsubIsConnected": data["pubsub_is_connected"],
+            "verificationCode": data["verification_code"]
+          };
+          resolve(iotInfo);
+        },
+        error: function(data) {
+          response_dict = JSON.parse(data.responseText);
+          message = response_dict["message"];
+          console.log(message);
+          var iotInfo = {};
+          reject(iotInfo);
+        }
+      });
+    });
+  }
+
+  function joinWifiAdvanced() {
+    console.log("Joining wifi advanced")
+    
+    // Update status
+    document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
+
+    // Get advanced wifi parameters
+    var SSIDName = document.getElementById("ssid-name").value;
+    var passphrase = document.getElementById("wifi-passphrase").value;
+    var hiddenSSID = document.getElementById("hidden-ssid").value;
     var security = document.getElementById("security").value;
     var eap = document.getElementById("eap").value;
     var identity = document.getElementById("identity").value;
     var phase2 = document.getElementById("phase2").value;
 
-    joinWifiPromise(SSIDName, passphrase, hiddenSSID, security, eap, identity, phase2)
-      .then(function(joinWifiSuccess) {
-        document.getElementById("status").innerHTML = 'Initializing...';
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        // success!  nothing to do here.
-      })
-      .catch(function(error) {
-        console.log('joinWifi Error: '+error);
-      })
+    // TODO: Validate parameters
+
+    // Send join wifi request
+    console.log("Sending join wifi request");
+    $.ajax({
+      url: "/api/network/joinwifiadvanced/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+        "ssid_name": SSIDName,
+        "passphrase": passphrase,
+        "hidden_ssid": hiddenSSID,
+        "security": security,
+        "eap": eap,
+        "identity": identity,
+        "phase2": phase2,
+      },
+      dataType: 'json',
+      success: function(data) {
+        console.log("Successfully joined wifi advanced");
+        getInfoAndUpdateView();
+      },
+      error: function(data) {
+        console.log("Unable to join wifi advanced");
+        response_dict = JSON.parse(data.responseText);
+        message = response_dict["message"];
+        console.log(message);
+        console.log(response_dict);
+        getInfoAndUpdateView();
+      }
+    });
   }
 
-  function joinWifiPromise(SSIDName, passphrase, hiddenSSID, security, eap, identity, phase2) {
-    return new Promise(function (resolve, reject) {
-      // Do POST with form args to API to connect.
-      $.ajax({
-        url: "/api/connect/joinwifiadvanced/",
-        type: "POST",
-        data: {
-          "csrfmiddlewaretoken": "{{ csrf_token }}",
-          "ssid_name": SSIDName,
-          "passphrase": passphrase,
-          "hidden_ssid": hiddenSSID,
-          "security": security,
-          "eap": eap,
-          "identity": identity,
-          "phase2": phase2,
-        },
-        dataType: 'json',
-        success: function(data) {
-          // Get response message
-          var joinWifiSuccess = data.success;
-          console.log("joinWifiPromise succeeded: "+joinWifiSuccess);
-          resolve(joinWifiSuccess);
-        },
-        error: function(data) {
-          console.log("joinWifiPromise failed");
-          reject(data);
-        }
-       });
-     })
-     console.log("joinWifi func done.")
-  }
-
-  function getStatusPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/status/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: "json",
-        success: function(data) {
-          document.getElementById("status").innerHTML = data['status'];
-          document.getElementById("deviceIP").innerHTML = data['IP'];
-          document.getElementById("device_UI").innerHTML = data['device_UI'];
-
-          if( data['verification_code'] != "None" ) {
-            document.getElementById("verification_code").innerHTML = 'Please click here to create your user account, and connect your PFC to the OpenAg Cloud';
-            document.getElementById("verification_code").href = "https://openag-v1.appspot.com/login?vcode=" + data['verification_code'];
-          }
-
-          // update the page to match the status
-          if(data['is_wifi_bbb'] && ! data['valid_internet_connection']) {
-            $('#showConfigForm').collapse('show');
-            $('#showConnectedStatus').collapse('hide');
-          } else {
-            $('#showConfigForm').collapse('hide');
-            $('#showConnectedStatus').collapse('show');
-          }
-          document.getElementById("delete_wifis_status").innerHTML = '';
-
-          // clean out the existing wifis
-          var wifiSel = document.getElementById("wifiList");
-          for( i=wifiSel.length - 1; i >= 0; i-- ) { // must do in reverse
-            wifiSel.remove(i);
-          }
-          // add a first blank SSID
-          var option = document.createElement("option");
-          option.text = ''
-          option.value = ''
-          wifiSel.add(option);
-          // add new SSIDs we just received
-          wifiList = data['wifis'];
-          for( i=0; i < wifiList.length; i++ ) {
-            wifi = wifiList[i];
-            var option = document.createElement("option");
-            option.text = wifi.ssid;
-            option.value = wifi.ssid;
-            wifiSel.add(option);
-          }
-
-          document.getElementById("delete_iot_reg_status").innerHTML = '';
-
-          var statusDict = data;
-          resolve(statusDict);
-        },
-        error: function(data) {
-          console.log("Promise Error: getStatus failed");
-          document.getElementById("status").innerHTML = 'Could not get status.';
-          reject(data);
-        }
-      });
-    })
-  }
-
-  
   function deleteWifis() {
-    document.getElementById("delete_wifis_status").innerHTML = 'Deleting...';
-    deleteWifisPromise()
-      .then(function(deleteWifisSuccess) {
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("delete_wifis_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("delete_wifis_status").innerHTML = error;
-      })
+    console.log("Deleting wifi")
+    
+    // Update status
+    document.getElementById("status").innerHTML = "Deleting wifis, this will take a few minutes..."
+
+    // Send join wifi request
+    console.log("Sending delete wifis request");
+    $.ajax({
+      url: "/api/network/deletewifis/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+      },
+      dataType: 'json',
+      success: function(data) {
+        console.log("Successfully deleted wifis");
+        getInfoAndUpdateView();
+      },
+      error: function(data) {
+        console.log("Unable to delete wifis");
+        response_dict = JSON.parse(data.responseText);
+        message = response_dict["message"];
+        console.log(message);
+        console.log(response_dict);
+        location.reload(true);
+        // getInfoAndUpdateView();
+      }
+    });
   }
 
-  
-  function deleteWifisPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/deletewifis/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          document.getElementById("delete_wifis_status").innerHTML = 'Verifying...';
-          var deleteWifisSuccess = data;
-          resolve(deleteWifisSuccess)
-        },
-        error: function(data) {
-          console.log("deleteWifis failed")
-          reject(data)
-        }
-      });
-    })
+  function unregisterIot() {
+    console.log("Unregistering from iot")
+    
+    // Update status
+    document.getElementById("status").innerHTML = "Unregistering iot, this will take a few minutes..."
+
+    // Send join wifi request
+    console.log("Sending unregister iot request");
+    $.ajax({
+      url: "/api/iot/unregister/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+      },
+      dataType: 'json',
+      success: function(data) {
+        console.log("Successfully unregistered iot");
+      },
+      error: function(data) {
+        console.log("Unable to unregister iot");
+        response_dict = JSON.parse(data.responseText);
+        message = response_dict["message"];
+        console.log(message);
+        console.log(response_dict);
+        location.reload(true);
+      }
+    });
   }
 
-  //--------------------------------------------------------------------------
-  function deleteIoTReg() {
-    document.getElementById("delete_iot_reg_status").innerHTML = 'Deleting...';
-    deleteIoTRegPromise()
-      .then(function(deleteIoTRegSuccess) {
-        return getStatusPromise();
-      })
-      .then(function(statusDict) {
-        document.getElementById("delete_iot_reg_status").innerHTML = 'Success!';
-      })
-      .catch(function(error) {
-        document.getElementById("delete_iot_reg_status").innerHTML = error;
-      })
-  }
-
-  //--------------------------------------------------------------------------
-  function deleteIoTRegPromise() {
-    return new Promise(function (resolve, reject) {
-      $.ajax({
-        url: "/api/connect/deleteiotreg/",
-        type: "GET",
-        data: {"csrfmiddlewaretoken": "{{ csrf_token }}"},
-        dataType: 'json',
-        success: function(data) {
-          document.getElementById("delete_iot_reg_status").innerHTML = 'Verifying...';
-          var deleteIoTRegSuccess = data;
-          resolve(deleteIoTRegSuccess)
-        },
-        error: function(data) {
-          console.log("deleteIoTReg failed")
-          reject(data)
-        }
-      });
-    })
-  }
-
-  //--------------------------------------------------------------------------
   function makePasswordVisible() {
-    var pass = document.getElementById("passphrase");
+    var pass = document.getElementById("wifi-passphrase");
     if (pass.type === "password") {
         pass.type = "text";
     } else {
@@ -222,117 +299,136 @@
     }
   }
 
+
 </script>
 {% endblock %}
+
 
 {% block content %}
 <html>
 
-<!-- holds list of available wifis before we put them in a drop list -->
-<input type="hidden" id="wifis" name="variable" value="{{ wifis }}">
+<input type="hidden" id="wifi-access-points-select" name="variable" value="{{ wifi_access_points }}">
 
 <body>
+
 <div class="connect">
-  <h2>Advanced wireless network configuration</h2>
-  <div class="card" id="inet-card">
+  
+  <h2>Connect (Advanced)</h2>
 
-      <div class="collapse" id="showConfigForm">
-        <ul>
-          <li><div><b>Access point name:</b> (also called an SSID)</div>
-            <input type="text" id="SSIDName" style="width:200px"
-             autocomplete="new-password" placeholder="SSID">
-            <select id="wifiList" class="selectpicker" style="width:200px"
-             onchange="document.getElementById('SSIDName').value=this.value">
-              <option value=""></option>
-              {% for wifi in wifis %}
-              <option value="{{wifi.ssid}}">{{wifi.ssid}}</option>
-              {% endfor %}
-            </select>
-            <p></p>
+    <!-- Networking Card -->
+    <div class="card" id="connect-card">
+      <h3>Networking</h3></br>
+      <p> <b>Status:</b> <span id="status"></span></p>
 
-          <li><div><b>Hidden SSID:</b> (is the above SSID hidden?)</div>
-            <select id="hiddenSSID" class="selectpicker" style="width:200px">
-              <option value="false" selected="selected">False</option>
-              <option value="true">True</option>
-            </select>
-            <p></p>
+      <ul>
 
-          <li><div><b>Passphrase:</b> (or password)</div>
-            <input type="password" id="passphrase" autocomplete="new-password"
-             onkeydown="if (event.keyCode==13) document.getElementById('butJoin').click()"
-             placeholder='Passphrase' style="width:200px">
-            <input type="checkbox" onclick="makePasswordVisible()"> Show passphrase
-            <p></p>
+      <!-- Connection Info Collapese -->
+      <div class="collapse" id="connection-info-collapse">
+        <li><b>Device IP Address:</b> <span id="ip-address"></span>
+        <li><b>Web UI:</b> <a id="cloud-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg Web UI</a>
+        <li><b>Remotely Accessible Device UI:</b> <a id="remote-device-ui-url" href="" target="_blank"></a>
+      </div>
+      
+      <!-- Configure Wifi Collapse -->
+      <div class="collapse" id="configure-wifi-collapse">
+        <!-- Wifi Access Point Passphrase and Select -->
+        <li>
+          <div><b>Access Point Name:</b> (also called an SSID)</div>
+          <input type="text" id="ssid-name" style="width:200px"
+           autocomplete="new-password" placeholder="SSID">
+          <select id="wifi-access-points-select" class="selectpicker" style="width:200px"
+           onchange="document.getElementById('ssid-name').value=this.value">
+            <option value=""></option>
+            {% for wifi_access_point in wifi_access_points %}
+            <option value="{{wifi_access_point.service}}">{{wifi_access_point.ssid}}</option>
+            {% endfor %}
+          </select>
+        </li></br>
 
-          <li><div><b>Security:</b> (which security protocol do you use?)</div>
-            <select id="security" class="selectpicker" style="width:200px"
-             onchange="if( this.value == 'ieee8021x' ) {
-                $('#show_eap').collapse('show');
-               } else {
-                $('#show_eap').collapse('hide');
-               }">
-              <option value="ieee8021x">WPA EAP</option>
-              <option value="psk">WPA/WPA2 PSK</option>
-              <option value="wep">WEP</option>
-              <option value="none" selected="selected">None</option>
-            </select>
-        </ul>
+        <!-- Hidden SSID Select -->
+        <li>
+          <div><b>Hidden SSID:</b> (is the above SSID hidden?)</div>
+          <select id="hidden-ssid" class="selectpicker" style="width:200px">
+            <option value="false" selected="selected">False</option>
+            <option value="true">True</option>
+          </select>
+        </li></br>
 
-        <!-- hide the next 3 items unless security is ieee8021x -->
-        <div class="collapse" id="show_eap">
-        <ul>
-          <li><div><b>EAP:</b> (which Extensible Authentication Protocol do you use?)</div>
+        <!-- Passphrase Entry -->
+        <li>
+          <div><b>Passphrase:</b> (or password)</div>
+          <input type="password" id="wifi-passphrase" autocomplete="new-password"
+           onkeydown="if (event.keyCode==13) document.getElementById('butJoin').click()"
+           placeholder='Passphrase' style="width:200px">
+          <input type="checkbox" onclick="makePasswordVisible()"> Show passphrase
+        </li></br>
+
+        <!-- Security Config -->
+        <li>
+          <div><b>Security:</b> (which security protocol do you use?)</div>
+          <select id="security" class="selectpicker" style="width:200px"
+           onchange="if( this.value == 'ieee8021x' ) {
+              $('#eap-parameters-collapse').collapse('show');
+             } else {
+              $('#eap-parameters-collapse').collapse('hide');
+             }">
+            <option value="ieee8021x">WPA EAP</option>
+            <option value="psk">WPA/WPA2 PSK</option>
+            <option value="wep">WEP</option>
+            <option value="none" selected="selected">None</option>
+          </select>
+        </li></br>
+
+        <!-- EAP Parameters Collapse-->
+        <div class="collapse" id="eap-parameters-collapse">
+          <li>
+            <div><b>EAP:</b> (which Extensible Authentication Protocol do you use?)</div>
             <select id="eap" class="selectpicker" style="width:200px">
               <option value="tls">TLS</option>
               <option value="ttls">TTLS</option>
               <option value="peap">PEAP</option>
             </select>
-            <p></p>
+          </li></br>
 
-          <li><div><b>Identity:</b> (EAP identity string. Could be an email address, user name or other ID.)</div>
+          <li>
+            <div><b>Identity:</b> (EAP identity string. Could be an email address, user name or other ID.)</div>
             <input type="text" id="identity" style="width:200px"
              autocomplete="new-password" placeholder="Identity">
-            <p></p>
+          </li></br>
 
-          <li><div><b>Phase2:</b> (Inner EAP authentication type. Could be "MSCHAPV2")</div>
+          <li>
+            <div><b>Phase2:</b> (Inner EAP authentication type. Could be "MSCHAPV2")</div>
             <input type="text" id="phase2" style="width:200px"
              autocomplete="new-password" placeholder="Phase2">
-        </ul>
+          </li></br>
+          
         </div>
 
-        <a class="badge badge-secondary" data-toggle="collapse" id="butJoin"
+        <!-- Join Wifi Button -->
+        </li>
+          <a class="badge badge-secondary" data-toggle="collapse" id="join-wifi-button"
           style="width:200px" href="" role="button" onclick="joinWifi();">
-          Join Wireless Network</a>
-        </br>
+          Join Wifi</a>
+        </li>
+
+      </ul>
       </div>
 
-    <p>
-      <b>Status:</b> <span id="status"></span>
-    </p>
-    <div class="collapse" id="showConnectedStatus">
+
+    <!-- Danger Zone Card -->
+    <div class="card" id="connect-card">
+      <h3>Danger Zone</h3><br/>
       <ul>
-        <li><b>Device IP:</b> <span id="deviceIP"></span>
-        <li><b>Web UI:</b> <a id="verification_code" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg web UI</a>
-        <li><b>Remotely accessible Device UI:</b> <a id="device_UI" href="" target="_blank"></a>
-        {% if error != None %}
-        <li><b>Error:</b> {{ error }}
-        {% endif %}
+        <li><a class="badge badge-secondary" data-toggle="collapse"
+         style="width:200px" href="" role="button" onclick="deleteWifis();">
+         Delete Wifi Connections</a> <span id="delete-wifi-button"></span></li>
+        <li><a class="badge badge-secondary" data-toggle="collapse"
+         style="width:200px" href="" role="button" onclick="unregisterIot();">
+         Unregister Device</a> <span id="unregister-iot-button"></span></li>
       </ul>
     </div>
-  </div>
 
-  <div class="card" id="adv-card">
-    <h3>Danger Zone</h3><br/>
-    <ul>
-      <li><a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="deleteWifis();">
-       Delete all wifi connections</a> <span id="delete_wifis_status"></span>
-      <li><a class="badge badge-secondary" data-toggle="collapse"
-       style="width:200px" href="" role="button" onclick="deleteIoTReg();">
-       Delete registration</a> <span id="delete_iot_reg_status"></span>
-    </ul>
   </div>
-
 </div>
 </body>
 </html>
