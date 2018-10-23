@@ -93,6 +93,11 @@ class IotManager(manager.StateMachineManager):
             self.state.iot["is_registered"] = value
 
     @property
+    def pubsub_is_connected(self) -> bool:
+        """Gets value."""
+        return self.state.iot.get("pubsub_is_connected", False)  # type: ignore
+
+    @property
     def device_id(self) -> str:
         """Gets value."""
         return self.state.iot.get("device_id", "Unknown")  # type: ignore
@@ -104,26 +109,14 @@ class IotManager(manager.StateMachineManager):
             self.state.iot["device_id"] = value
 
     @property
-    def received_message_count(self) -> int:
+    def pubsub_received_message_count(self) -> int:
         """Gets value."""
-        return self.state.iot.get("received_message_count", 0)  # type: ignore
-
-    @received_message_count.setter
-    def received_message_count(self, value: int) -> None:
-        """Safely updates value in shared state."""
-        with self.state.lock:
-            self.state.iot["received_message_count"] = value
+        return self.state.iot.get("pubsub_received_message_count", 0)  # type: ignore
 
     @property
-    def published_message_count(self) -> int:
+    def pubsub_published_message_count(self) -> int:
         """Gets value."""
-        return self.state.iot.get("published_message_count", 0)  # type: ignore
-
-    @published_message_count.setter
-    def published_message_count(self, value: int) -> None:
-        """Safely updates value in shared state."""
-        with self.state.lock:
-            self.state.iot["published_message_count"] = value
+        return self.state.iot.get("pubsub_published_message_count", 0)  # type: ignore
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 
@@ -214,8 +207,8 @@ class IotManager(manager.StateMachineManager):
                 self.publish_environmental_variables()  # TODO: Should we make this every minute?
                 # self.publish_images()
 
-            # Process network events?
-            # self.pubsub.process_network_events()
+            # Process network events
+            self.pubsub.process_network_events()
 
             # Check for events
             self.check_events()
@@ -310,8 +303,11 @@ class IotManager(manager.StateMachineManager):
         }
 
         # Publish summary
-        self.logger.debug("Publishing summary: {}".format(summary))
+        # self.logger.debug("summary = {}".format(summary))
         self.pubsub.publish_command_reply("status", json.dumps(summary))
+
+        # Successfully published summary
+        self.logger.debug("Successfully published summary")
 
     def publish_environmental_variables(self) -> None:
         """Publishes environmental variables."""

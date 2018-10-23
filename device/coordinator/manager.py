@@ -277,13 +277,6 @@ class CoordinatorManager(StateMachineManager):
             if time.time() - self.latest_environment_timestamp > 60 * 10:
                 self.store_environment()
 
-            # Once a minute, publish any changed values
-            # if time.time() - self.latest_publish_timestamp > 60:
-            #     self.latest_publish_timestamp = time.time()
-            #     self.iot.publish_environmental_variables()
-
-            # Don't need this, iot manager handles this update
-
             # Check for events
             self.check_events()
 
