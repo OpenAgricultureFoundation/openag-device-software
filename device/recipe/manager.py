@@ -32,7 +32,7 @@ class RecipeManager(StateMachineManager):
 
         # Initialize logger
         self.logger = Logger("Recipe", "recipe")
-
+:
         # Initialize state
         self.state = state
 
@@ -553,9 +553,9 @@ class RecipeManager(StateMachineManager):
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            models.RecipeTransitionModel.objects.filter(minute__lte=minute)
-            .order_by("-minute")
-            .first()
+            models.RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
+                "-minute"
+            ).first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:
@@ -1008,3 +1008,7 @@ class RecipeManager(StateMachineManager):
                 message = "Unable to update recipe, unhandled exception"
                 self.logger.exception(message)
                 return message, 500
+
+    def recipe_exists(self, uuid) -> bool:
+        """Checks if a recipe exists."""
+        return models.RecipeModel.objects.filter(uuid=uuid).exists()

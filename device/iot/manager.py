@@ -2,17 +2,18 @@
 import sys, os, subprocess, copy, glob, json, shutil, time, datetime
 
 # Import python types
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 
 # Import device utilities
 from device.utilities.statemachine import manager
 from device.utilities.state.main import State
 from device.utilities import logger, accessors, system, network
+from device.utilities import iot as iot_utilities
 
 # Import device managers
 from device.recipe.manager import RecipeManager
 
-# Import manager elements
+# Import module elements
 from device.iot import modes, commands
 from device.iot.pubsub import PubSub
 
@@ -21,18 +22,11 @@ from device.iot.pubsub import PubSub
 # Write tests
 # Catch specific exceptions
 # Reset IotManager or MQTT / Pubsub connection on network reconnect?
-# Run through all state tverification_coderansitions and make sure they are reasonable
+# Run through all state transitions and make sure they are reasonable
 
 # Initialize file paths
-REGISTRATION_DATA_DIR = "data/registration/"
-DEVICE_ID_PATH = REGISTRATION_DATA_DIR + "device_id.bash"
-ROOTS_PATH = REGISTRATION_DATA_DIR + "roots.pem"
-RSA_CERT_PATH = REGISTRATION_DATA_DIR + "rsa_cert.pem"
-RSA_PRIVATE_PATH = REGISTRATION_DATA_DIR + "rsa_private.pem"
-VERIFICATION_CODE_PATH = REGISTRATION_DATA_DIR + "verification_code.txt"
 IMAGES_DIR = "data/images/"
 STORED_IMAGES_DIR = "data/images/stored/"
-REGISTER_SCRIPT_PATH = "scripts/one_time_key_creation_and_iot_device_registration.sh"
 
 
 class IotManager(manager.StateMachineManager):
@@ -61,6 +55,16 @@ class IotManager(manager.StateMachineManager):
         self.received_message_count = 0
         self.published_message_count = 0
 
+        # Initialize pubsub handler
+        self.pubsub = PubSub(
+            on_connect=on_connect,
+            on_disconnect=on_disconnect,
+            on_publish=on_publish,
+            on_message=on_message,
+            on_subscribe=on_subscribe,
+            on_log=on_log,
+        )
+
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
             modes.INIT: [
@@ -74,50 +78,69 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine mode
         self.mode = modes.INIT
 
-    @property
-    def is_registered(self) -> bool:
-        """Gets value. TODO: Move this from file based to state based."""
-        return self._is_registered()
+    ##### INTERNAL STATE ACCESS DECORATORS #############################################
 
     @property
-    def verification_code(self) -> str:
-        """Gets value. TODO: Move this from file based to state based."""
-        try:
-            with open(VERIFICATION_CODE_PATH) as f:
-                code = f.read().strip()
-            return code
-        except Exception as e:
-            message = "Unable to get verification code, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.exception(message)
-            return "INVALID"
-
-    @property
-    def pubsub_is_connected(self) -> bool:
+    def is_connected(self) -> False:
         """Gets value."""
-        return self.state.iot.get("pubsub_is_connected", False)  # type: ignore
+        return self.state.iot.get("is_connected", False)  # type: ignore
+
+    @is_connected.setter
+    def is_connected(self, value: bool) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["is_connected"] = value
 
     @property
     def device_id(self) -> str:
         """Gets value."""
-        return self.state.iot.get("device_id", "Unknown")  # type: ignore
+        return self.state.iot.get("device_id", "UNKNOWN")  # type: ignore
 
     @device_id.setter
-    def device_id(self, value: str) -> None:
+    def device_id(self, value: boo) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.iot["device_id"] = value
 
     @property
-    def pubsub_received_message_count(self) -> int:
+    def verification_code(self) -> str:
         """Gets value."""
-        return self.state.iot.get("pubsub_received_message_count", 0)  # type: ignore
+        return self.state.iot.get("verification_code", "UNKNOWN")  # type: ignore
+
+    @verification_code.setter
+    def verification_code(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["verification_code"] = value
 
     @property
-    def pubsub_published_message_count(self) -> int:
+    def received_message_count(self) -> int:
         """Gets value."""
-        return self.state.iot.get("pubsub_published_message_count", 0)  # type: ignore
+        return self.state.iot.get("received_message_count", 0)  # type: ignore
+
+    @received_message_count.setter
+    def received_message_count(self, value: int) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["received_message_count"] = value
+
+    @property
+    def published_message_count(self) -> int:
+        """Gets value."""
+        return self.state.iot.get("published_message_count", 0)  # type: ignore
+
+    @published_message_count.setter
+    def published_message_count(self, value: int) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["published_message_count"] = value
+
+    ##### EXTERNAL STATE ACCESS DECORATORS #############################################
+
+    @property
+    def network_is_connected(self) -> bool:
+        """Gets value."""
+        return self.state.network.get("is_connected", False)  # type: ignore
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 
@@ -153,32 +176,29 @@ class IotManager(manager.StateMachineManager):
         self.logger.debug("Entered INIT")
 
         # Connect to pubsub service
-        self.pubsub = PubSub(self.state, self.command_received)
+        self.pubsub = PubSub(self.state, self.process_commands)
 
         # Publish boot message
         self.publish_boot_message()
 
-        # Give othe managers time to initialize
+        # Give othe managers time to initialize. TODO: Can we remove this?
         time.sleep(10)  # seconds
 
-        # Transition to unregistered mode on next state machine update
-        self.mode = modes.UNREGISTERED
+        # Transition to correct registration mode on next state machine update
+        if self.is_registered:
+            self.mode = modes.REGISTERED
+        else:
+            self.mode = modes.UNREGISTERED
 
     def run_unregistered_mode(self) -> None:
         """Runs unregistered mode."""
         self.logger.debug("Entered UNREGISTERED")
 
-        # Initialize timing variables
-        last_update_time = 0.0
-        update_interval = 60  # seconds
-
         # Loop forever
         while True:
 
-            # Update registration every update interval
-            if time.time() - last_update_time > update_interval:
-                last_update_time = time.time()
-                self.update_registration()
+            # Update registration
+            self.update_registration()
 
             # Check for events
             self.check_events()
@@ -201,15 +221,15 @@ class IotManager(manager.StateMachineManager):
         # Loop forever
         while True:
 
-            # Publish system summary and images every update interval
+            # Publish system summary, variables, and images every update interval
             if time.time() - last_update_time > update_interval:
                 last_update_time = time.time()
                 self.publish_system_summary()
-                self.publish_environmental_variables()  # TODO: Should we make this every minute?
+                self.publish_environmental_variables()
                 self.publish_images()
 
-            # Process network events
-            self.pubsub.process_network_events()
+            # Update pubsub handler
+            self.pubsub.update()
 
             # Check for events
             self.check_events()
@@ -222,6 +242,34 @@ class IotManager(manager.StateMachineManager):
             time.sleep(0.1)
 
     ##### HELPER FUNCTIONS #############################################################
+
+    def update_registration(self) -> None:
+        """Updates registration."""
+
+        # Check for network connection
+        if not self.network_is_connected:
+            return
+
+        # Register device with iot cloud
+        try:
+            iot_utilities.registration.register()
+        except Exception as e:
+            message = "Unable to update registration, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.exception(message)
+            self.mode = modes.ERROR
+
+        # Transition to registered mode on next state machine update
+        self.mode = modes.REGISTERED
+
+    ##### IOT PUBLISH FUNCTIONS ########################################################
+
+    def publish_message(self, name, msg_json) -> None:
+        """Send a command reply. TODO: Not sure where this is used."""
+        if self.pubsub is None:
+            return
+        self.pubsub.publish_command_reply(name, msg_json)
 
     def publish_boot_message(self) -> None:
         """Publishes boot message."""
@@ -237,43 +285,6 @@ class IotManager(manager.StateMachineManager):
         # Publish boot message
         self.logger.debug("Publised boot message: {}".format(boot_message))
         self.pubsub.publish_command_reply("boot", json.dumps(boot_message))
-
-    def update_registration(self) -> None:
-        """Updates registration information."""
-        self.logger.debug("Updating registration")
-
-        # TODO: This should check if system is connected to internet, if so try to
-        # register, then update state vars and transition to registered mode on
-        # success or else handle exception on error."""
-
-        # Get device id from file if exists
-        self.device_id = self._device_id()
-
-        # Update environment variable, do we actually need this?
-        os.environ["DEVICE_ID"] = self.device_id
-
-        # Check if device id is valid
-        if self.device_id != "Unknown":
-
-            # Transition to registered mode on next state machine update
-            self.mode = modes.REGISTERED
-
-    def _device_id(self) -> str:
-        """Gets device id if it exists at device id path."""
-        self.logger.debug("Getting device id")
-
-        # Get device id
-        if os.path.exists(DEVICE_ID_PATH):
-            with open(DEVICE_ID_PATH) as f:
-                contents = f.read()
-                index = contents.find("=")
-                device_id = contents[index + 1:].strip()
-        else:
-            device_id = "Unknown"
-
-        # Successfully got device id
-        self.logger.debug("Device ID: {}".format(device_id))
-        return device_id
 
     def publish_system_summary(self) -> None:
         """Publishes system summary."""
@@ -332,7 +343,7 @@ class IotManager(manager.StateMachineManager):
         for name, value in environment_variables.items():
             if self.prev_environment_variables.get(name) != value:
                 self.environment_variables[name] = copy.deepcopy(value)
-                self.pubsub.publish_environmenal_variable(name, value)
+                self.pubsub.publish_environmental_variable(name, value)
 
     def publish_images(self) -> None:
         """Publishes images in the images directory. On successful publish, moves them 
@@ -379,142 +390,202 @@ class IotManager(manager.StateMachineManager):
             message = "Unable to publish images, unhandled exception: {}".format(e)
             self.logger.exception(message)
 
-    ##### EVENT FUNCTIONS ##############################################################
+    ##### DEVICE EVENT FUNCTIONS #######################################################
 
-    def reset(self) -> None:
-        """Resets iot pubsub. TODO: Should probably be in the pubsub class."""
+    def unregister(self) -> Tuple[str, int]:
+        """Unregisters device by deleting iot registration data. TODO: This needs to go 
+        into the event queue, deleting reg data in middle of a registration update 
+        creates an unstable state."""
+        self.logger.info("Unregistering device")
+
+        # Delete registration data
         try:
-            # Pass in the callback that receives commands
-            self.pubsub = PubSub(self.state, self.command_received)
+            iot_utilities.registration.delete_data()
         except Exception as e:
-            self.pubsub = None
-            message = "Unable to reset, unhandled exception".format(type(e))
+            message = "Unable to unregister, unhandled exception: {}".format(type(e))
             self.logger.exception(message)
             self.mode = modes.ERROR
+            return message, 500
 
-    def publish_message(self, name, msg_json) -> None:
-        """Send a command reply. TODO: Not sure where this is used."""
-        if self.pubsub is None:
+        # Transition to unregistered mode on next state machine update
+        self.mode = modes.UNREGISTERED
+
+        # Successfully deleted registration data
+        return "Successfully unregistered device", 200
+
+    #### IOT MESSAGE FUNCTIONS #########################################################
+
+    def process_message(self, message) -> None:
+        """Processes messages from iot cloud."""
+        self.logger.debug("Processing message")
+        self.logger.debug("message type = {}".format(type(message)))
+        self.logger.debug("message = {}".format(message))
+
+        # Decode and parse message
+        try:
+            payload = message.payload.decode("utf-8")
+            payload_dict = json.loads(payload)
+            message_version = int(payload_dict["lastConfigVersion"])
+        except KeyError:
+            ref_self.logger.warning("Unable to get message version, setting to 0")
+            message_version = 0
+        except Exception as e:
+            message = "Unable to parse payload, unhandled exception".format(type(e))
+            ref_self.logger.exception(message)
             return
-        self.pubsub.publish_command_reply(name, msg_json)
 
-    def command_received(self, command, arg0, arg1):
+        # TODO: Check if message is old
+
+        # Get command messages
+        try:
+            command_messages = message["commands"]
+            message_id = message["messageId"]
+        except KeyError as e:
+            message = "Unable to get command messages, `{}` key is required".format(e)
+            ref_self.logger.error(message)
+            return
+
+        # Process a;; command messages
+        for command_message in command_messages:
+            self.process_command_message(command_message)
+
+    def process_command_message(self, message) -> None:
         """Process commands received from the backend (UI). This is a callback that is 
         called by the IoTPubSub class when this device receives commands from the UI."""
+        self.logger.debug("Processing command message")
 
-        if self.pubsub == None:
+        # Get command parameters
+        try:
+            command = message["command"].upper()  # TODO: Fix this, shouldn't need upper
+            arg0 = message["arg0"]
+            arg1 = message["arg1"]
+        except KeyError as e:
+            message = "Unable to process command, `{}` key is required".format(e)
+            self.logger.error(message)
             return
 
-        try:
-            if command == commands.START_RECIPE:
-                recipe_json = arg0
-                recipe_dict = json.loads(arg0)
+        # Process command
+        if command == commands.START_RECIPE:
+            self.forcibly_create_and_start_recipe(command, arg0)
+        elif command == commands.STOP_RECIPE:
+            self.stop_recipe(command)
+        else:
+            self.unknown_command(command)
 
-                # Make sure we have a valid recipe uuid
-                if (
-                    "uuid" not in recipe_dict
-                    or None == recipe_dict["uuid"]
-                    or 0 == len(recipe_dict["uuid"])
-                ):
-                    self.logger.error("command_received: missing recipe UUID")
-                    return
-                recipe_uuid = recipe_dict["uuid"]
+    ##### IOT COMMAND FUNCTIONS ########################################################
 
-                # First stop any recipe that may be running
-                self.recipe.stop_recipe()
+    def forcibly_create_and_start_recipe(self, command: str, recipe_json: str) -> None:
+        """Forcible starts and creates recipe. TODO: This method should be depricated
+        by a cadence of iot commands between iot cloud and this device. Cloud backend
+        should look at device state and check if a recipe is already running as well as
+        have insight onto what recipes alread exist on the device, etc."""
+        self.logger.warning("Forcibly creating and starting recipe")
 
-                # Put this recipe via recipe manager
-                self.recipe.create_or_update_recipe(recipe_json)
+        # Validate recipe
+        is_valid, error = self.recipe.validate(recipe_json)
+        if not is_valid:
+            self.logger.warning("Received invalid recipe")
+            return  # TODO: Return command reply
 
-                # Start this recipe via recipe manager
-                self.recipe.start_recipe(recipe_uuid)
+        # Get recipe uuid
+        recipe_dict = json.loads(recipe_json)
+        recipe_uuid = recipe_dict["uuid"]
 
-                # Record that we processed this command
-                self.pubsub.publish_command_reply(command, recipe_json)
-                return
+        # Check if recipe already exists on device
+        if self.recipe.recipe_exists(recipe_uuid):
+            self.logger.warning("Overwriting previously existing recipe")
 
-            if command == commands.STOP_RECIPE:
-                self.recipe.stop_recipe()
-                self.pubsub.publish_command_reply(command, "")
-                return
+        # Create or update recipe
+        message, status = self.recipe.create_or_update_recipe(recipe_json)
 
-            self.logger.error("Received unknown command: {}".format(command))
-        except Exception as e:
-            message = "Unable to receive command, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.message(message)
-            return False
+        # Check for create or update recipe errors
+        if status != 200:
+            message2 = "Unable to create or update recipe, error: {}".format(message)
+            self.logger.warning(message2)
+            return  # TODO: Return command reply
 
-    ##### UTILITY-LIKE FUNCTIONS #######################################################
+        # Check if recipe is running, if so stop it
+        if self.recipe.is_running:
+            self.logger.warning("Forcibly stopping currently running recipe")
+            message, status = self.recipe.stop_recipe()
 
-    def _is_registered(self) -> bool:
-        """Checks if device is registered."""
-        self.logger.debug("Checking if device is registered")
+            # Check for stop recipe errors
+            if status != 200:
+                message2 = "Unable to stop recipe, error: {}".format(message)
+                self.logger.warning(message2)
+                return  # TODO: Return command reply
 
-        # Check if file paths exists
-        if (
-            os.path.exists(DEVICE_ID_PATH)
-            and os.path.exists(ROOTS_PATH)
-            and os.path.exists(RSA_CERT_PATH)
-            and os.path.exists(RSA_PRIVATE_PATH)
-        ):
-            self.logger.debug("Device is registered")
-            return True
+        # Start recipe
+        message, status = self.recipe.start_recipe(recipe_uuid)
 
-        # Device is not registered
-        self.logger.debug("Device is not registered")
-        return False
+        # Check for start recipe errors
+        if status != 200:
+            message2 = "Unable to start recipe, error: {}".format(message)
+            self.logger.warning(message2)
+            return  # TODO: Return command reply
 
-    def register(self) -> Optional[str]:
-        """Registers device with iot. Returns verification code on success, None on
-        failure. TODO: This should re-raise re-named exception instead of returning
-        None."""
-        self.logger.debug("Registering device")
+        # Successfully started recipe
+        self.pubsub.publish_command_reply(command, recipe_json)
 
-        # Check network is connected
-        if not network.is_connected():
-            self.logger.debug("Unable to register, network is not connected")
-            return None
+    def stop_recipe(self, command) -> None:
+        """Processes stop recipe command."""
+        self.logger.debug("Stopping recipe")
 
-        # Build commands
-        make_directory_command = ["mkdir", "-p", REGISTRATION_DATA_DIR]
-        register_command = [REGISTER_SCRIPT_PATH, REGISTRATION_DATA_DIR]
+        # Stop recipe
+        message, status = self.recipe.events.stop_recipe()
 
-        # Execute commands
-        # Not sure why we delete the verification code...
-        try:
-            subprocess.run(make_directory_command)
-            subprocess.run(register_command)
-            verification_code = open(VERIFICATION_CODE_PATH).read()
-            os.remove(VERIFICATION_CODE_PATH)
-        except Exception as e:
-            message = "Unable to register, unhandled exception: {}".format(type(e))
-            self.logger.exception(message)
-            return None
+        # Check for stop recipe errors
+        if status != 200:
+            message2 = "Unable to stop recipe, error: {}".format(message)
+            self.logger.warning(message2)
+            return  # TODO: Return command reply
 
-        # Successfully registered
-        message = "Successfully registered, verification code: {}".format(
-            verification_code
-        )
-        self.logger.debug(message)
-        return verification_code
+        # Successfully stopped recipe
+        self.pubsub.publish_command_reply(command, "")
 
-    def unregister(self) -> None:
-        """Deletes registration data."""
-        self.logger.debug("Deleting registration data")
+    def unknown_command(self, command) -> None:
+        """Processes unknown command."""
+        self.logger.warning("Received unknown command")
+        # TODO: Return command reply
 
-        # TODO: We should probably do this with python functions
 
-        # Build command
-        command = ["rm", "-fr", REGISTRATION_DATA_DIR]
+##### PUBSUB CALLBACK FUNCTIONS ########################################################
 
-        # Execute command
-        try:
-            with subprocess.run(command):
-                self.logger.debug("Successfully deleted iot registration data")
-        except Exception as e:
-            message = "Unable to delete iot registration data, unhandled exception".format(
-                type(e)
-            )
-            self.logger.exception(message)
+
+def on_connect(unused_client, ref_self, unused_flags, rc):
+    """Callback for when a device connects to mqtt broker."""
+    ref_self.logger.info("Client connected to mqtt broker")
+    ref_self.is_connected = True
+
+
+def on_disconnect(unused_client, ref_self, rc):
+    """Callback for when a device disconnects from mqtt broker."""
+    error = "{}: {}".format(rc, mqtt.error_string(rc))
+    ref_self.logger.info("Client disconnected from mqtt broker, {}".format(error))
+    ref_self.is_connected = False
+
+
+def on_publish(unused_client, ref_self, unused_mid):
+    """Callback for when a message is sent to the mqtt broker."""
+    ref_self.published_message_count += 1
+
+
+def on_message(unused_client, ref_self, message) -> None:
+    """Callback for when the mqtt broker receives a message on a subscription."""
+    ref_self.logger.debug("Received message from broker")
+
+    # Increment received message count
+    ref_self.received_message_count += 1
+
+    # Process message
+    ref_self.process_message(message)
+
+
+def on_log(unused_client, ref_self, level, buf):
+    """Paho callback when mqtt broker receives a log message."""
+    ref_self.logger.debug("Received broker log: '{}' {}".format(buf, level))
+
+
+def on_subscribe(unused_client, ref_self, mid, granted_qos):
+    """Paho callback when mqtt broker receives subscribe."""
+    ref_self.logger.debug("Received broker subscribe")
