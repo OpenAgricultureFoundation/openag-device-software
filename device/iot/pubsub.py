@@ -23,6 +23,7 @@ from device.iot import commands
 
 class MQTTConfig(NamedTuple):
     """Dataclass for mqtt config."""
+
     project_id: str
     cloud_region: str
     registry_id: str
@@ -40,6 +41,7 @@ class MQTTConfig(NamedTuple):
 
 class JsonWebToken(NamedTuple):
     """Dataclass for json web token."""
+
     encoded: Any  # TODO: Get type
     issued_timestamp: float
     expiration_timestamp: float
@@ -218,7 +220,9 @@ class PubSub:
 
         # Build token
         token = {
-            "iat": issued_timestamp, "exp": expiration_timestamp, "aud": project_id
+            "iat": issued_timestamp,
+            "exp": expiration_timestamp,
+            "aud": project_id,
         }
 
         # Load private key
@@ -273,7 +277,8 @@ class PubSub:
             if isinstance(val, float):
                 val = "{0:.2f}".format(val)
                 values_json += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                    vname, val
+                    vname,
+                    val,
                 )
 
             elif isinstance(val, int):
@@ -281,7 +286,8 @@ class PubSub:
 
             else:  # assume str
                 values_json += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                    vname, val
+                    vname,
+                    val,
                 )
         values_json += "]}"
 

@@ -50,9 +50,10 @@ class State(object):
         # Individual
         if "individual" not in self.environment["reported_sensor_stats"]:
             self.environment["reported_sensor_stats"]["individual"] = {}
-        if "instantaneous" not in self.environment["reported_sensor_stats"][
-            "individual"
-        ]:
+        if (
+            "instantaneous"
+            not in self.environment["reported_sensor_stats"]["individual"]
+        ):
             self.environment["reported_sensor_stats"]["individual"][
                 "instantaneous"
             ] = {}
@@ -86,9 +87,7 @@ class State(object):
                 by_type[variable] = {}
             by_var = self.environment["reported_sensor_stats"]["individual"][
                 "instantaneous"
-            ][
-                variable
-            ]
+            ][variable]
             by_var[sensor] = value
 
             if simple:
@@ -115,9 +114,7 @@ class State(object):
                 # Update group instantaneous
                 by_var_i = self.environment["reported_sensor_stats"]["individual"][
                     "instantaneous"
-                ][
-                    variable
-                ]
+                ][variable]
                 num_sensors = 0
                 total = 0
                 for sensor in by_var_i:
@@ -127,9 +124,7 @@ class State(object):
                 new_value = total / num_sensors
                 self.environment["reported_sensor_stats"]["group"]["instantaneous"][
                     variable
-                ] = {
-                    "value": new_value, "samples": num_sensors
-                }
+                ] = {"value": new_value, "samples": num_sensors}
 
                 # Update group average
                 by_type = self.environment["reported_sensor_stats"]["group"]["average"]
@@ -156,15 +151,7 @@ class State(object):
                 # Update simple sensor value with instantaneous group value
                 self.environment["sensor"]["reported"][variable] = self.environment[
                     "reported_sensor_stats"
-                ][
-                    "group"
-                ][
-                    "instantaneous"
-                ][
-                    variable
-                ][
-                    "value"
-                ]
+                ]["group"]["instantaneous"][variable]["value"]
 
     def set_environment_desired_sensor_value(self, variable: str, value: Any) -> None:
         """ Sets desired sensor value to shared environment state. """
