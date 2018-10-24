@@ -290,6 +290,9 @@ class LEDDAC5578Driver:
                 message=channel_name, logger=self.logger
             )
 
+    def get_channels(self) -> Dict:
+        return self.channels
+
     def build_channel_outputs(self, value: float) -> Dict[str, float]:
         """Build channel outputs. Sets each channel to provided value."""
         self.logger.debug("Building channel outputs")

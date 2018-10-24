@@ -1,7 +1,7 @@
 {
-	"name":  "Light Panel Taurus Actuator",
+	"name":  "Light Panel Libra Actuator for FS rack",
 	"version": "1",
-	"uuid": "d0eec6ec-58de-497e-9676-45de7ae500d6",
+	"uuid": "b5aad767-5b44-4f94-be4e-00c0261e85af",
 	"module_name": "led_dac5578/manager",
 	"class_name": "LEDDAC5578Manager",
 	"parameters": {
@@ -60,12 +60,12 @@
 	},
 	"properties": {
 		"channels": {
-			"FR": {"name": "Far Red", "type": "FR", "port": 0},
-			"R": {"name": "Red", "type": "R", "port": 2},
-			"G": {"name": "Green", "type": "G", "port": 5},
-			"B": {"name": "Blue", "type": "B", "port": 7},
-			"CW": {"name": "Cool White", "type": "CW", "port": 6},
-			"WW": {"name": "Warm White", "type": "WW", "port": 4}
+			"R1": {"name": "Red", "type": "R", "port": 2},
+			"R2": {"name": "Red", "type": "R", "port": 7},
+			"R3": {"name": "Red", "type": "R", "port": 6},
+			"CW1": {"name": "Cool White", "type": "CW", "port": 0},
+			"CW2": {"name": "Cool White", "type": "CW", "port": 5},
+			"B": {"name": "Blue", "type": "B", "port": 4}
 		},
 		"intensity_map_cm_umol": {
 			"2": 1615,
@@ -219,13 +219,6 @@
 		{
 		    "name": "Fade",
 		    "description": "Fades all channels up/down concurrently.",
-		    "value": null,
-		    "sequence": null,
-		    "is_manual": true
-		},
-		{
-		    "name": "Sunrise",
-		    "description": "Runs sunrise / sunset demo.",
 		    "value": null,
 		    "sequence": null,
 		    "is_manual": true

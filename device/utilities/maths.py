@@ -78,7 +78,7 @@ def interpolate(
     # Calculate slope
     m = (y1 - y0) / (x1 - x0)  # type: ignore
 
-    print("m = {}".format(m))
+    # print("m = {}".format(m))
 
     # Calculate adjusted position
     delta = x - x0  # type: ignore

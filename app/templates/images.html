@@ -22,13 +22,24 @@
   }
 
   //--------------------------------------------------------------------------
+  function getOriginFromURL(href) {
+    var anchor = document.createElement("a");
+    anchor.href = href;
+    return anchor.origin;
+  }
+
+  //--------------------------------------------------------------------------
   function showImage() {
     var slider = $("#imageSlider");
     var img = document.getElementById("image");
-    img.src = "/app/static/images/" + images[ slider.val() ];
+    // images are served by busybox, see run.sh
+    var url = "{{ request.META.HTTP_REFERER }}"; // get URL / localhost
+    var origin = getOriginFromURL(url); // clean the URL
+    url = origin + ':8080/'; // add the port busybox is using
+    img.src = url + images[ slider.val() ];
     var fn = $("#file_name");
     var fntext = images[ slider.val() ];
-    fntext = fntext.replace( /_/g, ' ' );
+    fntext = fntext.replace( /_/g, ' ' ); // replace all '_' with ' '
     fntext = fntext.replace( '.png', '' );
     fn.text( fntext );
   }

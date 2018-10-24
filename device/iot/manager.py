@@ -64,10 +64,7 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
             modes.INIT: [
-                modes.REGISTERED,
-                modes.UNREGISTERED,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.REGISTERED, modes.UNREGISTERED, modes.ERROR, modes.SHUTDOWN
             ],
             modes.UNREGISTERED: [modes.REGISTERED, modes.ERROR, modes.SHUTDOWN],
             modes.REGISTERED: [modes.INIT, modes.SHUTDOWN, modes.ERROR],
@@ -270,7 +267,7 @@ class IotManager(manager.StateMachineManager):
             with open(DEVICE_ID_PATH) as f:
                 contents = f.read()
                 index = contents.find("=")
-                device_id = contents[index + 1 :].strip()
+                device_id = contents[index + 1:].strip()
         else:
             device_id = "Unknown"
 
