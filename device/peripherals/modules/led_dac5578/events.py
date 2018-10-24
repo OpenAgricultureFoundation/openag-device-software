@@ -241,21 +241,129 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
             self.logger.exception("Unable to fade driver")
             return
 
-        #delay = 0.01 # too fast
-        #delay = 0.05 # a bit choppy
-        delay = 0.025 
+        # delay = 0.01 # too fast
+        # delay = 0.05 # a bit choppy
+        delay = 0.025
 
         # Fade up at exp(1.6)
-        steps_up1 = [ 0, 1, 2, 3, 4, 5, 6,  7,  8,  9, 10, 11, 13, 14, 15, 17, 18, 20, 21, 23, 25, 27, 29, 30, 33, 35, 37, 39, 41, 43, 46, 48, 50, 53, 55, 58, 60, 62, 64, 68, 71, 73, 76, 78, 81, 84, 87, 90, 93, 95, 97, 100 ] 
-        steps_up2 = [ 0, 1, 3, 5, 7, 9, 11, 13, 15, 17, 20, 22, 24, 27, 30, 33, 36, 39, 43, 46, 49, 53, 56, 60, 64, 68, 72, 76, 80, 84, 88, 93, 97, 100 ] 
-        steps_up3 = [ 0, 1, 3, 5, 9, 13, 17, 22, 27, 33, 39, 46, 53, 60, 68, 76, 84, 93, 100 ] 
+        steps_up1 = [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            13,
+            14,
+            15,
+            17,
+            18,
+            20,
+            21,
+            23,
+            25,
+            27,
+            29,
+            30,
+            33,
+            35,
+            37,
+            39,
+            41,
+            43,
+            46,
+            48,
+            50,
+            53,
+            55,
+            58,
+            60,
+            62,
+            64,
+            68,
+            71,
+            73,
+            76,
+            78,
+            81,
+            84,
+            87,
+            90,
+            93,
+            95,
+            97,
+            100,
+        ]
+        steps_up2 = [
+            0,
+            1,
+            3,
+            5,
+            7,
+            9,
+            11,
+            13,
+            15,
+            17,
+            20,
+            22,
+            24,
+            27,
+            30,
+            33,
+            36,
+            39,
+            43,
+            46,
+            49,
+            53,
+            56,
+            60,
+            64,
+            68,
+            72,
+            76,
+            80,
+            84,
+            88,
+            93,
+            97,
+            100,
+        ]
+        steps_up3 = [
+            0,
+            1,
+            3,
+            5,
+            9,
+            13,
+            17,
+            22,
+            27,
+            33,
+            39,
+            46,
+            53,
+            60,
+            68,
+            76,
+            84,
+            93,
+            100,
+        ]
 
-        # Group channels by type 
+        # Group channels by type
         channels = self.manager.driver.get_channels()
-        channels_by_type = {} # dict of channel types > list
+        channels_by_type = {}  # dict of channel types > list
         for cname in channels:
             cdict = channels[cname]
-            ctype = cdict.get('type')
+            ctype = cdict.get("type")
             if not ctype:
                 continue
             channel_list = channels_by_type.get(ctype, [])
@@ -288,7 +396,7 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                             self.logger.exception("Unable to fade driver")
                             return
 
-                        if not self.queue.empty(): # Check for events
+                        if not self.queue.empty():  # Check for events
                             return
 
                         delay_until(start_time, delay)
@@ -306,11 +414,10 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
                             self.logger.exception("Unable to fade driver")
                             return
 
-                        if not self.queue.empty(): # Check for events
+                        if not self.queue.empty():  # Check for events
                             return
 
                         delay_until(start_time, delay)
-
 
     def sunrise(self) -> Tuple[str, int]:
         """Pre-processes sunrise event request."""
@@ -473,11 +580,9 @@ class LEDDAC5578Events(PeripheralEvents):  # type: ignore
 def get_start_time() -> float:
     return time.time()
 
+
 def delay_until(start_time: float, delay: float) -> None:
     now = time.time()
     if now - start_time < delay:
-        time.sleep( delay - (now - start_time)) 
+        time.sleep(delay - (now - start_time))
     return
-
-
-

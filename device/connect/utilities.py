@@ -27,7 +27,7 @@ class ConnectUtilities:
 
             # This never changes, initialized by ConnectionManager,
             # and read from the state dict here.
-            #status["is_bbb"] = cv.connect_dict["is_bbb"]
+            # status["is_bbb"] = cv.connect_dict["is_bbb"]
             status["is_bbb"] = ConnectUtilities.is_bbb()
 
             # These change dynamically, so get each time.
@@ -35,18 +35,17 @@ class ConnectUtilities:
             status["is_wifi_bbb"] = ConnectUtilities.is_wifi_bbb()
             status["wifis"] = ConnectUtilities.get_wifis()
             status["IP"] = ConnectUtilities.get_IP()
-            status["is_registered_with_iot"] = \
-                ConnectUtilities.is_registered_with_iot()
+            status["is_registered_with_iot"] = ConnectUtilities.is_registered_with_iot()
             status["device_id"] = ConnectUtilities.get_device_id()
-            status["verification_code"] = \
-                ConnectUtilities.get_iot_verification_code()
+            status["verification_code"] = ConnectUtilities.get_iot_verification_code()
 
             # Get the IoT connection status directly from its state dict
             iotv = IoTViewer()
             status["iot_connection"] = iotv.iot_dict["connected"]
 
-            status["valid_internet_connection"] = \
-                ConnectUtilities.valid_internet_connection()
+            status[
+                "valid_internet_connection"
+            ] = ConnectUtilities.valid_internet_connection()
             if ConnectUtilities.valid_internet_connection():
                 status["status"] = "Connected"
             else:
@@ -120,13 +119,15 @@ class ConnectUtilities:
             cmd = ["scripts/connect_wifi.sh", wifi, password]
             subprocess.run(cmd)
             result = True
-            ConnectUtilities.register_iot() # automatically register
+            ConnectUtilities.register_iot()  # automatically register
         except:
             pass
         return result
 
     @staticmethod
-    def join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2):
+    def join_wifi_advanced(
+        ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
+    ):
         """Joins specified wifi access point with advanced config. args."""
         result = False
         if ConnectUtilities.is_simulation_mode():
@@ -134,10 +135,19 @@ class ConnectUtilities:
         try:
             if 0 == len(passphrase):
                 passphrase = ""
-            cmd = ["scripts/advanced_connect_wifi.sh", ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2]
+            cmd = [
+                "scripts/advanced_connect_wifi.sh",
+                ssid_name,
+                passphrase,
+                hidden_ssid,
+                security,
+                eap,
+                identity,
+                phase2,
+            ]
             subprocess.run(cmd)
             result = True
-            ConnectUtilities.register_iot() # automatically register
+            ConnectUtilities.register_iot()  # automatically register
         except:
             pass
         return result
@@ -351,5 +361,3 @@ class ConnectUtilities:
         except:
             pass
         return None
-
-

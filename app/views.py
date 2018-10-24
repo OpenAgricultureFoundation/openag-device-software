@@ -768,7 +768,9 @@ class ConnectJoinWifiAdvanced(viewsets.ViewSet):
         phase2 = request_data["phase2"]
 
         logger.info("ConnectJoinWifiAdvanced request_data={}".format(request_data))
-        is_successful = ConnectUtilities.join_wifi_advanced(ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2)
+        is_successful = ConnectUtilities.join_wifi_advanced(
+            ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
+        )
         response = {"success": is_successful}
         logger.info("ConnectJoinWifiAdvanced response={}".format(response))
         if not is_successful:

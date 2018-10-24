@@ -161,7 +161,7 @@ class ResourceManager:
                 contain everything but the last 10 (if there are more than 10).
             """
             if leave_newest and len(imageFileList) > 10:
-                imageFileList = imageFileList[:len(imageFileList) - 10]
+                imageFileList = imageFileList[: len(imageFileList) - 10]
             for imageFile in imageFileList:
                 os.system("rm -f {}".format(imageFile))
         except Exception as e:
