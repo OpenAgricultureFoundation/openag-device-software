@@ -1,88 +1,27 @@
-# TODO: Clean up views. See https://github.com/phildini/api-driven-django/blob/master/votes/views.py
-
 # Import standard python modules
 import os, json, logging, shutil
-from operator import itemgetter
 
 # Import django modules
-from django.shortcuts import render, redirect
-
-# Import django user management modules
-from django.contrib.auth import login
-from django.contrib.auth import authenticate
-from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
-
-# Import django rest permissions modules
-from rest_framework.decorators import permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import IsAdminUser
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-
-# Import standard django rest modules
-from rest_framework import viewsets
-from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.decorators import list_route
-from rest_framework.decorators import detail_route
-from rest_framework.renderers import JSONRenderer
-
-# Import app common
-from app.common import Common
-
-# Import app forms
-from app import forms
-
-# Import app models
-from app.models import StateModel
-from app.models import EventModel
-from app.models import RecipeModel
-from app.models import EnvironmentModel
-from app.models import DeviceConfigModel
-from app.models import PeripheralSetupModel
-from app.models import RecipeTransitionModel
-from app.models import CultivarModel
-from app.models import CultivationMethodModel
-from app.models import SensorVariableModel
-from app.models import ActuatorVariableModel
-
-# Import app serializers
-from app.serializers import StateSerializer
-from app.serializers import EventSerializer
-from app.serializers import EnvironmentSerializer
-from app.serializers import RecipeSerializer
-from app.serializers import RecipeTransitionSerializer
-from app.serializers import CultivarSerializer
-from app.serializers import CultivationMethodSerializer
-from app.serializers import PeripheralSetupSerializer
-from app.serializers import SensorVariableSerializer
-from app.serializers import ActuatorVariableSerializer
-from app.serializers import DeviceConfigSerializer
-
-# Import app viewers
-from app.viewers import (
-    DeviceViewer,
-    EventViewer,
-    RecipeViewer,
-    SimpleRecipeViewer,
-    DeviceConfigViewer,
-    EnvironmentViewer,
-    CultivarsViewer,
-    CultivationMethodsViewer,
-    IoTViewer,
-    ResourceViewer,
-)
-
-# Import django app, required for accessing state machine manager objects
 from django.apps import apps
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.utils.decorators import method_decorator
+from django.contrib.auth import login, authenticate, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.decorators import login_required
+
+# Import django rest framework modules
+from rest_framework import views, viewsets
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.response import Response
+from rest_framework.decorators import list_route, detail_route, permission_classes
+from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
+
+# Import app elements
+from app import forms, models, serializers, viewers, common
 
 # Import device utilities
-from device.utilities import logger
-from device.utilities import system as system_utilities
-from device.utilities import network as network_utilities
+from device.utilities import logger, system, network
 
 # Initialize file paths
 APP_NAME = "app"
@@ -93,22 +32,22 @@ IMAGE_DIR = "data/images/"
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
     """API endpoint that allows state to be viewed."""
 
-    serializer_class = StateSerializer
+    serializer_class = serializers.StateSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = StateModel.objects.all()
+        queryset = models.StateModel.objects.all()
         return queryset
 
 
 class EventViewSet(viewsets.ModelViewSet):
     """API endpoint that allows events to be viewed and created."""
 
-    serializer_class = EventSerializer
+    serializer_class = serializers.EventSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = EventModel.objects.all()
+        queryset = models.EventModel.objects.all()
         return queryset
 
     def create(self, request):
@@ -122,7 +61,7 @@ class EventViewSet(viewsets.ModelViewSet):
             return Response(message, 400)
 
         # Get request parameters
-        event_viewer = EventViewer()
+        event_viewer = viewers.EventViewer()
         message, status = event_viewer.create(request_dict)
         response_dict = {"message": message}
         return Response(response_dict, status=status)
@@ -131,43 +70,43 @@ class EventViewSet(viewsets.ModelViewSet):
 class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows events to be viewed. """
 
-    serializer_class = EnvironmentSerializer
+    serializer_class = serializers.EnvironmentSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = EnvironmentModel.objects.all()
+        queryset = models.EnvironmentModel.objects.all()
         return queryset
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """API endpoints that allow recipes to be started, stopped, created, and viewed."""
 
-    serializer_class = RecipeSerializer
+    serializer_class = serializers.RecipeSerializer
     lookup_field = "uuid"
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = RecipeModel.objects.all().order_by("name")
+        queryset = models.RecipeModel.objects.all().order_by("name")
         return queryset
 
     def create(self, request):
         """ API endpoint to create a recipe. """
         permission_classes = [IsAuthenticated, IsAdminUser]
-        recipe_viewer = RecipeViewer()
+        recipe_viewer = viewers.RecipeViewer()
         response, status = recipe_viewer.create(request.data)
         return Response(response, status)
 
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def start(self, request, uuid):
         """API endpoint to start a recipe."""
-        recipe_viewer = RecipeViewer()
+        recipe_viewer = viewers.RecipeViewer()
         response, status = recipe_viewer.start(uuid, request.data)  # was data.dict()
         return Response(response, status)
 
     @list_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def stop(self, request):
         """ API endpoint to stop a recipe. """
-        recipe_viewer = RecipeViewer()
+        recipe_viewer = viewers.RecipeViewer()
         response, status = recipe_viewer.stop()
         return Response(response, status)
 
@@ -175,70 +114,70 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows recipe transitions to be viewed. """
 
-    serializer_class = RecipeTransitionSerializer
+    serializer_class = serializers.RecipeTransitionSerializer
 
     @method_decorator(login_required)
     def get_queryset(self):
-        queryset = RecipeTransitionModel.objects.all()
+        queryset = models.RecipeTransitionModel.objects.all()
         return queryset
 
 
 class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivars to be viewed. """
 
-    serializer_class = CultivarSerializer
+    serializer_class = serializers.CultivarSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = CultivarModel.objects.all()
+        queryset = models.CultivarModel.objects.all()
         return queryset
 
 
 class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows cultivation methods to be viewed. """
 
-    serializer_class = CultivationMethodSerializer
+    serializer_class = serializers.CultivationMethodSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = CultivationMethodModel.objects.all()
+        queryset = models.CultivationMethodModel.objects.all()
         return queryset
 
 
 class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows sensor variables to be viewed. """
 
-    serializer_class = SensorVariableSerializer
+    serializer_class = serializers.SensorVariableSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = SensorVariableModel.objects.all()
+        queryset = models.SensorVariableModel.objects.all()
         return queryset
 
 
 class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows actuator variables to be viewed. """
 
-    serializer_class = ActuatorVariableSerializer
+    serializer_class = serializers.ActuatorVariableSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = ActuatorVariableModel.objects.all()
+        queryset = models.ActuatorVariableModel.objects.all()
         return queryset
 
 
 class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
     """ API endpoint that allows peripheral setups to be viewed. """
 
-    serializer_class = PeripheralSetupSerializer
+    serializer_class = serializers.PeripheralSetupSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = PeripheralSetupModel.objects.all()
+        queryset = models.PeripheralSetupModel.objects.all()
         return queryset
 
 
-class Home(APIView):
+class Home(views.APIView):
     """UI page for home."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -249,7 +188,7 @@ class Home(APIView):
 
         # Get internet connectivity. TODO: This should access connect manager through
         # coordinator manager. See viewers.py for example implementation
-        network_is_connected = network_utilities.is_connected()
+        network_is_connected = network.is_connected()
 
         from django.shortcuts import redirect, reverse
 
@@ -263,7 +202,7 @@ class Home(APIView):
         # return Response()
 
 
-class Dashboard(APIView):
+class Dashboard(views.APIView):
     """UI page for dashboard."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -273,26 +212,26 @@ class Dashboard(APIView):
     def get(self, request):
 
         # Get current device state object
-        current_device = DeviceViewer()
+        current_device = viewers.DeviceViewer()
 
         # Get current environment state object
-        current_environment = EnvironmentViewer()
+        current_environment = viewers.EnvironmentViewer()
 
         # Get current recipe state object
-        current_recipe = RecipeViewer()
+        current_recipe = viewers.RecipeViewer()
 
         # Get stored recipe objects
-        recipe_objects = RecipeModel.objects.all().order_by("name")
+        recipe_objects = models.RecipeModel.objects.all().order_by("name")
         recipes = []
         for recipe_object in recipe_objects:
-            recipes.append(SimpleRecipeViewer(recipe_object))
+            recipes.append(viewers.SimpleRecipeViewer(recipe_object))
 
         # Get datetime picker form
         datetime_form = forms.DateTimeForm()
 
         # Get resource viewer: TODO: This should access connect manager through
         # coordinator manager. See viewers.py for example implementation
-        network_is_connected = network_utilities.is_connected()
+        network_is_connected = network.is_connected()
 
         # Build and return response
         response = {
@@ -306,7 +245,7 @@ class Dashboard(APIView):
         return Response(response)
 
 
-class DeviceConfig(APIView):
+class DeviceConfig(views.APIView):
     """UI page for managing device config."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -316,10 +255,10 @@ class DeviceConfig(APIView):
     def get(self, request):
 
         # Get stored device config objects
-        config_objects = DeviceConfigModel.objects.all()
+        config_objects = models.DeviceConfigModel.objects.all()
         configs = []
         for config_object in config_objects:
-            config = DeviceConfigViewer()
+            config = viewers.DeviceConfigViewer()
             config.parse(config_object)
             configs.append(config)
 
@@ -327,7 +266,7 @@ class DeviceConfig(APIView):
         configs.sort(key=lambda x: x.name)
 
         # Get current config
-        current_config = Common.get_device_state_value("config_uuid")
+        current_config = common.Common.get_device_state_value("config_uuid")
 
         # Convert current config uuid to name
         if current_config != None:
@@ -344,24 +283,24 @@ class DeviceConfig(APIView):
 class DeviceConfigViewSet(viewsets.ModelViewSet):
     """API endpoint that allows device config to be viewed and loaded."""
 
-    serializer_class = DeviceConfigSerializer
+    serializer_class = serializers.DeviceConfigSerializer
     lookup_field = "uuid"
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = DeviceConfigModel.objects.all()
+        queryset = models.DeviceConfigModel.objects.all()
         return queryset
 
     @detail_route(methods=["post"], permission_classes=[IsAuthenticated, IsAdminUser])
     def load(self, request, uuid):
         """API endpoint to load a device config."""
 
-        device_config_viewer = DeviceConfigViewer()
+        device_config_viewer = viewers.DeviceConfigViewer()
         response, status = device_config_viewer.load(uuid, request.data)
         return Response(response, status)
 
 
-class RecipeBuilder(APIView):
+class RecipeBuilder(views.APIView):
     """ UI page for building recipes. """
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -370,17 +309,17 @@ class RecipeBuilder(APIView):
     @method_decorator(login_required)
     def get(self, request):
         # Get recipes
-        recipe_objects = RecipeModel.objects.all()
+        recipe_objects = models.RecipeModel.objects.all()
         recipes = []
         for recipe_object in recipe_objects:
-            recipes.append(SimpleRecipeViewer(recipe_object))
+            recipes.append(viewers.SimpleRecipeViewer(recipe_object))
 
         # Get cultivars
-        cultivars_viewer = CultivarsViewer()
+        cultivars_viewer = viewers.CultivarsViewer()
         cultivars = cultivars_viewer.json
 
         # Get cultivation methods
-        cultivation_methods_viewer = CultivationMethodsViewer()
+        cultivation_methods_viewer = viewers.CultivationMethodsViewer()
         cultivation_methods = cultivation_methods_viewer.json
 
         # Build and return response
@@ -392,7 +331,7 @@ class RecipeBuilder(APIView):
         return Response(response)
 
 
-class Events(APIView):
+class Events(views.APIView):
     """ UI page for events. """
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -400,11 +339,11 @@ class Events(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        events = EventModel.objects.all().order_by("-timestamp")
+        events = models.EventModel.objects.all().order_by("-timestamp")
         return Response({"events": events})
 
 
-class Logs(APIView):
+class Logs(views.APIView):
     """ UI page for logs. """
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -487,7 +426,7 @@ class Logs(APIView):
         return Response({"logs": logs, "logs_json": json.dumps(logs)})
 
 
-class Peripherals(APIView):
+class Peripherals(views.APIView):
     """ UI page for peripherals. """
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -497,22 +436,22 @@ class Peripherals(APIView):
     def get(self, request):
 
         # Get current device state object
-        current_device = DeviceViewer()
+        current_device = viewers.DeviceViewer()
 
         # Get current environment state object
-        current_environment = EnvironmentViewer()
+        current_environment = viewers.EnvironmentViewer()
 
         # Get current recipe state object
-        current_recipe = RecipeViewer()
+        current_recipe = viewers.RecipeViewer()
 
         # Get stored recipe objects
-        recipe_objects = RecipeModel.objects.all()
+        recipe_objects = models.RecipeModel.objects.all()
         recipes = []
         for recipe_object in recipe_objects:
-            recipes.append(SimpleRecipeViewer(recipe_object))
+            recipes.append(viewers.SimpleRecipeViewer(recipe_object))
 
         # Get stored peripheral setups
-        peripheral_setups = PeripheralSetupModel.objects.all()
+        peripheral_setups = models.PeripheralSetupModel.objects.all()
         peripheral_setups = []
         for periheral_setup in peripheral_setups:
             peripheral_setups.append(json.loads(peripheral_setups.json))
@@ -528,7 +467,7 @@ class Peripherals(APIView):
         return Response(response)
 
 
-class DeviceConfigList(APIView):
+class DeviceConfigList(views.APIView):
     """ UI page for device configurations. """
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -539,14 +478,14 @@ class DeviceConfigList(APIView):
         device_config_objects = DeviceConfignModel.objects.all()
         device_config_viewers = []
         for device_config_object in device_config_objects:
-            device_config_viewer = DeviceConfigViewer()
+            device_config_viewer = viewers.DeviceConfigViewer()
             device_config_viewer.parse(device_config_object)
             device_config_viewers.append(device_config_viewer)
 
         return Response({"device_config_viewers": device_config_viewers})
 
 
-class Recipes(APIView):
+class Recipes(views.APIView):
     """UI page for recipes."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -554,15 +493,15 @@ class Recipes(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        recipe_objects = RecipeModel.objects.all()
+        recipe_objects = models.RecipeModel.objects.all()
         recipes = []
         for recipe_object in recipe_objects:
-            recipes.append(SimpleRecipeViewer(recipe_object))
+            recipes.append(viewers.SimpleRecipeViewer(recipe_object))
 
         return Response({"recipes": recipes})
 
 
-class Environments(APIView):
+class Environments(views.APIView):
     """UI page for environments."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -570,11 +509,11 @@ class Environments(APIView):
 
     @method_decorator(login_required)
     def get(self, request):
-        environments = EnvironmentModel.objects.all().order_by("-timestamp")
+        environments = models.EnvironmentModel.objects.all().order_by("-timestamp")
         return Response({"environments": environments})
 
 
-class Images(APIView):
+class Images(views.APIView):
     """UI page for ImageManager."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -608,7 +547,7 @@ class Images(APIView):
         return Response(response)
 
 
-class Resource(APIView):
+class Resource(views.APIView):
     """UI page for ResourceManager."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -617,7 +556,7 @@ class Resource(APIView):
     @method_decorator(login_required)
     def get(self, request):
 
-        rv = ResourceViewer()
+        rv = viewers.ResourceViewer()
 
         # Build and return response
         response = {
@@ -631,7 +570,7 @@ class Resource(APIView):
         return Response(response)
 
 
-class Connect(APIView):
+class Connect(views.APIView):
     """UI page fields for ConnectManager."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -642,7 +581,7 @@ class Connect(APIView):
         return Response({})
 
 
-class ConnectAdvanced(APIView):
+class ConnectAdvanced(views.APIView):
     """UI page fields the advanced wireless connection page."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -653,7 +592,7 @@ class ConnectAdvanced(APIView):
         return Response({})
 
 
-class IoT(APIView):
+class IoT(views.APIView):
     """UI page for IoT."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -662,7 +601,7 @@ class IoT(APIView):
     @method_decorator(login_required)
     def get(self, request):
 
-        iotv = IoTViewer()
+        iotv = viewers.IoTViewer()
 
         # Build and return response
         response = {
@@ -689,10 +628,10 @@ class SystemViewSet(viewsets.ModelViewSet):
         try:
             response = {
                 "message": "Successfully got system info",
-                "is_beaglebone": system_utilities.is_beaglebone(),
-                "is_wifi_beaglebone": system_utilities.is_wifi_beaglebone(),
-                "beaglebone_serial_number": system_utilities.beaglebone_serial_number(),
-                "remote_device_ui_url": system_utilities.remote_device_ui_url(),
+                "is_beaglebone": system.is_beaglebone(),
+                "is_wifi_beaglebone": system.is_wifi_beaglebone(),
+                "beaglebone_serial_number": system.beaglebone_serial_number(),
+                "remote_device_ui_url": system.remote_device_ui_url(),
             }
             self.logger.debug("Returning response: {}".format(response))
             return Response(response, 200)
@@ -746,7 +685,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
 
         # Join wifi
         try:
-            network_utilities.join_wifi(wifi, password)
+            network.join_wifi(wifi, password)
             message = "Successfully joined wifi"
             status = 200
         except Exception as e:
@@ -777,7 +716,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
 
         # Join wifi advanced
         try:
-            network_utilities.join_wifi_advanced(
+            network.join_wifi_advanced(
                 ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
             )
             message = "Successfully joined wifi advanced"
@@ -799,7 +738,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
 
         # Join wifi
         try:
-            network_utilities.delete_wifi_connections()
+            network.delete_wifi_connections()
             message = "Successfully deleted wifi connections"
             status = 200
         except Exception as e:
@@ -880,7 +819,7 @@ class IotViewSet(viewsets.ModelViewSet):
         return Response(response, 200)
 
 
-class Upgrade(APIView):
+class Upgrade(views.APIView):
     """UI page for device upgrades."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -976,7 +915,7 @@ class UpgradeViewSet(viewsets.ModelViewSet):
         return Response(response, status)
 
 
-class Manual(APIView):
+class Manual(views.APIView):
     """UI page for manual controls."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -987,7 +926,7 @@ class Manual(APIView):
         return Response({"manual": "data"})
 
 
-class Entry(APIView):
+class Entry(views.APIView):
     """UI page for data entry."""
 
     renderer_classes = [TemplateHTMLRenderer]
@@ -998,7 +937,7 @@ class Entry(APIView):
         return Response({"entry": "data"})
 
 
-class Scratchpad(APIView):
+class Scratchpad(views.APIView):
     """UI page for scratchpad."""
 
     renderer_classes = [TemplateHTMLRenderer]
