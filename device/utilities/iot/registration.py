@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, subprocess
+import os, subprocess, shutil
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -18,7 +18,7 @@ REGISTER_SCRIPT_PATH = "scripts/one_time_key_creation_and_iot_device_registratio
 logger = Logger("IotRegistrationUtility", "iot")
 
 
-def is_registered(self) -> bool:
+def is_registered() -> bool:
     """Checks if device is registered by checking local files."""
     logger.debug("Checking if device is registered")
     if (
@@ -32,7 +32,7 @@ def is_registered(self) -> bool:
         return False
 
 
-def device_id(self) -> str:
+def device_id() -> str:
     """Gets device id string from local file. TODO: Handle exeptions."""
     logger.debug("Getting device id")
     try:
@@ -47,9 +47,9 @@ def device_id(self) -> str:
         return "UNKNOWN"
 
 
-def verification_code(self) -> str:
+def verification_code() -> str:
     """Gets verification code from local file. TODO: Handle exceptions."""
-    logger.debug("Getting verification_code")
+    logger.debug("Getting verification code")
     try:
         with open(VERIFICATION_CODE_PATH) as f:
             verification_code = f.read().strip()
@@ -62,7 +62,7 @@ def verification_code(self) -> str:
         return "INVALID"
 
 
-def register(self) -> None:
+def register() -> None:
     """Registers device with Google IoT. Stores registration data in local files."""
     logger.debug("Registering device with iot")
 
@@ -89,19 +89,9 @@ def register(self) -> None:
         logger.exception(message)
 
 
-def delete_data(self) -> None:
+def delete() -> None:
     """Deletes local registration data."""
     logger.debug("Deleting registration data")
 
-    # Build command
-    command = ["rm", "-fr", REGISTRATION_DATA_DIR]
-
-    # Execute command
-    try:
-        with subprocess.run(command):
-            self.logger.debug("Successfully deleted iot registration data")
-    except Exception as e:
-        message = "Unable to delete iot registration data, unhandled exception".format(
-            type(e)
-        )
-        logger.exception(message)
+    if os.path.exists(REGISTRATION_DATA_DIR):
+        shutil.rmtree(REGISTRATION_DATA_DIR)

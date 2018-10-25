@@ -1,5 +1,6 @@
 # Import standard python modules
 import sys, os, subprocess, copy, glob, json, shutil, time, datetime
+import paho.mqtt.client as mqtt
 
 # Import python types
 from typing import Dict, Any, Optional, List, Tuple
@@ -8,7 +9,7 @@ from typing import Dict, Any, Optional, List, Tuple
 from device.utilities.statemachine import manager
 from device.utilities.state.main import State
 from device.utilities import logger, accessors, system, network
-from device.utilities import iot as iot_utilities
+from device.utilities.iot import registration
 
 # Import device managers
 from device.recipe.manager import RecipeManager
@@ -21,8 +22,6 @@ from device.iot.pubsub import PubSub
 # Add static type checking
 # Write tests
 # Catch specific exceptions
-# Reset IotManager or MQTT / Pubsub connection on network reconnect?
-# Run through all state transitions and make sure they are reasonable
 
 # Initialize file paths
 IMAGES_DIR = "data/images/"
@@ -49,7 +48,7 @@ class IotManager(manager.StateMachineManager):
 
         # Initialize logger
         self.logger = logger.Logger("IotManager", "iot")
-        self.logger.debug("Initializing manager")
+        self.logger.debug("~~~ Initializing manager ~~~")
 
         # Initialize our state variables
         self.received_message_count = 0
@@ -57,6 +56,7 @@ class IotManager(manager.StateMachineManager):
 
         # Initialize pubsub handler
         self.pubsub = PubSub(
+            ref_self=self,
             on_connect=on_connect,
             on_disconnect=on_disconnect,
             on_publish=on_publish,
@@ -68,17 +68,21 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
             modes.INIT: [
-                modes.REGISTERED, modes.UNREGISTERED, modes.ERROR, modes.SHUTDOWN
+                modes.CONNECTED, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
             ],
-            modes.UNREGISTERED: [modes.REGISTERED, modes.ERROR, modes.SHUTDOWN],
-            modes.REGISTERED: [modes.INIT, modes.SHUTDOWN, modes.ERROR],
+            modes.CONNECTED: [
+                modes.INIT, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
+            ],
+            modes.DISCONNECTED: [
+                modes.INIT, modes.CONNECTED, modes.SHUTDOWN, modes.ERROR
+            ],
             modes.ERROR: [modes.SHUTDOWN],
         }
 
         # Initialize state machine mode
         self.mode = modes.INIT
 
-    ##### INTERNAL STATE ACCESS DECORATORS #############################################
+    ##### INTERNAL STATE DECORATORS ####################################################
 
     @property
     def is_connected(self) -> False:
@@ -92,12 +96,23 @@ class IotManager(manager.StateMachineManager):
             self.state.iot["is_connected"] = value
 
     @property
+    def is_registered(self) -> False:
+        """Gets value."""
+        return self.state.iot.get("is_registered", False)  # type: ignore
+
+    @is_registered.setter
+    def is_registered(self, value: bool) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.iot["is_registered"] = value
+
+    @property
     def device_id(self) -> str:
         """Gets value."""
         return self.state.iot.get("device_id", "UNKNOWN")  # type: ignore
 
     @device_id.setter
-    def device_id(self, value: boo) -> None:
+    def device_id(self, value: bool) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.iot["device_id"] = value
@@ -135,7 +150,7 @@ class IotManager(manager.StateMachineManager):
         with self.state.lock:
             self.state.iot["published_message_count"] = value
 
-    ##### EXTERNAL STATE ACCESS DECORATORS #############################################
+    ##### EXTERNAL STATE DECORATORS ####################################################
 
     @property
     def network_is_connected(self) -> bool:
@@ -157,10 +172,10 @@ class IotManager(manager.StateMachineManager):
             # Check for mode transitions
             if self.mode == modes.INIT:
                 self.run_init_mode()
-            elif self.mode == modes.UNREGISTERED:
-                self.run_unregistered_mode()
-            elif self.mode == modes.REGISTERED:
-                self.run_registered_mode()
+            elif self.mode == modes.CONNECTED:
+                self.run_connected_mode()
+            elif self.mode == modes.DISCONNECTED:
+                self.run_disconnected_mode()
             elif self.mode == modes.ERROR:
                 self.run_error_mode()  # defined in parent classs
             elif self.mode == modes.SHUTDOWN:
@@ -176,43 +191,89 @@ class IotManager(manager.StateMachineManager):
         self.logger.debug("Entered INIT")
 
         # Connect to pubsub service
-        self.pubsub = PubSub(self.state, self.process_commands)
+        self.pubsub = PubSub(
+            self,
+            on_connect,
+            on_disconnect,
+            on_publish,
+            on_message,
+            on_subscribe,
+            on_log,
+        )
 
-        # Publish boot message
-        self.publish_boot_message()
+        # Initialize iot connection state
+        self.is_connected = False
 
-        # Give othe managers time to initialize. TODO: Can we remove this?
-        time.sleep(10)  # seconds
-
-        # Transition to correct registration mode on next state machine update
-        if self.is_registered:
-            self.mode = modes.REGISTERED
-        else:
-            self.mode = modes.UNREGISTERED
-
-    def run_unregistered_mode(self) -> None:
-        """Runs unregistered mode."""
-        self.logger.debug("Entered UNREGISTERED")
+        # Check if network is connected
+        if not self.network_is_connected:
+            self.logger.info("Waiting for network to come online")
 
         # Loop forever
         while True:
 
-            # Update registration
-            self.update_registration()
-
-            # Check for events
-            self.check_events()
-
-            # Check for transitions
-            if self.new_transition(modes.UNREGISTERED):
+            # Check if network is connected
+            if self.network_is_connected:
+                self.logger.debug("Network came online")
                 break
 
             # Update every 100ms
             time.sleep(0.1)
 
-    def run_registered_mode(self) -> None:
-        """Runs registered mode."""
-        self.logger.debug("Entered REGISTERED")
+        # Initialize registration state
+        self.is_registered = registration.is_registered()
+
+        # Check if device is registered
+        if not self.is_registered:
+            registration.register()
+        else:
+            # Update registration state
+            self.device_id = registration.device_id()
+            self.verification_code = registration.verification_code()
+
+        # Initialize client
+        self.pubsub.initialize()
+
+        # Transition to disconnected mode on next state machine update
+        self.mode = modes.DISCONNECTED
+
+    def run_disconnected_mode(self) -> None:
+        """Runs disconnected mode."""
+        self.logger.debug("Entered DISCONNECTED")
+
+        start_time = time.time()
+        update_interval = 1  # seconds
+
+        # Loop forever
+        while True:
+
+            # Update mqtt broker
+            self.pubsub.update()
+
+            # Check if connected, transition if so
+            if self.is_connected:
+                self.mode = modes.CONNECTED
+
+            # Try to reconnect client every update interval
+            if time.time() - start_time > update_interval:
+                self.pubsub.client.reconnect()
+                start_time = time.time()
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.DISCONNECTED):
+                break
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+    def run_connected_mode(self) -> None:
+        """Runs connected mode."""
+        self.logger.debug("Entered CONNECTED")
+
+        # Publish a boot message
+        self.publish_boot_message()
 
         # Initialize timing variables
         last_update_time = 0.0
@@ -221,73 +282,49 @@ class IotManager(manager.StateMachineManager):
         # Loop forever
         while True:
 
-            # Publish system summary, variables, and images every update interval
+            # Publish messages
             if time.time() - last_update_time > update_interval:
                 last_update_time = time.time()
                 self.publish_system_summary()
-                self.publish_environmental_variables()
+                self.publish_environment_variables()
                 self.publish_images()
 
-            # Update pubsub handler
+            # Update pubsub
             self.pubsub.update()
 
             # Check for events
             self.check_events()
 
             # Check for transitions
-            if self.new_transition(modes.REGISTERED):
+            if self.new_transition(modes.CONNECTED):
                 break
 
             # Update every 100ms
             time.sleep(0.1)
 
-    ##### HELPER FUNCTIONS #############################################################
-
-    def update_registration(self) -> None:
-        """Updates registration."""
-
-        # Check for network connection
-        if not self.network_is_connected:
-            return
-
-        # Register device with iot cloud
-        try:
-            iot_utilities.registration.register()
-        except Exception as e:
-            message = "Unable to update registration, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.exception(message)
-            self.mode = modes.ERROR
-
-        # Transition to registered mode on next state machine update
-        self.mode = modes.REGISTERED
-
     ##### IOT PUBLISH FUNCTIONS ########################################################
 
-    def publish_message(self, name, msg_json) -> None:
-        """Send a command reply. TODO: Not sure where this is used."""
-        if self.pubsub is None:
-            return
-        self.pubsub.publish_command_reply(name, msg_json)
+    def publish_message(self, name: str, message: str) -> None:
+        """Send a command reply. TODO: Fix this."""
+        self.pubsub.publish_command_reply(name, message)
 
     def publish_boot_message(self) -> None:
         """Publishes boot message."""
         self.logger.debug("Publishing boot message")
 
         # Build boot message
-        boot_message = {
+        message = {
             "device_config": system.device_config_name(),
             "package_version": self.state.upgrade.get("current_version"),
             "IP": self.state.network.get("ip_address"),
         }
 
         # Publish boot message
-        self.logger.debug("Publised boot message: {}".format(boot_message))
-        self.pubsub.publish_command_reply("boot", json.dumps(boot_message))
+        self.logger.debug("Boot message: {}".format(message))
+        self.pubsub.publish_boot_message(message)
 
     def publish_system_summary(self) -> None:
-        """Publishes system summary."""
+        """Publishes status message."""
         self.logger.debug("Publishing system summary")
 
         # Build summary
@@ -297,7 +334,7 @@ class IotManager(manager.StateMachineManager):
         recipe_time_remaining_minutes = self.state.recipe.get("time_remaining_minutes")
         recipe_time_remaining_string = self.state.recipe.get("time_remaining_string")
         recipe_time_elapsed_string = self.state.recipe.get("time_elapsed_string")
-        summary = {
+        message = {
             "timestamp": time.strftime("%FT%XZ", time.gmtime()),
             "IP": self.state.network.get("ip_address"),
             "package_version": self.state.upgrade.get("current_version"),
@@ -314,18 +351,14 @@ class IotManager(manager.StateMachineManager):
             "recipe_time_elapsed_string": recipe_time_elapsed_string,
         }
 
-        # Publish summary
-        # self.logger.debug("summary = {}".format(summary))
-        self.pubsub.publish_command_reply("status", json.dumps(summary))
+        # Publish system summary as a status message
+        self.pubsub.publish_status_message(message)
 
-        # Successfully published summary
-        self.logger.debug("Successfully published summary")
+    def publish_environment_variables(self) -> None:
+        """Publishes environment variables."""
+        self.logger.debug("Publishing environment variables")
 
-    def publish_environmental_variables(self) -> None:
-        """Publishes environmental variables."""
-        self.logger.debug("Publishing environmental variables")
-
-        # Get environmental variables
+        # Get environment variables
         keys = ["reported_sensor_stats", "individual", "instantaneous"]
         environment_variables = accessors.get_nested_dict_safely(
             self.state.environment, keys
@@ -343,7 +376,7 @@ class IotManager(manager.StateMachineManager):
         for name, value in environment_variables.items():
             if self.prev_environment_variables.get(name) != value:
                 self.environment_variables[name] = copy.deepcopy(value)
-                self.pubsub.publish_environmental_variable(name, value)
+                self.pubsub.publish_environment_variable(name, value)
 
     def publish_images(self) -> None:
         """Publishes images in the images directory. On successful publish, moves them 
@@ -392,46 +425,55 @@ class IotManager(manager.StateMachineManager):
 
     ##### DEVICE EVENT FUNCTIONS #######################################################
 
-    def unregister(self) -> Tuple[str, int]:
+    def reregister(self) -> Tuple[str, int]:
         """Unregisters device by deleting iot registration data. TODO: This needs to go 
         into the event queue, deleting reg data in middle of a registration update 
         creates an unstable state."""
-        self.logger.info("Unregistering device")
+        self.logger.info("Re-registering device")
 
-        # Delete registration data
+        # Check network connection
+        if not self.network_is_connected:
+            return "Unable to re-register, network disconnected", 400
+
+        # Re-register device and update state
         try:
-            iot_utilities.registration.delete_data()
+            registration.delete()
+            registration.register()
+            self.device_id = registration.device_id()
+            self.verification_code = registration.verification_code()
         except Exception as e:
-            message = "Unable to unregister, unhandled exception: {}".format(type(e))
+            message = "Unable to re-register, unhandled exception: {}".format(type(e))
             self.logger.exception(message)
             self.mode = modes.ERROR
             return message, 500
 
-        # Transition to unregistered mode on next state machine update
-        self.mode = modes.UNREGISTERED
+        # Transition to init mode on next state machine update
+        self.mode = modes.INIT
 
         # Successfully deleted registration data
-        return "Successfully unregistered device", 200
+        return "Successfully re-registered device", 200
 
     #### IOT MESSAGE FUNCTIONS #########################################################
 
-    def process_message(self, message) -> None:
+    def process_message(self, message: mqtt.MQTTMessage) -> None:
         """Processes messages from iot cloud."""
         self.logger.debug("Processing message")
-        self.logger.debug("message type = {}".format(type(message)))
-        self.logger.debug("message = {}".format(message))
 
         # Decode and parse message
         try:
             payload = message.payload.decode("utf-8")
             payload_dict = json.loads(payload)
             message_version = int(payload_dict["lastConfigVersion"])
+        except json.decoder.JSONDecodeError:
+            self.logger.warning("Unable to process message, payload is invalid json")
+            self.logger.debug("payload = `{}`".format(payload))
+            return
         except KeyError:
-            ref_self.logger.warning("Unable to get message version, setting to 0")
+            self.logger.warning("Unable to get message version, setting to 0")
             message_version = 0
         except Exception as e:
             message = "Unable to parse payload, unhandled exception".format(type(e))
-            ref_self.logger.exception(message)
+            self.logger.exception(message)
             return
 
         # TODO: Check if message is old
@@ -442,10 +484,10 @@ class IotManager(manager.StateMachineManager):
             message_id = message["messageId"]
         except KeyError as e:
             message = "Unable to get command messages, `{}` key is required".format(e)
-            ref_self.logger.error(message)
+            self.logger.error(message)
             return
 
-        # Process a;; command messages
+        # Process all command messages
         for command_message in command_messages:
             self.process_command_message(command_message)
 
@@ -484,8 +526,10 @@ class IotManager(manager.StateMachineManager):
         # Validate recipe
         is_valid, error = self.recipe.validate(recipe_json)
         if not is_valid:
-            self.logger.warning("Received invalid recipe")
-            return  # TODO: Return command reply
+            error_message = "Received invalid recipe"
+            self.logger.warning(error_message)
+            self.pubsub.publish_command_reply(command, error_message)
+            return
 
         # Get recipe uuid
         recipe_dict = json.loads(recipe_json)
@@ -500,9 +544,10 @@ class IotManager(manager.StateMachineManager):
 
         # Check for create or update recipe errors
         if status != 200:
-            message2 = "Unable to create or update recipe, error: {}".format(message)
-            self.logger.warning(message2)
-            return  # TODO: Return command reply
+            error_message = "Unable to create/update recipe, error: {}".format(message)
+            self.logger.warning(error_message)
+            self.pubsub.publish_command_reply(command, error_message)
+            return
 
         # Check if recipe is running, if so stop it
         if self.recipe.is_running:
@@ -511,21 +556,21 @@ class IotManager(manager.StateMachineManager):
 
             # Check for stop recipe errors
             if status != 200:
-                message2 = "Unable to stop recipe, error: {}".format(message)
-                self.logger.warning(message2)
-                return  # TODO: Return command reply
+                error_message = "Unable to stop recipe, error: {}".format(message)
+                self.logger.warning(error_message)
+                self.pubsub.publish_command_reply(command, error_message)
+                return
 
         # Start recipe
         message, status = self.recipe.start_recipe(recipe_uuid)
 
         # Check for start recipe errors
         if status != 200:
-            message2 = "Unable to start recipe, error: {}".format(message)
-            self.logger.warning(message2)
-            return  # TODO: Return command reply
+            error_message = "Unable to start recipe, error: {}".format(message)
+            self.logger.warning(error_message)
 
-        # Successfully started recipe
-        self.pubsub.publish_command_reply(command, recipe_json)
+        # Publish command reply
+        self.pubsub.publish_command_reply(command, message)
 
     def stop_recipe(self, command) -> None:
         """Processes stop recipe command."""
@@ -536,41 +581,43 @@ class IotManager(manager.StateMachineManager):
 
         # Check for stop recipe errors
         if status != 200:
-            message2 = "Unable to stop recipe, error: {}".format(message)
-            self.logger.warning(message2)
-            return  # TODO: Return command reply
+            error_message = "Unable to stop recipe, error: {}".format(message)
+            self.logger.warning(error_message)
 
-        # Successfully stopped recipe
-        self.pubsub.publish_command_reply(command, "")
+        # Publish command reply
+        self.pubsub.publish_command_reply(command, message)
 
-    def unknown_command(self, command) -> None:
+    def unknown_command(self, command: str) -> None:
         """Processes unknown command."""
-        self.logger.warning("Received unknown command")
-        # TODO: Return command reply
+        message = "Received unknown command"
+        self.logger.warning(message)
+        self.pubsub.publish_command_reply(command, message)
 
 
 ##### PUBSUB CALLBACK FUNCTIONS ########################################################
 
 
-def on_connect(unused_client, ref_self, unused_flags, rc):
+def on_connect(client, ref_self: IotManager, flags: int, return_code: int) -> None:
     """Callback for when a device connects to mqtt broker."""
-    ref_self.logger.info("Client connected to mqtt broker")
+    # ref_self.logger.debug("Client connected to mqtt broker")
     ref_self.is_connected = True
 
 
-def on_disconnect(unused_client, ref_self, rc):
+def on_disconnect(client, ref_self: IotManager, return_code: int) -> None:
     """Callback for when a device disconnects from mqtt broker."""
-    error = "{}: {}".format(rc, mqtt.error_string(rc))
-    ref_self.logger.info("Client disconnected from mqtt broker, {}".format(error))
+    # TODO: Process return code, a 5 indicates not authorized
+    # See http://www.steves-internet-guide.com/client-connections-python-mqtt/
+    error = "{}: {}".format(return_code, mqtt.error_string(return_code))
+    # ref_self.logger.debug("Client disconnected from mqtt broker, {}".format(error))
     ref_self.is_connected = False
 
 
-def on_publish(unused_client, ref_self, unused_mid):
+def on_publish(client, ref_self: IotManager, unused_mid):
     """Callback for when a message is sent to the mqtt broker."""
     ref_self.published_message_count += 1
 
 
-def on_message(unused_client, ref_self, message) -> None:
+def on_message(client, ref_self: IotManager, message: mqtt.MQTTMessage) -> None:
     """Callback for when the mqtt broker receives a message on a subscription."""
     ref_self.logger.debug("Received message from broker")
 
@@ -581,11 +628,11 @@ def on_message(unused_client, ref_self, message) -> None:
     ref_self.process_message(message)
 
 
-def on_log(unused_client, ref_self, level, buf):
+def on_log(client, ref_self: IotManager, level, buf) -> None:
     """Paho callback when mqtt broker receives a log message."""
     ref_self.logger.debug("Received broker log: '{}' {}".format(buf, level))
 
 
-def on_subscribe(unused_client, ref_self, mid, granted_qos):
+def on_subscribe(client, ref_self, mid, granted_qos):
     """Paho callback when mqtt broker receives subscribe."""
     ref_self.logger.debug("Received broker subscribe")

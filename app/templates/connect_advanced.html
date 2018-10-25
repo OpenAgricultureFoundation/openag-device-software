@@ -46,8 +46,8 @@
     console.log(networkInfo)
     console.log(iotInfo)
 
-    // Update view for connected network and registered iot
-    if (networkInfo["isConnected"] && iotInfo["isRegistered"]) {
+    // Update view for connected network and connected iot
+    if (networkInfo["isConnected"] && iotInfo["isConnected"]) {
       document.getElementById("status").innerHTML = "Successfully connected!"
       document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
       document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
@@ -58,9 +58,9 @@
       $('#configure-wifi-collapse').collapse("hide");
     }
 
-    // Update view for connected network and unregistered iot
-    else if (networkInfo["isConnected"] && !iotInfo["isRegistered"]) {
-      document.getElementById("status").innerHTML = "Connected to network, iot registration required"
+    // Update view for connected network and disconnected iot
+    else if (networkInfo["isConnected"] && !iotInfo["isConnected"]) {
+      document.getElementById("status").innerHTML = "Connected to network, disconnected from iot"
       document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
       document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
       document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
@@ -261,31 +261,32 @@
     });
   }
 
-  function unregisterIot() {
-    console.log("Unregistering from iot")
+  function reregisterIot() {
+    console.log("Re-registering w/iot")
     
     // Update status
-    document.getElementById("status").innerHTML = "Unregistering iot, this will take a few minutes..."
+    document.getElementById("status").innerHTML = "Re-registering iot, this will take a few minutes..."
 
     // Send join wifi request
-    console.log("Sending unregister iot request");
+    console.log("Sending re-register iot request");
     $.ajax({
-      url: "/api/iot/unregister/",
+      url: "/api/iot/reregister/",
       type: "POST",
       data: {
         "csrfmiddlewaretoken": "{{ csrf_token }}",
       },
       dataType: 'json',
       success: function(data) {
-        console.log("Successfully unregistered iot");
+        console.log("Successfully re-registered w/iot");
+        location.reload();
       },
       error: function(data) {
-        console.log("Unable to unregister iot");
+        console.log("Unable to re-register w/iot");
         response_dict = JSON.parse(data.responseText);
         message = response_dict["message"];
         console.log(message);
         console.log(response_dict);
-        location.reload(true);
+        location.reload();
       }
     });
   }
@@ -423,8 +424,8 @@
          style="width:200px" href="" role="button" onclick="deleteWifis();">
          Delete Wifi Connections</a> <span id="delete-wifi-button"></span></li>
         <li><a class="badge badge-secondary" data-toggle="collapse"
-         style="width:200px" href="" role="button" onclick="unregisterIot();">
-         Unregister Device</a> <span id="unregister-iot-button"></span></li>
+         style="width:200px" href="" role="button" onclick="reregisterIot();">
+         Re-Register Device</a> <span id="reregister-iot-button"></span></li>
       </ul>
     </div>
 

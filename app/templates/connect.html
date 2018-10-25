@@ -47,8 +47,8 @@
     console.log(networkInfo)
     console.log(iotInfo)
 
-    // Update view for connected network and registered iot
-    if (networkInfo["isConnected"] && iotInfo["isRegistered"]) {
+    // Update view for connected network and connected iot
+    if (networkInfo["isConnected"] && iotInfo["isConnected"]) {
       document.getElementById("status").innerHTML = "Successfully connected!"
       document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
       document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
@@ -59,9 +59,9 @@
       $('#configure-wifi-collapse').collapse("hide");
     }
 
-    // Update view for connected network and unregistered iot
-    else if (networkInfo["isConnected"] && !iotInfo["isRegistered"]) {
-      document.getElementById("status").innerHTML = "Connected to network, iot registration required"
+    // Update view for connected network and unconnected iot
+    else if (networkInfo["isConnected"] && !iotInfo["isConnected"]) {
+      document.getElementById("status").innerHTML = "Connected to network, disconnected from iot"
       document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
       document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
       document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
@@ -183,7 +183,7 @@
           console.log("Got system info")
           var iotInfo = {
             "isRegistered": data["is_registered"],
-            "pubsubIsConnected": data["pubsub_is_connected"],
+            "isConnected": data["is_connected"],
             "verificationCode": data["verification_code"]
           };
           resolve(iotInfo);

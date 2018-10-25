@@ -772,7 +772,7 @@ class IotViewSet(viewsets.ModelViewSet):
         response = {
             "message": "Successfully got iot info",
             "is_registered": iot_manager.is_registered,
-            "pubsub_is_connected": iot_manager.pubsub_is_connected,
+            "is_connected": iot_manager.is_connected,
             "verification_code": iot_manager.verification_code,
         }
 
@@ -800,23 +800,23 @@ class IotViewSet(viewsets.ModelViewSet):
         return Response(response, 200)
 
     @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
-    def unregister(self, request):
+    def reregister(self, request):
         """Unregisters device with google cloud platform."""
-        self.logger.debug("Unregistering device with iot cloud")
+        self.logger.debug("Re-registering device with iot cloud")
 
         # Get iot manager
         app_config = apps.get_app_config(APP_NAME)
         iot_manager = app_config.coordinator.iot
 
         # Unregister device
-        iot_manager.unregister()
+        message, status = iot_manager.reregister()
 
         # Build response
-        response = {"message": "Successfully unregistered"}
+        response = {"message": message}
 
         # Return response
         self.logger.debug("Returning response: {}".format(response))
-        return Response(response, 200)
+        return Response(response, status)
 
 
 class Upgrade(views.APIView):

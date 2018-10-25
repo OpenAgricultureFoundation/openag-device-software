@@ -1,11 +1,14 @@
 # Import standard python modules
 import datetime, jwt
 
+# Import python types
+from typing import NamedTuple, Any
+
 # Import device utilities
 from device.utilities.logger import Logger
 
 # Initialize logger
-logger = Logger("IotTokenUtility")
+logger = Logger("IotTokenUtility", "iot")
 
 
 class JsonWebToken(NamedTuple):
@@ -22,14 +25,13 @@ class JsonWebToken(NamedTuple):
 
 
 def create_json_web_token(
-    self,
     project_id: str,
     private_key_filepath: str,
-    encryption_algorithm: str = "RSA256",
+    encryption_algorithm: str = "RS256",
     time_to_live_minutes: int = 60,
 ) -> JsonWebToken:
     """Creates a json web token."""
-    self.logger.debug("Creating json web token")
+    logger.debug("Creating json web token")
 
     # Initialize token variables
     issued_timestamp = datetime.datetime.utcnow().timestamp()
@@ -39,19 +41,23 @@ def create_json_web_token(
     # Build token
     token = {"iat": issued_timestamp, "exp": expiration_timestamp, "aud": project_id}
 
-    # Load private key
+    # Load private key and encode token
     try:
         with open(private_key_filepath, "r") as f:
             private_key = f.read()
+        encoded_jwt = jwt.encode(token, private_key, algorithm=encryption_algorithm)
+    except FileNotFoundError:
+        message = "Unable to create token, private key file not found"
+        logger.warning(message)
+        raise ValueError(message)
+    except NotImplementedError:
+        message = "Unable to create token, invalid encryption algorithm"
+        logger.error(message)
+        raise ValueError(message)
     except Exception as e:
-        message = "Unable to create json web token, unable to load private key, unhandled exception: {}".format(
-            type(e)
-        )
-        self.logger.exception(message)
+        msg = "Unable to create token, unhandled exception: {}".format(type(e))
+        logger.exception(msg)
         raise
-
-    # Encode token
-    encoded_jwt = jwt.encode(token, private_key, algorithm=encryption_algorithm)
 
     # Build json web token object
     json_web_token = JsonWebToken(
@@ -60,5 +66,5 @@ def create_json_web_token(
         expiration_timestamp=expiration_timestamp,
     )
 
-    # Successfully encoded json web token
+    # Successfully created json web token
     return json_web_token

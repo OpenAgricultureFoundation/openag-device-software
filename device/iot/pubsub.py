@@ -8,7 +8,10 @@ from typing import Dict, Tuple, Optional, Any, NamedTuple
 # Import device utilities
 from device.utilities import logger
 from device.utilities.state.main import State
-from device.utilities import iot 
+from device.utilities.iot import registration, tokens
+
+# from device.utilities import iot
+
 
 # Import app models, TODO: Remove this
 from app import models
@@ -17,19 +20,37 @@ from app import models
 from device.iot import commands
 
 # Initialize constants
-MQTT_BRIDGE_HOSTNAME  = "mqtt.googleapis.com"
-MQTT_BRIDGE_PORT = "443"
+MQTT_BRIDGE_HOSTNAME = "mqtt.googleapis.com"
+MQTT_BRIDGE_PORT = 443
 
-# TODO Notes:
-# Add static type checking
-# Write tests
-# Catch specific exceptions
+# Initialize message types
+COMMAND_REPLY_MESSAGE = "CommandReply"
+ENVIRONMENT_VARIABLE_MESSAGE = "EnvVar"
+IMAGE_MESSAGE = "Image"
+BOOT_MESSAGE = "boot"
+STATUS_MESSAGE = "status"
+
+# TODO: Write tests
+# TODO: Catch specific exceptions
+# TODO: Add static type checking
 
 
-class PubSub
+class PubSub:
     """Handles communication with Google Cloud Platform's Iot Pub/Sub via MQTT."""
 
-    def __init__(self, ref_self, on_connect, on_disconnect, on_publish, on_message, on_subscribe, on_log) -> None:
+    # Initialize state
+    is_initialized = False
+
+    def __init__(
+        self,
+        ref_self,
+        on_connect,
+        on_disconnect,
+        on_publish,
+        on_message,
+        on_subscribe,
+        on_log,
+    ) -> None:
         """Initializes pubsub handler."""
 
         # Initialize parameters
@@ -43,24 +64,31 @@ class PubSub
 
         # Initialize logger
         self.logger = logger.Logger("PubSub", "iot")
-        self.logger.debug("Initializing")
-
-        # Initialize mqtt client
-        self.load_config()
-        self.create_client()
 
     ##### HELPER FUNCTIONS #############################################################
 
-    def load_config(self) -> None:
+    def initialize(self) -> None:
+        """Initializes pubsub client."""
+        self.logger.debug("Initializing")
+        try:
+            self.load_mqtt_config()
+            self.create_mqtt_client()
+            self.is_initialized = True
+        except Exception as e:
+            message = "Unable to initialize, unhandled exception: {}".format(type(e))
+            self.logger.exception(message)
+            self.is_initialized = False
+
+    def load_mqtt_config(self) -> None:
         """Loads mqtt config."""
-        self.logger.debug("Loading config")
+        self.logger.debug("Loading mqtt config")
 
         # Load settings from environment variables
         try:
             self.project_id = os.environ["GCLOUD_PROJECT"]
             self.cloud_region = os.environ["GCLOUD_REGION"]
             self.registry_id = os.environ["GCLOUD_DEV_REG"]
-            self.device_id = os.environ["DEVICE_ID"]
+            self.device_id = registration.device_id()
             self.private_key_filepath = os.environ["IOT_PRIVATE_KEY"]
             self.ca_certs = os.environ["CA_CERTS"]
         except KeyError as e:
@@ -83,22 +111,28 @@ class PubSub
         else:
             self.event_topic = "/devices/{}/events".format(self.device_id)
 
-
-    def create_client(self) -> None
+    def create_mqtt_client(self) -> None:
         """Creates an mqtt client. Returns client and assocaited json web token."""
-        self.logger.debug("Creating client")
+        self.logger.debug("Creating mqtt client")
 
         # Initialize client object
         self.client = mqtt.Client(client_id=self.client_id, userdata=self.ref_self)
 
         # Create json web token
-        self.json_web_token = tokens.create_json_web_token(
-            project_id=self.project_id,
-            private_key_filepath=self.private_key_filepath,
-        )
+        try:
+            self.json_web_token = tokens.create_json_web_token(
+                project_id=self.project_id,
+                private_key_filepath=self.private_key_filepath,
+            )
+        except Exception as e:
+            message = "Unable to create client, unhandled exception: {}".format(type(e))
+            self.logger.exception(message)
+            return
 
         # Pass json web token to google cloud iot core, note username is ignored
-        self.client.username_pw_set(username="unused", password=self.json_web_token.encoded)
+        self.client.username_pw_set(
+            username="unused", password=self.json_web_token.encoded
+        )
 
         # Enable SSL/TLS support
         self.client.tls_set(ca_certs=self.ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
@@ -115,28 +149,94 @@ class PubSub
         # Subscribe to the config topic
         self.client.subscribe(self.config_topic, qos=1)
 
-
     def update(self) -> None:
         """Updates pubsub client."""
 
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to update before client initialized")
+            return
+
         # Check if json webtoken is expired, if so renew client
         if self.json_web_token.is_expired:
-            self.create_client() # TODO: Renew instead of re-create
+            self.create_mqtt_client()  # TODO: Renew instead of re-create
 
-        # Update mqtt client, TODO: Handle exceptions
+        # Update mqtt client
         try:
             self.client.loop()
         except Exception as e:
-            "Unable to update, unhandled exception: {}".format(type(e))
+            message = "Unable to update, unhandled exception: {}".format(type(e))
             self.logger.exception(message)
 
     ##### PUBLISH FUNCTIONS ############################################################
 
-    def publish_environmental_variable(
+    def publish_boot_message(self, message: Dict) -> None:
+        """Publishes boot message."""
+        self.logger.debug("Publishing boot message")
+
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
+        # Publish message
+        message_json = json.dumps(message)
+        self.publish_command_reply(BOOT_MESSAGE, message_json)
+
+    def publish_status_message(self, message: Dict) -> None:
+        """Publishes status message."""
+        self.logger.debug("Publishing status message")
+
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
+        # Publish message
+        message_json = json.dumps(message)
+        self.publish_command_reply(STATUS_MESSAGE, message_json)
+
+    ##### PRIVATE PUBLISH FUNCTIONS? ###################################################
+
+    def publish_command_reply(self, command: str, values: str) -> None:
+        """Publish a reply to a previously received command. Don't we need the 
+        message id then?"""
+        self.logger.debug("Publishing command reply")
+
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
+        # Build message
+        message = {
+            "messageType": COMMAND_REPLY_MESSAGE, "var": command, "values": values
+        }
+        message_json = json.dumps(message)
+
+        # Publish message
+        try:
+            self.client.publish(self.event_topic, message_json, qos=1)
+        except Exception as e:
+            message = "Unable to publish command reply, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.exception(message)
+
+    def publish_environment_variable(
         self, variable_name: str, values_dict: Dict
     ) -> None:
         """Publish a single environment variable."""
-        self.logger.debug("Publishing environment variable: {}".format(variable_name))
+        self.logger.debug(
+            "Publishing environment variable message: {}".format(variable_name)
+        )
+        # self.logger.debug("variable_name = {}".format(variable_name))
+        # self.logger.debug("values_dict = {}".format(values_dict))
+
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish message before client initialized")
+            return
 
         # Build values json
         # TODO: Change this from string manipulation to dict creation then json.dumps
@@ -165,51 +265,21 @@ class PubSub
         values_json += "]}"
 
         # Initialize publish message
-        message = {"messageType": "EnvVar", "var": variable_name, "values": values_json}
+        message = {
+            "messageType": ENVIRONMENT_VARIABLE_MESSAGE,
+            "var": variable_name,
+            "values": values_json,
+        }
 
         # Publish message
         try:
             message_json = json.dumps(message)
-            self.client.publish(self.mqtt_config.event_topic, message_json, qos=1)
+            self.client.publish(self.event_topic, message_json, qos=1)
         except Exception as e:
             message = "Unable to publish environment variables, unhandled exception: {}".format(
                 type(e)
             )
             self.logger.exception(message)
-
-
-    def publish_command_reply(self, command: str, values_json_string: str) -> None:
-        """Publish a reply to a command that was received and successfully processed as 
-        an environment variable."""
-        self.logger.debug("Publishing command reply")
-
-        # Check command name arg is valid
-        if command == None or len(command) == 0:
-            message = "Unable to publish command reply, invalid command name"
-            self.logger.error(message)
-            return
-
-        # Check values json string is valid
-        if values_json_string == None or len(values_json_string) == 0:
-            message = "Unable to publish command reply, invalid values json string"
-            self.logger.error(message)
-            return
-
-        # Build message payload
-        message = {
-            "messageType": "CommandReply", "var": command, "values": values_json_string
-        }
-
-        # Publish message payload
-        try:
-            message_json = json.dumps(message)
-            self.client.publish(self.mqtt_config.event_topic, message_json, qos=1)
-        except Exception as e:
-            message = "Unable to publish command reply, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.critical(message)
-            return
 
     def publish_binary_image(
         self, variable_name: str, image_type: str, image_bytes: bytes
@@ -220,15 +290,24 @@ class PubSub
         https://cloud.google.com/iot/quotas"""
         self.logger.debug("Publishing binary image")
 
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
         # Check variable name is valid
         if variable_name == None or len(variable_name) == 0:
-            message = "Unable to publish binary image, variable name `{}` is invalid".format(variable_name)
+            message = "Unable to publish binary image, variable name `{}` is invalid".format(
+                variable_name
+            )
             self.logger.error(message)
             raise ValueError(message)
 
         # Check image type is valid
         if image_type == None or image_type == 0:
-            message = "Unable to publish binary image, image type `{}` is invalid".format(image_type)
+            message = "Unable to publish binary image, image type `{}` is invalid".format(
+                image_type
+            )
             self.logger.error(message)
             raise ValueError(message)
 
@@ -260,21 +339,20 @@ class PubSub
 
                 image_chunk = bytes(image_byte_array[image_start_index:image_end_index])
 
-                message_dict = {}
-                message_dict["messageType"] = "Image"
-                message_dict["messageID"] = message_id
-                message_dict["varName"] = variable_name
-                message_dict["imageType"] = image_type
-                message_dict["chunk"] = chunk
-                message_dict["totalChunks"] = total_chunks
-                message_dict["imageChunk"] = image_chunk.decode("utf-8")
+                message = {
+                    "messageType": IMAGE_MESSAGE,
+                    "messageID": message_id,
+                    "varName": variable_name,
+                    "imageType": image_type,
+                    "chunk": chunk,
+                    "totalChunks": total_chunks,
+                    "imageChunk": image_chunk.decode("utf-8"),
+                }
 
                 # Publish this chunk
-                message_json = json.dumps(message_dict)
-                self.client.publish(
-                    self.mqtt_config.event_topic, message_json, qos=1
-                )
-                self.logger.info(
+                message_json = json.dumps(message)
+                self.client.publish(self.event_topic, message_json, qos=1)
+                self.logger.debug(
                     "Publishing binary image, sent image chunk "
                     "{} of {} for {} in {} bytes".format(
                         chunk,
@@ -297,4 +375,3 @@ class PubSub
                 type(e)
             )
             self.logger.exception(message)
-

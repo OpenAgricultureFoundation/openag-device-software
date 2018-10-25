@@ -32,7 +32,7 @@ class RecipeManager(StateMachineManager):
 
         # Initialize logger
         self.logger = Logger("Recipe", "recipe")
-:
+
         # Initialize state
         self.state = state
 
