@@ -82,27 +82,26 @@
     else if (!networkInfo["isConnected"] && systemInfo["isWifiBeaglebone"]) {
       document.getElementById("status").innerHTML = "Please configure your wifi network"
       updateWifiAccessPoints(networkInfo["wifiAccessPoints"])
-      $("#configure-wifi-collapse").collapse("show");
       $("#network-info-collapse").collapse("hide");
+      $("#configure-wifi-collapse").collapse("show");
     }
-
   }
 
   function updateWifiAccessPoints(wifiAccessPoints) {
     console.log("Updating wifi access points")
 
     // Remove stale wifi access point selections
-    var wifiAccessPointSelect = document.getElementById("wifiAccessPointSelect");
+    var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
     for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
       wifiAccessPointSelect.remove(i);
     }
-    
+
     // Add updated wifi access point selections
     for( i=0; i < wifiAccessPoints.length; i++ ) {
       wifiAccessPoint = wifiAccessPoints[i];
       var option = document.createElement("option");
       option.text = wifiAccessPoint.ssid;
-      option.value = wifiAccessPoint.service;
+      option.value = wifiAccessPoint.psk;
       wifiAccessPointSelect.add(option);
     }
   }
@@ -206,7 +205,8 @@
     document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
 
     // Get wifi name
-    var wifiName = document.getElementById("wifiAccessPoints");
+    var wifiSelect = document.getElementById("wifi-access-points-select");
+    var wifiName = wifiSelect.options[wifiSelect.selectedIndex];
     if( wifiName == null ) {
       console.log("Error: could not get wifiAccessPoints element");
       return;
@@ -264,7 +264,7 @@
 
 <html>
 
-<input type="hidden" id="wifi-access-points" name="variable" value="{{ wifi_access_points }}">
+<input type="hidden" id="wifi-access-points" name="variable", value="temp">
 
 <body>
 
@@ -280,10 +280,7 @@
     </p>
     
     <div class="collapse" id="configure-wifi-collapse">
-      <select id="wifi-access-points" class="selectpicker" style="width:200px">
-        {% for wifi_access_point in wifi_access_points %}
-        <option value={{wifi_access_point.service}}>{{wifi_assess_point.ssid}}</option>
-        {% endfor %}
+      <select id="wifi-access-points-select" class="selectpicker" style="width:200px">
       </select>
 
       <p>

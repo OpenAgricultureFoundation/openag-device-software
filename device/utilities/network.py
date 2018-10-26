@@ -14,7 +14,7 @@ CONNECT_WIFI_SCRIPT_PATH = "scripts/connect_wifi.sh"
 DELETE_WIFIS_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
 
 # Initialize logger
-logger = Logger("NetoworkUtility", "network")
+logger = Logger("NetworkUtility", "network")
 
 
 def is_connected() -> bool:
@@ -62,12 +62,9 @@ def get_wifi_access_points(
         ) as process1:
             output = process1.stdout.read().decode("utf-8")
             output += process1.stderr.read().decode("utf-8")
-            print(output)
     except Exception as e:
         logger.exception("Unable get wifis, unhandled exception: `{}`".format(type(e)))
         return []
-
-    return []
 
     # Parse command output to get list of wifi access points
     wifi_access_points = []

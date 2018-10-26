@@ -11,6 +11,9 @@ DEVICE_CONFIG_PATH = "data/config/device.txt"
 logger = Logger("SystemUtility", "system")
 logger.debug("Initializing utility")
 
+# Initialize filepaths
+BBB_SERIAL_SCRIPT_PATH = "scripts/get_bbb_serial.sh"
+
 
 def is_beaglebone() -> bool:
     """Checks if current system is a beaglebone."""
@@ -87,7 +90,7 @@ def beaglebone_serial_number() -> str:
         return "Unknown"
 
     # Build command
-    command = ["scripts/get_bbb_sn.sh"]
+    command = [BBB_SERIAL_SCRIPT_PATH]
 
     # Execute command
     try:

@@ -191,7 +191,11 @@ class NetworkManager(manager.StateMachineManager):
     def update_connection(self) -> None:
         """Updates connection state."""
         self.is_connected = network_utilities.is_connected()
-        self.ip_address = network_utilities.get_ip_address()
+        if self.is_connected:
+            self.ip_address = network_utilities.get_ip_address()
+        else:
+            self.ip_address = "UNKNOWN"
+
         self.wifi_access_points = network_utilities.get_wifi_access_points()
 
     ##### EVENT FUNCTIONS ##############################################################

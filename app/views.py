@@ -677,8 +677,10 @@ class NetworkViewSet(viewsets.ModelViewSet):
 
         # Get request parameters
         try:
-            wifi = request["wifi"]
-            password = request["password"]
+            request_dict = request.data.dict()
+            self.logger.debug("request_dict = {}".format(request_dict))
+            wifi = request_dict["wifi"]
+            password = request_dict["password"]
         except KeyError as e:
             message = "Unable to get request parameter `{}`".format(e)
             return Response({"message": message}, 400)
