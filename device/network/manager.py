@@ -15,7 +15,7 @@ from device.network import modes
 
 # TODO: Should we bring persist ports for port forwarding? Probably want as much of
 # the code to live in python land as possible so we don't have to keep track of bash
-# scripts and managing crontabs?
+# scripts?
 
 # TODO: Should we break out the bash scripts so we're never even calling them, just
 # the commands inside of them?
@@ -150,6 +150,10 @@ class NetworkManager(manager.StateMachineManager):
                 last_update_time = time.time()
                 self.update_connection()
 
+            # Check for network disconnect
+            if not self.is_connected:
+                self.mode = modes.DISCONNECTED
+
             # Check for events
             self.check_events()
 
@@ -175,6 +179,10 @@ class NetworkManager(manager.StateMachineManager):
             if time.time() - last_update_time > update_interval:
                 last_update_time = time.time()
                 self.update_connection()
+
+            # Check for network connect
+            if self.is_connected:
+                self.mode = modes.CONNECTED
 
             # Check for events
             self.check_events()
@@ -237,3 +245,80 @@ class NetworkManager(manager.StateMachineManager):
 
         # Succesfully joined wifi
         return "Successfully joined wifi", 200
+
+    def join_wifi_advanced(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """ Joins wifi."""
+        self.logger.debug("Joining wifi advanced")
+
+        # Get request parameters
+        try:
+            ssid_name = request["ssid_name"]
+            passphrase = request["passphrase"]
+            hidden_ssid = request["hidden_ssid"]
+            security = request["security"]
+            eap = request["eap"]
+            identity = request["identity"]
+            phase2 = request["phase2"]
+        except KeyError as e:
+            message = "Unable to join wifi advanced, invalid parameter `{}`".format(e)
+            return message, 400
+
+        # Join wifi advanced
+        try:
+            network_utilities.join_wifi_advanced(
+                ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
+            )
+        except Exception as e:
+            message = "Unable to join wifi advanced, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.exception(message)
+            return message, 500
+
+        # Wait for internet connection to be established
+        timeout = 5  # seconds
+        start_time = time.time()
+        while not network_utilities.is_connected():
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                message = "Did not connect to internet within {} ".format(timeout)
+                message += "seconds of joining wifi, recheck if internet is connected"
+                self.logger.warning(message)
+                return message, 202
+
+            # Recheck if internet is connected every second
+            time.sleep(1)
+
+        # Succesfully joined wifi
+        return "Successfully joined wifi advanced", 200
+
+    def delete_wifis(self) -> Tuple[str, int]:
+        """ Deletes wifi."""
+        self.logger.debug("Deleting wifis")
+
+        # Join wifi
+        try:
+            network_utilities.delete_wifis()
+        except Exception as e:
+            message = "Unable to delete wifi, unhandled exception: {}".format(type(e))
+            self.logger.exception(message)
+            return message, 500
+
+        # Wait for internet to be disconnected
+        timeout = 5  # seconds
+        start_time = time.time()
+        while network_utilities.is_connected():
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                message = "Did not disconnect from internet within {} ".format(timeout)
+                message += "seconds of deleting wifis"
+                self.logger.warning(message)
+                return message, 202
+
+            # Recheck if internet is connected every second
+            time.sleep(1)
+
+        # Succesfully joined wifi
+        return "Successfully deleted wifi", 200

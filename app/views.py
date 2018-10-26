@@ -21,7 +21,7 @@ from rest_framework.renderers import JSONRenderer, TemplateHTMLRenderer
 from app import forms, models, serializers, viewers, common
 
 # Import device utilities
-from device.utilities import logger, system, network
+from device.utilities import logger, system
 
 # Initialize file paths
 APP_NAME = "app"
@@ -229,9 +229,12 @@ class Dashboard(views.APIView):
         # Get datetime picker form
         datetime_form = forms.DateTimeForm()
 
-        # Get resource viewer: TODO: This should access connect manager through
-        # coordinator manager. See viewers.py for example implementation
-        network_is_connected = network.is_connected()
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
+
+        # Get network connection status
+        network_is_connected = network_manager.is_connected
 
         # Build and return response
         response = {
@@ -675,21 +678,13 @@ class NetworkViewSet(viewsets.ModelViewSet):
         """Joins wifi network."""
         self.logger.debug("Joining wifi")
 
-        # Get request parameters
-        try:
-            request_dict = request.data.dict()
-            self.logger.debug("request_dict = {}".format(request_dict))
-            wifi = request_dict["wifi"]
-            password = request_dict["password"]
-        except KeyError as e:
-            message = "Unable to get request parameter `{}`".format(e)
-            return Response({"message": message}, 400)
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
 
         # Join wifi
         try:
-            network.join_wifi(wifi, password)
-            message = "Successfully joined wifi"
-            status = 200
+            message, status = network_manager.join_wifi(request.data.dict())
         except Exception as e:
             message = "Unable to join wifi, unhandled exception: `{}`".format(type(e))
             status = 500
@@ -701,30 +696,18 @@ class NetworkViewSet(viewsets.ModelViewSet):
 
     def joinwifiadvanced(self, request):
         """Joins wifi network with advanced config."""
-        self.logger.debug("Joining wifi")
+        self.logger.debug("Joining wifi advanced")
 
-        # Get request parameters
-        try:
-            ssid_name = request["ssid_name"]
-            passphrase = request["passphrase"]
-            hidden_ssid = request["hidden_ssid"]
-            security = request["security"]
-            eap = request["eap"]
-            identity = request["identity"]
-            phase2 = request["phase2"]
-        except KeyError as e:
-            message = "Unable to get request parameter `{}`".format(e)
-            return Response({"message": message}, 400)
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
 
         # Join wifi advanced
         try:
-            network.join_wifi_advanced(
-                ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
-            )
-            message = "Successfully joined wifi advanced"
-            status = 200
+            message, status = network_manager.join_wifi_advanced(request.data.dict())
         except Exception as e:
-            message = "Unable to join wifi, unhandled exception: `{}`".format(type(e))
+            message = "Unable to join wifi advanced, unhandled "
+            "exception: `{}`".format(type(e))
             logger.exception(message)
             status = 500
 
@@ -736,17 +719,18 @@ class NetworkViewSet(viewsets.ModelViewSet):
     @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
     def deletewifis(self, request):
         """Deletes stored wifi access points."""
-        self.logger.debug("Deleting wifi connection")
+        self.logger.debug("Deleting wifi access points")
+
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
 
         # Join wifi
         try:
-            network.delete_wifi_connections()
-            message = "Successfully deleted wifi connections"
-            status = 200
+            message, status = network_manager.delete_wifis()
         except Exception as e:
-            message = "Unable to delete wifis, unhandled exception: `{}`".format(
-                type(e)
-            )
+            message = "Unable to delete wifis, unhandled "
+            "exception: `{}`".format(type(e))
             status = 500
 
         # Build and return response
