@@ -90,10 +90,14 @@
   function updateWifiAccessPoints(wifiAccessPoints) {
     console.log("Updating wifi access points")
 
-    // Remove stale wifi access point selections
+    // Get wifi access point select
     var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
-    for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
-      wifiAccessPointSelect.remove(i);
+
+    // Remove stale wifi access point selections
+    if (wifiAccessPointSelect != null) {
+      for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
+        wifiAccessPointSelect.remove(i);
+      } 
     }
 
     // Add updated wifi access point selections
