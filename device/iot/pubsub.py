@@ -3,15 +3,12 @@ import base64, datetime, json, logging, math, os, ssl, sys, time, traceback
 import paho.mqtt.client as mqtt
 
 # Import python types
-from typing import Dict, Tuple, Optional, Any, NamedTuple
+from typing import Dict, Tuple, Optional, Any, NamedTuple, Callable
 
 # Import device utilities
 from device.utilities import logger
 from device.utilities.state.main import State
 from device.utilities.iot import registration, tokens
-
-# from device.utilities import iot
-
 
 # Import app models, TODO: Remove this
 from app import models
@@ -43,13 +40,13 @@ class PubSub:
 
     def __init__(
         self,
-        ref_self,
-        on_connect,
-        on_disconnect,
-        on_publish,
-        on_message,
-        on_subscribe,
-        on_log,
+        ref_self: Any,
+        on_connect: Callable,
+        on_disconnect: Callable,
+        on_publish: Callable,
+        on_message: Callable,
+        on_subscribe: Callable,
+        on_log: Callable,
     ) -> None:
         """Initializes pubsub handler."""
 
@@ -210,7 +207,9 @@ class PubSub:
 
         # Build message
         message = {
-            "messageType": COMMAND_REPLY_MESSAGE, "var": command, "values": values
+            "messageType": COMMAND_REPLY_MESSAGE,
+            "var": command,
+            "values": values,
         }
         message_json = json.dumps(message)
 
@@ -218,10 +217,9 @@ class PubSub:
         try:
             self.client.publish(self.event_topic, message_json, qos=1)
         except Exception as e:
-            message = "Unable to publish command reply, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.exception(message)
+            error_message = "Unable to publish command reply, "
+            "unhandled exception: {}".format(type(e))
+            self.logger.exception(error_message)
 
     def publish_environment_variable(
         self, variable_name: str, values_dict: Dict
@@ -252,7 +250,8 @@ class PubSub:
             if isinstance(val, float):
                 val = "{0:.2f}".format(val)
                 values_json += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                    vname, val
+                    vname,
+                    val,
                 )
 
             elif isinstance(val, int):
@@ -260,7 +259,8 @@ class PubSub:
 
             else:  # assume str
                 values_json += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                    vname, val
+                    vname,
+                    val,
                 )
         values_json += "]}"
 
@@ -276,10 +276,9 @@ class PubSub:
             message_json = json.dumps(message)
             self.client.publish(self.event_topic, message_json, qos=1)
         except Exception as e:
-            message = "Unable to publish environment variables, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.exception(message)
+            error_message = "Unable to publish environment variables, "
+            "unhandled exception: {}".format(type(e))
+            self.logger.exception(error_message)
 
     def publish_binary_image(
         self, variable_name: str, image_type: str, image_bytes: bytes
@@ -297,25 +296,23 @@ class PubSub:
 
         # Check variable name is valid
         if variable_name == None or len(variable_name) == 0:
-            message = "Unable to publish binary image, variable name `{}` is invalid".format(
-                variable_name
-            )
-            self.logger.error(message)
-            raise ValueError(message)
+            error_message = "Unable to publish binary image, variable name "
+            "`{}` is invalid".format(variable_name)
+            self.logger.error(error_message)
+            raise ValueError(error_message)
 
         # Check image type is valid
         if image_type == None or image_type == 0:
-            message = "Unable to publish binary image, image type `{}` is invalid".format(
-                image_type
-            )
-            self.logger.error(message)
-            raise ValueError(message)
+            error_message = "Unable to publish binary image, image type  "
+            "`{}` is invalid".format(image_type)
+            self.logger.error(error_message)
+            raise ValueError(error_message)
 
         # Check image bytes are valid
         if image_bytes == None or len(image_bytes) == 0:
-            message = "Unable to publish binary image, image bytes are invalid"
-            self.logger.error(message)
-            raise ValueError(message)
+            error_message = "Unable to publish binary image, image bytes are invalid"
+            self.logger.error(error_message)
+            raise ValueError(error_message)
 
         try:
             # Encode image bytes
@@ -352,13 +349,13 @@ class PubSub:
                 # Publish this chunk
                 message_json = json.dumps(message)
                 self.client.publish(self.event_topic, message_json, qos=1)
+
+                chunk_num_bytes = len(image_chunk.decode("utf-8"))
+                # len(message["imageChunk"]
                 self.logger.debug(
                     "Publishing binary image, sent image chunk "
                     "{} of {} for {} in {} bytes".format(
-                        chunk,
-                        total_chunks,
-                        variable_name,
-                        len(message_dict["imageChunk"]),
+                        chunk, total_chunks, variable_name, chunk_num_bytes
                     )
                 )
 
@@ -371,7 +368,6 @@ class PubSub:
                     image_end_index = image_start_index + max_message_size
 
         except Exception as e:
-            message = "Unable to publish binary image, unhandled exception: {}".format(
-                type(e)
-            )
-            self.logger.exception(message)
+            error_message = "Unable to publish binary image, unhandled "
+            "exception: {}".format(type(e))
+            self.logger.exception(error_message)

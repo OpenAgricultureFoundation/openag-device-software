@@ -33,7 +33,7 @@ class IotManager(manager.StateMachineManager):
 
     # Keep track of the previous values that we have published.
     # We only publish a value if it changes.
-    prev_environment_variables = {}
+    prev_environment_variables: Dict[str, Any] = {}
     last_status = datetime.datetime.utcnow()
 
     def __init__(self, state: State, recipe: RecipeManager) -> None:
@@ -68,13 +68,22 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
             modes.INIT: [
-                modes.CONNECTED, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
+                modes.CONNECTED,
+                modes.DISCONNECTED,
+                modes.ERROR,
+                modes.SHUTDOWN,
             ],
             modes.CONNECTED: [
-                modes.INIT, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
+                modes.INIT,
+                modes.DISCONNECTED,
+                modes.ERROR,
+                modes.SHUTDOWN,
             ],
             modes.DISCONNECTED: [
-                modes.INIT, modes.CONNECTED, modes.SHUTDOWN, modes.ERROR
+                modes.INIT,
+                modes.CONNECTED,
+                modes.SHUTDOWN,
+                modes.ERROR,
             ],
             modes.ERROR: [modes.SHUTDOWN],
         }
@@ -85,7 +94,7 @@ class IotManager(manager.StateMachineManager):
     ##### INTERNAL STATE DECORATORS ####################################################
 
     @property
-    def is_connected(self) -> False:
+    def is_connected(self) -> bool:
         """Gets value."""
         return self.state.iot.get("is_connected", False)  # type: ignore
 
@@ -96,7 +105,7 @@ class IotManager(manager.StateMachineManager):
             self.state.iot["is_connected"] = value
 
     @property
-    def is_registered(self) -> False:
+    def is_registered(self) -> bool:
         """Gets value."""
         return self.state.iot.get("is_registered", False)  # type: ignore
 
@@ -491,7 +500,7 @@ class IotManager(manager.StateMachineManager):
         for command_message in command_messages:
             self.process_command_message(command_message)
 
-    def process_command_message(self, message) -> None:
+    def process_command_message(self, message: Dict[str, Any]) -> None:
         """Process commands received from the backend (UI). This is a callback that is 
         called by the IoTPubSub class when this device receives commands from the UI."""
         self.logger.debug("Processing command message")
@@ -502,8 +511,8 @@ class IotManager(manager.StateMachineManager):
             arg0 = message["arg0"]
             arg1 = message["arg1"]
         except KeyError as e:
-            message = "Unable to process command, `{}` key is required".format(e)
-            self.logger.error(message)
+            error_message = "Unable to process command, `{}` key is required".format(e)
+            self.logger.error(error_message)
             return
 
         # Process command
@@ -549,8 +558,8 @@ class IotManager(manager.StateMachineManager):
             self.pubsub.publish_command_reply(command, error_message)
             return
 
-        # Check if recipe is running, if so stop it
-        if self.recipe.is_running:
+        # Check if recipe is active, if so stop it
+        if self.recipe.is_active:
             self.logger.warning("Forcibly stopping currently running recipe")
             message, status = self.recipe.stop_recipe()
 
@@ -572,12 +581,12 @@ class IotManager(manager.StateMachineManager):
         # Publish command reply
         self.pubsub.publish_command_reply(command, message)
 
-    def stop_recipe(self, command) -> None:
+    def stop_recipe(self, command: str) -> None:
         """Processes stop recipe command."""
         self.logger.debug("Stopping recipe")
 
         # Stop recipe
-        message, status = self.recipe.events.stop_recipe()
+        message, status = self.recipe.stop_recipe()
 
         # Check for stop recipe errors
         if status != 200:
@@ -597,27 +606,27 @@ class IotManager(manager.StateMachineManager):
 ##### PUBSUB CALLBACK FUNCTIONS ########################################################
 
 
-def on_connect(client, ref_self: IotManager, flags: int, return_code: int) -> None:
+def on_connect(
+    client: mqtt.Client, ref_self: IotManager, flags: int, return_code: int
+) -> None:
     """Callback for when a device connects to mqtt broker."""
-    # ref_self.logger.debug("Client connected to mqtt broker")
     ref_self.is_connected = True
 
 
-def on_disconnect(client, ref_self: IotManager, return_code: int) -> None:
+def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -> None:
     """Callback for when a device disconnects from mqtt broker."""
-    # TODO: Process return code, a 5 indicates not authorized
-    # See http://www.steves-internet-guide.com/client-connections-python-mqtt/
     error = "{}: {}".format(return_code, mqtt.error_string(return_code))
-    # ref_self.logger.debug("Client disconnected from mqtt broker, {}".format(error))
     ref_self.is_connected = False
 
 
-def on_publish(client, ref_self: IotManager, unused_mid):
+def on_publish(client: mqtt.Client, ref_self: IotManager, message_id: str) -> None:
     """Callback for when a message is sent to the mqtt broker."""
     ref_self.published_message_count += 1
 
 
-def on_message(client, ref_self: IotManager, message: mqtt.MQTTMessage) -> None:
+def on_message(
+    client: mqtt.Client, ref_self: IotManager, message: mqtt.MQTTMessage
+) -> None:
     """Callback for when the mqtt broker receives a message on a subscription."""
     ref_self.logger.debug("Received message from broker")
 
@@ -628,11 +637,13 @@ def on_message(client, ref_self: IotManager, message: mqtt.MQTTMessage) -> None:
     ref_self.process_message(message)
 
 
-def on_log(client, ref_self: IotManager, level, buf) -> None:
+def on_log(client: mqtt.Client, ref_self: IotManager, level: str, buf: str) -> None:
     """Paho callback when mqtt broker receives a log message."""
     ref_self.logger.debug("Received broker log: '{}' {}".format(buf, level))
 
 
-def on_subscribe(client, ref_self, mid, granted_qos):
+def on_subscribe(
+    client: mqtt.Client, ref_self: IotManager, message_id: str, granted_qos: int
+) -> None:
     """Paho callback when mqtt broker receives subscribe."""
     ref_self.logger.debug("Received broker subscribe")

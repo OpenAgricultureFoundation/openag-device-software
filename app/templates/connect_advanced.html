@@ -46,7 +46,7 @@
     console.log(networkInfo)
     console.log(iotInfo)
 
-    // Update view for connected network and connected iot
+// Update view for connected network and connected iot
     if (networkInfo["isConnected"] && iotInfo["isConnected"]) {
       document.getElementById("status").innerHTML = "Successfully connected!"
       document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
@@ -58,7 +58,7 @@
       $('#configure-wifi-collapse').collapse("hide");
     }
 
-    // Update view for connected network and disconnected iot
+    // Update view for connected network and unconnected iot
     else if (networkInfo["isConnected"] && !iotInfo["isConnected"]) {
       document.getElementById("status").innerHTML = "Connected to network, disconnected from iot"
       document.getElementById("ip-address").innerHTML = networkInfo["ipAddress"];
@@ -86,7 +86,7 @@
     }
 
     // Remove
-    $("#configure-wifi-collapse").collapse("show");
+    // $("#configure-wifi-collapse").collapse("show");
 
   }
 
@@ -166,7 +166,7 @@
           console.log("Got system info")
           var iotInfo = {
             "isRegistered": data["is_registered"],
-            "pubsubIsConnected": data["pubsub_is_connected"],
+            "isConnected": data["is_connected"],
             "verificationCode": data["verification_code"]
           };
           resolve(iotInfo);

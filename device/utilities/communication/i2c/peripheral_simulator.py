@@ -128,7 +128,7 @@ class PeripheralSimulator:
                 self.mux_simulator.verify(address, channel)  # type: ignore
 
             # Get response bytes
-            response_bytes = self.writes.get(byte_str(bytes_), None)  # type: ignore
+            response_bytes = self.writes.get(byte_str(bytes_), None)
 
             # Verify known write bytes
             if response_bytes == None:

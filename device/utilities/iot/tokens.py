@@ -13,12 +13,13 @@ logger = Logger("IotTokenUtility", "iot")
 
 class JsonWebToken(NamedTuple):
     """Dataclass for json web token."""
+
     encoded: Any  # TODO: Get type
     issued_timestamp: float
     expiration_timestamp: float
 
     @property
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """Checks if token is expired."""
         current_timestamp = datetime.datetime.utcnow().timestamp()
         return current_timestamp > self.expiration_timestamp

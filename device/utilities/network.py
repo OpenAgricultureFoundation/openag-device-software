@@ -1,5 +1,5 @@
 # Import standard python modules
-import subprocess, socket, urllib.request
+import subprocess, socket, urllib.request, re
 
 # Import python types
 from typing import List, Dict, Union
@@ -11,7 +11,7 @@ from device.utilities.logger import Logger
 # Initialize file paths
 GET_WIFIS_SCRIPT_PATH = "scripts/get_wifis.sh"
 CONNECT_WIFI_SCRIPT_PATH = "scripts/connect_wifi.sh"
-DELETE_WIFI_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
+DELETE_WIFIS_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
 
 # Initialize logger
 logger = Logger("NetoworkUtility", "network")
@@ -34,7 +34,7 @@ def get_ip_address() -> str:
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        return s.getsockname()[0]
+        return str(s.getsockname()[0])
     except Exception as e:
         message = "Unable to get ip address, unhandled exception: {}".format(type(e))
         logger.exception(message)
@@ -115,15 +115,16 @@ def get_wifi_access_points(
     return wifi_access_points
 
 
-def join_wifi(wifi: str, password: str) -> bool:
+def join_wifi(wifi: str, password: str) -> None:
     """Joins specified wifi access point. Currently only works for wifi beaglebones. 
     Returns true on success, false on failure"""
     logger.debug("Joining wifi")
 
     # Check system is a wifi beaglebone
     if not system.is_wifi_beaglebone():
-        logger.error("Unable to join wifi, system not a wifi beaglebone")
-        return False
+        message = "Unable to join wifi, system not a wifi beaglebone"
+        logger.error(message)
+        raise SystemError(message)
 
     # Not sure why we are doing this?
     if len(password) == 0:
@@ -139,10 +140,9 @@ def join_wifi(wifi: str, password: str) -> bool:
         ) as process1:
             output = process1.stdout.read().decode("utf-8")
             output += process1.stderr.read().decode("utf-8")
-            return True
     except Exception as e:
         logger.exception("Unable to join wifi, unhandled exception: {}".format(type(e)))
-        return False
+        raise
 
 
 def join_wifi_advanced(
@@ -175,17 +175,14 @@ def join_wifi_advanced(
 
     # Execute command
     try:
-        subprocess.run(cmd)
+        subprocess.run(command)
     except Exception as e:
         message = "Unable to join wifi advanced, unhandled exception".format(type(e))
         logger.exception(message)
         raise
 
-    # Successfully joined wifi advanced
-    return True
 
-
-def delete_wifi_connections() -> bool:
+def delete_wifi_connections() -> None:
     """Deletes all wifi connections. Currently only works for wifi beaglebones.
     Returns true on success, false on failure. TODO: Should probably just catch then
     re-raise exception."""
@@ -193,8 +190,11 @@ def delete_wifi_connections() -> bool:
 
     # Check system is a wifi beaglebone
     if not system.is_wifi_beaglebone():
+        message = "Unable to delete wifi connections, system not a wifi beaglebone"
         logger.error("Unable to delete wifi connections, system not a wifi beaglebone")
-        return False
+        raise SystemError(
+            "Unable to delete wifi connections, system not a wifi beaglebone"
+        )
 
     # Disconnect from active wifi access points
     try:
@@ -210,15 +210,14 @@ def delete_wifi_connections() -> bool:
         message = "Unable to delete wifi connections, unable to disconnect from active "
         message += "wifi access points, unhandled exception: {}".format(type(e))
         logger.exception(message)
-        return False
+        raise
 
     # Remove all wifi configs
     try:
         command = [DELETE_WIFIS_SCRIPT_PATH]
-        with subprocess.run(command):
-            return True
+        subprocess.run(command)
     except Exception as e:
         message = "Unable to delete wifi connections, "
         message += "unhandled exception: {}".format(type(e))
         logger.exception(message)
-        return False
+        raise

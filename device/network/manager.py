@@ -2,7 +2,7 @@
 import logging, threading, time, platform
 
 # Import python types
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, List
 
 # Import device utilities
 from device.utilities import logger, accessors, constants
@@ -86,23 +86,23 @@ class NetworkManager(manager.StateMachineManager):
             self.state.network["is_connected"] = value
 
     @property
-    def wifi_access_points(self) -> bool:
+    def wifi_access_points(self) -> List[Dict[str, str]]:
         """Gets value."""
         return self.state.network.get("wifi_access_points")  # type: ignore
 
     @wifi_access_points.setter
-    def wifi_access_points(self, value: bool) -> None:
+    def wifi_access_points(self, value: List[Dict[str, str]]) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.network["wifi_access_points"] = value
 
     @property
-    def ip_address(self) -> bool:
+    def ip_address(self) -> str:
         """Gets value."""
         return self.state.network.get("ip_address")  # type: ignore
 
     @ip_address.setter
-    def ip_address(self, value: bool) -> None:
+    def ip_address(self, value: str) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.network["ip_address"] = value
@@ -210,7 +210,7 @@ class NetworkManager(manager.StateMachineManager):
 
         # Join wifi
         try:
-            network_utilities.join_wifi()
+            network_utilities.join_wifi(wifi_psk, wifi_password)
         except Exception as e:
             message = "Unable to join wifi, unhandled exception: {}".format(type(e))
             self.logger.exception(message)

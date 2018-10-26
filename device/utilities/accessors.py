@@ -112,10 +112,10 @@ def floatify_string(value: str) -> float:
     unit = value[-1]
     number = float(value[:-1])
     if unit.lower() == "k":
-        return number * constants.KILOBYTE
+        return number * float(constants.KILOBYTE)
     elif unit.lower() == "m":
-        return number * constants.MEGABYTE
+        return number * float(constants.MEGABYTE)
     elif unit.lower() == "g":
-        return number * constants.GIGABYTE
+        return number * float(constants.GIGABYTE)
     else:
         raise ValueError("Invalid unit type `{}`".format(unit))

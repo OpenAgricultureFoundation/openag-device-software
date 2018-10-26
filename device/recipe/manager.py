@@ -111,6 +111,17 @@ class RecipeManager(StateMachineManager):
             self.state.recipe["recipe_name"] = value
 
     @property
+    def is_active(self) -> bool:
+        """Gets value."""
+        return self.state.recipe.get("is_active", False)  # type: ignore
+
+    @is_active.setter
+    def is_active(self, value: bool) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.recipe["is_active"] = value
+
+    @property
     def current_timestamp_minutes(self) -> int:
         """ Get current timestamp in minutes. """
         return int(time.time() / 60)
@@ -308,6 +319,8 @@ class RecipeManager(StateMachineManager):
             self.state.recipe["current_environment_state"] = value
             self.set_desired_sensor_values(value)  # type: ignore
 
+    ##### STATE MACHINE FUNCTIONS ######################################################
+
     def run(self) -> None:
         """Runs state machine."""
 
@@ -350,6 +363,9 @@ class RecipeManager(StateMachineManager):
         mode if exists, else transitions to no recipe mode."""
         self.logger.info("Entered INIT")
 
+        # Initialize state
+        self.is_active = False
+
         # Check for stored mode
         mode = self.state.recipe.get("stored_mode")
         if mode != None:
@@ -362,6 +378,9 @@ class RecipeManager(StateMachineManager):
         """Runs no recipe mode. Clears recipe and desired sensor state then waits for
         new events and transitions."""
         self.logger.info("Entered NORECIPE")
+
+        # Set run state
+        self.is_active = False
 
         # Clear state
         self.clear_recipe_state()
@@ -385,6 +404,9 @@ class RecipeManager(StateMachineManager):
         retrieves recipe json from recipe table, generates recipe 
         transitions, stores them in the recipe transitions table, extracts
         recipe duration and start time then transitions to queued mode."""
+
+        # Set run state
+        self.is_active = True
 
         try:
             self.logger.info("Entered START")
@@ -418,6 +440,9 @@ class RecipeManager(StateMachineManager):
         """Runs queued mode. Waits for recipe start timestamp to be greater than
         or equal to current timestamp then transitions to NORMAL."""
         self.logger.info("Entered QUEUED")
+
+        # Set state
+        self.is_active = True
 
         # Initialize time counter
         prev_time_seconds = 0.0
@@ -461,6 +486,9 @@ class RecipeManager(StateMachineManager):
         Checks for events and transitions."""
         self.logger.info("Entered NORMAL")
 
+        # Set state
+        self.is_active = True
+
         # Update recipe environment on first entry
         self.update_recipe_environment()
 
@@ -492,6 +520,9 @@ class RecipeManager(StateMachineManager):
         events and transitions."""
         self.logger.info("Entered PAUSE")
 
+        # Set state
+        self.is_active = True
+
         # Clear recipe and desired sensor state
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
@@ -518,6 +549,9 @@ class RecipeManager(StateMachineManager):
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
 
+        # Set state
+        self.is_active = False
+
         # Transition to NORECIPE
         self.mode = modes.NORECIPE
 
@@ -529,6 +563,9 @@ class RecipeManager(StateMachineManager):
         # Clear recipe and desired sensor states
         self.clear_recipe_state()
         self.clear_desired_sensor_state()
+
+        # Set state
+        self.is_active = False
 
         # Loop forever
         while True:
@@ -550,12 +587,14 @@ class RecipeManager(StateMachineManager):
         # Transition to INIT
         self.mode = modes.INIT
 
+    ##### HELPER FUNCTIONS #############################################################
+
     def get_recipe_environment(self, minute: int) -> Any:
         """Gets environment object from database for provided minute."""
         return (
-            models.RecipeTransitionModel.objects.filter(minute__lte=minute).order_by(
-                "-minute"
-            ).first()
+            models.RecipeTransitionModel.objects.filter(minute__lte=minute)
+            .order_by("-minute")
+            .first()
         )
 
     def store_recipe_transitions(self, recipe_transitions: List) -> None:
@@ -1009,6 +1048,6 @@ class RecipeManager(StateMachineManager):
                 self.logger.exception(message)
                 return message, 500
 
-    def recipe_exists(self, uuid) -> bool:
+    def recipe_exists(self, uuid: str) -> bool:
         """Checks if a recipe exists."""
         return models.RecipeModel.objects.filter(uuid=uuid).exists()
