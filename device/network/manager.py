@@ -221,6 +221,7 @@ class NetworkManager(manager.StateMachineManager):
             return message, 400
 
         # Join wifi
+        self.logger.debug("Sending join wifi request")
         try:
             network_utilities.join_wifi(wifi_psk, wifi_password)
         except Exception as e:
@@ -229,9 +230,10 @@ class NetworkManager(manager.StateMachineManager):
             return message, 500
 
         # Wait for internet connection to be established
-        timeout = 5  # seconds
+        timeout = 60  # seconds
         start_time = time.time()
         while not network_utilities.is_connected():
+            self.logger.debug("Waiting for network connection")
 
             # Check for timeout
             if time.time() - start_time > timeout:
@@ -241,9 +243,13 @@ class NetworkManager(manager.StateMachineManager):
                 return message, 202
 
             # Recheck if internet is connected every second
-            time.sleep(1)
+            time.sleep(2)
+
+        # Update connection state
+        self.is_connected = True
 
         # Succesfully joined wifi
+        self.logger.debug("Successfully joined wifi")
         return "Successfully joined wifi", 200
 
     def join_wifi_advanced(self, request: Dict[str, Any]) -> Tuple[str, int]:
@@ -264,6 +270,7 @@ class NetworkManager(manager.StateMachineManager):
             return message, 400
 
         # Join wifi advanced
+        self.logger.debug("Sending join wifi request to network utility")
         try:
             network_utilities.join_wifi_advanced(
                 ssid_name, passphrase, hidden_ssid, security, eap, identity, phase2
@@ -276,9 +283,10 @@ class NetworkManager(manager.StateMachineManager):
             return message, 500
 
         # Wait for internet connection to be established
-        timeout = 5  # seconds
+        timeout = 60  # seconds
         start_time = time.time()
         while not network_utilities.is_connected():
+            self.logger.debug("Waiting for network to connect")
 
             # Check for timeout
             if time.time() - start_time > timeout:
@@ -288,9 +296,13 @@ class NetworkManager(manager.StateMachineManager):
                 return message, 202
 
             # Recheck if internet is connected every second
-            time.sleep(1)
+            time.sleep(2)
 
-        # Succesfully joined wifi
+        # Update connection state
+        self.is_connected = True
+
+        # Succesfully joined wifi advanced
+        self.logger.debug("Successfully joined wifi advanced")
         return "Successfully joined wifi advanced", 200
 
     def delete_wifis(self) -> Tuple[str, int]:
@@ -306,9 +318,10 @@ class NetworkManager(manager.StateMachineManager):
             return message, 500
 
         # Wait for internet to be disconnected
-        timeout = 5  # seconds
+        timeout = 10  # seconds
         start_time = time.time()
         while network_utilities.is_connected():
+            self.logger.debug("Waiting for internet to disconnect")
 
             # Check for timeout
             if time.time() - start_time > timeout:
@@ -318,7 +331,11 @@ class NetworkManager(manager.StateMachineManager):
                 return message, 202
 
             # Recheck if internet is connected every second
-            time.sleep(1)
+            time.sleep(2)
 
-        # Succesfully joined wifi
-        return "Successfully deleted wifi", 200
+        # Update connection state
+        self.is_connected = False
+
+        # Succesfully deleted wifi
+        self.logger.debug("Successfully deleted wifis")
+        return "Successfully deleted wifis", 200

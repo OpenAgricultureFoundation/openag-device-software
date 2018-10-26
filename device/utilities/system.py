@@ -124,7 +124,7 @@ def remote_device_ui_url() -> str:
     # Check if device is a beaglebone
     if is_beaglebone():
         serial_number = beaglebone_serial_number()
-        url = "{}.serveo.net".format(serial_number)
+        url = "https://{}.serveo.net".format(serial_number)
         return url
 
     # Device is not a beaglebone

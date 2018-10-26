@@ -141,6 +141,9 @@ def join_wifi(wifi: str, password: str) -> None:
         logger.exception("Unable to join wifi, unhandled exception: {}".format(type(e)))
         raise
 
+    # Successfully joined wifi
+    logger.debug("Successfully joined wifi")
+
 
 def join_wifi_advanced(
     ssid_name: str,
@@ -179,19 +182,17 @@ def join_wifi_advanced(
         raise
 
 
-def delete_wifi_connections() -> None:
+def delete_wifis() -> None:
     """Deletes all wifi connections. Currently only works for wifi beaglebones.
     Returns true on success, false on failure. TODO: Should probably just catch then
     re-raise exception."""
-    logger.debug("Deleting wifi connections")
+    logger.debug("Deleting wifis")
 
     # Check system is a wifi beaglebone
     if not system.is_wifi_beaglebone():
-        message = "Unable to delete wifi connections, system not a wifi beaglebone"
-        logger.error("Unable to delete wifi connections, system not a wifi beaglebone")
-        raise SystemError(
-            "Unable to delete wifi connections, system not a wifi beaglebone"
-        )
+        message = "Unable to delete wifis, system not a wifi beaglebone"
+        logger.error(message)
+        raise SystemError(message)
 
     # Disconnect from active wifi access points
     try:
@@ -204,7 +205,7 @@ def delete_wifi_connections() -> None:
                 command = ["connmanctl", "disconnect", psk]
                 subprocess.run(command)
     except Exception as e:
-        message = "Unable to delete wifi connections, unable to disconnect from active "
+        message = "Unable to delete wifis, unable to disconnect from active "
         message += "wifi access points, unhandled exception: {}".format(type(e))
         logger.exception(message)
         raise
@@ -214,7 +215,7 @@ def delete_wifi_connections() -> None:
         command = [DELETE_WIFIS_SCRIPT_PATH]
         subprocess.run(command)
     except Exception as e:
-        message = "Unable to delete wifi connections, "
+        message = "Unable to delete wifis, "
         message += "unhandled exception: {}".format(type(e))
         logger.exception(message)
         raise
