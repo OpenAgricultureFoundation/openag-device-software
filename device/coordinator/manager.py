@@ -586,6 +586,10 @@ class CoordinatorManager(StateMachineManager):
                 stored = stored_controllers_state[controller_name]["stored"]
                 self.state.controllers[controller_name]["stored"] = stored
 
+        # Load iot state
+        stored_iot_state = json.loads(stored_state.iot)
+        self.state.iot["stored"] = stored_iot_state.get("stored", {})
+
     def store_environment(self) -> None:
         """ Stores current environment state in environment table. """
         models.EnvironmentModel.objects.create(state=self.state.environment)

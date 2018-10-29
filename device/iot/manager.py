@@ -68,22 +68,13 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
             modes.INIT: [
-                modes.CONNECTED,
-                modes.DISCONNECTED,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.CONNECTED, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
             ],
             modes.CONNECTED: [
-                modes.INIT,
-                modes.DISCONNECTED,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.INIT, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
             ],
             modes.DISCONNECTED: [
-                modes.INIT,
-                modes.CONNECTED,
-                modes.SHUTDOWN,
-                modes.ERROR,
+                modes.INIT, modes.CONNECTED, modes.SHUTDOWN, modes.ERROR
             ],
             modes.ERROR: [modes.SHUTDOWN],
         }
@@ -136,6 +127,20 @@ class IotManager(manager.StateMachineManager):
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.iot["verification_code"] = value
+
+    @property
+    def prev_message_id(self) -> str:
+        """Gets value."""
+        stored = self.state.iot.get("stored", {})
+        return stored.get("prev_message_id")  # type: ignore
+
+    @prev_message_id.setter
+    def prev_message_id(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            if "stored" not in self.state.iot:
+                self.state.iot["stored"] = {}
+            self.state.iot["stored"]["prev_message_id"] = value
 
     @property
     def received_message_count(self) -> int:
@@ -472,7 +477,7 @@ class IotManager(manager.StateMachineManager):
         try:
             payload = message.payload.decode("utf-8")
             payload_dict = json.loads(payload)
-            message_version = int(payload_dict["lastConfigVersion"])
+            # message_version = int(payload_dict["lastConfigVersion"])
         except json.decoder.JSONDecodeError:
             self.logger.warning("Unable to process message, payload is invalid json")
             self.logger.debug("payload = `{}`".format(payload))
@@ -485,9 +490,7 @@ class IotManager(manager.StateMachineManager):
             self.logger.exception(message)
             return
 
-        # TODO: Check if message is old
-
-        # Get command messages
+        # Get message fields
         try:
             command_messages = message["commands"]
             message_id = message["messageId"]
@@ -495,6 +498,13 @@ class IotManager(manager.StateMachineManager):
             message = "Unable to get command messages, `{}` key is required".format(e)
             self.logger.error(message)
             return
+
+        # Check if message is old
+        if message_id == self.prev_message_id:
+            self.logger.debug("Received old message, not processing")
+            return
+        else:
+            self.prev_message_id = message_id
 
         # Process all command messages
         for command_message in command_messages:
