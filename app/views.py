@@ -701,6 +701,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
             message, status = network_manager.join_wifi(request.data.dict())
         except Exception as e:
             message = "Unable to join wifi, unhandled exception: `{}`".format(type(e))
+            self.logger.exception(message)
             status = 500
 
         # Build and return response
@@ -708,6 +709,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
         self.logger.debug("Returning response: {}".format(response))
         return Response(response, status)
 
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
     def joinwifiadvanced(self, request):
         """Joins wifi network with advanced config."""
         self.logger.debug("Joining wifi advanced")
@@ -739,7 +741,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
         app_config = apps.get_app_config(APP_NAME)
         network_manager = app_config.coordinator.network
 
-        # Join wifi
+        # Delete wifis
         try:
             message, status = network_manager.delete_wifis()
         except Exception as e:

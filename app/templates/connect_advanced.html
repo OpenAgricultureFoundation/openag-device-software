@@ -10,6 +10,12 @@
   function getInfoAndUpdateView() {
     console.log("Getting info and updating view")
 
+    // Initialize status and view
+    document.getElementById("status").innerHTML = "Loading network status..."
+    $('#danger-zone-collapse').collapse("hide");
+
+
+
     // Initialize info vars
     var systemInfo = {};
     var networkInfo = {};
@@ -56,6 +62,7 @@
       document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login/";
       $('#connection-info-collapse').collapse("show");
       $('#configure-wifi-collapse').collapse("hide");
+      $('#danger-zone-collapse').collapse("show");
     }
 
     // Update view for connected network and unconnected iot
@@ -68,6 +75,7 @@
       document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login?vcode=" + iotInfo["verificationCode"];
       $('#connection-info-collapse').collapse("show");
       $('#configure-wifi-collapse').collapse("hide");
+      $('#danger-zone-collapse').collapse("show");
     }
 
     // Update view for disconnected network and non-wifi-beaglebone system
@@ -84,10 +92,32 @@
       $("#configure-wifi-collapse").collapse("show");
       $("#network-info-collapse").collapse("hide");
     }
+  }
 
-    // Remove
-    // $("#configure-wifi-collapse").collapse("show");
 
+  function updateWifiAccessPoints(wifiAccessPoints) {
+    console.log("Updating wifi access points")
+
+    // Get wifi access point select
+    var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
+
+    // Remove stale wifi access point selections
+    if (wifiAccessPointSelect != null) {
+      for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
+        wifiAccessPointSelect.remove(i);
+      } 
+    }
+
+    // Add updated wifi access point selections
+    if (wifiAccessPoints != null) {
+      for( i=0; i < wifiAccessPoints.length; i++ ) {
+        wifiAccessPoint = wifiAccessPoints[i];
+        var option = document.createElement("option");
+        option.text = wifiAccessPoint.ssid;
+        option.value = wifiAccessPoint.psk;
+        wifiAccessPointSelect.add(option);
+      }
+    }
   }
 
   function getSystemInfo() {
@@ -185,8 +215,9 @@
   function joinWifiAdvanced() {
     console.log("Joining wifi advanced")
     
-    // Update status
+    // Update status and processing view
     document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
+    $('#configure-wifi-collapse').collapse("hide");
 
     // Get advanced wifi parameters
     var SSIDName = document.getElementById("ssid-name").value;
@@ -233,8 +264,10 @@
   function deleteWifis() {
     console.log("Deleting wifi")
     
-    // Update status
+    // Update status & processing view
     document.getElementById("status").innerHTML = "Deleting wifis, this will take a few minutes..."
+    $('#connection-info-collapse').collapse("hide");
+    $('#danger-zone-collapse').collapse("hide");
 
     // Send join wifi request
     console.log("Sending delete wifis request");
@@ -308,7 +341,7 @@
 {% block content %}
 <html>
 
-<input type="hidden" id="wifi-access-points-select" name="variable" value="{{ wifi_access_points }}">
+<input type="hidden" id="wifi-access-points" name="variable", value="temp">
 
 <body>
 
@@ -335,7 +368,7 @@
         <!-- Wifi Access Point Passphrase and Select -->
         <li>
           <div><b>Access Point Name:</b> (also called an SSID)</div>
-          <input type="text" id="ssid-name" style="width:200px"
+          <input type="text" id="ssid-name" style="width:400px"
            autocomplete="new-password" placeholder="SSID">
           <select id="wifi-access-points-select" class="selectpicker" style="width:200px"
            onchange="document.getElementById('ssid-name').value=this.value">
@@ -408,7 +441,7 @@
         <!-- Join Wifi Button -->
         </li>
           <a class="badge badge-secondary" data-toggle="collapse" id="join-wifi-button"
-          style="width:200px" href="" role="button" onclick="joinWifi();">
+          style="width:200px" href="" role="button" onclick="joinWifiAdvanced();">
           Join Wifi</a>
         </li>
 
@@ -417,18 +450,19 @@
 
 
     <!-- Danger Zone Card -->
-    <div class="card" id="connect-card">
-      <h3>Danger Zone</h3><br/>
-      <ul>
-        <li><a class="badge badge-secondary" data-toggle="collapse"
-         style="width:200px" href="" role="button" onclick="deleteWifis();">
-         Delete Wifi Connections</a> <span id="delete-wifi-button"></span></li>
-        <li><a class="badge badge-secondary" data-toggle="collapse"
-         style="width:200px" href="" role="button" onclick="reregisterIot();">
-         Re-Register Device</a> <span id="reregister-iot-button"></span></li>
-      </ul>
+    <div class="collapse" id="danger-zone-collapse">
+      <div class="card" id="connect-card">
+        <h3>Danger Zone</h3><br/>
+        <ul>
+          <li><a class="badge badge-secondary" data-toggle="collapse"
+           style="width:200px" href="" role="button" onclick="deleteWifis();">
+           Delete Wifi Connections</a> <span id="delete-wifi-button"></span></li>
+          <li><a class="badge badge-secondary" data-toggle="collapse"
+           style="width:200px" href="" role="button" onclick="reregisterIot();">
+           Re-Register Device</a> <span id="reregister-iot-button"></span></li>
+        </ul>
+      </div>
     </div>
-
   </div>
 </div>
 </body>

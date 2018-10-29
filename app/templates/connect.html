@@ -9,6 +9,7 @@
 
   function getInfoAndUpdateView() {
     console.log("Getting info and updating view")
+    document.getElementById("status").innerHTML = "Loading network status..."
 
     // Initialize info vars
     var systemInfo = {};
@@ -18,7 +19,6 @@
     // Get system info
     getSystemInfo()
       .then(function(systemInfo) {
-
         var systemInfo = systemInfo;
         
         // Get network info
@@ -81,34 +81,19 @@
     // Update view for disconnected network and wifi-beaglebone system
     else if (!networkInfo["isConnected"] && systemInfo["isWifiBeaglebone"]) {
       document.getElementById("status").innerHTML = "Please configure your wifi network"
-      updateWifiAccessPoints(networkInfo["wifiAccessPoints"])
+      updateWifiAccessPoints(networkInfo["wifiAccessPoints"]);
+
+      // Check wifi networks have loaded
+      var wifiSelect = document.getElementById("wifi-access-points-select");
+      if (wifiSelect != null && wifiSelect.options.length < 1) {
+        document.getElementById("status").innerHTML = "Please wait for network connections to load...refresh page in a few moments";
+      }
+
       $("#network-info-collapse").collapse("hide");
       $("#configure-wifi-collapse").collapse("show");
     }
   }
 
-  function updateWifiAccessPoints(wifiAccessPoints) {
-    console.log("Updating wifi access points")
-
-    // Get wifi access point select
-    var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
-
-    // Remove stale wifi access point selections
-    if (wifiAccessPointSelect != null) {
-      for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
-        wifiAccessPointSelect.remove(i);
-      } 
-    }
-
-    // Add updated wifi access point selections
-    for( i=0; i < wifiAccessPoints.length; i++ ) {
-      wifiAccessPoint = wifiAccessPoints[i];
-      var option = document.createElement("option");
-      option.text = wifiAccessPoint.ssid;
-      option.value = wifiAccessPoint.psk;
-      wifiAccessPointSelect.add(option);
-    }
-  }
 
   function getSystemInfo() {
     console.log("Getting system info")
@@ -139,6 +124,31 @@
         }
       });
     });
+  }
+
+  function updateWifiAccessPoints(wifiAccessPoints) {
+    console.log("Updating wifi access points")
+
+    // Get wifi access point select
+    var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
+
+    // Remove stale wifi access point selections
+    if (wifiAccessPointSelect != null) {
+      for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
+        wifiAccessPointSelect.remove(i);
+      } 
+    }
+
+    // Add updated wifi access point selections
+    if (wifiAccessPoints != null) {
+      for( i=0; i < wifiAccessPoints.length; i++ ) {
+        wifiAccessPoint = wifiAccessPoints[i];
+        var option = document.createElement("option");
+        option.text = wifiAccessPoint.ssid;
+        option.value = wifiAccessPoint.psk;
+        wifiAccessPointSelect.add(option);
+      }
+    }
   }
 
   function getNetworkInfo() {
@@ -205,13 +215,15 @@
   function joinWifi() {
     console.log("Joining wifi")
     
-    // Update status
+    // Update status and processing view
     document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
+    $('#configure-wifi-collapse').collapse("hide");
 
-    // Get wifi name
+
+    // Get wifi psk
     var wifiSelect = document.getElementById("wifi-access-points-select");
-    var wifiName = wifiSelect.options[wifiSelect.selectedIndex];
-    if( wifiName == null ) {
+    var wifiPsk = wifiSelect.options[wifiSelect.selectedIndex];
+    if( wifiPsk == null ) {
       console.log("Error: could not get wifiAccessPoints element");
       return;
     }
@@ -230,8 +242,8 @@
       type: "POST",
       data: {
         "csrfmiddlewaretoken": "{{ csrf_token }}",
-        "wifi": wifiName.value,
-        "password": wifiPassword.value
+        "wifi_psk": wifiPsk.value,
+        "wifi_password": wifiPassword.value
       },
       dataType: 'json',
       success: function(data) {
