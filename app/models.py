@@ -2,6 +2,9 @@
 import json as json_
 import uuid as uuid_module
 
+# Import python types
+from typing import Any
+
 # Import django modules
 from django.db import models
 from django.contrib.postgres.fields import JSONField
@@ -55,7 +58,7 @@ class DeviceConfigModel(models.Model):
         verbose_name = "Device Configuration"
         verbose_name_plural = "Device Configurations"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts uuid, name, and version from json on save. """
         dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
@@ -72,7 +75,7 @@ class PeripheralSetupModel(models.Model):
         verbose_name = "Peripheral Setup"
         verbose_name_plural = "Peripheral Setups"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts uuid and name from json on save. """
         dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
@@ -88,7 +91,7 @@ class SensorVariableModel(models.Model):
         verbose_name = "Sensor Variable"
         verbose_name_plural = "Sensor Variables"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts key from json on save. """
         dict_ = json_.loads(self.json)
         self.key = dict_["key"]
@@ -103,7 +106,7 @@ class ActuatorVariableModel(models.Model):
         verbose_name = "Actuator Variable"
         verbose_name_plural = "Actuator Variables"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts key from json on save. """
         dict_ = json_.loads(self.json)
         self.key = dict_["key"]
@@ -119,7 +122,7 @@ class CultivarModel(models.Model):
         verbose_name = "Cultivar"
         verbose_name_plural = "Cultivars"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts uuid and name from json on save. """
         dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
@@ -136,7 +139,7 @@ class CultivationMethodModel(models.Model):
         verbose_name = "Cultivation Method"
         verbose_name_plural = "Cultivation Methods"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts uuid and name from json on save. """
         dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]
@@ -154,7 +157,7 @@ class RecipeModel(models.Model):
         verbose_name = "Recipe"
         verbose_name_plural = "Recipes"
 
-    def save(self, *args, **kwargs):
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """ Extracts uuid and name from json on save. """
         dict_ = json_.loads(self.json)
         self.uuid = dict_["uuid"]

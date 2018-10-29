@@ -117,11 +117,7 @@ class CoordinatorManager(StateMachineManager):
     @property
     def config_uuid(self) -> Optional[str]:
         """ Gets config uuid from shared state. """
-        value = self.state.device.get("config_uuid")
-        if value != None:
-            return str(value)
-        else:
-            return None
+        return self.state.device.get("config_uuid")  # type: ignore
 
     @config_uuid.setter
     def config_uuid(self, value: Optional[str]) -> None:
@@ -145,6 +141,44 @@ class CoordinatorManager(StateMachineManager):
         else:
             environment = models.EnvironmentModel.objects.latest()
             return float(environment.timestamp.timestamp())
+
+    @property
+    def manager_modes(self) -> Dict[str, str]:
+        """Gets manager modes."""
+        self.logger.debug("Getting manager modes")
+
+        # Get known manager modes
+        modes = {
+            "Coordinator": self.mode,
+            "Recipe": self.recipe.mode,
+            "Network": self.network.mode,
+            "IoT": self.iot.mode,
+            "Resource": self.resource.mode,
+        }
+
+        # Get peripheral manager modes
+        for peripheral_name, peripheral_manager in self.peripherals.items():
+            modes[peripheral_name] = peripheral_manager.mode
+
+        # Return modes
+        self.logger.debug("Returning modes: {}".format(modes))
+        return modes
+
+    @property
+    def manager_healths(self) -> Dict[str, str]:
+        """Gets manager healths."""
+        self.logger.debug("Getting manager healths")
+
+        # Initialize healths
+        healths = {}
+
+        # Get peripheral manager modes
+        for peripheral_name, peripheral_manager in self.peripherals.items():
+            healths[peripheral_name] = peripheral_manager.health  # type: ignore
+
+        # Return modes
+        self.logger.debug("Returning healths: {}".format(healths))
+        return healths
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 

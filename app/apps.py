@@ -8,7 +8,7 @@ from django.apps import AppConfig
 class CoreConfig(AppConfig):
     name = "app"
 
-    def ready(self):
+    def ready(self) -> None:
         # Ensure startup code only runs once
         if os.environ.get("RUN_MAIN") != "true":
             return

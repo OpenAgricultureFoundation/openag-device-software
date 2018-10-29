@@ -19,7 +19,6 @@ from device.iot import modes, commands
 from device.iot.pubsub import PubSub
 
 # TODO Notes:
-# Add static type checking
 # Write tests
 # Catch specific exceptions
 

@@ -20,7 +20,7 @@
         body {
          background-color: #f1f1f1;
         }
-       .dashboard, .events, .recipes, .environments, .peripherals, .images, .config, .password, .logs, .iot, .resources, .connect, .upgrade, .login {
+       .dashboard, .recipes, .environments, .peripherals, .images, .config, .password, .logs, .iot, .resources, .connect, .upgrade, .login {
         padding: 20px;
        }
        .card {
@@ -71,7 +71,6 @@
                 <li><a class="nav-link" href="{% url 'admin:index' %}" target="_blank">Admin</a></li>
                 <li><a class="nav-link" href="/api" target="_blank">API</a></li>
                 <li><a class="nav-link" href="{% url 'environments' %}">Environments</a></li>
-                <li><a class="nav-link" href="{% url 'events' %}">Events</a></li>
                 <li><a class="nav-link" href="{% url 'images' %}">Images</a></li>
                 <li><a class="nav-link" href="{% url 'iot' %}">IoT</a></li>
                 <li><a class="nav-link" href="{% url 'logs' %}">Logs</a></li>
