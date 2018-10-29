@@ -1,5 +1,5 @@
 # Import standard python modules
-import os, json, logging, shutil
+import os, json, logging, shutil, glob
 
 # Import django modules
 from django.apps import apps
@@ -27,6 +27,8 @@ from device.utilities import logger, system
 APP_NAME = "app"
 LOG_DIR = "data/logs/"
 IMAGE_DIR = "data/images/"
+STORED_IMAGE_DIR = IMAGE_DIR + "stored/"
+STORED_IMAGES_PATH = "data/images/stored/*.png"
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
@@ -519,58 +521,59 @@ class Environments(views.APIView):
 class Images(views.APIView):
     """UI page for ImageManager."""
 
+    # Initialize view parameters
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "images.html"
 
+    # Initialize logger
+    logger = logger.Logger("ImagesView", "app")
+
     @method_decorator(login_required)
     def get(self, request):
-        stored_path = IMAGE_DIR + "stored/"
-        stored_files = os.listdir(stored_path)
-        stored_files.sort()
-        files = []
-        for f in stored_files:
-            # Clean up any place holder images
-            if f.startswith("This_"):
-                os.remove(stored_path + f)
-                continue
-            if f.endswith(".png"):
-                files.append({"name": f})
+        self.logger.debug("Getting image view")
 
-        if 0 == len(files):
-            if not os.path.isdir(stored_path):
-                os.mkdir(stored_path)
-            s = "device/peripherals/modules/usb_camera/tests/simulation_image.png"
-            place_holder = (
-                "This_is_just_a_sample_image_until_your_EDU_takes_its_own_picture.png"
-            )
-            shutil.copy(s, stored_path + place_holder)
-            files.append({"name": place_holder})
+        # Get stored image filepaths
+        filepaths = glob.glob(STORED_IMAGES_PATH)
+        self.logger.debug("filepaths = {}".format(filepaths))
 
-        response = {"files_json": json.dumps(files)}
-        return Response(response)
+        # Build response
+        filepaths_json = json.dumps(filepaths)
+        response = {"filepaths_json": filepaths_json}
+
+        # Return response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, 200)
 
 
 class Resource(views.APIView):
     """UI page for ResourceManager."""
 
+    # Initialize view parameters
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "resource.html"
 
+    # Initialize logger
+    logger = logger.Logger("ResourceView", "app")
+
     @method_decorator(login_required)
     def get(self, request):
+        self.logger.debug("Getting resource view")
 
-        rv = viewers.ResourceViewer()
+        # Get resource manager
+        app_config = apps.get_app_config(APP_NAME)
+        resource_manager = app_config.coordinator.resource
 
-        # Build and return response
+        # Build response
         response = {
-            "status": rv.resource_dict["status"],
-            "error": rv.resource_dict["error"],
-            "available_disk_space": rv.resource_dict["available_disk_space"],
-            "free_memory": rv.resource_dict["free_memory"],
-            "database_size": rv.resource_dict["database_size"],
-            "internet_connection": rv.resource_dict["internet_connection"],
+            "status": resource_manager.status,
+            "free_disk": resource_manager.free_disk,
+            "free_memory": resource_manager.free_memory,
+            "database_size": resource_manager.database_size,
         }
-        return Response(response)
+
+        # Return response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, 200)
 
 
 class Connect(views.APIView):
@@ -598,23 +601,34 @@ class ConnectAdvanced(views.APIView):
 class IoT(views.APIView):
     """UI page for IoT."""
 
+    # Initialize view parameters
     renderer_classes = [TemplateHTMLRenderer]
     template_name = "iot.html"
 
+    # Initialize logger
+    logger = logger.Logger("IotView", "app")
+
     @method_decorator(login_required)
     def get(self, request):
+        self.logger.debug("Getting view")
 
-        iotv = viewers.IoTViewer()
+        # Get iot manager
+        app_config = apps.get_app_config(APP_NAME)
+        iot_manager = app_config.coordinator.iot
 
-        # Build and return response
+        # Build response
         response = {
-            "status": iotv.iot_dict["connected"],
-            "error": iotv.iot_dict["error"],
-            "received_message_count": iotv.iot_dict["received_message_count"],
-            "published_message_count": iotv.iot_dict["published_message_count"],
-            "device_id": os.environ.get("DEVICE_ID"),
+            "is_connected": iot_manager.is_connected,
+            "is_registered": iot_manager.is_registered,
+            "device_id": iot_manager.device_id,
+            "verification_code": iot_manager.verification_code,
+            "received_message_count": iot_manager.received_message_count,
+            "published_message_count": iot_manager.published_message_count,
         }
-        return Response(response)
+
+        # Retun response
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, 200)
 
 
 class SystemViewSet(viewsets.ModelViewSet):

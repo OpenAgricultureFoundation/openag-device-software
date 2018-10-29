@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+
 {% block content %}
 <html>
    <body>
@@ -7,14 +8,12 @@
          <div class="card">
             <h3>Connection Status</h3>
             <ul>
-              <li><b>Connected:</b> {{ status }}
+              <li><b>Connected:</b> {{ is_connected }}
+              <li><b>Registered:</b> {{ is_registered }}
               <li><b>Device ID:</b> {{ device_id }}
+              <li><b>Verification Code:</b> {{ verification_code }}
               <li><b>Messages received:</b> {{ received_message_count }}
               <li><b>Messages sent:</b> {{ published_message_count }}
-                  
-              {% if error != None %}
-              <li><b>Error:</b> {{ error }}
-              {% endif %}
             </ul>
          </div>
       </div>
