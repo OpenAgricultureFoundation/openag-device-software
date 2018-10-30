@@ -71,7 +71,7 @@ def interpolate(x_list, y_list, x):
     # Calculate slope
     m = (y1 - y0) / (x1 - x0)
 
-    print("m = {}".format(m))
+    # print("m = {}".format(m))
 
     # Calculate adjusted position
     delta = x - x0

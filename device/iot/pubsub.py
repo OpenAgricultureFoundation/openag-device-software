@@ -140,17 +140,20 @@ class IoTPubSub:
                     if isinstance(val, float):
                         val = "{0:.2f}".format(val)
                         valuesJson += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                     elif isinstance(val, int):
                         valuesJson += "{'name':'%s', 'type':'int', 'value':%s}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                     else:  # assume str
                         valuesJson += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                            vname, val
+                            vname,
+                            val,
                         )
 
                 valuesJson += "]}"
@@ -588,7 +591,11 @@ def on_message(unused_client, ref_self, message):
         # Parse the config message to get the commands in it
         ref_self.parse_config_message(payload_dict)
     else:
-        ref_self.logger.debug("Ignoring this old config message. messageVersion={} <= lastConfigVersion={}\n".format(messageVersion, ref_self.lastConfigVersion))
+        ref_self.logger.debug(
+            "Ignoring this old config message. messageVersion={} <= lastConfigVersion={}\n".format(
+                messageVersion, ref_self.lastConfigVersion
+            )
+        )
 
 
 def on_log(unused_client, ref_self, level, buf):

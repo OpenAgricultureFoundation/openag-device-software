@@ -309,11 +309,8 @@ class IoTManager:
                 for image_file in image_file_list:
 
                     # Is this file open by a process? (fswebcam)
-                    if (
-                        0
-                        == os.system(
-                            "lsof -f -- {} > /dev/null 2>&1".format(image_file)
-                        )
+                    if 0 == os.system(
+                        "lsof -f -- {} > /dev/null 2>&1".format(image_file)
                     ):
                         continue  # Yes, so skip it and try the next one.
 
