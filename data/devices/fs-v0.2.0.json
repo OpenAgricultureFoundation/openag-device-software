@@ -48,7 +48,7 @@
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77", 
-                    "channel": 6, 
+                    "channel": 2, 
                     "address": "0x40"
                 }
             }
@@ -71,7 +71,7 @@
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77", 
-                    "channel": 6, 
+                    "channel": 2, 
                     "address": "0x15"
                 }
             }
