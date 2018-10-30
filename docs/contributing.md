@@ -14,6 +14,6 @@
 ## IoT Architecture
 ![](iot_architecture.jpg)
 
-## Device Architecture
-![](device_architecture.jpg)
+## Device Code Structure
+![](code_structure.png)
 
