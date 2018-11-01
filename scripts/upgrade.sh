@@ -80,6 +80,12 @@ if [[ "$OSTYPE" == "linux"* ]]; then
   sudo cp $DEVICE_CONFIG_PATH/rsyslog /etc/logrotate.d/
   sudo service rsyslog restart
 
+  # Collect static files
+  sudo scripts/collectstatic.sh
+
+  # Make sure stored image dir exists
+  sudo mkdir -p data/images/stored
+
   # Reload rc.local daemon
   sudo systemctl daemon-reload
 
