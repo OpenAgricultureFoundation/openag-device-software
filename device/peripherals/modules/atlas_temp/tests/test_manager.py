@@ -2,27 +2,24 @@
 import os, sys, json, threading
 
 # Set system path and directory
-root_dir = os.environ["OPENAG_BRAIN_ROOT"]
-sys.path.append(root_dir)
-os.chdir(root_dir)
+ROOT_DIR = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(ROOT_DIR)
+os.chdir(ROOT_DIR)
 
 # Import device utilities
-from device.utilities.accessors import get_peripheral_config
-from device.utilities.modes import Modes
+from device.utilities import accessors
+from device.utilities.state.main import State
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
-# Import device state
-from device.state.main import State
-
-# Import simulators
-from device.communication.i2c.mux_simulator import MuxSimulator
-
-# Import peripheral manager
+# Import manager elements
+from device.peripherals.classes.peripheral import modes
 from device.peripherals.modules.atlas_temp.manager import AtlasTempManager
+from device.peripherals.modules.atlas_temp import events
 
 # Load test config
-path = root_dir + "/device/peripherals/modules/atlas_temp/tests/config.json"
+path = ROOT_DIR + "/device/peripherals/modules/atlas_temp/tests/config.json"
 device_config = json.load(open(path))
-peripheral_config = get_peripheral_config(
+peripheral_config = accessors.get_peripheral_config(
     device_config["peripherals"], "AtlasTemp-Reservoir"
 )
 
@@ -38,7 +35,7 @@ def test_init() -> None:
     )
 
 
-# def test_initialize() -> None:
+# def test_initialize_peripheral() -> None:
 #     manager = AtlasTempManager(
 #         name="Test",
 #         state=State(),
@@ -46,7 +43,7 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
+#     manager.initialize_peripheral()
 
 
 # def test_setup() -> None:
@@ -57,11 +54,11 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
+#     manager.initialize_peripheral()
 #     manager.setup()
 
 
-# def test_update() -> None:
+# def test_update_peripheral() -> None:
 #     manager = AtlasTempManager(
 #         name="Test",
 #         state=State(),
@@ -69,11 +66,11 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.update()
+#     manager.initialize_peripheral()
+#     manager.update_peripheral()
 
 
-# def test_reset() -> None:
+# def test_reset_peripheral() -> None:
 #     manager = AtlasTempManager(
 #         name="Test",
 #         state=State(),
@@ -81,11 +78,11 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.reset()
+#     manager.initialize_peripheral()
+#     manager.reset_peripheral()
 
 
-# def test_shutdown() -> None:
+# def test_shutdown_peripheral() -> None:
 #     manager = AtlasTempManager(
 #         name="Test",
 #         state=State(),
@@ -93,5 +90,5 @@ def test_init() -> None:
 #         simulate=True,
 #         mux_simulator=MuxSimulator(),
 #     )
-#     manager.initialize()
-#     manager.shutdown()
+#     manager.initialize_peripheral()
+#     manager.shutdown_peripheral()

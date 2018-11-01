@@ -56,8 +56,6 @@
      }); 
   }
 
-
-
    function startRecipe() {
       /* Starts a recipe. */
       console.log("Starting recipe")
@@ -87,17 +85,14 @@
           dataType: 'json',
           success: function(data) {
             console.log("Event request succeeded")
-
-            // Get response message
-            message = data
+            message = data["message"]
             alert(message);
             location.reload();
           },
           error: function(data) {
             console.log("Event request failed")
-
-            // Get response message
-            message = JSON.parse(data.responseText)
+            var dataDict = JSON.parse(data.responseText);
+            var message = dataDict["message"];
             alert(message);
           }
       }); 
@@ -118,24 +113,21 @@
           dataType: 'json',
           success: function(data) {
             console.log("Stop recipe succeeded")
-
-            // Get response message
-            message = data
+            message = data["message"]
             alert(message);
             location.reload();
           },
           error: function(data) {
             console.log("Stop recipe failed")
-
-            // Get response message
-            message = JSON.parse(data.responseText)
+            var dataDict = JSON.parse(data.responseText);
+            var message = dataDict["message"];
             alert(message);
           }
       }); 
    }
 
    function createRecipe() {
-      /* Stops a recipe. */
+      /* Creates a recipe. */
       console.log("Creating recipe")
 
       // Get recipe json
@@ -152,17 +144,14 @@
           dataType: 'json',
           success: function(data) {
             console.log("Create recipe succeeded")
-
-            // Get response message
-            message = data
+            message = data["message"]
             alert(message);
             location.reload();
           },
           error: function(data) {
             console.log("Create recipe failed")
-
-            // Get response message
-            message = JSON.parse(data.responseText)
+            var dataDict = JSON.parse(data.responseText);
+            var message = dataDict["message"];
             alert(message);
           }
       }); 
@@ -176,7 +165,7 @@
 {% csrf_token %}
 
 <head>
-    {% if valid_internet_connection %}
+    {% if network_is_connected %}
       <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
       {{ datetime_form.media }}
     {% endif %}
@@ -190,16 +179,16 @@
             <h2> Recipe </h2>
             <div class="card">
             <p>
-               <b>Mode:</b> {{ current_recipe.mode }} </br>   
-               <b>Name:</b> {{ current_recipe.recipe_name }} </br>
-               <b>UUID:</b> {{ current_recipe.recipe_uuid }} </br>
-               <b>Started:</b> {{ current_recipe.start_datestring }} </br>
-               <b>Progress:</b> {{ current_recipe.percent_complete_string }} </br>
-               <b>Time Elapsed:</b> {{ current_recipe.time_elapsed_string }} </br>
-               <b>Time Remaining:</b> {{ current_recipe.time_remaining_string }} </br>
-               <b>Current Phase:</b> {{ current_recipe.current_phase }} </br>
-               <b>Current Cycle:</b> {{ current_recipe.current_cycle }} </br>
-               <b>Current Environment:</b> {{ current_recipe.current_environment_name }}
+               <b>Mode:</b> {{ recipe_mode }} </br>   
+               <b>Name:</b> {{ recipe_name }} </br>
+               <b>UUID:</b> {{ recipe_uuid }} </br>
+               <b>Started:</b> {{ recipe_start_datestring }} </br>
+               <b>Progress:</b> {{ recipe_percent_complete_string }} </br>
+               <b>Time Elapsed:</b> {{ recipe_time_elapsed_string }} </br>
+               <b>Time Remaining:</b> {{ recipe_time_remaining_string }} </br>
+               <b>Current Phase:</b> {{ recipe_current_phase }} </br>
+               <b>Current Cycle:</b> {{ recipe_current_cycle }} </br>
+               <b>Current Environment:</b> {{ recipe_current_environment_name }}
             </p>
             <p>
                <input type="text" id="recipe_json" name="recipe_json" placeholder='Paste recipe json here' required>
@@ -207,19 +196,19 @@
             </p>
             {% if current_recipe.recipe_uuid == None %}
             <select id="recipe_uuid">
-               {% for recipe in recipes %}
-               {% if recipe.uuid == selected_recipe.uuid %}
-               <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.name}} </option>
-               {% else %}
-               <option value="{{recipe.uuid}}"> Recipe: {{recipe.name}} </option>
-               {% endif %}
-               {% endfor %}
+              {% for recipe in recipes %}
+                {% if recipe.uuid == selected_recipe.uuid %}
+                  <option value="{{recipe.uuid}}" selected="selected"> Recipe: {{recipe.name}} </option>
+                {% else %}
+                  <option value="{{recipe.uuid}}"> Recipe: {{recipe.name}} </option>
+                {% endif %}
+              {% endfor %}
             </select>
 
             <!-- Datetime picker, only avaliable if we have a valid internet connection -->
-            {% if valid_internet_connection %}
-              {{ datetime_form.as_p }}
-            {% endif %}
+              {% if network_is_connected %}
+                {{ datetime_form.as_p }}
+              {% endif %}
             <button class="btn" type="button" onClick="startRecipe()"><i class="icon-share"></i> Start Recipe </button>
 
             {% else %}
@@ -229,18 +218,18 @@
          </div>
       </div>
       <div class="col-sm">
-            <h2> Device Modes </h2>
+            <h2> Mode </h2>
             <div class="card">
             <p>
-               {% for key, value in current_device.modes.items %}
+               {% for key, value in manager_modes.items %}
                <b>{{ key }}:</b> {{ value }} </br>
                {% endfor %}
             </p>
           </div>
-            <h2> Peripheral Health </h2>
+            <h2> Health </h2>
             <div class="card">
             <p>
-               {% for key, value in current_device.healths.items %}
+               {% for key, value in manager_healths.items %}
                <b>{{ key }}:</b> {{ value }} %</br>
                {% endfor %}
             </p>

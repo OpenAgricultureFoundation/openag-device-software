@@ -1,26 +1,17 @@
 # Import standard python modules
 import time, threading
+
+# Import python types
 from typing import NamedTuple, Optional, Tuple
 
-# Import device comms
-from device.communication.i2c.main import I2C
-from device.communication.i2c.mux_simulator import MuxSimulator
-from device.communication.i2c.exceptions import I2CError
-
 # Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import bitwise
+from device.utilities import logger, bitwise
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.exceptions import I2CError
 
 # Import driver elements
-from device.peripherals.modules.t6713.simulator import T6713Simulator
-from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
-from device.peripherals.modules.t6713.exceptions import (
-    ReadCo2Error,
-    ReadStatusError,
-    EnableABCLogicError,
-    DisableABCLogicError,
-    ResetError,
-)
+from device.peripherals.modules.t6713 import exceptions, simulator
 
 
 class Status(NamedTuple):
@@ -47,7 +38,7 @@ class T6713Driver:
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -62,12 +53,13 @@ class T6713Driver:
         self.i2c_lock = i2c_lock
 
         # Initialize logger
-        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+        logname = "Driver({})".format(name)
+        self.logger = logger.Logger(logname, "device")
 
         # Check if simulating
         if simulate:
             self.logger.info("Simulating driver")
-            Simulator = T6713Simulator
+            Simulator = simulator.T6713Simulator
         else:
             Simulator = None
 
@@ -85,7 +77,7 @@ class T6713Driver:
             )
 
         except I2CError as e:
-            raise InitError(logger=self.logger) from e
+            raise exceptions.InitError(logger=self.logger) from e
 
     def setup(self, retry: bool = True) -> None:
         """Sets up sensor."""
@@ -93,8 +85,8 @@ class T6713Driver:
         # Set ABC logic state
         try:
             self.enable_abc_logic()
-        except EnableABCLogicError as e:
-            raise SetupError(logger=self.logger) from e
+        except exceptions.EnableABCLogicError as e:
+            raise exceptions.SetupError(logger=self.logger) from e
 
         # Wait at least 2 minutes for sensor to stabilize
         start_time = time.time()
@@ -120,8 +112,8 @@ class T6713Driver:
             # Read status
             try:
                 status = self.read_status()
-            except ReadStatusError as e:
-                raise SetupError(logger=self.logger) from e
+            except exceptions.ReadStatusError as e:
+                raise exceptions.SetupError(logger=self.logger) from e
 
             # Check if sensor completed warm up mode
             if not status.warm_up_mode:
@@ -130,7 +122,9 @@ class T6713Driver:
 
             # Check if timed out
             if time.time() - start_time > self.warmup_timeout:
-                raise SetupError("Warmup period timed out", logger=self.logger)
+                raise exceptions.SetupError(
+                    "Warmup period timed out", logger=self.logger
+                )
 
             # Update every 3 seconds
             time.sleep(3)
@@ -145,7 +139,7 @@ class T6713Driver:
                 self.i2c.write(bytes([0x04, 0x13, 0x8b, 0x00, 0x01]), retry=retry)
                 bytes_ = self.i2c.read(4, retry=retry, disable_mux=True)
         except I2CError as e:
-            raise ReadCo2Error(logger=self.logger) from e
+            raise exceptions.ReadCo2Error(logger=self.logger) from e
 
         # Convert co2 data and set significant figures
         _, _, msb, lsb = bytes_
@@ -171,7 +165,7 @@ class T6713Driver:
                 self.i2c.write(bytes([0x04, 0x13, 0x8a, 0x00, 0x01]), retry=retry)
                 bytes_ = self.i2c.read(4, retry=retry, disable_mux=True)
         except I2CError as e:
-            raise ReadStatusError(logger=self.logger) from e
+            raise exceptions.ReadStatusError(logger=self.logger) from e
 
         # Parse status bytes
         _, _, status_msb, status_lsb = bytes_
@@ -196,7 +190,7 @@ class T6713Driver:
         try:
             self.i2c.write(bytes([0x05, 0x03, 0xEE, 0xFF, 0x00]), retry=retry)
         except I2CError as e:
-            raise EnableABCLogicError(logger=self.logger) from e
+            raise exceptions.EnableABCLogicError(logger=self.logger) from e
 
     def disable_abc_logic(self, retry: bool = True) -> None:
         """Disables ABC logic."""
@@ -204,7 +198,7 @@ class T6713Driver:
         try:
             self.i2c.write(bytes([0x05, 0x03, 0xEE, 0x00, 0x00]), retry=retry)
         except I2CError as e:
-            raise DisableABCLogicError(logger=self.logger) from e
+            raise exceptions.DisableABCLogicError(logger=self.logger) from e
 
     def reset(self, retry: bool = True) -> None:
         """Initiates soft reset."""
@@ -212,4 +206,4 @@ class T6713Driver:
         try:
             self.i2c.write(bytes([0x05, 0x03, 0xE8, 0xFF, 0x00]), retry=retry)
         except I2CError as e:
-            raise ResetError(logger=self.logger) from e
+            raise exceptions.ResetError(logger=self.logger) from e

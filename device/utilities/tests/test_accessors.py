@@ -5,7 +5,7 @@ import os, sys, pytest, numpy
 sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
 
 # Import device utilities
-from device.utilities import accessors
+from device.utilities import accessors, constants
 
 
 def test_listify_dict() -> None:
@@ -35,3 +35,30 @@ def test_dictify_list() -> None:
     expected = {"a": 1, "b": 2, "c": 3}
     dict_ = accessors.dictify_list(list_, reference_dict)
     assert dict_ == expected
+
+
+def test_floatify_string_kilo() -> None:
+    string = "10.2K"
+    float_ = accessors.floatify_string(string)
+    expected_float = 10.2 * constants.KILOBYTE
+    assert float_ == expected_float
+
+
+def test_floatify_string_mega() -> None:
+    string = "10.2M"
+    float_ = accessors.floatify_string(string)
+    expected_float = 10.2 * constants.MEGABYTE
+    assert float_ == expected_float
+
+
+def test_floatify_string_giga() -> None:
+    string = "11G"
+    float_ = accessors.floatify_string(string)
+    expected_float = 11.0 * constants.GIGABYTE
+    assert float_ == expected_float
+
+
+def test_floatify_string_invalid() -> None:
+    string = "10.2Q"
+    with pytest.raises(ValueError):
+        float_ = accessors.floatify_string(string)

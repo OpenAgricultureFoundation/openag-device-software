@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "device.peripherals",
     "device.iot",
     "device.resource",
-    "device.connect",
+    "device.network",
     "device.upgrade",
 ]
 
@@ -223,10 +223,18 @@ LOGGING = {
             "maxBytes": LOG_SIZE,
             "backupCount": LOG_BACKUPS,
         },
-        "connect_file": {
+        "network_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOG_DIR + "connect.log",
+            "filename": LOG_DIR + "network.log",
+            "formatter": "device_file",
+            "maxBytes": LOG_SIZE,
+            "backupCount": LOG_BACKUPS,
+        },
+        "system_file": {
+            "level": LOG_LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_DIR + "system.log",
             "formatter": "device_file",
             "maxBytes": LOG_SIZE,
             "backupCount": LOG_BACKUPS,
@@ -259,7 +267,8 @@ LOGGING = {
             "handlers": ["device_console", "resource_file"],
             "level": LOG_LEVEL,
         },
-        "connect": {"handlers": ["device_console", "connect_file"], "level": LOG_LEVEL},
+        "network": {"handlers": ["device_console", "network_file"], "level": LOG_LEVEL},
+        "system": {"handlers": ["device_console", "system_file"], "level": LOG_LEVEL},
         "upgrade": {"handlers": ["device_console", "upgrade_file"], "level": LOG_LEVEL},
     },
 }

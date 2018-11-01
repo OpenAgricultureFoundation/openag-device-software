@@ -34,9 +34,9 @@ printf "\nRunning code formatter...\n"
 black app/ device/
 
 # Run static type checks, TODO: run for all codebase
-# printf "\nRunning static type checks...\n"
-# mypy --python-version 3.6 --follow-imports skip --ignore-missing-imports --strict --allow-untyped-decorators .
-# printf "...type checks complete!\n"
+printf "\nRunning static type checks...\n"
+mypy --config-file mypy.ini device app
+printf "...type checks complete!\n"
 
 printf "\nRunning unit tests...\n"
 python -m pytest $DIR --cov device app

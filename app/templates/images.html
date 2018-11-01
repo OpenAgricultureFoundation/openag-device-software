@@ -4,35 +4,51 @@
 <script>
   var images = [] // global image file names
 
-  //--------------------------------------------------------------------------
   window.onload = function() {
-    var files_json = document.getElementById("files_json").value;
-    var files = JSON.parse(files_json);
-    for(i in files) {
-      images.push( files[i].name );
+
+    // Load filepaths
+    var filepaths_json = document.getElementById("filepaths-json").value;
+    var filepaths = JSON.parse(filepaths_json);
+
+    // Check if stored images exists
+    if (filepaths.length < 1) {
+      console.log("No stored images");
+      $('#no-images-collapse').collapse("show");
+      $('#images-collapse').collapse("hide");
+      return
     }
 
-    var slideO = document.getElementById("imageSlider");
+    // Push images to be hosted
+    for(var i=0; i<filepaths.length; i++) {
+      var filepath = filepaths[i];
+      console.log("filepath = " + filepath);
+      images.push(filepath)
+    }
+
+    // Update slider
+    var slideO = document.getElementById("image-slider");
     slideO.max = images.length - 1;
     slideO.value = images.length - 1; // farthest to the right
-    
-    var slider = $("#imageSlider");
+    var slider = $("#image-slider");
     slider.on("input change", showImage);
     showImage();
+
+    // Update view
+    $('#no-images-collapse').collapse("hide");
+    $('#images-collapse').collapse("show");
   }
 
-  //--------------------------------------------------------------------------
   function getOriginFromURL(href) {
     var anchor = document.createElement("a");
     anchor.href = href;
     return anchor.origin;
   }
 
-  //--------------------------------------------------------------------------
   function showImage() {
-    var slider = $("#imageSlider");
+    var slider = $("#image-slider");
     var img = document.getElementById("image");
-    // images are served by busybox, see run.sh
+
+    // Images are served by busybox, see run.sh
     var url = "{{ request.META.HTTP_REFERER }}"; // get URL / localhost
     var origin = getOriginFromURL(url); // clean the URL
     url = origin + ':8080/'; // add the port busybox is using
@@ -48,21 +64,24 @@
 
 {% block content %}
 <html>
-   <input type="hidden" id="files_json" name="variable" value="{{files_json}}">
+   <input type="hidden" id="filepaths-json" name="variable" value="{{filepaths_json}}">
    <body>
       <div class="images">
         <h2>Images</h2>
-         <div class="card">
-            <ul>
-            <div class="text-center"><span id="file_name"></span></div>
-            <form class="range-field">
-              <input id="imageSlider" class="no-border w-100" type="range" value="0" min="0" max="0" />
-            </form>
-            <div class="text-center">
-              <img id="image" src="" class="img-thumbnail">
+            <div class="card">
+              <div class="collapse" id="no-images-collapse">
+                No stored images, please wait for your device to capture images...
+              </div>
+              <div class="collapse" id="images-collapse">
+                <div class="text-center"><span id="file-name"></span></div>
+                <form class="range-field">
+                  <input id="image-slider" class="no-border w-100" type="range" value="0" min="0" max="0" />
+                </form>
+                <div class="text-center">
+                  <img id="image" src="" class="img-thumbnail">
+                </div>
+              </div>
             </div>
-
-         </div>
       </div>
    </body>
 </html>

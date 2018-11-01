@@ -11,7 +11,7 @@ Back to [Part 3: Flash Image onto BBB](flash_bbb.md)...or...Forward to [Part 5: 
    ```
 3. Get BBB Serial Number
    ```
-   ./scripts/get_BBB_SN.sh 
+   ./scripts/get_bbb_serial.sh 
    ```
 4. Get WIFI Access Point ID
    ```

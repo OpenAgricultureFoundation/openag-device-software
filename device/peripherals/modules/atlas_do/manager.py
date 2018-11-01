@@ -1,20 +1,13 @@
 # Import standard python modules
 from typing import Optional, Tuple, Dict, Any
 
-# Import device utilities
-from device.utilities.modes import Modes
-
-# Import peripheral parent class
-from device.peripherals.classes.peripheral.manager import PeripheralManager
-from device.peripherals.classes.peripheral.exceptions import DriverError
-
-# Import module elements
-from device.peripherals.modules.atlas_do.events import AtlasDOEvents
-from device.peripherals.modules.atlas_do.driver import AtlasDODriver
+# Import manager elements
+from device.peripherals.classes.peripheral import manager, modes
+from device.peripherals.modules.atlas_do import driver, exceptions
 
 
-class AtlasDOManager(PeripheralManager):  # type: ignore
-    """ Manages an Atlas Scientific dissolved oxygen driver. """
+class AtlasDOManager(manager.PeripheralManager):
+    """Manages an atlas scientific dissolved oxygen driver."""
 
     # Initialize variable parameters
     temperature_threshold = 0.1  # celcius
@@ -29,9 +22,6 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
-
-        # Initialize events
-        self.events = AtlasDOEvents(self)
 
         # Initialize variable names
         self.do_name = self.variables["sensor"]["do_mg_l"]
@@ -52,7 +42,7 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
         """Sets dissolved oxygen value in shared state. Does not update enironment from
         calibration mode."""
         self.state.set_peripheral_reported_sensor_value(self.name, self.do_name, value)
-        if self.mode != Modes.CALIBRATE:
+        if self.mode != modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
                 self.name, self.do_name, value
             )
@@ -81,8 +71,8 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
             return float(value)
         return None
 
-    def initialize(self) -> None:
-        """Initializes manager."""
+    def initialize_peripheral(self) -> None:
+        """Initializes peripheral."""
         self.logger.info("Initializing")
 
         # Clear reported values
@@ -93,7 +83,7 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
-            self.driver = AtlasDODriver(
+            self.driver = driver.AtlasDODriver(
                 name=self.name,
                 i2c_lock=self.i2c_lock,
                 bus=self.bus,
@@ -103,24 +93,24 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
-        except DriverError as e:
+        except exceptions.DriverError as e:
             self.logger.exception("Unable to initialize")
             self.health = 0.0
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
 
-    def setup(self) -> None:
-        """Sets up driver."""
+    def setup_peripheral(self) -> None:
+        """Sets up peripheral."""
         self.logger.info("Setting up")
 
         try:
             self.driver.setup()
-        except DriverError as e:
-            self.logger.exception("Unable to setup")
-            self.mode = Modes.ERROR
+        except exceptions.DriverError as e:
+            self.logger.exception("Unable to setup: {}".format(e))
+            self.mode = modes.ERROR
             self.health = 0
 
-    def update(self) -> None:
-        """Updates driver."""
+    def update_peripheral(self) -> None:
+        """Updates peripheral."""
         self.logger.info("Updating")
 
         try:
@@ -133,34 +123,24 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
                 self.driver.set_compensation_pressure(self.pressure)
 
             # Update compensation temperature if new value
-            if self.new_compenation_ec():
+            if self.new_compensation_ec():
                 self.driver.set_compensation_ec(self.ec)
 
             # Read pH and update health
             self.do = self.driver.read_do()
             self.health = 100.0
 
-        except DriverError as e:
+        except exceptions.DriverError as e:
             self.logger.error("Unable to update")
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
             self.health = 0
             return
-
-    def reset(self) -> None:
-        """Resets sensor."""
-        self.logger.info("Resetting")
-        self.clear_reported_values()
-
-    def shutdown(self) -> None:
-        """Shutsdown sensor."""
-        self.logger.info("Shutting down")
-        self.clear_reported_values()
 
     def new_compensation_temperature(self) -> bool:
         """Checks if there is a new compensation temperature value."""
 
         # Check if calibrating
-        if self.mode == Modes.CALIBRATE:
+        if self.mode == modes.CALIBRATE:
             return False
 
         # Check if compensation temperature exists
@@ -183,7 +163,7 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
         """Checks if there is a new compensation pressure value."""
 
         # Check if calibrating
-        if self.mode == Modes.CALIBRATE:
+        if self.mode == modes.CALIBRATE:
             return False
 
         # Check if compensation pressure exists
@@ -206,7 +186,7 @@ class AtlasDOManager(PeripheralManager):  # type: ignore
         """Checks if there is a new compensation electrical conductivity value."""
 
         # Check if calibrating
-        if self.mode == Modes.CALIBRATE:
+        if self.mode == modes.CALIBRATE:
             return False
 
         # Check if compensation ec exists

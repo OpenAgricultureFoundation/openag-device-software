@@ -4,36 +4,15 @@ import time, threading
 # Import python types
 from typing import Optional, Tuple, Dict, NamedTuple
 
-# Import device comms
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
-from device.communication.i2c.peripheral_simulator import PeripheralSimulator
-
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities.modes import Modes
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.exceptions import I2CError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.communication.i2c.peripheral_simulator import PeripheralSimulator
 
-
-# Import driver exceptions
-from device.peripherals.classes.peripheral.exceptions import InitError, SetupError
-from device.peripherals.classes.atlas.exceptions import (
-    ProcessCommandError,
-    ReadResponseError,
-    ReadInfoError,
-    ReadStatusError,
-    EnableProtocolLockError,
-    DisableProtocolLockError,
-    EnableLEDError,
-    DisableLEDError,
-    EnableSleepModeError,
-    SetCompensationTemperatureError,
-    TakeLowPointCalibrationError,
-    TakeMidPointCalibrationError,
-    TakeHighPointCalibrationError,
-    ClearCalibrationError,
-    FactoryResetError,
-)
+# Import manager elements
+from device.peripherals.classes.atlas import exceptions
 
 
 class Info(NamedTuple):
@@ -56,7 +35,7 @@ class AtlasDriver:
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -71,7 +50,8 @@ class AtlasDriver:
         self.simulate = simulate
 
         # Initialize logger
-        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+        logname = "Driver({})".format(name)
+        self.logger = Logger(logname, "peripherals")
 
         # Initialize I2C
         try:
@@ -86,7 +66,7 @@ class AtlasDriver:
                 PeripheralSimulator=Simulator,
             )
         except I2CError as e:
-            raise InitError(logger=self.logger)
+            raise exceptions.InitError(logger=self.logger)
 
     def setup(self, retry: bool = True) -> None:
         """Setsup sensor."""
@@ -97,7 +77,7 @@ class AtlasDriver:
             if info.firmware_version > 1.94:
                 self.enable_protocol_lock()
         except Exception as e:
-            raise SetupError(logger=self.logger) from e
+            raise exceptions.SetupError(logger=self.logger) from e
 
     def process_command(
         self,
@@ -127,7 +107,7 @@ class AtlasDriver:
             return None
 
         except Exception as e:
-            raise ProcessCommandError(logger=self.logger) from e
+            raise exceptions.ProcessCommandError(logger=self.logger) from e
 
     def read_response(
         self, process_seconds: float, num_bytes: int, retry: bool = True
@@ -145,7 +125,7 @@ class AtlasDriver:
             self.logger.debug("Reading response")
             data = self.i2c.read(num_bytes)
         except Exception as e:
-            raise ReadResponseError(logger=self.logger) from e
+            raise exceptions.ReadResponseError(logger=self.logger) from e
 
         # Format response code
         response_code = int(data[0])
@@ -153,7 +133,7 @@ class AtlasDriver:
         # Check for invalid syntax
         if response_code == 2:
             message = "invalid command string syntax"
-            raise ReadResponseError(message=message, logger=self.logger)
+            raise exceptions.ReadResponseError(message=message, logger=self.logger)
 
         # Check if still processing
         elif response_code == 254:
@@ -164,7 +144,7 @@ class AtlasDriver:
                 return self.read_response(process_seconds, num_bytes, retry=False)
             else:
                 message = "insufficient processing time"
-                raise ReadResponseError(message, logger=self.logger)
+                raise exceptions.ReadResponseError(message, logger=self.logger)
 
         # Check if device has no data to send
         elif response_code == 255:
@@ -175,12 +155,12 @@ class AtlasDriver:
                 return self.read_response(process_seconds, num_bytes, retry=False)
             else:
                 message = "insufficient processing time"
-                raise ReadResponseError(message=message, logger=self.logger)
+                raise exceptions.ReadResponseError(message=message, logger=self.logger)
 
         # Invalid response code
         elif response_code != 1:
             message = "invalid response code"
-            raise ReadResponseError(message=message, logger=self.logger)
+            raise exceptions.ReadResponseError(message=message, logger=self.logger)
 
         # Successfully read response
         response_message = str(data[1:].decode("utf-8").strip("\x00"))
@@ -195,7 +175,7 @@ class AtlasDriver:
         try:
             response = self.process_command("i", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise ReadInfoError(logger=self.logger) from e
+            raise exceptions.ReadInfoError(logger=self.logger) from e
 
         # Parse response
         _, sensor_type, firmware_version = response.split(",")  # type: ignore
@@ -208,7 +188,7 @@ class AtlasDriver:
         info = Info(sensor_type=sensor_type.lower(), firmware_version=firmware_version)
 
         # Successfully read info
-        self.logger.debug(info)
+        self.logger.debug(str(info))
         return info
 
     def read_status(self, retry: bool = True) -> Status:
@@ -217,7 +197,7 @@ class AtlasDriver:
         try:
             response = self.process_command("Status", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise ReadStatusError(logger=self.logger) from e
+            raise exceptions.ReadStatusError(logger=self.logger) from e
 
         # Parse response message
         command, code, voltage = response.split(",")  # type: ignore
@@ -243,7 +223,7 @@ class AtlasDriver:
         status = Status(prev_restart_reason=prev_restart_reason, voltage=float(voltage))
 
         # Successfully read status
-        self.logger.debug(status)
+        self.logger.debug(str(status))
         return status
 
     def enable_protocol_lock(self, retry: bool = True) -> None:
@@ -252,7 +232,7 @@ class AtlasDriver:
         try:
             self.process_command("Plock,1", process_seconds=0.9, retry=retry)
         except Exception as e:
-            raise EnableProtocolLockError(ogger=self.logger) from e
+            raise exceptions.EnableProtocolLockError(logger=self.logger) from e
 
     def disable_protocol_lock(self, retry: bool = True) -> None:
         """Disables protocol lock."""
@@ -260,7 +240,7 @@ class AtlasDriver:
         try:
             self.process_command("Plock,0", process_seconds=0.9, retry=retry)
         except Exception as e:
-            raise DisableProtocolLockError(logger=self.logger) from e
+            raise exceptions.DisableProtocolLockError(logger=self.logger) from e
 
     def enable_led(self, retry: bool = True) -> None:
         """Enables led."""
@@ -268,7 +248,7 @@ class AtlasDriver:
         try:
             self.process_command("L,1", process_seconds=1.8, retry=retry)
         except Exception as e:
-            raise EnableLEDError(logger=self.logger) from e
+            raise exceptions.EnableLEDError(logger=self.logger) from e
 
     def disable_led(self, retry: bool = True) -> None:
         """Disables led."""
@@ -276,7 +256,7 @@ class AtlasDriver:
         try:
             self.process_command("L,0", process_seconds=1.8, retry=retry)
         except Exception as e:
-            raise DisableLEDError(logger=self.logger) from e
+            raise exceptions.DisableLEDError(logger=self.logger) from e
 
     def enable_sleep_mode(self, retry: bool = True) -> None:
         """Enables sleep mode, sensor will wake up by sending any command to it."""
@@ -288,7 +268,7 @@ class AtlasDriver:
                 "Sleep", process_seconds=0.3, read_response=False, retry=retry
             )
         except Exception as e:
-            raise EnableSleepModeError(logger=self.logger) from e
+            raise exceptions.EnableSleepModeError(logger=self.logger) from e
 
     def set_compensation_temperature(
         self, temperature: float, retry: bool = True
@@ -299,7 +279,7 @@ class AtlasDriver:
             command = "T,{}".format(temperature)
             self.process_command(command, process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise SetCompensationTemperatureError(logger=self.logger) from e
+            raise exceptions.SetCompensationTemperatureError(logger=self.logger) from e
 
     def calibrate_low(self, value: float, retry: bool = True) -> None:
         """Takes a low point calibration reading."""
@@ -308,7 +288,7 @@ class AtlasDriver:
             command = "Cal,low,{}".format(value)
             self.process_command(command, process_seconds=0.9, retry=retry)
         except Exception as e:
-            raise TakeLowPointCalibrationError(logger=self.logger) from e
+            raise exceptions.TakeLowPointCalibrationError(logger=self.logger) from e
 
     def calibrate_mid(self, value: float, retry: bool = True) -> None:
         """Takes a mid point calibration reading."""
@@ -317,7 +297,7 @@ class AtlasDriver:
             command = "Cal,mid,{}".format(value)
             self.process_command(command, process_seconds=0.9, retry=retry)
         except Exception as e:
-            raise TakeMidPointCalibrationError(logger=self.logger) from e
+            raise exceptions.TakeMidPointCalibrationError(logger=self.logger) from e
 
     def calibrate_high(self, value: float, retry: bool = True) -> None:
         """Takes a high point calibration reading."""
@@ -326,7 +306,7 @@ class AtlasDriver:
             command = "Cal,high,{}".format(value)
             self.process_command(command, process_seconds=0.9, retry=retry)
         except Exception as e:
-            raise TakeHighPointCalibrationError(logger=self.logger) from e
+            raise exceptions.TakeHighPointCalibrationError(logger=self.logger) from e
 
     def clear_calibrations(self, retry: bool = True) -> None:
         """Clears calibration readings."""
@@ -334,7 +314,7 @@ class AtlasDriver:
         try:
             self.process_command("Cal,clear", process_seconds=0.9, retry=retry)
         except Exception as e:
-            raise ClearCalibrationError(logger=self.logger) from e
+            raise exceptions.ClearCalibrationError(logger=self.logger) from e
 
     def factory_reset(self, retry: bool = True) -> None:
         """Resets sensor to factory config."""
@@ -344,4 +324,4 @@ class AtlasDriver:
                 "Factory", process_seconds=0.3, read_response=False, retry=retry
             )
         except Exception as e:
-            raise FactoryResetError(logger=self.logger) from e
+            raise exceptions.FactoryResetError(logger=self.logger) from e

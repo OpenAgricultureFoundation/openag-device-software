@@ -4,27 +4,22 @@ import time, os, datetime, glob, threading
 # Import python types
 from typing import Optional, Tuple, Dict, Any, List
 
-# Import device comms
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
-
 # Import device utilities
-from device.utilities.logger import Logger
-from device.utilities.accessors import usb_device_matches
+from device.utilities import logger, accessors
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.exceptions import I2CError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
-# Import peripheral modules
+# Import driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver
-from device.peripherals.classes.peripheral.exceptions import DriverError, InitError
-from device.peripherals.modules.usb_camera.exceptions import (
-    GetCameraError,
-    EnableCameraError,
-    DisableCameraError,
-    CaptureError,
-    CaptureImageError,
+from device.peripherals.common.dac5578.exceptions import (
+    DriverError as DAC5578DriverError
 )
+from device.peripherals.modules.usb_camera import exceptions
 
-IMAGE_DIR = "data/images/"
+# Initialize file paths
+IMAGE_PATH = "data/images/"
+SIMULATE_IMAGE_PATH = "device/peripherals/modules/usb_camera/tests/images/"
 
 
 class USBCameraDriver:
@@ -39,7 +34,7 @@ class USBCameraDriver:
         simulate: bool = False,
         usb_mux_comms: Optional[Dict[str, Any]] = None,
         usb_mux_channel: Optional[int] = None,
-        i2c_lock: Optional[threading.Lock] = None,
+        i2c_lock: Optional[threading.RLock] = None,
         mux_simulator: Optional[MuxSimulator] = None,
     ) -> None:
         """Initializes USB camera camera."""
@@ -52,14 +47,15 @@ class USBCameraDriver:
         self.simulate = simulate
 
         # Initialize logger
-        self.logger = Logger(name="Driver({})".format(name), dunder_name=__name__)
+        logname = "Driver({})".format(name)
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Check if simulating
         if simulate:
             self.logger.info("Simulating driver")
-            self.directory = "device/peripherals/modules/usb_camera/tests/images/"
+            self.directory = SIMULATE_IMAGE_PATH
         else:
-            self.directory = IMAGE_DIR
+            self.directory = IMAGE_PATH
 
         # Check directory exists else create it
         if not os.path.exists(self.directory):
@@ -89,7 +85,7 @@ class USBCameraDriver:
             )
             self.usb_mux_channel = usb_mux_channel
         except I2CError as e:
-            raise InitError(logger=self.logger) from e
+            raise exceptions.InitError(logger=self.logger) from e
 
     def list_cameras(
         self, vendor_id: Optional[int] = None, product_id: Optional[int] = None
@@ -107,7 +103,9 @@ class USBCameraDriver:
         # Check for product and vendor id matches
         matches = []
         for camera in cameras:
-            if usb_device_matches(camera, vendor_id, product_id):
+            vid = vendor_id
+            pid = product_id
+            if accessors.usb_device_matches(camera, vid, pid):  # type: ignore
                 matches.append(camera)
 
         return matches
@@ -121,10 +119,10 @@ class USBCameraDriver:
         # Check only one active camera
         if len(cameras) < 1:
             message = "no active cameras"
-            raise GetCameraError(message=message, logger=self.logger)
+            raise exceptions.GetCameraError(message=message, logger=self.logger)
         elif len(cameras) > 1:
             message = "too many active cameras"
-            raise GetCameraError(message=message, logger=self.logger)
+            raise exceptions.GetCameraError(message=message, logger=self.logger)
 
         # Successfuly got one camera
         return cameras[0]
@@ -135,11 +133,10 @@ class USBCameraDriver:
 
         # Turn on usb mux channel
         try:
-            self.dac5578.set_high(
-                channel=self.usb_mux_channel, retry=retry
-            )  # type: ignore
-        except DriverError as e:
-            raise EnableCameraError(logger=self.logger) from e
+            channel = self.usb_mux_channel
+            self.dac5578.set_high(channel=channel, retry=retry)  # type: ignore
+        except DAC5578DriverError as e:
+            raise exceptions.EnableCameraError(logger=self.logger) from e
 
         # Wait for camera to initialize
         time.sleep(5)
@@ -150,11 +147,10 @@ class USBCameraDriver:
 
         # Turn off usb mux channel
         try:
-            self.dac5578.set_low(
-                channel=self.usb_mux_channel, retry=retry
-            )  # type: ignore
-        except DriverError as e:
-            raise DisableCameraError(logger=self.logger) from e
+            channel = self.usb_mux_channel
+            self.dac5578.set_low(channel=channel, retry=retry)  # type: ignore
+        except DAC5578DriverError as e:
+            raise exceptions.DisableCameraError(logger=self.logger) from e
 
         # Wait for camera to power down
         start_time = time.time()
@@ -171,12 +167,12 @@ class USBCameraDriver:
 
             # TODO: Handle specific exceptions
             except Exception as e:
-                raise DisableCameraError(logger=self.logger) from e
+                raise exceptions.DisableCameraError(logger=self.logger) from e
 
             # Check for timeout
             if time.time() - start_time > 5:  # 5 second timeout
                 message = "timed out"
-                raise DisableCameraError(message=message, logger=self.logger)
+                raise exceptions.DisableCameraError(message=message, logger=self.logger)
 
             # Update every 100ms
             time.sleep(0.1)
@@ -195,8 +191,8 @@ class USBCameraDriver:
             self.enable_camera()
             self.capture_image()
             self.disable_camera()
-        except DriverError as e:
-            raise CaptureError(logger=self.logger) from e
+        except DAC5578DriverError as e:
+            raise exceptions.CaptureError(logger=self.logger) from e
 
         # TODO: Unlock camera threads
 
@@ -227,8 +223,8 @@ class USBCameraDriver:
         # Camera not simulated, get camera path
         try:
             camera = self.get_camera()
-        except GetCameraError as e:
-            raise CaptureImageError(logger=self.logger) from e
+        except exceptions.GetCameraError as e:
+            raise exceptions.CaptureImageError(logger=self.logger) from e
 
         # Capture image
         try:
@@ -262,4 +258,4 @@ class USBCameraDriver:
                 os.rename(active_path, image_path)
 
         except Exception as e:
-            raise CaptureImageError(logger=self.logger) from e
+            raise exceptions.CaptureImageError(logger=self.logger) from e

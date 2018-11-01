@@ -1,9 +1,12 @@
 # Import standard python modules
 import numpy, math, operator
 
+# Import python types
+from typing import List, Union, Dict, Optional
 
-def magnitude(x):
-    """ Gets magnitude of provided value. """
+
+def magnitude(x: float) -> int:
+    """Gets magnitude of value."""
 
     # Check for zero condition
     if x == 0:
@@ -13,12 +16,16 @@ def magnitude(x):
     return int(math.floor(math.log10(x)))
 
 
-def is_sorted_increasing(list_):
+def is_sorted_increasing(list_: List[Union[int, float]]) -> bool:
     """Checks if list is sorted in increasing order."""
-    return all(list_[i] <= list_[i + 1] for i in range(len(list_) - 1))
+    return all(list_[i] <= list_[i + 1] for i in range(len(list_) - 1))  # type: ignore
 
 
-def interpolate(x_list, y_list, x):
+def interpolate(
+    x_list: List[Union[int, float]],
+    y_list: List[Union[int, float]],
+    x: Union[int, float],
+) -> Union[int, float]:
     """ Interpolates value for x from x_list and y_list. """
 
     # Verify x_list and y_list are same length
@@ -44,11 +51,11 @@ def interpolate(x_list, y_list, x):
         y_list_copy = y_list.copy()
 
     # if x < smallest in list, make that the new x
-    if x < x_list_copy[0]:
+    if x < x_list_copy[0]:  # type: ignore
         x = x_list_copy[0]
 
     # if x > largest in list, make that the new x
-    if x > x_list_copy[-1]:
+    if x > x_list_copy[-1]:  # type: ignore
         x = x_list_copy[-1]
 
     # Check if x matches entry in x_list
@@ -58,7 +65,7 @@ def interpolate(x_list, y_list, x):
 
     # Get index of smallest element greater than x
     for index in range(len(x_list_copy)):
-        if x_list_copy[index] > x:
+        if x_list_copy[index] > x:  # type: ignore
             break
     index = index - 1
 
@@ -69,12 +76,12 @@ def interpolate(x_list, y_list, x):
     y1 = y_list_copy[index + 1]
 
     # Calculate slope
-    m = (y1 - y0) / (x1 - x0)
+    m = (y1 - y0) / (x1 - x0)  # type: ignore
 
     # print("m = {}".format(m))
 
     # Calculate adjusted position
-    delta = x - x0
+    delta = x - x0  # type: ignore
 
     # Calculate interpolated value and return
     y = y0 + delta * m
@@ -93,7 +100,12 @@ def discretize(minimum: int, maximum: int, value: float) -> dict:
     return output
 
 
-def bnnls(A, b, bound=1, index_map=None):
+def bnnls(
+    A: numpy.ndarray,
+    b: numpy.ndarray,
+    bound: float = 1,
+    index_map: Optional[Dict] = None,
+) -> numpy.ndarray:
     """Solves for bounded non-negative least squares approximation. When solving Ax=b, 
     x is constrained to be within 0-bound."""
 
@@ -107,7 +119,7 @@ def bnnls(A, b, bound=1, index_map=None):
 
     # Build initial index map
     if index_map == None:
-        index_map = list(range(cols))
+        index_map = list(range(cols))  # type: ignore
 
     # Get max column and value
     max_col, max_val = max(enumerate(x.tolist()), key=operator.itemgetter(1))
@@ -127,17 +139,17 @@ def bnnls(A, b, bound=1, index_map=None):
         new_A = numpy.transpose(new_AT)
 
         # Update index map
-        new_index_map = index_map[:]
+        new_index_map = index_map[:]  # type: ignore
         del new_index_map[max_col]
 
         # Recalculate new x for new A and b
         new_x = bnnls(new_A, new_b, bound=bound, index_map=new_index_map)
 
         # Build x mapped dictionary
-        x_mapped_dict = {}
+        x_mapped_dict: Dict = {}
 
         # Add saturated value to x mapped dict
-        x_mapped_dict = {index_map[max_col]: bound}
+        x_mapped_dict = {index_map[max_col]: bound}  # type: ignore
 
         # Add remaining values to x mapped dict
         for i, index in enumerate(new_index_map):
@@ -156,7 +168,7 @@ def bnnls(A, b, bound=1, index_map=None):
         return x
 
 
-def nnls(A, b, tol=1e-8):
+def nnls(A: numpy.ndarray, b: numpy.ndarray, tol: float = 1e-8) -> numpy.ndarray:
     """Origninal function by @alexfields
 
     Solve ``argmin_x || Ax - b ||_2`` for ``x>=0``. This version may be superior to the FORTRAN implementation when ``A`` has more rows than

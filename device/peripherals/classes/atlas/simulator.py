@@ -1,9 +1,12 @@
+# Import python types
 from typing import Dict, Any
-from device.communication.i2c.peripheral_simulator import (
+
+# Import device utilities
+from device.utilities.bitwise import byte_str
+from device.utilities.communication.i2c.peripheral_simulator import (
     PeripheralSimulator,
     verify_mux,
 )
-from device.utilities.bitwise import byte_str
 
 
 ATLAS_SUCCESS_31 = bytes(

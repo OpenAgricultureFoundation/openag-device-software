@@ -1,19 +1,14 @@
 # Import standard python modules
 from typing import Optional, Tuple, Dict, Any
 
-# Import device utilities
-from device.utilities.modes import Modes
-
 # Import peripheral parent class
-from device.peripherals.classes.peripheral.manager import PeripheralManager
+from device.peripherals.classes.peripheral import manager, modes
 
-# Import driver elements
-from device.peripherals.modules.sht25.events import SHT25Events
-from device.peripherals.modules.sht25.driver import SHT25Driver
-from device.peripherals.modules.sht25.exceptions import DriverError
+# Import manager elements
+from device.peripherals.modules.sht25 import driver, exceptions
 
 
-class SHT25Manager(PeripheralManager):  # type: ignore
+class SHT25Manager(manager.PeripheralManager):
     """Manages an sht25 temperature and humidity sensor."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -21,9 +16,6 @@ class SHT25Manager(PeripheralManager):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
-
-        # Initialize events
-        self.events = SHT25Events(self)
 
         # Initialize variable names
         self.temperature_name = self.variables["sensor"]["temperature_celcius"]
@@ -46,7 +38,7 @@ class SHT25Manager(PeripheralManager):  # type: ignore
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.temperature_name, value
         )
-        if self.mode != Modes.CALIBRATE:
+        if self.mode != modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
                 self.name, self.temperature_name, value
             )
@@ -68,12 +60,12 @@ class SHT25Manager(PeripheralManager):  # type: ignore
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.humidity_name, value
         )
-        if self.mode != Modes.CALIBRATE:
+        if self.mode != modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
                 self.name, self.humidity_name, value
             )
 
-    def initialize(self) -> None:
+    def initialize_peripheral(self) -> None:
         """Initializes manager."""
         self.logger.info("Initializing")
 
@@ -85,7 +77,7 @@ class SHT25Manager(PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
-            self.driver = SHT25Driver(
+            self.driver = driver.SHT25Driver(
                 name=self.name,
                 i2c_lock=self.i2c_lock,
                 bus=self.bus,
@@ -95,34 +87,34 @@ class SHT25Manager(PeripheralManager):  # type: ignore
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
-        except DriverError as e:
-            self.logger.exception("Manager unable to initialize")
+        except exceptions.DriverError as e:
+            self.logger.debug("Unable to initialize: {}".format(e))
             self.health = 0.0
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
 
-    def setup(self) -> None:
-        """Sets up manager."""
-        self.logger.info("No setup required")
+    def setup_peripheral(self) -> None:
+        """Sets up peripheral."""
+        self.logger.debug("No setup required")
 
-    def update(self) -> None:
+    def update_peripheral(self) -> None:
         """Updates sensor by reading temperature and humidity values then 
         reports them to shared state."""
 
         # Read temperature
         try:
-            temperature = self.driver.read_temperature(retry=True)
-        except DriverError:
-            self.logger.exception("Unable to read temperature")
-            self.mode = Modes.ERROR
+            temperature = self.driver.read_temperature()
+        except exceptions.DriverError as e:
+            self.logger.debug("Unable to read temperature: {}".format(e))
+            self.mode = modes.ERROR
             self.health = 0.0
             return
 
         # Read humidity
         try:
-            humidity = self.driver.read_humidity(retry=True)
-        except DriverError:
-            self.logger.exception("Unable to read humidity")
-            self.mode = Modes.ERROR
+            humidity = self.driver.read_humidity()
+        except exceptions.DriverError as e:
+            self.logger.debug("Unable to read humidity: {}".format(e))
+            self.mode = modes.ERROR
             self.health = 0.0
             return
 
@@ -131,24 +123,23 @@ class SHT25Manager(PeripheralManager):  # type: ignore
         self.humidity = humidity
         self.health = 100.0
 
-    def reset(self) -> None:
+    def reset_peripheral(self) -> None:
         """Resets sensor."""
         self.logger.info("Resetting")
 
         # Clear reported values
         self.clear_reported_values()
 
-        # Reset driver if not in error mode
+        # Reset driver
         try:
-            if self.mode != Modes.ERROR:
-                self.driver.reset()
-        except DriverError:
-            self.logger.exception("Unable to reset driver")
+            self.driver.reset()
+        except exceptions.DriverError as e:
+            self.logger.debug("Unable to reset driver: {}".format(e))
 
         # Sucessfully reset
         self.logger.debug("Successfully reset")
 
-    def shutdown(self) -> None:
+    def shutdown_peripheral(self) -> None:
         """Shutsdown sensor."""
         self.logger.info("Shutting down")
         self.clear_reported_values()

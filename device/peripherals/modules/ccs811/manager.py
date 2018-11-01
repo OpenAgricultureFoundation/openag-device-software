@@ -1,19 +1,14 @@
 # Import standard python modules
 from typing import Optional, Tuple, Dict, Any
 
-# Import device utilities
-from device.utilities.modes import Modes
-
 # Import peripheral parent class
-from device.peripherals.classes.peripheral.manager import PeripheralManager
+from device.peripherals.classes.peripheral import manager, modes
 
-# Import driver elements
-from device.peripherals.modules.ccs811.events import CCS811Events
-from device.peripherals.modules.ccs811.driver import CCS811Driver
-from device.peripherals.modules.ccs811.exceptions import DriverError
+# Import manager elements
+from device.peripherals.modules.ccs811 import driver, exceptions
 
 
-class CCS811Manager(PeripheralManager):  # type: ignore
+class CCS811Manager(manager.PeripheralManager):  # type: ignore
     """Manages an ccs811 co2 sensor."""
 
     # Initialize compensation variable parameters
@@ -27,9 +22,6 @@ class CCS811Manager(PeripheralManager):  # type: ignore
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
-
-        # Initialize events
-        self.events = CCS811Events(self)
 
         # Initialize variable names
         self.co2_name = self.variables["sensor"]["co2_ppm"]
@@ -52,7 +44,7 @@ class CCS811Manager(PeripheralManager):  # type: ignore
         """Sets co2 value in shared state. Does not update environment from 
         calibration mode."""
         self.state.set_peripheral_reported_sensor_value(self.name, self.co2_name, value)
-        if self.mode != Modes.CALIBRATE:
+        if self.mode != modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
                 self.name, self.co2_name, value
             )
@@ -74,7 +66,7 @@ class CCS811Manager(PeripheralManager):  # type: ignore
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.tvoc_name, value
         )
-        if self.mode != Modes.CALIBRATE:
+        if self.mode != modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
                 self.name, self.tvoc_name, value
             )
@@ -95,8 +87,8 @@ class CCS811Manager(PeripheralManager):  # type: ignore
             return float(value)
         return None
 
-    def initialize(self) -> None:
-        """Initializes manager."""
+    def initialize_peripheral(self) -> None:
+        """Initializes peripheral."""
         self.logger.info("Initializing")
 
         # Clear reported values
@@ -107,7 +99,7 @@ class CCS811Manager(PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
-            self.driver = CCS811Driver(
+            self.driver = driver.CCS811Driver(
                 name=self.name,
                 i2c_lock=self.i2c_lock,
                 bus=self.bus,
@@ -117,18 +109,18 @@ class CCS811Manager(PeripheralManager):  # type: ignore
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
-        except DriverError as e:
+        except exceptions.DriverError as e:
             self.logger.exception("Unable to initialize")
             self.health = 0.0
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
 
-    def setup(self) -> None:
-        """Sets up manager."""
+    def setup_peripheral(self) -> None:
+        """Sets up peripheral."""
         self.logger.debug("Setting up")
         self.driver.setup()
 
-    def update(self) -> None:
-        """Updates sensor by reading co2 and tvoc values then reports them to shared 
+    def update_peripheral(self) -> None:
+        """Updates peripheral by reading co2 and tvoc values then reports them to shared 
         state. Checks for compensation variables before read."""
 
         # Update compensation variables if new value
@@ -146,17 +138,17 @@ class CCS811Manager(PeripheralManager):  # type: ignore
                 if self.humidity != None:
                     self.prev_humidity = self.humidity
 
-            except DriverError:
+            except exceptions.DriverError:
                 self.logger.exception("Unable to set compensation variables")
-                self.mode = Modes.ERROR
+                self.mode = modes.ERROR
                 self.health = 0.0
 
         # Read co2 and tvoc
         try:
             co2, tvoc = self.driver.read_algorithm_data()
-        except DriverError:
+        except exceptions.DriverError:
             self.logger.exception("Unable to read co2, tvoc")
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
             self.health = 0.0
             return
 
@@ -164,16 +156,6 @@ class CCS811Manager(PeripheralManager):  # type: ignore
         self.co2 = co2
         self.tvoc = tvoc
         self.health = 100.0
-
-    def reset(self) -> None:
-        """ Resets sensor. """
-        self.logger.info("Resetting")
-        self.clear_reported_values()
-
-    def shutdown(self) -> None:
-        """Shutsdown sensor."""
-        self.logger.info("Shutting down")
-        self.clear_reported_values()
 
     def clear_reported_values(self) -> None:
         """Clears reported values."""
@@ -184,7 +166,7 @@ class CCS811Manager(PeripheralManager):  # type: ignore
         """Checks if there is a new compensation variable value."""
 
         # Check if in calibration mode
-        if self.mode == Modes.CALIBRATE:
+        if self.mode == modes.CALIBRATE:
             return False
 
         # Check for new temperature

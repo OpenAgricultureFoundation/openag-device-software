@@ -2,58 +2,22 @@
 import logging, time, threading, math, json
 
 # Import python types
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any, Tuple
 
 # Import device utilities
-from device.utilities.logger import Logger
-from device.utilities.modes import Modes
-from device.utilities.statemachine import Manager, Transitions
+from device.utilities import logger
+from device.utilities.statemachine.manager import StateMachineManager
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.state.main import State
 
-# Import device comms
-from device.communication.i2c.mux_simulator import MuxSimulator
-
-# Import device state
-from device.state.main import State
-
-# Import peripheral modules
-from device.peripherals.classes.peripheral.events import PeripheralEvents
-
-# Define state machine transitions table
-TRANSITION_TABLE = {
-    Modes.INIT: [Modes.SETUP, Modes.SHUTDOWN, Modes.ERROR],
-    Modes.SETUP: [Modes.NORMAL, Modes.SHUTDOWN, Modes.ERROR],
-    Modes.NORMAL: [
-        Modes.CALIBRATE,
-        Modes.MANUAL,
-        Modes.RESET,
-        Modes.SHUTDOWN,
-        Modes.ERROR,
-    ],
-    Modes.MANUAL: [
-        Modes.NORMAL,
-        Modes.CALIBRATE,
-        Modes.RESET,
-        Modes.SHUTDOWN,
-        Modes.ERROR,
-    ],
-    Modes.CALIBRATE: [Modes.RESET, Modes.SHUTDOWN, Modes.ERROR],
-    Modes.ERROR: [Modes.RESET, Modes.SHUTDOWN],
-    Modes.SHUTDOWN: [Modes.RESET],
-    Modes.RESET: [Modes.INIT],
-}
+# Import manager elements
+from device.peripherals.classes.peripheral import modes, events
 
 
-class PeripheralManager(Manager):  # type: ignore
+class PeripheralManager(StateMachineManager):
     """Parent class for peripheral devices e.g. sensors and actuators."""
 
-    # Initialize peripheral mode and error
-    _mode = None
-    _error = None
-
-    # Initialize thread terminator
-    thread_is_active = True
-
-    # Initialize timing variabless
+    # Initialize timing variables
     default_sampling_interval = 5  # seconds
     min_sampling_interval = 2  # seconds
     last_update = None  # seconds
@@ -64,11 +28,14 @@ class PeripheralManager(Manager):  # type: ignore
         name: str,
         state: State,
         config: Dict,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         simulate: bool = False,
         mux_simulator: MuxSimulator = None,
     ) -> None:
         """Initializes manager."""
+
+        # Initialize parent class
+        super().__init__()
 
         # Initialize passed in parameters
         self.name = name
@@ -80,34 +47,22 @@ class PeripheralManager(Manager):  # type: ignore
 
         # Initialize logger
         logname = "Manager({})".format(self.name)
-        extra = {"console_name": logname, "file_name": logname}
-        logger = logging.getLogger("peripherals")
-        self.logger = logging.LoggerAdapter(logger, extra)
-
-        # Initialize transitions
-        self.transitions = Transitions(self, TRANSITION_TABLE)
-
-        # Initialize events
-        self.events = PeripheralEvents(self)
-
-        # Initialize modes and errors
-        self.mode = Modes.INIT
-        self.error = "None"
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Load config parameters
-        self.parameters = self.config["parameters"]
+        self.parameters = self.config.get("parameters", {})
         self.variables = self.parameters.get("variables", {})
         self.communication = self.parameters.get("communication", {})
 
-        # Ensure communication is a dict
+        # Enfore communication to be empty dict if none
         if self.communication == None:
             self.communication = {}
 
         # Get standard i2c config parameters if they exist
-        self.bus = self.communication.get("bus", None)
-        self.address = self.communication.get("address", None)
-        self.mux = self.communication.get("mux", None)
-        self.channel = self.communication.get("channel", None)
+        self.bus = self.communication.get("bus")
+        self.address = self.communication.get("address")
+        self.mux = self.communication.get("mux")
+        self.channel = self.communication.get("channel")
 
         # Convert i2c config params from hex to int if they exist
         if self.address != None:
@@ -122,6 +77,32 @@ class PeripheralManager(Manager):  # type: ignore
         # Pull out setup properties if they exist
         self.properties = self.setup_dict.get("properties", {})
 
+        # Initialize state machine transitions
+        self.transitions = {
+            modes.INIT: [modes.SETUP, modes.ERROR, modes.SHUTDOWN],
+            modes.SETUP: [modes.NORMAL, modes.ERROR, modes.SHUTDOWN],
+            modes.NORMAL: [
+                modes.CALIBRATE,
+                modes.MANUAL,
+                modes.RESET,
+                modes.ERROR,
+                modes.SHUTDOWN,
+            ],
+            modes.MANUAL: [
+                modes.NORMAL,
+                modes.CALIBRATE,
+                modes.RESET,
+                modes.ERROR,
+                modes.SHUTDOWN,
+            ],
+            modes.CALIBRATE: [modes.RESET, modes.ERROR, modes.SHUTDOWN],
+            modes.RESET: [modes.INIT, modes.ERROR, modes.SHUTDOWN],
+            modes.ERROR: [modes.RESET, modes.SHUTDOWN],
+        }
+
+        # Initialize state machine mode
+        self.mode = modes.INIT
+
     @property
     def health(self) -> Optional[float]:
         """Gets health value."""
@@ -135,10 +116,8 @@ class PeripheralManager(Manager):  # type: ignore
         """Sets health value in shared state."""
         self.state.set_peripheral_value(self.name, "health", round(value, 2))
 
-    # TODO: Use state functions on remaining properties
-
     @property
-    def mode(self) -> Optional[str]:
+    def mode(self) -> str:
         """Gets mode value."""
         return self._mode
 
@@ -186,78 +165,84 @@ class PeripheralManager(Manager):  # type: ignore
                 self.state.peripherals[self.name]["stored"] = {}
             self.state.peripherals[self.name]["stored"]["sampling_interval"] = value
 
-    def spawn(self) -> None:
-        """Spawns peripheral thread."""
-        self.thread = threading.Thread(target=self.run_state_machine)
-        self.thread.daemon = True
-        self.thread.start()
+    ##### STATE MACHINE FUNCTIONS ######################################################
 
-    def run_state_machine(self) -> None:
+    def run(self) -> None:
         """Runs peripheral state machine."""
-        while self.thread_is_active:
-            if self.mode == Modes.INIT:
+
+        # Loop forever
+        while True:
+
+            # Check if thread is shutdown
+            if self.is_shutdown:
+                break
+
+            # Check for mode transitions
+            if self.mode == modes.INIT:
                 self.run_init_mode()
-            elif self.mode == Modes.SETUP:
+            elif self.mode == modes.SETUP:
                 self.run_setup_mode()
-            elif self.mode == Modes.NORMAL:
+            elif self.mode == modes.NORMAL:
                 self.run_normal_mode()
-            elif self.mode == Modes.ERROR:
-                self.run_error_mode()
-            elif self.mode == Modes.CALIBRATE:
+            elif self.mode == modes.CALIBRATE:
                 self.run_calibrate_mode()
-            elif self.mode == Modes.MANUAL:
+            elif self.mode == modes.MANUAL:
                 self.run_manual_mode()
-            elif self.mode == Modes.RESET:
+            elif self.mode == modes.RESET:
                 self.run_reset_mode()
-            elif self.mode == Modes.SHUTDOWN:
+            elif self.mode == modes.ERROR:
+                self.run_error_mode()
+            elif self.mode == modes.SHUTDOWN:
                 self.run_shutdown_mode()
             else:
-                self.error = "Invalid mode"
-                self.logger.critical(self.error)
+                self.logger.critical("Invalid state machine mode")
+                self.mode = modes.INVALID
+                self.is_shutdown = True
+                break
 
     def run_init_mode(self) -> None:
         """Runs init mode. Executes child class initialize function, checks for any 
         resulting transitions (e.g. errors) then transitions to setup mode on the 
         next state machine update."""
-        self.logger.info("Entered Modes.INIT")
+        self.logger.info("Entered INIT")
 
         # Initialize peripheral
-        self.initialize()
+        self.initialize_peripheral()
 
         # Check for transitions
-        if self.transitions.is_new(Modes.INIT):
+        if self.new_transition(modes.INIT):
             return
 
         # Transition to setup mode on next state machine update
-        self.mode = Modes.SETUP
+        self.mode = modes.SETUP
 
     def run_setup_mode(self) -> None:
         """Runs setup mode. Executes child class setup function, checks for any
         resulting transitions (e.g. errors) then transitions to normal mode on the
         next state machine update."""
-        self.logger.info("Entered Modes.SETUP")
+        self.logger.info("Entered SETUP")
 
         # Setup peripheral
-        self.setup()
+        self.setup_peripheral()
 
         # Check for transitions
-        if self.transitions.is_new(Modes.SETUP):
+        if self.new_transition(modes.SETUP):
             return
 
         # Transition to normal mode on next state machine update
-        self.mode = Modes.NORMAL
+        self.mode = modes.NORMAL
 
     def run_normal_mode(self) -> None:
         """Runs normal mode. Executes child class update function every sampling
         interval. Checks for events and transitions after each update."""
-        self.logger.info("Entered Modes.NORMAL")
+        self.logger.info("Entered NORMAL")
 
         # Initialize vars
         self._update_complete = True
         self.last_update = time.time()
 
-        # Loop until shutdown
-        while self.thread_is_active:
+        # Loop forever
+        while True:
 
             # Update every sampling interval
             self.last_update_interval = time.time() - self.last_update
@@ -267,17 +252,17 @@ class PeripheralManager(Manager):  # type: ignore
                 )
                 self.logger.debug(message)
                 self.last_update = time.time()
-                self.update()
+                self.update_peripheral()
 
             # Check for transitions
-            if self.transitions.is_new(Modes.NORMAL):
+            if self.new_transition(modes.NORMAL):
                 break
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
-            if self.transitions.is_new(Modes.NORMAL):
+            if self.new_transition(modes.NORMAL):
                 break
 
             # Update every 100ms
@@ -287,14 +272,14 @@ class PeripheralManager(Manager):  # type: ignore
         """Runs calibrate mode. Performs same function as normal mode except for 
         variable reporting functions only update peripheral state instead of both 
         peripheral and environment."""
-        self.logger.info("Entered Modes.CALIBRATE")
+        self.logger.info("Entered CALIBRATE")
 
         # Initialize vars
         self._update_complete = True
         self.last_update = time.time() - self.sampling_interval
 
-        # Loop until shutdown
-        while self.thread_is_active:
+        # Loop forever
+        while True:
 
             # Update every sampling interval
             self.last_update_interval = time.time() - self.last_update
@@ -305,17 +290,17 @@ class PeripheralManager(Manager):  # type: ignore
                     )
                 )
                 self.last_update = time.time()
-                self.update()
+                self.update_peripheral()
 
             # Check for transitions
-            if self.transitions.is_new(Modes.CALIBRATE):
+            if self.new_transition(modes.CALIBRATE):
                 break
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
-            if self.transitions.is_new(Modes.CALIBRATE):
+            if self.new_transition(modes.CALIBRATE):
                 break
 
             # Update every 100ms
@@ -323,16 +308,16 @@ class PeripheralManager(Manager):  # type: ignore
 
     def run_manual_mode(self) -> None:
         """Runs manual mode. Waits for events and transitions."""
-        self.logger.info("Entered Modes.MANUAL")
+        self.logger.info("Entered MANUAL")
 
-        # Loop until thread is shutdown
-        while self.thread_is_active:
+        # Loop forever
+        while True:
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
-            if self.transitions.is_new(Modes.MANUAL):
+            if self.new_transition(modes.MANUAL):
                 break
 
             # Update every 100ms
@@ -341,7 +326,7 @@ class PeripheralManager(Manager):  # type: ignore
     def run_error_mode(self) -> None:
         """Runs error mode. Clears reported values then waits for new 
         events and transitions. Tries to reset every hour."""
-        self.logger.info("Entered Modes.ERROR")
+        self.logger.info("Entered ERROR")
 
         # Clear reported values
         self.clear_reported_values()
@@ -349,19 +334,19 @@ class PeripheralManager(Manager):  # type: ignore
         # Initialize vars
         start_time = time.time()
 
-        # Loop until thread is shutdown
-        while self.thread_is_active:
+        # Loop forever
+        while True:
 
             # Check for hourly reset
             if time.time() - start_time > 3600:  # 1 hour
-                self.mode = Modes.RESET
+                self.mode = modes.RESET
                 break
 
             # Check for events
-            self.events.check()
+            self.check_events()
 
             # Check for transitions
-            if self.transitions.is_new(Modes.ERROR):
+            if self.new_transition(modes.ERROR):
                 break
 
             # Update every 100ms
@@ -370,45 +355,27 @@ class PeripheralManager(Manager):  # type: ignore
     def run_reset_mode(self) -> None:
         """Runs reset mode. Executes child class reset function, checks for any
         resulting transitions (e.g. errors) then transitions to init mode."""
-        self.logger.info("Entered Modes.RESET")
+        self.logger.info("Entered RESET")
 
         # Reset peripheral
-        self.reset()
+        self.reset_peripheral()
 
         # Check for transitions
-        if self.transitions.is_new(Modes.RESET):
+        if self.new_transition(modes.RESET):
             return
 
         # Transition to init on next state machine update
-        self.mode = Modes.INIT
+        self.mode = modes.INIT
 
     def run_shutdown_mode(self) -> None:
         """Runs shutdown mode. Executes child class shutdown function then waits for 
         new events and transitions. Logs shutdown state every update interval."""
-        self.logger.info("Entered Modes.SHUTDOWN")
+        self.logger.info("Entered SHUTDOWN")
 
         # Shutdown peripheral
         self.shutdown()
 
-        # Wait for command from device or user
-        last_update = time.time() - self.sampling_interval
-        while self.thread_is_active:
-
-            # Log shutdown state every update interval
-            last_update_interval = time.time() - last_update
-            if self.sampling_interval < last_update_interval:
-                self.logger.debug("Peripheral is shutdown, waiting for reset")
-                last_update = time.time()
-
-            # Check for events
-            self.events.check()
-
-            # Check for transitions
-            if self.transitions.is_new(Modes.SHUTDOWN):
-                break
-
-            # Update every 100ms
-            time.sleep(0.1)
+    ##### HELPER FUNCTIONS #############################################################
 
     def load_setup_dict_from_file(self) -> Dict:
         """Loads setup dict from setup filename parameter."""
@@ -419,26 +386,218 @@ class PeripheralManager(Manager):  # type: ignore
         )
         return dict(setup_dict)
 
-    def initialize(self) -> None:
-        """Initializes peripheral. """
+    def initialize_peripheral(self) -> None:
+        """Initializes peripheral."""
         self.logger.debug("No initialization required.")
 
-    def setup(self) -> None:
-        """Sets up peripheral. """
+    def setup_peripheral(self) -> None:
+        """Sets up peripheral."""
         self.logger.debug("No setup required")
 
-    def update(self) -> None:
+    def update_peripheral(self) -> None:
         """Updates peripheral."""
         self.logger.debug("No update required")
 
-    def reset(self) -> None:
-        """Resets peripheral."""
-        self.logger.debug("No reset required")
+    def reset_peripheral(self) -> None:
+        """ Resets peripheral. """
+        self.logger.info("Resetting")
+        self.clear_reported_values()
 
-    def shutdown(self) -> None:
-        """Shutsdown peripheral."""
-        self.logger.debug("No shutdown required")
+    def shutdown_peripheral(self) -> None:
+        """ Shuts down peripheral. """
+        self.logger.info("Shutting down")
+        self.clear_reported_values()
 
     def clear_reported_values(self) -> None:
-        """Clears reported values. Child class should overwrite."""
+        """Clears reported values."""
         self.logger.debug("No values to clear")
+
+    ##### EVENT FUNCTIONS ##############################################################
+
+    def create_event(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Creates a new event, checks for matching event type, pre-processes request, 
+        then adds to event queue."""
+        self.logger.debug("Creating event request: `{}`".format(request))
+
+        # Get request parameters
+        try:
+            type_ = request["type"]
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+
+        # Process general event requests
+        if type_ == events.RESET:
+            return self.reset()  # defined in parent class
+        elif type_ == events.SHUTDOWN:
+            return self.shutdown()  # defined in parent class
+        elif type_ == events.SET_SAMPLING_INTERVAL:
+            return self.set_sampling_interval(request)
+        elif type_ == events.ENABLE_CALIBRATION_MODE:
+            return self.enable_calibration_mode()
+        elif type_ == events.ENABLE_MANUAL_MODE:
+            return self.enable_manual_mode()
+        else:
+            return self.create_peripheral_specific_event(request)
+
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event. This method should be 
+        overridden in child class."""
+        return "Unknown event request type", 400
+
+    def check_events(self) -> None:
+        """Checks for a new event. Only processes one event per call, even if there are 
+        multiple in the queue. Events are processed first-in-first-out (FIFO)."""
+
+        # Check for new events
+        if self.event_queue.empty():
+            return
+
+        # Get request
+        request = self.event_queue.get()
+        self.logger.debug("Received new request: {}".format(request))
+
+        # Get request parameters
+        try:
+            type_ = request["type"]
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.exception(message)
+            return
+
+        # Execute request
+        if type_ == events.RESET:
+            self._reset()  # defined in parent class
+        elif type_ == events.SHUTDOWN:
+            self._shutdown()  # defined in parent class
+        elif type_ == events.SET_SAMPLING_INTERVAL:
+            self._set_sampling_interval(request)
+        elif type_ == events.ENABLE_CALIBRATION_MODE:
+            self._enable_calibration_mode()
+        elif type_ == events.ENABLE_MANUAL_MODE:
+            self._enable_manual_mode()
+        else:
+            self.check_peripheral_specific_events(request)
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events. This method should be 
+        overwritten in child class."""
+        type_ = request.get("type")
+        self.logger.error("Invalid event request type in queue: {}".format(type_))
+
+    def set_sampling_interval(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes set sampling interval event request."""
+        self.logger.debug("Pre-processing set sampling interval event request")
+
+        # Verify value in request
+        try:
+            value = request["value"]
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+
+        # Safely get desired sampling interval
+        try:
+            interval = float(value)
+        except ValueError:
+            message = "Invalid sampling interval value"
+            self.logger.debug(message)
+            return message, 400
+
+        # Check desired sampling interval larger than min interval
+        msi = self.min_sampling_interval
+        if interval < msi:
+            message = "Unable to set sampling interval below {} seconds.".format(msi)
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.SET_SAMPLING_INTERVAL, "interval": interval}
+        self.event_queue.put(request)
+
+        # Return event response
+        return "Setting sampling interval", 200
+
+    def _set_sampling_interval(self, request: Dict[str, Any]) -> None:
+        """Processes set sampling interval event request."""
+        self.logger.debug("Processing set sampling interval event request")
+
+        # Set sampling interval
+        interval = request.get("interval")
+        self.sampling_interval = float(interval)  # type: ignore
+
+    def enable_calibration_mode(self) -> Tuple[str, int]:
+        """Pre-processes enable calibration mode event request."""
+        self.logger.debug("Pre-processing enable calibration mode event request")
+
+        # Check if sensor alread in calibration mode
+        if self.mode == modes.CALIBRATE:
+            message = "Already in calibration mode"
+            self.logger.debug(message)
+            return message, 200
+
+        # Check valid transition
+        if not self.valid_transition(self.mode, modes.CALIBRATE):
+            message = "Unable to enable calibration mode from {} mode".format(self.mode)
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.ENABLE_CALIBRATION_MODE}
+        self.event_queue.put(request)
+
+        # Return response
+        return "Enabling calibration mode", 200
+
+    def _enable_calibration_mode(self) -> None:
+        """Processes enable calibration mode event request."""
+        self.logger.debug("Processing enable calibration mode event request")
+
+        # Check valid transitions
+        if not self.valid_transition(self.mode, modes.CALIBRATE):
+            message = "Tried to enable calibration mode from {}".format(self.mode)
+            self.logger.critical(message)
+            return
+
+        # Transition to calibration mode on next state machine update
+        self.mode = modes.CALIBRATE
+
+    def enable_manual_mode(self) -> Tuple[str, int]:
+        """Pre-processes enable manual mode event request."""
+        self.logger.debug("Pre-processing enable manual mode event request")
+
+        # Check if sensor alread in manual mode
+        if self.mode == modes.MANUAL:
+            message = "Already in manual mode"
+            self.logger.debug(message)
+            return message, 200
+
+        # Check valid transition
+        if not self.valid_transition(self.mode, modes.MANUAL):
+            message = "Unable to enable manual mode from {} mode".format(self.mode)
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.ENABLE_MANUAL_MODE}
+        self.event_queue.put(request)
+
+        # Return response
+        return "Enabling manual mode", 200
+
+    def _enable_manual_mode(self) -> None:
+        """Processes enable manual mode event request."""
+        self.logger.debug("Processing enable manual mode event request")
+
+        # Check peripheral is in acceptible mode
+        if not self.valid_transition(self.mode, modes.MANUAL):
+            message = "Unable to enable manual mode from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
+        # Transition to manual mode on next state machine update
+        self.mode = modes.MANUAL

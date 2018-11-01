@@ -1,22 +1,34 @@
 # Import driver error base class
-from device.peripherals.classes.peripheral.exceptions import DriverError
+from device.utilities.exceptions import ExceptionLogger
 
 
-class WriteOutputError(DriverError):  # type: ignore
+class DriverError(ExceptionLogger):
+    pass
+
+
+class InitError(DriverError):
+    message_base = "Unable to initialize"
+
+
+class SetupError(DriverError):
+    message_base = "Unable to setup"
+
+
+class WriteOutputError(DriverError):
     message_base = "Unable to write output"
 
 
-class WriteOutputsError(DriverError):  # type: ignore
+class WriteOutputsError(DriverError):
     message_base = "Unable to write outputs"
 
 
-class ReadPowerRegisterError(DriverError):  # type: ignore
+class ReadPowerRegisterError(DriverError):
     message_base = "Unable to read power register"
 
 
-class SetHighError(DriverError):  # type: ignore
+class SetHighError(DriverError):
     message_base = "Unable to set high"
 
 
-class SetLowError(DriverError):  # type: ignore
+class SetLowError(DriverError):
     message_base = "Unable to set low"

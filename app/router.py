@@ -1,18 +1,33 @@
+# Import standard python modules
 import re
-from rest_framework import routers
-from rest_framework import views
 from collections import OrderedDict
+
+# Import python types
+from typing import Dict, Any, List
+
+# Import django modules
 from django.urls import NoReverseMatch
+
+# Import django rest modules
+from rest_framework import routers, views
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
+from rest_framework.request import Request
+
+# Import device utilities
+from device.utilities import logger
 
 
 class Router(routers.DefaultRouter):
-    def get_api_root_view(self, api_urls=None):
-        """
-        Return a basic root view.
-        """
-        api_root_dict = OrderedDict()
+    """Custom router."""
+
+    # Initialize logger
+    logger = logger.Logger("Router", "app")
+
+    def get_api_root_view(self, api_urls: List[str] = None) -> Dict:
+        """Gets api root view."""
+        self.logger.debug("Getting api root view")
+        api_root_dict: Dict = OrderedDict()
         list_name = self.routes[0].name
         for prefix, viewset, basename in self.registry:
             api_root_dict[prefix] = list_name.format(basename=basename)
@@ -22,17 +37,17 @@ class Router(routers.DefaultRouter):
 
             _ignore_model_permissions = True
             schema = None  # exclude from schema
-            api_root_dict = None
+            api_root_dict: Dict = {}
 
-            def get(self, request, *args, **kwargs):
+            def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
                 # Return a plain {"name": "hyperlink"} response.
-                ret = OrderedDict()
+                response: Dict = OrderedDict()
                 namespace = request.resolver_match.namespace
                 for key, url_name in self.api_root_dict.items():
                     if namespace:
                         url_name = namespace + ":" + url_name
                     try:
-                        ret[key] = reverse(
+                        response[key] = reverse(
                             url_name,
                             args=args,
                             kwargs=kwargs,
@@ -45,10 +60,10 @@ class Router(routers.DefaultRouter):
 
                 # Add APIView endpoints
                 endpoints = ["recipe/stop", "recipe/{uuid}/start/"]
-                base = ret["state"].split("api", 1)[0] + "api/"
+                base = response["state"].split("api", 1)[0] + "api/"
                 for endpoint in endpoints:
-                    ret[endpoint] = base + endpoint
+                    response[endpoint] = base + endpoint
 
-                return Response(ret)
+                return Response(response, 200)
 
         return APIRootView.as_view(api_root_dict=api_root_dict)

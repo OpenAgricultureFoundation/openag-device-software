@@ -14,7 +14,7 @@ from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerB
 from device.utilities.accessors import get_peripheral_config
 
 # Import device state
-from device.state.main import State
+from device.utilities.state.main import State
 
 # Import peripheral manager
 from device.peripherals.classes.peripheral.manager import PeripheralManager

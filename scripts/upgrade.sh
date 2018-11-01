@@ -12,7 +12,7 @@ if [[ "$OSTYPE" == "linux"* ]]; then
   sudo systemctl daemon-reload
 
   # Fix up some directories and files that may be owned by root
-  sudo chmod -f -R 777 logs/ images/ 
+  sudo chmod -f -R 777 data/logs/ data/images/ 
   sudo chown -R debian:debian .
 fi
 

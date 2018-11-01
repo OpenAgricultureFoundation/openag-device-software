@@ -1,19 +1,13 @@
 # Import standard python modules
 from typing import Optional, Tuple, Dict, Any
 
-# Import device utilities
-from device.utilities.modes import Modes
-
-# Import peripheral parent class
-from device.peripherals.classes.peripheral.manager import PeripheralManager
-from device.peripherals.classes.peripheral.exceptions import DriverError
-
-# Import module elements
-from device.peripherals.modules.atlas_ph.events import AtlasPHEvents
-from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
+# Import manager elements
+from device.peripherals.classes.peripheral import manager, modes
+from device.peripherals.classes.atlas import exceptions
+from device.peripherals.modules.atlas_ph import driver, events
 
 
-class AtlasPHManager(PeripheralManager):  # type: ignore
+class AtlasPHManager(manager.PeripheralManager):
     """Manages an Atlas Scientific pH sensor."""
 
     # Initialize compensation temperature parameters
@@ -25,9 +19,6 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
-
-        # Initialize events
-        self.events = AtlasPHEvents(self)
 
         # Initialize variable names
         self.ph_name = self.variables["sensor"]["ph"]
@@ -46,7 +37,7 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
         """Sets pH value in shared state. Does not update enironment 
         from calibration mode."""
         self.state.set_peripheral_reported_sensor_value(self.name, self.ph_name, value)
-        if self.mode != Modes.CALIBRATE:
+        if self.mode != modes.CALIBRATE:
             self.state.set_environment_reported_sensor_value(
                 self.name, self.ph_name, value
             )
@@ -59,8 +50,8 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
             return float(value)
         return None
 
-    def initialize(self) -> None:
-        """Initializes manager."""
+    def initialize_peripheral(self) -> None:
+        """Initializes peripheral."""
         self.logger.info("Initializing")
 
         # Clear reported values
@@ -71,7 +62,7 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
-            self.driver = AtlasPHDriver(
+            self.driver = driver.AtlasPHDriver(
                 name=self.name,
                 i2c_lock=self.i2c_lock,
                 bus=self.bus,
@@ -81,24 +72,24 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
-        except DriverError as e:
+        except exceptions.DriverError as e:
             self.logger.exception("Unable to initialize")
             self.health = 0.0
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
 
-    def setup(self) -> None:
-        """Sets up sensor."""
+    def setup_peripheral(self) -> None:
+        """Sets up peripheral."""
         self.logger.info("Setting up")
 
         try:
             self.driver.setup()
-        except DriverError as e:
+        except exceptions.DriverError as e:
             self.logger.exception("Unable to setup")
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
             self.health = 0
 
-    def update(self) -> None:
-        """Updates sensor."""
+    def update_peripheral(self) -> None:
+        """Updates peripheral."""
         self.logger.info("Updating")
 
         try:
@@ -110,26 +101,20 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
             self.ph = self.driver.read_ph()
             self.health = 100.0
 
-        except DriverError as e:
+        except exceptions.DriverError as e:
             self.logger.error("Unable to update")
-            self.mode = Modes.ERROR
+            self.mode = modes.ERROR
             self.health = 0
 
-    def reset(self) -> None:
-        """Resets sensor."""
-        self.logger.info("Resetting")
-        self.clear_reported_values()
-
-    def shutdown(self) -> None:
-        """Shutsdown sensor."""
-        self.logger.info("Shutting down")
-        self.clear_reported_values()
+    def clear_reported_values(self) -> None:
+        """Clears reported values."""
+        self.ph = None
 
     def new_compensation_temperature(self) -> bool:
         """Checks if there is a new compensation temperature value."""
 
         # Check if calibrating
-        if self.mode == Modes.CALIBRATE:
+        if self.mode == modes.CALIBRATE:
             return False
 
         # Check if compensation temperature exists
@@ -144,6 +129,222 @@ class AtlasPHManager(PeripheralManager):  # type: ignore
         # New compensation temperature exists
         return True
 
-    def clear_reported_values(self) -> None:
-        """Clears reported values."""
-        self.ph = None
+    ##### EVENT FUNCTIONS ##############################################################
+
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event."""
+        if request["type"] == events.CALIBRATE_LOW:
+            return self.calibrate_low(request)
+        elif request["type"] == events.CALIBRATE_MID:
+            return self.calibrate_mid(request)
+        elif request["type"] == events.CALIBRATE_HIGH:
+            return self.calibrate_high(request)
+        elif request["type"] == events.CLEAR_CALIBRATION:
+            return self.clear_calibration()
+        else:
+            return "Unknown event request type", 400
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        if request["type"] == events.CALIBRATE_LOW:
+            self._calibrate_low(request)
+        elif request["type"] == events.CALIBRATE_MID:
+            self._calibrate_mid(request)
+        elif request["type"] == events.CALIBRATE_HIGH:
+            self._calibrate_high(request)
+        elif request["type"] == events.CLEAR_CALIBRATION:
+            self._clear_calibration()
+        else:
+            message = "Invalid event request type in queue: {}".format(request["type"])
+            self.logger.error(message)
+
+    def calibrate_low(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes calibrate low event request."""
+        self.logger.info("Pre-processing calibrate low event request")
+
+        # Verify value in request
+        try:
+            value = float(request["value"])
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except ValueError as e:
+            message = "Invalid request value: `{}`".format(request["value"])
+            self.logger.debug(message)
+            return message, 400
+
+        # Verify value within valid range
+        if value not in range(4, 10):
+            message = "Invalid request value, not in range 4-10"
+            self.logger.debug(message)
+            return message, 400
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Must be in calibration mode to take single point calibration"
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.CALIBRATE_LOW, "value": value}
+        self.event_queue.put(request)
+
+        # Return response
+        return "Taking low point calibration reading", 200
+
+    def _calibrate_low(self, request: Dict[str, Any]) -> None:
+        """Processes calibrate low event request."""
+        self.logger.info("Processing calibrate low event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Tried to calibrate low from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
+        # Send command
+        try:
+            value = float(request["value"])
+            self.driver.calibrate_low(value)
+        except exceptions.DriverError:
+            self.logger.exception("Unable to calibrate low")
+
+    def calibrate_mid(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes calibrate mid event request."""
+        self.logger.info("Pre-processing calibrate mid event request")
+
+        # Verify value in request
+        try:
+            value = float(request["value"])
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except ValueError as e:
+            message = "Invalid request value: `{}`".format(request["value"])
+            self.logger.debug(message)
+            return message, 400
+
+        # Verify value within valid range
+        if value not in range(4, 10):
+            message = "Invalid request value, not in range 4-10"
+            self.logger.debug(message)
+            return message, 400
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Must be in calibration mode to take single point calibration"
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.CALIBRATE_MID, "value": value}
+        self.event_queue.put(request)
+
+        # Return reponse
+        return "Taking mid point calibration reading", 200
+
+    def _calibrate_mid(self, request: Dict[str, Any]) -> None:
+        """Processes calibrate mid event request."""
+        self.logger.info("Processing calibrate mid event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Tried to calibrate mid from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
+        # Send command
+        try:
+            value = float(request["value"])
+            self.driver.calibrate_mid(value)
+        except exceptions.DriverError:
+            self.logger.exception("Unable to calibrate mid")
+
+    def calibrate_high(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes calibrate high event request."""
+        self.logger.info("Pre-processing calibrate high event request")
+
+        # Verify value in request
+        try:
+            value = float(request["value"])
+        except KeyError as e:
+            message = "Invalid request parameters: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except ValueError as e:
+            message = "Invalid request value: `{}`".format(request["value"])
+            self.logger.debug(message)
+            return message, 400
+
+        # Verify value within valid range
+        if value not in range(10, 14):
+            message = "Invalid request value, not in range 10-14"
+            self.logger.debug(message)
+            return message, 400
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Must be in calibration mode to take single point calibration"
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.CALIBRATE_HIGH, "value": value}
+        self.event_queue.put(request)
+
+        # Return response
+        return "Taking high point calibration reading", 200
+
+    def _calibrate_high(self, request: Dict[str, Any]) -> None:
+        """Processes calibrate high event request."""
+        self.logger.debug("Processing calibrate high event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Tried to calibrate high from {} mode".format(self.mode)
+            self.logger.critical(message)
+            return
+
+        # Send command
+        try:
+            value = float(request["value"])
+            self.driver.calibrate_high(value)
+        except exceptions.DriverError:
+            self.logger.exception("Unable to calibrate high")
+
+    def clear_calibration(self) -> Tuple[str, int]:
+        """ Pre-processes clear calibration event request."""
+        self.logger.debug("Pre-processing clear calibration event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Must be in calibration mode to clear calibration"
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.CLEAR_CALIBRATION}
+        self.event_queue.put(request)
+
+        # Return response
+        return "Clearing calibration readings", 200
+
+    def _clear_calibration(self) -> None:
+        """ Processes clear calibration event request."""
+        self.logger.info("Processing clear calibration event request")
+
+        # Require mode to be in CALIBRATE
+        if self.mode != modes.CALIBRATE:
+            message = "Tried to clear calibration from {} mode".format(self.mode)
+            self.logger.debug(message)
+            return
+
+        # Send command
+        try:
+            self.driver.clear_calibrations()
+        except exceptions.DriverError:
+            self.logger.exception("Unable to clear calibrations")

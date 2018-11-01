@@ -7,7 +7,7 @@
      /* Loads a device config. */
      console.log("Loading config")
      var uuid = $("#config_uuid").val()
-     console.log(uuid)
+     console.log("uuid = " + uuid)
 
      // Send create event request to endpoint
      $.ajax({
@@ -19,18 +19,14 @@
          dataType: 'json',
          success: function(data) {
            console.log("Event request succeeded")
-
-           // Get response message
-           // message = data.message
-           alert(data);
+           message = data["message"]
+           alert(message);
            location.reload();
          },
          error: function(data) {
            console.log("Event request failed")
-
-           // Get response message
            response_dict = JSON.parse(data.responseText)
-           // message = response_dict["message"]
+           message = response_dict["message"]
            alert(message);
          }
      }); 
@@ -49,15 +45,15 @@
       <h2>Device Configuration</h2>
       <div class="card" style="width: 33%;">
         <p>
-        <b>Current Config:</b> {{current_config}}
+        <b>Current Config:</b> {{ current_config_name }}
         </p>
         <b> Set New: </b>
         <select id="config_uuid">
           {% for config in configs %}
             {% if config.uuid == selected_config.uuid %}
-              <option value="{{config.uuid}}" selected="selected"> Recipe: {{config.name}} </option>
+              <option value="{{ config.uuid }}" selected="selected"> Recipe: {{ config.name }} </option>
             {% else %}
-              <option value="{{config.uuid}}"> Config: {{config.name}} </option>
+              <option value="{{ config.uuid }}"> Config: {{ config.name }} </option>
             {% endif %}
           {% endfor %}
         </select>

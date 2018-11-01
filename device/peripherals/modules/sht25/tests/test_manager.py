@@ -1,28 +1,25 @@
 # Import standard python libraries
-import os, sys, json, threading
+import os, sys, json, threading, pytest
 
 # Set system path and directory
-root_dir = os.environ["OPENAG_BRAIN_ROOT"]
-sys.path.append(root_dir)
-os.chdir(root_dir)
+ROOT_DIR = os.environ["OPENAG_BRAIN_ROOT"]
+sys.path.append(ROOT_DIR)
+os.chdir(ROOT_DIR)
 
 # Import device utilities
-from device.utilities.accessors import get_peripheral_config
-from device.utilities.modes import Modes
-
-# Import device state
-from device.state.main import State
-
-# Import simulators
-from device.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities import accessors
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
+from device.utilities.state.main import State
 
 # Import peripheral manager
 from device.peripherals.modules.sht25.manager import SHT25Manager
 
 # Load test config
-path = root_dir + "/device/peripherals/modules/sht25/tests/config.json"
-device_config = json.load(open(path))
-peripheral_config = get_peripheral_config(device_config["peripherals"], "SHT25-Top")
+CONFIG_PATH = ROOT_DIR + "/device/peripherals/modules/sht25/tests/config.json"
+device_config = json.load(open(CONFIG_PATH))
+peripheral_config = accessors.get_peripheral_config(
+    device_config["peripherals"], "SHT25-Top"
+)
 
 
 def test_init() -> None:
@@ -36,7 +33,7 @@ def test_init() -> None:
     )
 
 
-def test_initialize() -> None:
+def test_initialize_peripheral() -> None:
     manager = SHT25Manager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -45,10 +42,10 @@ def test_initialize() -> None:
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
-    manager.initialize()
+    manager.initialize_peripheral()
 
 
-def test_setup() -> None:
+def test_setup_peripheral() -> None:
     manager = SHT25Manager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -57,11 +54,11 @@ def test_setup() -> None:
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
-    manager.initialize()
-    manager.setup()
+    manager.initialize_peripheral()
+    manager.setup_peripheral()
 
 
-def test_update() -> None:
+def test_update_peripheral() -> None:
     manager = SHT25Manager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -70,11 +67,11 @@ def test_update() -> None:
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
-    manager.initialize()
-    manager.update()
+    manager.initialize_peripheral()
+    manager.update_peripheral()
 
 
-def test_reset() -> None:
+def test_reset_peripheral() -> None:
     manager = SHT25Manager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -83,11 +80,11 @@ def test_reset() -> None:
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
-    manager.initialize()
-    manager.reset()
+    manager.initialize_peripheral()
+    manager.reset_peripheral()
 
 
-def test_shutdown() -> None:
+def test_shutdown_peripheral() -> None:
     manager = SHT25Manager(
         name="Test",
         i2c_lock=threading.RLock(),
@@ -96,5 +93,5 @@ def test_shutdown() -> None:
         simulate=True,
         mux_simulator=MuxSimulator(),
     )
-    manager.initialize()
-    manager.shutdown()
+    manager.initialize_peripheral()
+    manager.shutdown_peripheral()

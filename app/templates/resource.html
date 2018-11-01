@@ -7,14 +7,9 @@
          <div class="card">
             <ul>
               <li><b>Status:</b> {{ status }}
-              <li><b>Available disk space:</b> {{ available_disk_space }}
-              <li><b>Free memory:</b> {{ free_memory }}
-              <li><b>Database size:</b> {{ database_size }}
-              <li><b>Internet connection:</b> {{ internet_connection }}
-                  
-              {% if error != None %}
-              <li><b>Error:</b> {{ error }}
-              {% endif %}
+              <li><b>Free Disk:</b> {{ free_disk }}
+              <li><b>Free Memory:</b> {{ free_memory }}
+              <li><b>Database Size:</b> {{ database_size }}
             </ul>
          </div>
       </div>

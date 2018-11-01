@@ -4,23 +4,18 @@ import time, threading
 # Import python types
 from typing import Optional, Tuple, NamedTuple
 
-# Import device comms
-from device.communication.i2c.main import I2C
-from device.communication.i2c.exceptions import I2CError
-from device.communication.i2c.mux_simulator import MuxSimulator
-
 # Import device utilities
-from device.utilities.logger import Logger
 from device.utilities import maths
+from device.utilities.communication.i2c.main import I2C
+from device.utilities.communication.i2c.exceptions import I2CError
+from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import module elements
-from device.peripherals.classes.atlas.driver import AtlasDriver
-from device.peripherals.modules.atlas_ph.simulator import AtlasPHSimulator
-from device.peripherals.modules.atlas_ph.exceptions import ReadPHError
-from device.peripherals.classes.peripheral.exceptions import SetupError
+from device.peripherals.classes.atlas import driver
+from device.peripherals.modules.atlas_ph import simulator, exceptions
 
 
-class AtlasPHDriver(AtlasDriver):  # type: ignore
+class AtlasPHDriver(driver.AtlasDriver):
     """Driver for Atlas pH sensor."""
 
     # Initialize sensor properties
@@ -31,7 +26,7 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
     def __init__(
         self,
         name: str,
-        i2c_lock: threading.Lock,
+        i2c_lock: threading.RLock,
         bus: int,
         address: int,
         mux: Optional[int] = None,
@@ -43,7 +38,7 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
 
         # Check if simulating
         if simulate:
-            Simulator = AtlasPHSimulator
+            Simulator = simulator.AtlasPHSimulator
         else:
             Simulator = None
 
@@ -60,16 +55,16 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
             Simulator=Simulator,
         )
 
-    def setup(self) -> None:
+    def setup(self, retry: bool = True) -> None:
         """Sets up sensor."""
         self.logger.info("Setting up sensor")
         try:
-            self.enable_led()
-            info = self.read_info()
+            self.enable_led(retry=retry)
+            info = self.read_info(retry=retry)
             if info.firmware_version > 1.94:
-                self.enable_protocol_lock()
+                self.enable_protocol_lock(retry=retry)
         except Exception as e:
-            raise SetupError(logger=self.logger) from e
+            raise exceptions.SetupError(logger=self.logger) from e
 
     def read_ph(self, retry: bool = True) -> Optional[float]:
         """Reads potential hydrogen from sensor, sets significant 
@@ -81,10 +76,10 @@ class AtlasPHDriver(AtlasDriver):  # type: ignore
         try:
             response = self.process_command("R", process_seconds=2.4, retry=retry)
         except Exception as e:
-            raise ReadPHError(logger=self.logger) from e
+            raise exceptions.ReadPHError(logger=self.logger) from e
 
         # Process response
-        ph_raw = float(response)
+        ph_raw = float(response)  # type: ignore
 
         # Set significant figures based off error magnitude
         error_magnitude = maths.magnitude(self.ph_accuracy)

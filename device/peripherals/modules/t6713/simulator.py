@@ -5,7 +5,7 @@ from typing import Any, Dict
 from device.utilities.bitwise import byte_str
 
 # Import peripheral simulator
-from device.communication.i2c.peripheral_simulator import PeripheralSimulator
+from device.utilities.communication.i2c.peripheral_simulator import PeripheralSimulator
 
 
 class T6713Simulator(PeripheralSimulator):  # type: ignore

@@ -4,6 +4,9 @@ import threading, subprocess, pyudev, numpy
 # Import python types
 from typing import Dict, Optional, List, Any
 
+# Import device utilities
+from device.utilities import constants
+
 
 def listify_dict(dict_: Dict[str, float]) -> List[float]:
     """Converts a dict into a list."""
@@ -39,7 +42,7 @@ def dictify_list(list_: List[Any], reference_dict: Dict[str, Any]) -> Dict[str, 
 
 
 def set_nested_dict_safely(
-    nested_dict: Dict, keys: List, value: str, lock: threading.Lock
+    nested_dict: Dict, keys: List, value: Any, lock: threading.RLock
 ) -> None:
     """ Safely sets value in nested dict. """
     with lock:
@@ -64,7 +67,9 @@ def get_nested_dict_safely(nested_dict: Dict, keys: List) -> Any:
     return value
 
 
-def get_peripheral_config(peripheral_configs: List, name: str) -> Dict:
+def get_peripheral_config(
+    peripheral_configs: List[Dict[str, Any]], name: str
+) -> Dict[str, Any]:
     """ Gets peripheral config from list of peripheral configs. """
     for peripheral_config in peripheral_configs:
         if peripheral_config["name"] == name:
@@ -100,3 +105,17 @@ def usb_device_matches(
 
     # USB device matches!
     return True
+
+
+def floatify_string(value: str) -> float:
+    """Converts a num string (e.g. 10M or 10K) to a float."""
+    unit = value[-1]
+    number = float(value[:-1])
+    if unit.lower() == "k":
+        return number * float(constants.KILOBYTE)
+    elif unit.lower() == "m":
+        return number * float(constants.MEGABYTE)
+    elif unit.lower() == "g":
+        return number * float(constants.GIGABYTE)
+    else:
+        raise ValueError("Invalid unit type `{}`".format(unit))

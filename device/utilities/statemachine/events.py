@@ -1,0 +1,2 @@
+RESET = "Reset"
+SHUTDOWN = "Shutdown"
