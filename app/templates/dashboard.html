@@ -194,7 +194,7 @@
                <input type="text" id="recipe_json" name="recipe_json" placeholder='Paste recipe json here' required>
                <button class="btn" type="button" onClick="createRecipe()"><i class="icon-share"></i> Upload Recipe </button>
             </p>
-            {% if current_recipe.recipe_uuid == None %}
+            {% if recipe_uuid == None %}
             <select id="recipe_uuid">
               {% for recipe in recipes %}
                 {% if recipe.uuid == selected_recipe.uuid %}

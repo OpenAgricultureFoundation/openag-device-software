@@ -13,6 +13,7 @@ from device.utilities.iot import registration
 
 # Import device managers
 from device.recipe.manager import RecipeManager
+from device.recipe import modes as recipe_modes
 
 # Import module elements
 from device.iot import modes, commands
@@ -491,8 +492,8 @@ class IotManager(manager.StateMachineManager):
 
         # Get message fields
         try:
-            command_messages = message["commands"]
-            message_id = message["messageId"]
+            command_messages = payload_dict["commands"]
+            message_id = payload_dict["messageId"]
         except KeyError as e:
             message = "Unable to get command messages, `{}` key is required".format(e)
             self.logger.error(message)
@@ -579,11 +580,37 @@ class IotManager(manager.StateMachineManager):
                 self.pubsub.publish_command_reply(command, error_message)
                 return
 
+            # Wait for recipe to stop
+            self.logger.debug("Waiting for recipe to stop")
+
+            # Initialize recipe stop timeout parameters
+            timeout = 5  # seconds
+            start_time = time.time()
+
+            # Loop forever
+            while True:
+
+                # Check if recipe manager entered no recipe mode
+                if self.recipe.mode == recipe_modes.NORECIPE:
+                    self.logger.debug("Recipe successfully stopped")
+                    break
+
+                # Check for timeout
+                if time.time() - start_time > timeout:
+                    error_message = "Unable to start recipe, recipe did not stop within"
+                    error_message += " {} seconds of issuing stop command"
+                    self.logger.warning(error_message)
+                    return error_message, 500
+
+                # Update every 100ms
+                time.sleep(0.1)
+
         # Start recipe
+        self.logger.debug("Starting recipe")
         message, status = self.recipe.start_recipe(recipe_uuid)
 
         # Check for start recipe errors
-        if status != 200:
+        if status != 202:
             error_message = "Unable to start recipe, error: {}".format(message)
             self.logger.warning(error_message)
 
