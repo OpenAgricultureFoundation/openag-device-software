@@ -30,7 +30,6 @@ APP_NAME = "app"
 LOG_DIR = "data/logs/"
 IMAGE_DIR = "data/images/"
 STORED_IMAGE_DIR = IMAGE_DIR + "stored/"
-STORED_IMAGES_PATH = "data/images/stored/*.png"
 DEVICE_CONFIG_PATH = "data/config/device.txt"
 
 
@@ -314,7 +313,27 @@ class Images(views.APIView):
         self.logger.debug("Getting image view")
 
         # Get stored image filepaths
-        filepaths = glob.glob(STORED_IMAGES_PATH)
+        stored_files = os.listdir(STORED_IMAGE_DIR)
+        stored_files.sort()
+        filepaths = []
+        for f in stored_files:
+            # Clean up any place holder images
+            if f.startswith("This_"):
+                os.remove(STORED_IMAGE_DIR + f)
+                continue
+            if f.endswith(".png"):
+                filepaths.append(f)
+
+        if 0 == len(filepaths):
+            if not os.path.isdir(STORED_IMAGE_DIR):
+                os.mkdir(STORED_IMAGE_DIR)
+            s = "device/peripherals/modules/usb_camera/tests/simulation_image.png"
+            place_holder = (
+                "This_is_just_a_sample_image_until_your_EDU_takes_its_own_picture.png"
+            )
+            shutil.copy(s, STORED_IMAGE_DIR + place_holder)
+            filepaths.append(place_holder)
+
         self.logger.debug("filepaths = {}".format(filepaths))
 
         # Build response
