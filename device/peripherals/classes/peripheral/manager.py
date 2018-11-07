@@ -82,18 +82,10 @@ class PeripheralManager(StateMachineManager):
             modes.INIT: [modes.SETUP, modes.ERROR, modes.SHUTDOWN],
             modes.SETUP: [modes.NORMAL, modes.ERROR, modes.SHUTDOWN],
             modes.NORMAL: [
-                modes.CALIBRATE,
-                modes.MANUAL,
-                modes.RESET,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.CALIBRATE, modes.MANUAL, modes.RESET, modes.ERROR, modes.SHUTDOWN
             ],
             modes.MANUAL: [
-                modes.NORMAL,
-                modes.CALIBRATE,
-                modes.RESET,
-                modes.ERROR,
-                modes.SHUTDOWN,
+                modes.NORMAL, modes.CALIBRATE, modes.RESET, modes.ERROR, modes.SHUTDOWN
             ],
             modes.CALIBRATE: [modes.RESET, modes.ERROR, modes.SHUTDOWN],
             modes.RESET: [modes.INIT, modes.ERROR, modes.SHUTDOWN],
@@ -373,7 +365,8 @@ class PeripheralManager(StateMachineManager):
         self.logger.info("Entered SHUTDOWN")
 
         # Shutdown peripheral
-        self.shutdown()
+        self.shutdown_peripheral()
+        self.is_shutdown = True
 
     ##### HELPER FUNCTIONS #############################################################
 

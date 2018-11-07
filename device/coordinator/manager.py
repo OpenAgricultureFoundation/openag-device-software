@@ -47,9 +47,10 @@ class CoordinatorManager(StateMachineManager):
     and manage external events."""
 
     # Initialize vars
+    latest_publish_timestamp = 0.0
     peripherals: Dict[str, StateMachineManager] = {}
     controllers: Dict[str, StateMachineManager] = {}
-    latest_publish_timestamp = 0.0
+    new_config: bool = False
 
     def __init__(self) -> None:
         """Initializes coordinator."""
@@ -58,7 +59,7 @@ class CoordinatorManager(StateMachineManager):
         super().__init__()
 
         # Initialize logger
-        self.loggger = Logger("Coordinator", "coordinator")
+        self.logger = Logger("Coordinator", "coordinator")
         self.logger.debug("Initializing coordinator")
 
         # Initialize state
@@ -255,6 +256,7 @@ class CoordinatorManager(StateMachineManager):
         if self.config_uuid != device_config["uuid"]:
             with self.state.lock:
                 self.state.peripherals = {}
+                self.state.controllers = {}
                 set_nested_dict_safely(
                     self.state.environment,
                     ["reported_sensor_stats"],
@@ -277,13 +279,15 @@ class CoordinatorManager(StateMachineManager):
         config_uuid = self.state.device["config_uuid"]
 
         # Spawn managers
-        self.recipe.spawn()
-        self.iot.spawn()
-        self.resource.spawn()
-        self.network.spawn()
-        self.upgrade.spawn()
+        if not self.new_config:
+            self.recipe.spawn()
+            self.iot.spawn()
+            self.resource.spawn()
+            self.network.spawn()
+            self.upgrade.spawn()
 
         # Create and spawn peripherals
+        self.logger.debug("Creating and spawning peripherals")
         self.create_peripherals()
         self.spawn_peripherals()
 
@@ -294,6 +298,9 @@ class CoordinatorManager(StateMachineManager):
         # Wait for all threads to initialize
         while not self.all_managers_initialized():
             time.sleep(0.2)
+
+        # Unset new config flag
+        self.new_config = False
 
         # Transition to normal mode on next state machine update
         self.mode = modes.NORMAL
@@ -329,6 +336,30 @@ class CoordinatorManager(StateMachineManager):
         # Shutdown peripherals and controllers
         self.shutdown_peripheral_threads()
         self.shutdown_controller_threads()
+
+        # Initialize timeout parameters
+        timeout = 10
+        start_time = time.time()
+
+        # Loop forever
+        while True:
+
+            # Check if peripherals and controllers are shutdown
+            if self.all_peripherals_shutdown() and self.all_controllers_shutdown():
+                self.logger.debug("All peripherals and controllers shutdown")
+                break
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                self.logger.critical("Config threads did not shutdown")
+                self.mode = modes.ERROR
+                return
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+        # Set new config flag
+        self.new_config = True
 
         # Transition to config mode on next state machine update
         self.mode = modes.CONFIG
@@ -805,6 +836,20 @@ class CoordinatorManager(StateMachineManager):
         for name, manager in self.controllers.items():
             manager.shutdown()
 
+    def all_peripherals_shutdown(self) -> bool:
+        """Check if all peripherals are shutdown."""
+        for name, manager in self.peripherals.items():
+            if manager.thread.is_alive():
+                return False
+        return True
+
+    def all_controllers_shutdown(self) -> bool:
+        """Check if all controllers are shutdown."""
+        for name, manager in self.controllers.items():
+            if manager.thread.is_alive():
+                return False
+        return True
+
     ##### EVENT FUNCTIONS ##############################################################
 
     def check_events(self) -> None:
@@ -880,5 +925,5 @@ class CoordinatorManager(StateMachineManager):
         with open(DEVICE_CONFIG_PATH, "w") as f:
             f.write(str(filename) + "\n")
 
-        # Transition to load mode on next state machine update
+        # Transition to init mode on next state machine update
         self.mode = modes.LOAD
