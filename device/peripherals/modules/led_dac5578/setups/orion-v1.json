@@ -213,7 +213,7 @@
 		},
 		{
 		    "name": "Fade",
-		    "description": "Fades all channels up/down concurrently.",
+		    "description": "Sequentially fades individual channels up/down.",
 		    "value": null,
 		    "sequence": null,
 		    "is_manual": true
