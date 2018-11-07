@@ -3,7 +3,7 @@
 	"version": "1",
 	"uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
 	"module_name": "atlas_temp.manager",
-	"class_name": "AtlasTemp",
+	"class_name": "AtlasTempManager",
 	"parameters": {
 		"variables": {
 			"sensor": {

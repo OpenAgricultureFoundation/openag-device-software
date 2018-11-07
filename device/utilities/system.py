@@ -13,6 +13,7 @@ logger.debug("Initializing utility")
 
 # Initialize filepaths
 BBB_SERIAL_SCRIPT_PATH = "scripts/get_bbb_serial.sh"
+WIFI_AP_SCRIPT_PATH = "scripts/get_access_point.sh"
 
 
 def is_beaglebone() -> bool:
@@ -145,3 +146,39 @@ def device_config_name() -> str:
     # Successfully got device config name
     logger.debug("Device config name: {}".format(device_config_name))
     return device_config_name
+
+
+def beaglebone_wifi_access_point_name() -> str:
+    """Gets the beaglebone wifi access point name."""
+    logger.debug("Getting beaglebone wifi access point name")
+
+    # Check system is a beaglebone
+    if not is_beaglebone():
+        logger.debug("Unable to get beaglebone AP, system not a beaglebone")
+        return "Unknown"
+
+    # Build command
+    command = [WIFI_AP_SCRIPT_PATH]
+
+    # Execute command
+    try:
+        with subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ) as process:
+            output = process.stdout.read().decode("utf-8")
+            output += process.stderr.read().decode("utf-8")
+    except Exception as e:
+        message = "Unable to get beaglebone serial number, unhandled exception: {}".format(
+            type(e)
+        )
+        logger.exception(message)
+        return "Unknown"
+
+    # Parse output
+    wifi_ap = str(output.strip())
+
+    # Successfully got serial number
+    logger.debug("Successfully got wifi AP: {}".format(wifi_ap))
+    return wifi_ap
+
+

@@ -84,6 +84,20 @@
 		}
 	},
 	{
+		"key": "water_temperature_celcius",
+		"info": {
+			"name": {
+				"brief": "Water Temp",
+				"verbose": "Water Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celcius",
+				"type": "number"
+			}
+		}
+	},
+	{
 		"key": "water_dissolved_oxygen_mg_l",
 		"info": {
 			"name": {

@@ -331,6 +331,9 @@ class IotManager(manager.StateMachineManager):
             "device_config": system.device_config_name(),
             "package_version": self.state.upgrade.get("current_version"),
             "IP": self.state.network.get("ip_address"),
+            "access_point": system.beaglebone_wifi_access_point_name(),
+            "bbb_serial": system.beaglebone_serial_number(),
+            "remote_URL": system.remote_device_ui_url(),
         }
 
         # Publish boot message
