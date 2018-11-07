@@ -481,7 +481,7 @@ class Upgrade(views.APIView):
 
 
 class StateViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint that allows state to be viewed."""
+    """View set for interacting with state."""
 
     # Initialize view set
     serializer_class = serializers.StateSerializer
@@ -501,7 +501,7 @@ class EventViewSet(viewsets.ModelViewSet):
     """View set for creating peripheral and controller events."""
     permission_classes = [IsAuthenticated]
 
-    def create(self, request):
+    def create(self, request: Request) -> Response:
         """Creates a new event."""
 
         # Get parameters
@@ -664,7 +664,7 @@ class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows cultivation methods to be viewed. """
+    """View set for interacting with cultivation methods."""
 
     # Initialize class parameters
     serializer_class = serializers.CultivationMethodSerializer
@@ -680,7 +680,7 @@ class CultivationMethodViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows sensor variables to be viewed. """
+    """View set for interacting with sensor variables."""
 
     # Initialize view set parameters
     serializer_class = serializers.SensorVariableSerializer
@@ -696,7 +696,7 @@ class SensorVariableViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows actuator variables to be viewed. """
+    """View set for interacting with actuator variables."""
 
     # Initialize view set parameters
     serializer_class = serializers.ActuatorVariableSerializer
@@ -712,7 +712,7 @@ class ActuatorVariableViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows peripheral setups to be viewed. """
+    """View set for interacting with peripheral setups."""
 
     # Initialize view set parameters
     serializer_class = serializers.PeripheralSetupSerializer
@@ -728,7 +728,7 @@ class PeripheralSetupViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class DeviceConfigViewSet(viewsets.ModelViewSet):
-    """API endpoint that allows device config to be viewed and loaded."""
+    """View set for interacting with device configs."""
 
     # Initialize view set parameters
     serializer_class = serializers.DeviceConfigSerializer

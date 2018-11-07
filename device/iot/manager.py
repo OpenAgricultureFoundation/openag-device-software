@@ -603,7 +603,7 @@ class IotManager(manager.StateMachineManager):
                     error_message = "Unable to start recipe, recipe did not stop within"
                     error_message += " {} seconds of issuing stop command"
                     self.logger.warning(error_message)
-                    return error_message, 500
+                    return
 
                 # Update every 100ms
                 time.sleep(0.1)

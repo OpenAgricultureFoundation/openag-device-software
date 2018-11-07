@@ -62,7 +62,7 @@ class DAC5578Driver:
         self, channel: int, percent: int, retry: bool = True, disable_mux: bool = False
     ) -> None:
         """Sets output value to channel."""
-        message = "Writing output on channel {} to: {}%".format(channel, percent)
+        message = "Writing output on channel {} to: {:.02F}%".format(channel, percent)
         self.logger.debug(message)
 
         # Check valid channel range

@@ -563,12 +563,12 @@ class LEDDAC5578Manager(manager.PeripheralManager):
         self.logger.debug("Pre-processing fade event request")
 
         # Require mode to be in manual
-        if self.mode != Modes.MANUAL:
+        if self.mode != modes.MANUAL:
             return "Must be in manual mode", 400
 
         # Add event request to event queue
-        request = {"type": FADE_EVENT}
-        self.queue.put(request)
+        request = {"type": events.FADE}
+        self.event_queue.put(request)
 
         # Return not implemented yet
         return "Fading", 200
@@ -578,7 +578,7 @@ class LEDDAC5578Manager(manager.PeripheralManager):
         self.logger.debug("Fading")
 
         # Require mode to be in manual
-        if self.mode != Modes.MANUAL:
+        if self.mode != modes.MANUAL:
             self.logger.critical("Tried to fade from {} mode".format(self.mode))
 
         # Turn off channels
@@ -613,7 +613,7 @@ class LEDDAC5578Manager(manager.PeripheralManager):
                         return
 
                     # Check for events
-                    if not self.queue.empty():
+                    if not self.event_queue.empty():
                         return
 
                     # Update every 100ms
@@ -631,7 +631,7 @@ class LEDDAC5578Manager(manager.PeripheralManager):
                         return
 
                     # Check for events
-                    if not self.queue.empty():
+                    if not self.event_queue.empty():
                         return
 
                     # Update every 100ms
