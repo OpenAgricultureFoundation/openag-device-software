@@ -1,5 +1,6 @@
 {
-	"name":  "Light Panel Libra Actuator for FS rack",
+	"name":  "Light Panel Libra Actuator",
+	"description": "Array of panels in 4x1 config. Initially used for food server rack.",
 	"version": "1",
 	"uuid": "b5aad767-5b44-4f94-be4e-00c0261e85af",
 	"module_name": "led_dac5578/manager",
@@ -68,11 +69,18 @@
 			"B": {"name": "Blue", "type": "B", "port": 4}
 		},
 		"intensity_map_cm_umol": {
-			"2": 1615,
-			"6": 1437,
-			"10": 1115,
-			"14": 860,
-			"18": 662
+			"10": 910.9,
+			"15": 864.3,
+			"20": 820.2,
+			"25": 734,
+			"30": 673.6,
+			"35": 613,
+			"40": 562.9,
+			"45": 514.9,
+			"50": 470.2,
+			"55": 428.8,
+			"60": 375.8,
+			"65": 366.6
 		},
 		"dac_map": {
         	"0": 0,
@@ -96,72 +104,39 @@
         	"100": 100
 		},
 		"channel_types": {
-			"FR": {
-				"name": "Far Red",
-				"relative_intensity_percent": 1.8,
-		        "spectrum_nm_percent": {
-		            "380-399": 0,
-		            "400-499": 0,
-		            "500-599": 0,
-		            "600-700": 10.7,
-		            "701-780": 89.3
-	        	}
-	        },
 	        "R": {
 				"name": "Red",
-				"relative_intensity_percent": 25.0,
+				"relative_intensity_percent": 53.94,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
 		            "400-499": 0,
-		            "500-599": 0.3,
-		            "600-700": 97.7,
-		            "701-780": 2
+		            "500-599": 0.49,
+		            "600-700": 96.98,
+		            "701-780": 2.53
 	        	}
 	        },
-	        "G": {
-				"name": "Green",
-				"relative_intensity_percent": 8.9,
+	        "CW": {
+				"name": "Cool White",
+				"relative_intensity_percent": 29.63,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
-		            "400-499": 14,
-		            "500-599": 85.1,
-		            "600-700": 0.9,
-		            "701-780": 0
+		            "400-499": 16.8,
+		            "500-599": 42.8,
+		            "600-700": 36.56,
+		            "701-780": 3.85
 	        	}
 	        },
 	        "B": {
 				"name": "Blue",
-				"relative_intensity_percent": 19.9,
+				"relative_intensity_percent": 16.43,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
-		            "400-499": 99.2,
-		            "500-599": 0.8,
-		            "600-700": 0,
-		            "701-780": 0
+		            "400-499": 90.15,
+		            "500-599": 7.45,
+		            "600-700": 1.97,
+		            "701-780": 0.43
 	        	}
-	        },
-			"CW": {
-				"name": "Cool White",
-				"relative_intensity_percent": 22.6,
-				"spectrum_nm_percent": {
-		            "380-399": 0,
-		            "400-499": 23.5,
-		            "500-599": 47,
-		            "600-700": 26.7,
-		            "701-780": 2.8
-	        	}
-	        },
-			"WW": {
-				"name": "Warm White",
-				"relative_intensity_percent": 21.8,
-				"spectrum_nm_percent": {
-		            "380-399": 0,
-		            "400-499": 8.3,
-		            "500-599": 38.4,
-		            "600-700": 48.2,
-		            "701-780": 5.1
-	        	}
-			}
+	        }
 		}
 	},
 	"events": [
