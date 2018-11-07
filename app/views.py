@@ -312,11 +312,14 @@ class Images(views.APIView):
         """Gets images view."""
         self.logger.debug("Getting image view")
 
+        # TODO: Clean up this code flow, it is hard to follow
+
         # Get stored image filepaths
         stored_files = os.listdir(STORED_IMAGE_DIR)
         stored_files.sort()
         filepaths = []
         for f in stored_files:
+
             # Clean up any place holder images
             if f.startswith("This_"):
                 os.remove(STORED_IMAGE_DIR + f)

@@ -660,7 +660,7 @@ class RecipeManager(StateMachineManager):
         """Converts duration in minutes to duration day-hour-minute string."""
         days = int(float(duration_minutes) / (60 * 24))
         hours = int((float(duration_minutes) - days * 60 * 24) / 60)
-        minutes = duration_minutes - days * 60 * 24 - hours * 60
+        minutes = int(duration_minutes - days * 60 * 24 - hours * 60)
         string = "{} Days {} Hours {} Minutes".format(days, hours, minutes)
         return string
 

@@ -13,7 +13,7 @@ logger.debug("Initializing utility")
 
 # Initialize filepaths
 BBB_SERIAL_SCRIPT_PATH = "scripts/get_bbb_serial.sh"
-WIFI_AP_SCRIPT_PATH = "scripts/get_access_point.sh"
+WIFI_ACCESS_POINT_SCRIPT_PATH = "scripts/get_access_point.sh"
 
 
 def is_beaglebone() -> bool:
@@ -158,7 +158,7 @@ def beaglebone_wifi_access_point_name() -> str:
         return "Unknown"
 
     # Build command
-    command = [WIFI_AP_SCRIPT_PATH]
+    command = [WIFI_ACCESS_POINT_SCRIPT_PATH]
 
     # Execute command
     try:
@@ -175,10 +175,11 @@ def beaglebone_wifi_access_point_name() -> str:
         return "Unknown"
 
     # Parse output
-    wifi_ap = str(output.strip())
+    wifi_access_point_name = str(output.strip())
 
     # Successfully got serial number
-    logger.debug("Successfully got wifi AP: {}".format(wifi_ap))
-    return wifi_ap
-
-
+    debug_message = "Successfully got wifi access point name: {}".format(
+        wifi_access_point_name
+    )
+    logger.debug(debug_message)
+    return wifi_access_point_name
