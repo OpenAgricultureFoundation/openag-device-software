@@ -475,8 +475,29 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
+class EventViewSet(viewsets.ModelViewSet):
+    """View set for creating peripheral and controller events."""
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        """Creates a new event."""
+
+        # Get parameters
+        try:
+            request_dict = request.data.dict()
+        except Exception as e:
+            message = "Unable to create request dict: {}".format(e)
+            return Response(message, 400)
+
+        # Get request parameters
+        event_viewer = viewers.EventViewer()
+        message, status = event_viewer.create(request_dict)
+        response_dict = {"message": message}
+        return Response(response_dict, status=status)
+
+
 class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows events to be viewed. """
+    """View set for environment interactions."""
 
     # Initialize view set parameters
     serializer_class = serializers.EnvironmentSerializer
@@ -492,7 +513,7 @@ class EnvironmentViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """API endpoints that allow recipes to be started, stopped, created, and viewed."""
+    """View set for recipe interactions."""
 
     # Initialize view set parameters
     serializer_class = serializers.RecipeSerializer
@@ -589,7 +610,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows recipe transitions to be viewed. """
+    """View set for recipe transaction interactions."""
 
     # Initialize view set parameters
     serializer_class = serializers.RecipeTransitionSerializer
@@ -605,7 +626,7 @@ class RecipeTransitionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CultivarViewSet(viewsets.ReadOnlyModelViewSet):
-    """ API endpoint that allows cultivars to be viewed. """
+    """View set for cultivar interactions."""
 
     # Initialize class parameters
     serializer_class = serializers.CultivarSerializer

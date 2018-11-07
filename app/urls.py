@@ -18,6 +18,7 @@ from app.router import Router
 # Setup django rest routes
 router = Router()
 router.register(r"state", views.StateViewSet, base_name="api-state")
+router.register(r"event", views.EventViewSet, base_name="api-event")
 router.register(r"recipe", views.RecipeViewSet, base_name="api-recipe")
 router.register(
     r"recipe/transitions",

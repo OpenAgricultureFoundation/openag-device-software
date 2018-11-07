@@ -16,8 +16,8 @@ from device.utilities import logger
 
 # Initialize constants
 APP_NAME = "app"
-
-# TODO: Clean up or remove environment viewer
+PERIPHERAL_RECIPIENT_TYPE = "Peripheral"
+CONTROLLER_RECIPIENT_TYPE = "Controller"
 
 
 class RecipeViewer:
@@ -62,6 +62,63 @@ class CultivationMethodsViewer:
         for cultivation_method in cultivation_methods:
             cultivation_methods_dict.append(json_.loads(cultivation_method.json))
         self.json = json_.dumps(cultivation_methods_dict)
+
+
+class EventViewer:
+    """Viewer for peripheral and controller event creation."""
+
+    # Initialize logger
+    logger = logger.Logger("EventViewer", "app")
+
+    def create(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Create a new event request to any known thread."""
+
+        # Get request parameters
+        try:
+            recipient = json_.loads(request["recipient"])
+            recipient_type = recipient["type"]
+            recipient_name = recipient["name"]
+            request_ = json_.loads(request["request"])
+            request_type = request_["type"]
+            message = "Creating new event request for {} to {}".format(
+                recipient_name, request_type
+            )
+            self.logger.debug(message)
+        except ValueError as e:
+            message = "Unable to get request parameters, invalid JSON: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except KeyError as e:
+            message = "Unable to get request parameters, invalid key: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+
+        # Get device coordinator
+        app_config = apps.get_app_config(APP_NAME)
+        coordinator = app_config.coordinator
+
+        # Check valid recipient type and get manager
+        if recipient_type == PERIPHERAL_RECIPIENT_TYPE:
+            manager = coordinator.peripherals.get(recipient_name)
+        elif request_type == CONTROLLER_RECIPIENT_TYPE:
+            manager = coordinator.controllers.get(recipient_name)
+        else:
+            message = "Invalid recipient type `{}`".format(recipient_type)
+            self.logger.debug(message)
+            return message, 400
+
+        # Check manager exists
+        if manager == None:
+            message = "Invalid recipient name: `{}`".format(recipient_name)
+            self.logger.debug(message)
+            return message, 400
+
+        # Send event to manager
+        message, status = manager.create_event(request_)
+
+        # Successfully created event request
+        self.logger.debug("Responding with ({}): {}".format(status, message))
+        return message, status
 
 
 class EnvironmentViewer:
