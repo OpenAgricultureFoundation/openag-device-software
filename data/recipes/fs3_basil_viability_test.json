@@ -1,0 +1,157 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-11-08T11:45:41Z",
+	"name": "Food Server 3 Basil Viability Test",
+	"uuid": "146b0fa0-2775-421c-b97c-1104e8c98e5a",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Viability test for growing basil in the MIT Food Server #3.",
+		"verbose": "Viability test for basil has lights with a red-heavy spectrum (approximates spectrum in FS#2) on a 16 hour photoperiod. Grows for 5 weeks and assume a foliage growth rate of 10cm per week. Maintains 300umol light intensity at the canopy surface."
+	},
+	"authors": [
+		{
+			"name": "Rebekah Carlson",
+			"email": "rebekahj@media.mit.edu",
+			"uuid": "cc882bb2-4a64-4b9f-b826-c0ff014a0961"
+		},
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Genovese Basil",
+			"uuid": "9dc80135-0c24-4a65-ae0b-95f1c5e53676"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"canopy_5cm_day": {
+			"name": "Daytime @5cm Canopy Height",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 27.8, "500-599": 6.2, "600-700": 64.2, "701-780": 1.8},
+			"light_ppfd_umol_m2_s": 300,
+			"light_illumination_distance_cm": 50
+		},
+		"canopy_15cm_day": {
+			"name": "Daytime @15cm Canopy Height",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 27.8, "500-599": 6.2, "600-700": 64.2, "701-780": 1.8},
+			"light_ppfd_umol_m2_s": 300,
+			"light_illumination_distance_cm": 40
+		},
+		"canopy_25cm_day": {
+			"name": "Daytime @25cm Canopy Height",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 27.8, "500-599": 6.2, "600-700": 64.2, "701-780": 1.8},
+			"light_ppfd_umol_m2_s": 300,
+			"light_illumination_distance_cm": 30
+		},
+		"canopy_35cm_day": {
+			"name": "Daytime @35cm Canopy Height",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 27.8, "500-599": 6.2, "600-700": 64.2, "701-780": 1.8},
+			"light_ppfd_umol_m2_s": 300,
+			"light_illumination_distance_cm": 20
+		},
+		"canopy_45cm_day": {
+			"name": "Daytime @45cm Canopy Height",
+			"light_spectrum_nm_percent": {"380-399": 0, "400-499": 27.8, "500-599": 6.2, "600-700": 64.2, "701-780": 1.8},
+			"light_ppfd_umol_m2_s": 300,
+			"light_illumination_distance_cm": 10
+		},
+		"standard_night": {
+			"name": "Standard Night",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
+			"light_ppfd_umol_m2_s": 0,
+			"light_illumination_distance_cm": 10
+		}
+	},
+	"phases": [
+		{
+			"name": "Week 1",
+			"repeat": 7,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "canopy_5cm_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		},
+		{
+			"name": "Week 2",
+			"repeat": 7,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "canopy_15cm_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		},
+		{
+			"name": "Week 3",
+			"repeat": 7,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "canopy_25cm_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		},
+		{
+			"name": "Week 4",
+			"repeat": 7,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "canopy_35cm_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		},
+		{
+			"name": "Week 5",
+			"repeat": 7,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "canopy_45cm_day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "standard_night",
+					"duration_hours": 8
+				}
+			]
+		}
+	]
+}
