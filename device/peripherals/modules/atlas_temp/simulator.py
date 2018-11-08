@@ -57,5 +57,4 @@ class AtlasTempSimulator(AtlasSimulator):  # type: ignore
             ]
         )
 
-        # Note temperature respose corresponds to 22.98 degC
         self.writes[byte_str(TEMPERATURE_WRITE_BYTES)] = TEMPERATURE_RESPONSE_BYTES
