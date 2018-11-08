@@ -106,7 +106,7 @@
 		"channel_types": {
 	        "R": {
 				"name": "Red",
-				"relative_intensity_percent": 53.94,
+				"relative_intensity_percent": 17.98,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
 		            "400-499": 0,
@@ -117,7 +117,7 @@
 	        },
 	        "CW": {
 				"name": "Cool White",
-				"relative_intensity_percent": 29.63,
+				"relative_intensity_percent": 14.82,
 				"spectrum_nm_percent": {
 		            "380-399": 0,
 		            "400-499": 16.8,
