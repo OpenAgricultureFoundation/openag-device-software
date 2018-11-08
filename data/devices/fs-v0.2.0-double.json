@@ -1,7 +1,7 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Food Server v0.2.0",
-    "uuid": "bcdf5922-fe6b-41ea-a65d-2c258b28eb93",
+    "name": "Food Server v0.2.0 Double Rack",
+    "uuid": "4dbd1844-e11f-44a7-bee6-01a3caa0da8f",
     "peripherals": [
         {
             "name": "LEDArray",
@@ -24,7 +24,8 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4}
+                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
+                        {"name": "LP2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
                     ]
                 }
             }
