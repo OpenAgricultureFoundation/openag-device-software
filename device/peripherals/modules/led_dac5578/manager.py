@@ -21,8 +21,8 @@ class LEDDAC5578Manager(manager.PeripheralManager):
     prev_desired_intensity: Optional[float] = None
     prev_desired_spectrum: Optional[Dict[str, float]] = None
     prev_desired_distance: Optional[float] = None
-    prev_pulse_time: float = 0
-    pulse_interval: float = 300  # seconds -> every 5 minutes
+    prev_heartbeat_time: float = 0
+    heartbeat_interval: float = 60  # seconds -> every minute
     prev_reinit_time: float = 0
     reinit_interval: float = 300  # seconds -> every 5 minutes
 
@@ -272,17 +272,18 @@ class LEDDAC5578Manager(manager.PeripheralManager):
         ):
             all_desired_values_exist = False
 
-        # Check for pulse timeout - must send update to device every pulse interval
-        pulse_required = False
-        if self.pulse_interval != None:
-            pulse_delta = time.time() - self.prev_pulse_time
-            if pulse_delta > self.pulse_interval:
-                pulse_required = True
-            self.prev_pulse_time = time.time()
+        # Check for heartbeat timeout - must send update to device every heartbeat interval
+        heartbeat_required = False
+        if self.heartbeat_interval != None:
+            heartbeat_delta = time.time() - self.prev_heartbeat_time
+            if heartbeat_delta > self.heartbeat_interval:
+                heartbeat_required = True
+                self.prev_heartbeat_time = time.time()
 
-        # Only require update on pulse timeout if all desired values exist
-        if pulse_required and all_desired_values_exist:
-            update_required = True
+        # Write outputs to hardware every heartbeat interval if update isn't inevitable
+        if not update_required and heartbeat_required and all_desired_values_exist:
+            self.logger.debug("Sending heatbeat to panels")
+            self.driver.set_outputs(self.channel_setpoints)
 
         # Check for panel re-initialization
         reinit_delta = time.time() - self.prev_reinit_time
@@ -327,8 +328,8 @@ class LEDDAC5578Manager(manager.PeripheralManager):
         self.prev_desired_spectrum = self.desired_spectrum
         self.prev_desired_distance = self.desired_distance
 
-        # Update latest pulse time
-        self.prev_pulse_time = time.time()
+        # Update latest heartbeat time
+        self.prev_heartbeat_time = time.time()
 
     def clear_reported_values(self) -> None:
         """Clears reported values."""
