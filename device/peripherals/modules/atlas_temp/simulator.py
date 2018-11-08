@@ -19,8 +19,43 @@ class AtlasTempSimulator(AtlasSimulator):  # type: ignore
 
         self.registers: Dict = {}
 
-        # # Initialize write and response bytes
-        # EXAMPLE_WRITE_BYTES = bytes([0x00])
-        # EXAMPLE_RESPONSE_BYTES = bytes([0x00, 0x00])
+        # Initialize write and response bytes
+        TEMPERATURE_WRITE_BYTES = bytes([0x52, 0x00])
+        TEMPERATURE_RESPONSE_BYTES = bytes(
+            [
+                0x01,
+                0x32,
+                0x32,
+                0x2E,
+                0x39,
+                0x37,
+                0x32,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+            ]
+        )
 
-        # self.writes[byte_str(EXAMPLE_WRITE_BYTES)] = EXAMPLE_RESPONSE_BYTES
+        # Note temperature respose corresponds to 22.98 degC
+        self.writes[byte_str(TEMPERATURE_WRITE_BYTES)] = TEMPERATURE_RESPONSE_BYTES
