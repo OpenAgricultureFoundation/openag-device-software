@@ -48,7 +48,7 @@ class IotManager(manager.StateMachineManager):
 
         # Initialize logger
         self.logger = logger.Logger("IotManager", "iot")
-        self.logger.debug("~~~ Initializing manager ~~~")
+        self.logger.debug("Initializing manager")
 
         # Initialize our state variables
         self.received_message_count = 0
@@ -238,11 +238,12 @@ class IotManager(manager.StateMachineManager):
 
         # Check if device is registered
         if not self.is_registered:
+            self.logger.debug("Device not registered, registering device")
             registration.register()
-        else:
-            # Update registration state
-            self.device_id = registration.device_id()
-            self.verification_code = registration.verification_code()
+
+        # Update registration state
+        self.device_id = registration.device_id()
+        self.verification_code = registration.verification_code()
 
         # Initialize client
         self.pubsub.initialize()
