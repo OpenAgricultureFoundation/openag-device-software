@@ -47,6 +47,7 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
                 vendor_id=int(self.properties.get("vendor_id"), 16),
                 product_id=int(self.properties.get("product_id"), 16),
                 resolution=self.properties.get("resolution"),
+                num_cameras=self.properties.get("num_cameras", 1),
                 usb_mux_comms=self.usb_mux_comms,
                 usb_mux_channel=self.usb_mux_channel,
                 i2c_lock=self.i2c_lock,
