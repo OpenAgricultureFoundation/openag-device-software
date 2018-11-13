@@ -9,7 +9,11 @@
 			"sensor": null,
 			"actuator": null
 		},	
-		"communication": null
+		"communication": null,
+		"num_cameras": {
+			"type": "number",
+			"default": 1
+		}
 	},
 	"events": [
 	    {
@@ -43,7 +47,5 @@
 	"properties": {
 		"vendor_id": "0x05A3",
 		"product_id": "0x9520",
-		"resolution": "1280x1024",
-		"num_cameras": 1
-	}
+		"resolution": "1280x1024"	}
 }

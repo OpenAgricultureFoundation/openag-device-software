@@ -30,6 +30,8 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
         self.min_sampling_interval = 120  # seconds
         self.default_sampling_interval = 3600  # every hour
 
+        self.logger.debug("Instantiating")
+
     def initialize_peripheral(self) -> None:
         """ Initializes peripheral."""
         self.logger.debug("Initializing")
@@ -42,12 +44,17 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
+            # Initialize min sampling interval
+            num_cameras = self.parameters.get("num_cameras", 1)
+            self.min_sampling_interval = 120 * num_cameras
+
+            # Create driver
             self.driver = driver.USBCameraDriver(
                 name=self.name,
                 vendor_id=int(self.properties.get("vendor_id"), 16),
                 product_id=int(self.properties.get("product_id"), 16),
                 resolution=self.properties.get("resolution"),
-                num_cameras=self.properties.get("num_cameras", 1),
+                num_cameras=num_cameras,
                 usb_mux_comms=self.usb_mux_comms,
                 usb_mux_channel=self.usb_mux_channel,
                 i2c_lock=self.i2c_lock,

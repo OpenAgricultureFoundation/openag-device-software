@@ -48,7 +48,8 @@
                     "sensor": null,
                     "actuator": null
                 },
-                "communication": null            }
+                "communication": null            
+            }
         }
     ],
     "controllers": null

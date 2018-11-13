@@ -121,6 +121,15 @@ class USBCameraDriver:
             for i in range(self.num_cameras):
                 camera_paths.append("simulate_path")
 
+        # Check correct number of camera paths
+        num_detected = len(camera_paths)
+        if num_detected != self.num_cameras:
+            message = "Incorrect number of cameras detected, expected {}, detected {}".format(
+                self.num_cameras, num_detected
+            )
+            message += ". Proceeding with capture anyway"
+            self.logger.warning(message)
+
         # Capture an image from each active camera
         for index, camera_path in enumerate(camera_paths):
 
@@ -141,7 +150,7 @@ class USBCameraDriver:
 
     def capture_image(self, camera_path: str, image_path: str) -> None:
         """Captures an image."""
-        self.logger.debug("Capturing image")
+        self.logger.debug("Capturing image from camera: {}".format(camera_path))
 
         # Capture image
         try:
@@ -195,6 +204,7 @@ class USBCameraDriver:
 
         # Check if using usb mux
         if not self.usb_mux_enabled:
+            self.logger.debug("Cameras always enabled, not using mux")
             return
 
         # Turn on usb mux channel
@@ -250,6 +260,7 @@ class USBCameraDriver:
 
         # Check if using usb mux
         if not self.usb_mux_enabled:
+            self.logger.debug("Cameras always enabled, not using mux")
             return
 
         # Turn off usb mux channel
