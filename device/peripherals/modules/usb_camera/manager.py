@@ -9,7 +9,7 @@ from device.utilities import logger, accessors
 
 # Import manager elements
 from device.peripherals.classes.peripheral import manager, modes
-from device.peripherals.modules.usb_camera import driver, exceptions
+from device.peripherals.modules.usb_camera import driver, exceptions, events
 
 
 class USBCameraManager(manager.PeripheralManager):  # type: ignore
@@ -75,3 +75,43 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
             self.logger.debug("Unable to update: {}".format(e))
             self.mode = modes.ERROR
             self.health = 0
+
+    ##### EVENT FUNCTIONS ##############################################################
+
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event."""
+        if request["type"] == events.CAPTURE:
+            return self.capture()
+        else:
+            return "Unknown event request type", 400
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        if request["type"] == events.CAPTURE:
+            self._capture()
+        else:
+            message = "Invalid event request type in queue: {}".format(request["type"])
+            self.logger.error(message)
+
+    def capture(self) -> Tuple[str, int]:
+        """Pre-processes capture event request."""
+        self.logger.debug("Pre-processing capture event request")
+
+        # Add event request to event queue
+        request = {"type": events.CAPTURE}
+        self.event_queue.put(request)
+
+        # Successfully turned on
+        return "Capturing image, will take a few moments", 200
+
+    def _capture(self) -> None:
+        """Processes capture event request."""
+        self.logger.debug("Processing capture event request")
+        try:
+            self.driver.capture()
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to turn on, unhandled exception"
+            self.logger.exception(message)

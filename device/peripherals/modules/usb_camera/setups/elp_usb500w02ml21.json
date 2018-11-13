@@ -36,6 +36,12 @@
 	            "unit": "Seconds"
 	        },
 	        "sequence": null
+	    },
+	    {
+	        "name": "Capture",
+	        "description": "Captures an image",
+	        "value": null,
+	        "sequence": null
 	    }
 	],
 	"info": {
