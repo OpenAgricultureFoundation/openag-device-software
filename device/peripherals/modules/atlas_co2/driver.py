@@ -65,7 +65,14 @@ class AtlasCo2Driver(driver.AtlasDriver):
             self.enable_protocol_lock(retry=retry)
             self.enable_led(retry=retry)
             self.disable_alarm(retry=retry)
-            self.read_info(retry=retry)
+
+            # Verify sensor is a co2 sensor
+            info = self.read_info(retry=retry)
+            if info.sensor_type != "co2":
+                message = "Not an Atlas CO2 sensor"
+                raise exceptions.SetupError(message=message, logger=self.logger)
+
+            # Enable internal temperature reporting
             self.enable_internal_temperature()
 
             # Wait for at least 10 minutes for sensor to warm up
@@ -84,6 +91,7 @@ class AtlasCo2Driver(driver.AtlasDriver):
                 time.sleep(60)
 
             # Get initial internal temperature measurement
+            self.logger.debug("Taking initial internal temperature reading")
             prev_internal_temperature = self.read_internal_temperature()
 
             # Wait for a minute if not simulating
@@ -100,6 +108,7 @@ class AtlasCo2Driver(driver.AtlasDriver):
                 # Check if prev internal temperature within half a degree of current
                 internal_temperature = self.read_internal_temperature()
                 temp_delta = abs(internal_temperature - prev_internal_temperature)
+                self.logger.debug("temp delta = {}".format(temp_delta))
                 if temp_delta < 0.5:
                     self.logger.debug("Internal temperature stabilized")
                     self.disable_internal_temperature()
@@ -107,11 +116,9 @@ class AtlasCo2Driver(driver.AtlasDriver):
 
                 # Check for timeout
                 if time.time() - start_time > self.warmup_timeout:
-                    message = "Internal temperature did not stabilize, timed out"
-                    self.logger.debug(message)
                     self.disable_internal_temperature()
-                    self.mode = modes.ERROR
-                    return
+                    message = "Internal temperature did not stabilize, timed out"
+                    raise exceptions.SetupError(message=message, logger=self.logger)
 
                 # Update every minute
                 time.sleep(60)
@@ -128,6 +135,11 @@ class AtlasCo2Driver(driver.AtlasDriver):
             response = self.process_command("R", process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.ReadCo2Error(logger=self.logger) from e
+
+        # Check internal temp not reported
+        if "," in response:
+            self.logger.warning("Internal temperature reporting not disabled")
+            response = response.split(",")[0]
 
         # Parse response
         co2_raw = float(response)  # type: ignore
@@ -150,12 +162,19 @@ class AtlasCo2Driver(driver.AtlasDriver):
 
         # Get internal temperature reading from hardware
         try:
-            response = self.process_command("O,?", process_seconds=0.6, retry=retry)
+            response = self.process_command("R", process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.ReadInternalTemperatureError(logger=self.logger) from e
 
+        # Verify internal temp is reported
+        if "," not in response:
+            message = "internal temperature not enabled"
+            raise exceptions.ReadInternalTemperatureError(
+                message=message, logger=logger
+            )
+
         # Parse response
-        internal_temperature_raw = float(response)  # type: ignore
+        internal_temperature_raw = float(response.split(",")[1])  # type: ignore
 
         # Round to 2 decimal places
         internal_temperature = round(internal_temperature_raw, 2)

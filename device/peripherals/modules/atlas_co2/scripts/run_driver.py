@@ -33,6 +33,15 @@ class DriverRunner(AtlasDriverRunner):
 
         # Initialize parser
         self.parser.add_argument("--co2", action="store_true", help="read co2")
+        self.parser.add_argument(
+            "--enable-temp", action="store_true", help="enables internal temperature"
+        )
+        self.parser.add_argument(
+            "--disable-temp", action="store_true", help="disable internal temperature"
+        )
+        self.parser.add_argument(
+            "--temp", action="store_true", help="read internal temperature"
+        )
 
     def run(self, *args: Any, **kwargs: Any):
         """Runs driver."""
@@ -42,7 +51,13 @@ class DriverRunner(AtlasDriverRunner):
 
         # Check if reading pH
         if self.args.co2:
-            print("CO2: {} pm".format(self.driver.read_co2()))
+            print("CO2: {} ppm".format(self.driver.read_co2()))
+        elif self.args.enable_temp:
+            self.driver.enable_internal_temperature()
+        elif self.args.disable_temp:
+            self.driver.disable_internal_temperature()
+        elif self.args.temp:
+            print("Internal Temp: {} C".format(self.driver.read_internal_temperature()))
 
 
 # Run main
