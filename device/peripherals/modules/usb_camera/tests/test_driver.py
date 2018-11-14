@@ -16,17 +16,17 @@ from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 from device.peripherals.modules.usb_camera.driver import USBCameraDriver
 
 # Set test image directory
-IMAGE_DIR = "device/peripherals/modules/usb_camera/tests/images/"
+TEST_IMAGE_PATH = "device/peripherals/modules/usb_camera/tests/images/*.png"
 
 
 def delete_test_images() -> None:
-    filelist = glob.glob(os.path.join(IMAGE_DIR, "*.png"))
+    filelist = glob.glob(TEST_IMAGE_PATH)
     for f in filelist:
         os.remove(f)
 
 
 def list_test_images() -> List[str]:
-    return glob.glob(os.path.join(IMAGE_DIR, "*.png"))
+    return glob.glob(TEST_IMAGE_PATH)
 
 
 def test_init() -> None:
@@ -41,13 +41,14 @@ def test_init() -> None:
     )
 
 
-def test_capture() -> None:
+def test_capture_1() -> None:
     delete_test_images()
     driver = USBCameraDriver(
         name="Test",
         resolution="640x480",
         vendor_id=0x05A3,
         product_id=0x9520,
+        num_cameras=1,
         simulate=True,
         mux_simulator=MuxSimulator(),
         i2c_lock=threading.RLock(),
@@ -55,3 +56,20 @@ def test_capture() -> None:
     driver.capture()
     images = list_test_images()
     assert len(images) == 1
+
+
+def test_capture_4() -> None:
+    delete_test_images()
+    driver = USBCameraDriver(
+        name="Test",
+        resolution="640x480",
+        vendor_id=0x05A3,
+        product_id=0x9520,
+        num_cameras=4,
+        simulate=True,
+        mux_simulator=MuxSimulator(),
+        i2c_lock=threading.RLock(),
+    )
+    driver.capture()
+    images = list_test_images()
+    assert len(images) == 4
