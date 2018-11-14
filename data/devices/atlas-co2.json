@@ -1,0 +1,29 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "Atlas Co2 Sensor Only",
+    "uuid": "c9542e63-94b1-4705-b4a8-8d8730499e85",
+    "peripherals": [
+        {
+            "name": "AtlasCo2-Top",
+            "type": "AtlasCo2",
+            "uuid": "4716f6ef-2231-4a6c-944d-6fc92fb310cd",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas CO2 Sensor Default",
+                    "file_name": "atlas_co2/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "co2": "air_carbon_dioxide_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "address": "0x69"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}
