@@ -5,21 +5,23 @@ import time, os, datetime, glob, threading
 from typing import Optional, Tuple, Dict, Any, List
 
 # Import device utilities
-from device.utilities import logger, accessors
+from device.utilities import logger, usb
 from device.utilities.communication.i2c.main import I2C
 from device.utilities.communication.i2c.exceptions import I2CError
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver
-from device.peripherals.common.dac5578.exceptions import (
-    DriverError as DAC5578DriverError
-)
+from device.peripherals.common.dac5578.exceptions import DriverError as DAC5578DriverError
 from device.peripherals.modules.usb_camera import exceptions
 
 # Initialize file paths
-IMAGE_PATH = "data/images/"
-SIMULATE_IMAGE_PATH = "device/peripherals/modules/usb_camera/tests/images/"
+IMAGE_DIR = "data/images/"
+MODULE_DIR = "device/peripherals/modules/usb_camera/"
+SIMULATE_IMAGE_DIR = MODULE_DIR + "tests/images/"
+DUMMY_IMAGE_PATH = MODULE_DIR + "dummy.png"
+ACTIVE_IMAGE_PATH = MODULE_DIR + "active.png"
+SIMULATION_IMAGE_PATH = MODULE_DIR + "tests/simulation_image.png"
 
 
 class USBCameraDriver:
@@ -31,6 +33,7 @@ class USBCameraDriver:
         vendor_id: int,
         product_id: int,
         resolution: str,
+        num_cameras: int = 1,
         simulate: bool = False,
         usb_mux_comms: Optional[Dict[str, Any]] = None,
         usb_mux_channel: Optional[int] = None,
@@ -44,6 +47,7 @@ class USBCameraDriver:
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.resolution = resolution
+        self.num_cameras = num_cameras
         self.simulate = simulate
 
         # Initialize logger
@@ -53,9 +57,9 @@ class USBCameraDriver:
         # Check if simulating
         if simulate:
             self.logger.info("Simulating driver")
-            self.directory = SIMULATE_IMAGE_PATH
+            self.directory = SIMULATE_IMAGE_DIR
         else:
-            self.directory = IMAGE_PATH
+            self.directory = IMAGE_DIR
 
         # Check directory exists else create it
         if not os.path.exists(self.directory):
@@ -63,7 +67,7 @@ class USBCameraDriver:
 
         # Check if using usb mux
         if usb_mux_comms == None or usb_mux_channel == None:
-            self.dac5578 = None
+            self.usb_mux_enabled = False
             return
 
         # Get optional i2c parameters
@@ -84,165 +88,97 @@ class USBCameraDriver:
                 mux_simulator=mux_simulator,
             )
             self.usb_mux_channel = usb_mux_channel
+            self.usb_mux_enabled = True
         except I2CError as e:
             raise exceptions.InitError(logger=self.logger) from e
 
-    def list_cameras(
-        self, vendor_id: Optional[int] = None, product_id: Optional[int] = None
-    ) -> List[str]:
-        """Returns list of cameras that match the provided vendor id and 
-        product id."""
-
-        # List all cameras
-        cameras = glob.glob("/dev/video*")
-
-        # Check if filtering by product and vendor id
-        if vendor_id == None and product_id == None:
-            return cameras
-
-        # Check for product and vendor id matches
-        matches = []
-        for camera in cameras:
-            vid = vendor_id
-            pid = product_id
-            if accessors.usb_device_matches(camera, vid, pid):  # type: ignore
-                matches.append(camera)
-
-        return matches
-
-    def get_camera(self) -> str:
-        """Gets camera path."""
-
-        # Get camera paths that match vendor and product ID
-        cameras = self.list_cameras(self.vendor_id, self.product_id)
-
-        # Check only one active camera
-        if len(cameras) < 1:
-            message = "no active cameras"
-            raise exceptions.GetCameraError(message=message, logger=self.logger)
-        elif len(cameras) > 1:
-            message = "too many active cameras"
-            raise exceptions.GetCameraError(message=message, logger=self.logger)
-
-        # Successfuly got one camera
-        return cameras[0]
-
-    def enable_camera(self, retry: bool = True) -> None:
-        """Enables camera by setting dac output high."""
-        self.logger.debug("Enabling camera")
-
-        # Turn on usb mux channel
-        try:
-            channel = self.usb_mux_channel
-            self.dac5578.set_high(channel=channel, retry=retry)  # type: ignore
-        except DAC5578DriverError as e:
-            raise exceptions.EnableCameraError(logger=self.logger) from e
-
-        # Wait for camera to initialize
-        time.sleep(5)
-
-    def disable_camera(self, retry: bool = True) -> None:
-        """Disables camera by setting dac output low."""
-        self.logger.debug("Disabling camera")
-
-        # Turn off usb mux channel
-        try:
-            channel = self.usb_mux_channel
-            self.dac5578.set_low(channel=channel, retry=retry)  # type: ignore
-        except DAC5578DriverError as e:
-            raise exceptions.DisableCameraError(logger=self.logger) from e
-
-        # Wait for camera to power down
-        start_time = time.time()
-        while True:  # 5 second timeout
-
-            # Look for camera
-            try:
-                camera = self.get_camera()
-
-                # Check if camera powered down
-                if camera == None:
-                    self.logger.debug("Camera powered down")
-                    return
-
-            # TODO: Handle specific exceptions
-            except Exception as e:
-                raise exceptions.DisableCameraError(logger=self.logger) from e
-
-            # Check for timeout
-            if time.time() - start_time > 5:  # 5 second timeout
-                message = "timed out"
-                raise exceptions.DisableCameraError(message=message, logger=self.logger)
-
-            # Update every 100ms
-            time.sleep(0.1)
-
     def capture(self, retry: bool = True) -> None:
-        """Manages usb mux and captures an image."""
+        """Captures an image from a camera or set of non-unique cameras."""
+        self.logger.debug("Capturing")
 
-        # Check if not using usb mux
-        if self.dac5578 == None:
-            return self.capture_image()
-
-        # TODO: Lock camera threads
-
-        # Manage 'mux' and capture image
+        # Capture images
         try:
-            self.enable_camera()
-            self.capture_image()
-            self.disable_camera()
+            # with self.usb_camera_lock:
+            self.enable_cameras(wait_for_enable=True, timeout=10)
+            self.capture_images()
+            self.disable_cameras(wait_for_disable=True, timeout=10)
         except DAC5578DriverError as e:
             raise exceptions.CaptureError(logger=self.logger) from e
+        except Exception as e:
+            message = "Unable to capture, unhandled exception: {}".format(type(e))
+            self.logger.warning(message)
+            raise exceptions.CaptureError(logger=self.logger) from e
 
-        # TODO: Unlock camera threads
+    def capture_images(self) -> None:
+        """Captures an image from each active camera."""
+        self.logger.debug("Capturing images")
 
-    def capture_image(self) -> None:
+        # Get real or simulated camera paths
+        if not self.simulate:
+            camera_paths = usb.get_camera_paths(self.vendor_id, self.product_id)
+        else:
+            camera_paths = []
+            for i in range(self.num_cameras):
+                camera_paths.append("simulate_path")
+
+        # Check correct number of camera paths
+        num_detected = len(camera_paths)
+        if num_detected != self.num_cameras:
+            message = "Incorrect number of cameras detected, expected {}, detected {}".format(
+                self.num_cameras, num_detected
+            )
+            message += ". Proceeding with capture anyway"
+            self.logger.warning(message)
+
+        # Capture an image from each active camera
+        for index, camera_path in enumerate(camera_paths):
+
+            # Get timestring in ISO8601 format
+            timestring = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
+
+            # Get filename for individual camera or camera instance in set
+            if self.num_cameras == 1:
+                filename = "{}_{}.png".format(timestring, self.name)
+            else:
+                filename = "{}_{}-{}.png".format(timestring, self.name, index + 1)
+
+            # Create image path
+            image_path = self.directory + filename
+
+            # Capture image
+            self.capture_image(camera_path, image_path)
+
+    def capture_image(self, camera_path: str, image_path: str) -> None:
         """Captures an image."""
-
-        # Name image according to ISO8601
-        timestr = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
-        filename = timestr + "_" + self.name + ".png"
-
-        # Specify filepaths
-        image_path = self.directory + filename
-        base_path = "device/peripherals/modules/usb_camera"
-        dummy_path = "{}/dummy.png".format(base_path)
-        active_path = "{}/active.jpg".format(base_path)
-
-        # Check if simulated
-        if self.simulate:
-            self.logger.info(
-                "Simulating capture, saving simulation image to: {}".format(image_path)
-            )
-            command = "cp device/peripherals/modules/usb_camera/tests/simulation_image.png {}".format(
-                image_path
-            )
-            os.system(command)
-            return
-
-        # Camera not simulated, get camera path
-        try:
-            camera = self.get_camera()
-        except exceptions.GetCameraError as e:
-            raise exceptions.CaptureImageError(logger=self.logger) from e
+        self.logger.debug("Capturing image from camera: {}".format(camera_path))
 
         # Capture image
         try:
+            # Check if simulated
+            if self.simulate:
+                message = "Simulating capture, saving image to: {}".format(image_path)
+                self.logger.info(message)
+                command = "cp {} {}".format(SIMULATION_IMAGE_PATH, image_path)
+                os.system(command)
+                return
+
             # Take 3 low res images to clear out buffer
             self.logger.debug("Capturing dummy images")
-            command = "fswebcam -d {} -r '320x240' ".format(camera, dummy_path)
+            command = "fswebcam -d {} -r '320x240' ".format(
+                camera_path, DUMMY_IMAGE_PATH
+            )
             for i in range(3):
                 os.system(command)
 
             # Try taking up to 3 real images
             self.logger.debug("Capturing active image")
             command = "fswebcam -d {} -r {} --png 9 -F 10 --no-banner --save {}".format(
-                camera, self.resolution, active_path
+                camera_path, self.resolution, ACTIVE_IMAGE_PATH
             )
             valid_image = False
             for i in range(3):
                 os.system(command)
-                size = os.path.getsize(active_path)
+                size = os.path.getsize(ACTIVE_IMAGE_PATH)
 
                 # Check if image meets minimum size constraint
                 # TODO: Check lighting conditions (if box is dark, images are small)
@@ -255,7 +191,119 @@ class USBCameraDriver:
                 self.logger.warning("Unable to capture a valid image")
             else:
                 self.logger.info("Captured image, saved to {}".format(image_path))
-                os.rename(active_path, image_path)
+                os.rename(ACTIVE_IMAGE_PATH, image_path)
 
         except Exception as e:
             raise exceptions.CaptureImageError(logger=self.logger) from e
+
+    def enable_cameras(
+        self, wait_for_enable: bool = False, timeout: float = 5, retry: bool = True
+    ) -> None:
+        """Enables camera by setting dac output high."""
+        self.logger.debug("Enabling cameras")
+
+        # Check if using usb mux
+        if not self.usb_mux_enabled:
+            self.logger.debug("Cameras always enabled, not using mux")
+            return
+
+        # Turn on usb mux channel
+        try:
+            channel = self.usb_mux_channel
+            self.dac5578.set_high(channel=channel, retry=retry)
+        except DAC5578DriverError as e:
+            raise exceptions.EnableCameraError(logger=self.logger) from e
+
+        # Check if waiting for enable
+        if not wait_for_enable:
+            return
+
+        # Wait for camera to be enabled
+        self.logger.debug("Waiting for cameras to become enabled")
+
+        # Check if simulated
+        if self.simulated:
+            self.logger.debug("Simulated camera enable complete")
+            return
+
+        # Initialize timing variables
+        start_time = time.time()
+
+        # Loop forever
+        while True:
+
+            # Look for camera
+            try:
+                camera_paths = usb.get_camera_paths(self.vendor_id, self.product_id)
+
+                # Check if camera powered down
+                if len(camera_paths) == self.num_cameras:
+                    self.logger.debug("All cameras enabled")
+                    return
+
+            except Exception as e:
+                raise exceptions.DisableCameraError(logger=self.logger) from e
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                message = "timed out"
+                raise exceptions.EnableCameraError(message=message, logger=self.logger)
+
+            # Update every 100ms
+            time.sleep(0.1)
+
+    def disable_cameras(
+        self, wait_for_disable: bool = False, timeout: float = 5, retry: bool = True
+    ) -> None:
+        """Disables camera by setting dac output low."""
+        self.logger.debug("Disabling cameras")
+
+        # Check if using usb mux
+        if not self.usb_mux_enabled:
+            self.logger.debug("Cameras always enabled, not using mux")
+            return
+
+        # Turn off usb mux channel
+        try:
+            channel = self.usb_mux_channel
+            self.dac5578.set_low(channel=channel, retry=retry)
+        except DAC5578DriverError as e:
+            raise exceptions.DisableCameraError(logger=self.logger) from e
+
+        # Check if waiting for disable
+        if not wait_for_disable:
+            return
+
+        # Wait for camera to be disabled
+        self.logger.debug("Waiting for cameras to become disabled")
+
+        # Check if simulated
+        if self.simulated:
+            self.logger.debug("Simulated camera disable complete")
+            return
+
+        # Initialize timing variables
+        start_time = time.time()
+
+        # Loop forever
+        while True:
+
+            # Look for camera
+            try:
+                camera_paths = usb.get_camera_paths(self.vendor_id, self.product_id)
+
+                # Check if all cameras are disables
+                if camera_paths == []:
+                    self.logger.debug("All cameras disabled")
+                    return
+
+            except Exception as e:
+                raise exceptions.DisableCameraError(logger=self.logger) from e
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                message = "timed out"
+                raise exceptions.DisableCameraError(message=message, logger=self.logger)
+
+            # Update every 100ms
+            time.sleep(0.1)

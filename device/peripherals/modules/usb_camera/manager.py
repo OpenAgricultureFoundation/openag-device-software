@@ -9,7 +9,7 @@ from device.utilities import logger, accessors
 
 # Import manager elements
 from device.peripherals.classes.peripheral import manager, modes
-from device.peripherals.modules.usb_camera import driver, exceptions
+from device.peripherals.modules.usb_camera import driver, exceptions, events
 
 
 class USBCameraManager(manager.PeripheralManager):  # type: ignore
@@ -30,6 +30,8 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
         self.min_sampling_interval = 120  # seconds
         self.default_sampling_interval = 3600  # every hour
 
+        self.logger.debug("Instantiating")
+
     def initialize_peripheral(self) -> None:
         """ Initializes peripheral."""
         self.logger.debug("Initializing")
@@ -42,11 +44,17 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
 
         # Initialize driver
         try:
+            # Initialize min sampling interval
+            num_cameras = self.parameters.get("num_cameras", 1)
+            self.min_sampling_interval = 120 * num_cameras
+
+            # Create driver
             self.driver = driver.USBCameraDriver(
                 name=self.name,
                 vendor_id=int(self.properties.get("vendor_id"), 16),
                 product_id=int(self.properties.get("product_id"), 16),
                 resolution=self.properties.get("resolution"),
+                num_cameras=num_cameras,
                 usb_mux_comms=self.usb_mux_comms,
                 usb_mux_channel=self.usb_mux_channel,
                 i2c_lock=self.i2c_lock,
@@ -67,3 +75,43 @@ class USBCameraManager(manager.PeripheralManager):  # type: ignore
             self.logger.debug("Unable to update: {}".format(e))
             self.mode = modes.ERROR
             self.health = 0
+
+    ##### EVENT FUNCTIONS ##############################################################
+
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event."""
+        if request["type"] == events.CAPTURE:
+            return self.capture()
+        else:
+            return "Unknown event request type", 400
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        if request["type"] == events.CAPTURE:
+            self._capture()
+        else:
+            message = "Invalid event request type in queue: {}".format(request["type"])
+            self.logger.error(message)
+
+    def capture(self) -> Tuple[str, int]:
+        """Pre-processes capture event request."""
+        self.logger.debug("Pre-processing capture event request")
+
+        # Add event request to event queue
+        request = {"type": events.CAPTURE}
+        self.event_queue.put(request)
+
+        # Successfully turned on
+        return "Capturing image, will take a few moments", 200
+
+    def _capture(self) -> None:
+        """Processes capture event request."""
+        self.logger.debug("Processing capture event request")
+        try:
+            self.driver.capture()
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to turn on, unhandled exception"
+            self.logger.exception(message)
