@@ -1,0 +1,27 @@
+{
+    "peripherals": [
+        {
+            "name": "AtlasCo2-Reservoir",
+            "type": "AtlasCo2",
+            "uuid": "4716f6ef-2231-4a6c-944d-6fc92fb310cd",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "co2": "air_carbon_dioxide_ppm"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 4, 
+                    "address": "0x69"
+                }
+            }
+        }
+    ]
+}

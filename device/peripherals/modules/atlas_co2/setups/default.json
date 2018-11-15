@@ -1,0 +1,110 @@
+{
+	"name":  "Atlas Co2 Sensor Default",
+	"version": "1",
+	"uuid": "4716f6ef-2231-4a6c-944d-6fc92fb310cd",
+	"module_name": "atlas_co2.manager",
+	"class_name": "AtlasCo2Manager",
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"co2": {
+					"name": {
+                        "type": "string",
+                        "default": "air_carbon_dioxide_ppm"
+                    }
+				}
+			},
+			"actuator": null
+		},	
+		"communication": {
+            "bus": {
+                "type": "integer",
+                "default": 2
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 1
+            },
+            "address": {
+                "type": "string",
+                "default": "0x69"
+            }
+        }
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor mode.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor":{
+				"temperature": {
+					"units": "ppm",
+					"range": [0, 10000],
+			        "accuracy": {
+			            "value": 30
+			        },
+			        "response_time_seconds": 1
+				}
+			},
+			"actuator": null
+		},
+		"communication": [
+		    {
+		        "type": "I2C",
+		        "default_address_hex": "0x69",
+		        "clock_speed_range_hertz": [100, 400] 
+		    },
+		    {
+		        "type": "UART"
+		    }
+		],
+		"power": [
+		    {
+		        "voltage_volts": 3.3,
+		        "current_consumption_milliamps": {
+		            "max": 12.1,
+		            "standby": 12,
+		            "sleep": 0.3
+		        }
+		    },
+		    {
+		        "voltage_volts": 5,
+		        "current_consumption_milliamps": {
+		            "max": 13.5,
+		            "standby": 13.1,
+		            "sleep": 0.66
+		        }
+		    }
+		],
+		"purchase_links": [
+			"https://www.atlas-scientific.com/product_pages/probes/ezo-co2.html"
+		],
+		"datasheet_links": [
+			"https://www.atlas-scientific.com/_files/_datasheets/_probe/EZO_CO2_Datasheet.pdf"
+		]
+	}
+}
