@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4}
+                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
                     ]
                 }
             }
