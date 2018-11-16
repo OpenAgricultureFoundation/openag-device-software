@@ -26,7 +26,8 @@
                     "panels": [
                         {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
                     ]
-                }
+                },
+                "location": {"x_cm": 50, "y_cm": 60, "z_cm": 20, "roll_deg": 180, "pitch_deg": 0, "yaw_deg": 0}
             }
         },
         {
@@ -50,7 +51,8 @@
                     "mux": "0x77", 
                     "channel": 2, 
                     "address": "0x40"
-                }
+                },
+                "location": {"x_cm": 100, "y_cm": 20, "z_cm": 30, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
             }
         },
         {
@@ -73,7 +75,8 @@
                     "mux": "0x77", 
                     "channel": 2, 
                     "address": "0x15"
-                }
+                },
+                "location": {"x_cm": 100, "y_cm": 20, "z_cm": 30, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
             }
         },
         {
@@ -90,7 +93,8 @@
                     "actuator": null
                 },
                 "communication": null,
-                "num_cameras": 4
+                "num_cameras": 4,
+                "location": {"x_cm": 50, "y_cm": 20, "z_cm": 60, "roll_deg": 180, "pitch_deg": 0, "yaw_deg": 0}
             }
         }
     ],

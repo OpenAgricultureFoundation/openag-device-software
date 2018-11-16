@@ -1,0 +1,47 @@
+{
+	"name": "Green Rack SWC v0.1.0",
+	"uuid": "8409c74f-a22f-4acc-af89-c61462c7cf2e",
+	"cultivation_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 0, 
+		"roll_deg": 0, 
+		"pitch_deg": 0, 
+		"yaw_deg": 0,
+		"length_cm": 100,
+		"width_cm": 40,
+		"height_cm": 60
+	},
+	"foliage_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 20, 
+		"roll_deg": 0, 
+		"pitch_deg": 0, 
+		"yaw_deg": 0,
+		"length_cm": 100,
+		"width_cm": 40,
+		"height_cm": 40
+	},
+	"root_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 0, 
+		"roll_deg": 0, 
+		"pitch_deg": 0, 
+		"yaw_deg": 0,
+		"length_cm": 100,
+		"width_cm": 40,
+		"height_cm": 20
+	},
+	"cultivar_sites": [
+		{
+			"name": "A",
+			"location": {"x_cm": 0, "y_cm": 0, "z_cm": 20, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		},
+		{
+			"name": "B",
+			"location": {"x_cm": 0, "y_cm": 0, "z_cm": 20, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		}
+	],
+}
