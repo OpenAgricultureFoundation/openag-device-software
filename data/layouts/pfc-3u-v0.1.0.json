@@ -1,0 +1,72 @@
+{
+	"name": "PFC 3U v0.1.0",
+	"description": "Food computer in 3U form factor - 30cm x 30cm x 30cm",
+	"uuid": "92810430-4278-4730-9096-6dd9391c09f8",
+	"device_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 0, 
+		"length_cm": 30,
+		"width_cm": 30,
+		"height_cm": 30
+	},
+	"cultivation_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 0, 
+		"length_cm": 30,
+		"width_cm": 30,
+		"height_cm": 25
+	},
+	"root_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 0, 
+		"length_cm": 30,
+		"width_cm": 30,
+		"height_cm": 5
+	},
+	"foliage_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 5, 
+		"length_cm": 30,
+		"width_cm": 30,
+		"height_cm": 20
+	},
+	"upper_infrastructure_zone": {
+		"x_cm": 0, 
+		"y_cm": 0, 
+		"z_cm": 25, 
+		"length_cm": 30,
+		"width_cm": 30,
+		"height_cm": 5
+	},
+	"cultivar_sites": [
+		{
+			"name": "Bottom Left",
+			"grid_position": [1, 1],
+			"location": {"x_cm": 10, "y_cm": 10, "z_cm": 5, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		},
+		{
+			"name": "Top Left",
+			"grid_position": [1, 3],
+			"location": {"x_cm": 10, "y_cm": 20, "z_cm": 5, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		},
+		{
+			"name": "Center",
+			"grid_position": [2, 2],
+			"location": {"x_cm": 15, "y_cm": 15, "z_cm": 5, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		},
+		{
+			"name": "Bottom Right",
+			"grid_position": [3, 1],
+			"location": {"x_cm": 20, "y_cm": 10, "z_cm": 5, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		},
+		{
+			"name": "Top Right",
+			"grid_position": [3, 3],
+			"location": {"x_cm": 20, "y_cm": 20, "z_cm": 5, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+		}
+	]
+}

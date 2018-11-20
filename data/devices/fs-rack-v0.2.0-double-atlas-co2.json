@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Food Server v0.2.0 Double Rack w/Atlas CO2",
+    "name": "Food Server Rack v0.2.0  Double w/Atlas CO2",
     "uuid": "44d66195-91db-4aa7-9091-68c4f3f1e569",
     "peripherals": [
         {

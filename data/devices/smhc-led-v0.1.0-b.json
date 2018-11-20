@@ -1,8 +1,8 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Small Hazelnut Computer - D",
+    "name": "Small Hazelnut Computer LED Array - B",
     "version": "1",
-    "uuid": "e2a00375-f703-4d35-a89c-aaf334fba18d",
+    "uuid": "cac8693b-fe33-44a6-a212-c42f78694362",
     "peripherals": [
         {
             "name": "LEDArray-1",
@@ -25,12 +25,14 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP14", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5, "active_low": true},
-                        {"name": "LP15", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "active_low": true},
-                        {"name": "LP24", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7, "active_low": true},
-                        {"name": "LP32", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1, "active_low": true},
-                        {"name": "LP45", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6, "active_low": true},
-                        {"name": "LP55", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2, "active_low": true}
+                        {"name": "LP11", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6, "active_low": true},
+                        {"name": "LP12", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "active_low": true},
+                        {"name": "LP21", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7, "active_low": true},
+                        {"name": "LP22", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true},
+                        {"name": "LP31", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5, "active_low": true},
+                        {"name": "LP51", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 0, "active_low": true},
+                        {"name": "LP52", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1, "active_low": true},
+                        {"name": "LP53", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2, "active_low": true}
                     ]
                 }
             }
@@ -48,7 +50,7 @@
                     "sensor": null,
                     "actuator": null
                 },
-                "communication": null            
+                "communication": null
             }
         }
     ],
