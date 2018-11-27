@@ -2,7 +2,7 @@
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-11-26T16:45:41Z",
-	"name": "Green@15cm@300umol",
+	"name": "PFC3 Green@15cm@300umol",
 	"uuid": "60c4d4b9-7114-47e1-a2c4-9035d4f52a40",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
