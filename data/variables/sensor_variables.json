@@ -180,5 +180,19 @@
 				"type": "number"
 			}
 		}
+	},
+	{
+		"key": "soil_temperature_celcius",
+		"info": {
+			"name": {
+				"brief": "Soil Temp",
+				"verbose": "Soil Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celcius",
+				"type": "number"
+			}
+		}
 	}
 ]

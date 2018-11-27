@@ -2,8 +2,8 @@
 	"format": "openag-phased-environment-v1",
 	"version": "1",
 	"creation_timestamp_utc": "2018-09-13T16:45:41Z",
-	"name": "Green@10cm@300umol",
-	"uuid": "8b24634c-12de-4d49-a3fa-9fad95a46459",
+	"name": "Test Sun@10cm@100umol",
+	"uuid": "df1dafc3-deaa-47ac-bb1c-65c769aef215",
 	"parent_recipe_uuid": null,
 	"support_recipe_uuids": null,
 	"description": {
@@ -37,8 +37,8 @@
 	"environments": {
 		"day": {
 			"name": "Day",
-			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 100.0, "600-700": 0.0, "701-780": 0.0},
-			"light_ppfd_umol_m2_s": 300,
+			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
+			"light_ppfd_umol_m2_s": 100,
 			"light_illumination_distance_cm": 10
 		}
 	},

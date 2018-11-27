@@ -1,7 +1,7 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Education v0.1.0",
-    "uuid": "4cffeb04-22db-44f6-9cf4-07b595b420f0",
+    "name": "PFC3 v0.3.0 Soil",
+    "uuid": "e762daf6-298c-408c-8b5d-f3ed14b01710",
     "peripherals": [
         {
             "name": "LEDPanel-Top",
@@ -10,7 +10,7 @@
             "parameters": {
                "setup": {
                     "name": "LED Panel Taurus Actuator",
-                    "file_name": "led_dac5578/setups/taurus-v1"
+                    "file_name": "led_dac5578/setups/taurus-v2"
                 },
                 "variables": {
                     "sensor": {
@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
+                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": false}
                     ]
                 }
             }
@@ -113,9 +113,9 @@
                 },
                 "communication": {
                     "bus": 2, 
-                    "address": "0x64",
                     "mux": "0x77", 
-                    "channel": 4
+                    "channel": 6,
+                    "address": "0x64"
                 }
             }
         },
@@ -140,8 +140,31 @@
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77", 
-                    "channel": 4, 
+                    "channel": 6, 
                     "address": "0x63"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-Reservoir",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "water_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 6, 
+                    "address": "0x66"
                 }
             }
         }
