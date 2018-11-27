@@ -1,6 +1,6 @@
 {	
     "format": "openag-standard-v1",
-    "name": "Small Hazelnut Computer - C",
+    "name": "Small Hazelnut Computer LED Array - C",
     "version": "1",
     "uuid": "7efd7806-e922-4c68-abc6-6879ad70899b",
     "peripherals": [

@@ -1,7 +1,8 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Food Server v0.2.0 Double Rack",
-    "uuid": "4dbd1844-e11f-44a7-bee6-01a3caa0da8f",
+    "name": "Food Server Rack v0.2.0",
+    "uuid": "bcdf5922-fe6b-41ea-a65d-2c258b28eb93",
+    "layout": "green-rack-swc-v0.1.0",
     "peripherals": [
         {
             "name": "LEDArray",
@@ -24,10 +25,28 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4},
-                        {"name": "LP2", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
+                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
                     ]
-                }
+                },
+                "location": {"x_cm": 72, "y_cm": 36, "z_cm": 145, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
+            }
+        },
+        {
+            "name": "Camera-Top",
+            "type": "USBCamera",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera ",
+                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "communication": null,
+                "num_cameras": 4,
+                "location": {"x_cm": 72, "y_cm": 36, "z_cm": 145, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
             }
         },
         {
@@ -51,24 +70,8 @@
                     "mux": "0x77", 
                     "channel": 2, 
                     "address": "0x40"
-                }
-            }
-        },
-        {
-            "name": "Camera-Top",
-            "type": "USBCamera",
-            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
-            "parameters": {
-                "setup": {
-                    "name": "ELP USB500W02M-L21 Camera ",
-                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
                 },
-                "variables": {
-                    "sensor": null,
-                    "actuator": null
-                },
-                "communication": null,
-                "num_cameras": 4
+                "location": {"x_cm": 144, "y_cm": 36, "z_cm": 116, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
             }
         }
     ],

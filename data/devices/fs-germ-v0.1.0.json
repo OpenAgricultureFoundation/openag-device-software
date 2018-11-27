@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Germinator v0.1.0",
+    "name": "Food Server Germinator v0.1.0",
     "uuid": "ca9097eb-b51c-4735-8f83-d24aaed01e67",
     "peripherals": [
         {

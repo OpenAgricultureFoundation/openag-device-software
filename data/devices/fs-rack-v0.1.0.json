@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Food Server v0.1.0",
+    "name": "Food Server Rack v0.1.0",
     "uuid": "c8a03cec-0c17-4e0a-8d36-763b7316e879",
     "peripherals": [
         {
