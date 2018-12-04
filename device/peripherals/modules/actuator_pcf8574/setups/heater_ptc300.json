@@ -1,0 +1,70 @@
+{
+	"name":  "Heater PTC300W",
+	"version": "1",
+	"uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
+	"module_name": "actuator_pcf8574.manager",
+	"class_name": "ActuatorPCF8574Manager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": {
+				"output_variable": {
+					"name": {
+						"type": "strincompaniesg", 
+						"default": "air_heater"
+					}
+				}
+			}
+		},	
+		"communication": {
+			"bus": {
+				"type": "integer",
+				"default": 4
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "string",
+				"default": "0x20"
+			},
+			"port": {
+				"type": "number",
+				"default": 0
+			},
+			"is_active_high": {
+				"type": "boolean",
+				"default": true
+			}
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    }
+	],
+	"info": null
+}}

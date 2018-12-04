@@ -1,0 +1,29 @@
+{
+    "peripherals": [
+        {
+            "name": "SHT25-Top",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "Heater PTC 300W",
+                    "file_name": "actuator_pcf8574/setups/heater_ptc300"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_heater"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x20",
+                    "port": 2,
+                    "is_active_high": true
+                }
+            }
+        }
+    ]
+}

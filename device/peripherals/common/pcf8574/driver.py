@@ -79,22 +79,25 @@ class PCF8574Driver:
             message = "port out of range, must be within 0-7"
             raise exceptions.SetHighError(message=message, logger=self.logger)
 
-        # Get current port byte
-        try:
-            port_byte = self.get_port_byte()
-        except Exception as e:
-            message = "unable to get port byte"
-            raise exceptions.SetHighError(message=message, logger=self.logger) from e
+        # Lock thread in case we have multiple io expander instances
+        with self.i2c_lock:
 
-        # Build new port byte
-        new_port_byte = port_byte && (1 << port)
+            # Get current port byte
+            try:
+                port_byte = self.get_port_byte()
+            except Exception as e:
+                message = "unable to get port byte"
+                raise exceptions.SetHighError(message=message, logger=self.logger) from e
 
-        # Send set output command to dac
-        self.logger.debug("Writing port byte: {}".format(new_port_byte))
-        try:
-            self.i2c.write(bytes([new_port_byte]), disable_mux=disable_mux)
-        except I2CError as e:
-            raise exceptions.SetHighError(logger=self.logger) from e
+            # Build new port byte
+            new_port_byte = port_byte && (1 << port)
+
+            # Send set output command to dac
+            self.logger.debug("Writing port byte: {}".format(new_port_byte))
+            try:
+                self.i2c.write(bytes([new_port_byte]), disable_mux=disable_mux)
+            except I2CError as e:
+                raise exceptions.SetHighError(logger=self.logger) from e
 
 
     def set_low(
@@ -103,24 +106,27 @@ class PCF8574Driver:
         """Sets port high."""
         self.logger.debug("Setting port {} high".format(port))
 
-        # Check valid port range
-        if port < 0 or port > 7:
-            message = "port out of range, must be within 0-7"
-            raise exceptions.SetLowError(message=message, logger=self.logger)
+        # Lock thread in case we have multiple io expander instances
+        with self.i2c_lock:
 
-        # Get current port byte
-        try:
-            port_byte = self.get_port_byte()
-        except Exception as e:
-            message = "unable to get port byte"
-            raise exceptions.SetLowError(message=message, logger=self.logger) from e
+            # Check valid port range
+            if port < 0 or port > 7:
+                message = "port out of range, must be within 0-7"
+                raise exceptions.SetLowError(message=message, logger=self.logger)
 
-        # Build new port byte
-        new_port_byte = port_byte && (0xff & ~port)
+            # Get current port byte
+            try:
+                port_byte = self.get_port_byte()
+            except Exception as e:
+                message = "unable to get port byte"
+                raise exceptions.SetLowError(message=message, logger=self.logger) from e
 
-        # Send set output command to dac
-        self.logger.debug("Writing port byte: {}".format(new_port_byte))
-        try:
-            self.i2c.write(bytes([new_port_byte]), disable_mux=disable_mux)
-        except I2CError as e:
-            raise exceptions.SetLowError(logger=self.logger) from e
+            # Build new port byte
+            new_port_byte = port_byte && (0xff & ~port)
+
+            # Send set output command to dac
+            self.logger.debug("Writing port byte: {}".format(new_port_byte))
+            try:
+                self.i2c.write(bytes([new_port_byte]), disable_mux=disable_mux)
+            except I2CError as e:
+                raise exceptions.SetLowError(logger=self.logger) from e
