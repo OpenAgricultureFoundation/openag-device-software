@@ -169,14 +169,3 @@ class DAC5578Driver:
                 self.write_outputs(outputs, retry=retry)
             except exceptions.WriteOutputsError as e:
                 raise exceptions.SetLowError(logger=self.logger) from e
-
-    # def probe(self) -> Error:
-    #     """Probes dac5578 by trying to read the power register."""
-    #     self.logger.debug("Probing")
-    #     powered, error = self.read_power_register()
-    #     if error.exists():
-    #         error.report("DAC probe failed")
-    #         self.logger.error(error.latest())
-    #         return error
-    #     else:
-    #         return Error(None)
