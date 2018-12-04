@@ -34,8 +34,11 @@ mac_addr = hex( uuid.getnode()).replace( '0x', '')
 mac = '-'.join( mac_addr[i : i + 2] for i in range( 0, 11, 2))
 print( '{}'.format( mac ))"`
 
+# Current UTC timestamp
+TIMESTAMP=`date --utc +%FT%TZ`
+
 # Must use " in JSON, hence the funny bash string concatenation for the data
-DATA='{"key": "'$KEY'", "cksum": "'$CKSUM'", "MAC": "'$MAC'"}'
+DATA='{"key": "'$KEY'", "cksum": "'$CKSUM'", "MAC": "'$MAC'", "timestamp": "'$TIMESTAMP'"}'
 
 # POST the data to the firebase cloud function
 RET=`curl --silent https://us-central1-fb-func-test.cloudfunctions.net/saveKey  -H "Content-Type: application/json" -X POST --data "$DATA"`
@@ -50,7 +53,7 @@ fi
 if [[ "$OSTYPE" == "linux"* ]]; then
   sudo -u postgres psql openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 0;"
 else # we are on OSX
-  psql postgres openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 1;"
+  psql postgres openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 0;"
 fi
 
 # Save this devices ID to a file that the brain startup script will read.
