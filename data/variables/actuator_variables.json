@@ -12,5 +12,19 @@
 				"type": "object"
 			}
 		}
+	},
+	{
+		"key": "air_heater",
+		"info": {
+			"name": {
+				"brief": "Air Heater",
+				"verbose": "Air Heater Output"
+			},
+			"unit": {
+				"brief": "%",
+				"verbose": "Percent",
+				"type": "object"
+			}
+		}
 	}
 ]
