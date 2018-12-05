@@ -1,0 +1,64 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-12-05T16:45:41Z",
+	"name": "PFC3 LowLight@15cm@200umol",
+	"uuid": "073ab04e-b271-48ff-acb9-bdaee9393cf1",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Dimmed sun light on a 16 hour photoperiod.",
+		"verbose": "Dimmed sun light on a 16 hour photoperiod."
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Genovese Basil",
+			"uuid": "9dc80135-0c24-4a65-ae0b-95f1c5e53676"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"day": {
+			"name": "Day",
+			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
+			"light_ppfd_umol_m2_s": 200,
+			"light_illumination_distance_cm": 15
+		},
+		"night": {
+			"name": "Night",
+			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
+			"light_ppfd_umol_m2_s": 0,
+			"light_illumination_distance_cm": 15
+		}
+	},
+	"phases": [
+		{
+			"name": "Standard Growth",
+			"repeat": 35,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "day",
+					"duration_hours": 16
+				},
+				{
+					"name": "Night",
+					"environment": "night",
+					"duration_hours": 8
+				}
+			]
+		}
+	]
+}
