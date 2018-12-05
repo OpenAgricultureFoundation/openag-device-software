@@ -4,6 +4,99 @@
     "uuid": "0b27ce21-8c86-4c3e-83de-33ccc9c882ac",
     "peripherals": [
         {
+            "name": "SHT25-Top",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor Default",
+                    "file_name": "sht25/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"                    
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x40"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-TopTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 5, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-MiddleTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 6, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-BottomTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 7, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
             "name": "HeaterPTC300",
             "type": "ActuatorPCF8574",
             "uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",

@@ -80,7 +80,14 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
-        self.logger.debug("No setup required")
+        self.logger.debug("Setting up peripheral")
+
+        # Initialize driver to be off
+        if self.is_active_high:
+            self.driver.set_low(self.port)
+        else:
+            self.driver.set_high(self.port)
+        self.output = 0.0
 
     def update_peripheral(self) -> None:
         """Updates sensor by reading temperature and humidity values then 
@@ -123,6 +130,16 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
     def shutdown_peripheral(self) -> None:
         """Shutsdown peripheral."""
         self.logger.info("Shutting down")
+        try:
+            if self.is_active_high:
+                self.driver.set_low(self.port)
+            else:
+                self.driver.set_high(self.port)
+        except Exception as e:
+            message = "Unable to turn off actuator before shutting down: {}".format(
+                type(e)
+            )
+            self.logger.warning()
         self.clear_reported_values()
 
     def clear_reported_values(self) -> None:

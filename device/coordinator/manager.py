@@ -163,6 +163,10 @@ class CoordinatorManager(StateMachineManager):
         for peripheral_name, peripheral_manager in self.peripherals.items():
             modes[peripheral_name] = peripheral_manager.mode
 
+        # Get controller manager modes
+        for controller_name, controller_manager in self.controllers.items():
+            modes[controller_name] = controller_manager.mode
+
         # Return modes
         self.logger.debug("Returning modes: {}".format(modes))
         return modes
