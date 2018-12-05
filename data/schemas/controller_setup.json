@@ -1,0 +1,27 @@
+{
+	"type": "object",
+	"properties": {
+		"name": {"type": "string"},
+		"version": {"type": "string"},
+		"uuid": {"type": "string"},
+		"module_name": {"type": "string"},
+		"class_name": {"type": "string"},
+		"parameters": {
+			"type": "object",
+			"properties": {
+				"variables": {"type": "object"}
+			},
+			"required": ["variables"]
+		},
+		"info": {"type": "object"}
+	},
+	"required": [
+		"name", 
+		"version", 
+		"uuid", 
+		"module_name", 
+		"class_name",
+		"parameters",
+		"info"
+	]
+}

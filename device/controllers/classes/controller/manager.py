@@ -1,5 +1,5 @@
 # Import standard python modules
-import json
+import json, time
 
 # Import python types
 from typing import Optional, Tuple, Dict, Any
@@ -18,6 +18,12 @@ from device.controllers.classes.controller import modes
 
 class ControllerManager(StateMachineManager):
     """Manages an actuator controlled by a pcf85764 io expander."""
+
+    # Initialize timing variables
+    default_sampling_interval = 2  # seconds
+    min_sampling_interval = 1  # seconds
+    last_update = None  # seconds
+    last_update_interval = None  # Seconds
 
     def __init__(self, name: str, state: State, config: Dict) -> None:
         """Initializes manager."""
@@ -68,14 +74,14 @@ class ControllerManager(StateMachineManager):
 
     @mode.setter
     def mode(self, value: str) -> None:
-        """Safely updates peripheral mode in device state object."""
+        """Safely updates controller mode in device state object."""
         self._mode = value
-        self.state.set_peripheral_value(self.name, "mode", value)
+        self.state.set_controller_value(self.name, "mode", value)
 
     @property
     def setup_uuid(self) -> Optional[str]:
         """Gets setup uuid from shared state object."""
-        value = self.state.get_peripheral_value(self.name, "setup_uuid")
+        value = self.state.get_controller_value(self.name, "setup_uuid")
         if value != None:
             return str(value)
         return None
@@ -83,15 +89,15 @@ class ControllerManager(StateMachineManager):
     @setup_uuid.setter
     def setup_uuid(self, value: str) -> None:
         """Safely updates setup uuid in state object."""
-        self.state.set_peripheral_value(self.name, "setup_uuid", value)
+        self.state.set_controller_value(self.name, "setup_uuid", value)
 
     @property
     def sampling_interval(self) -> float:
         """Gets sampling interval from shared state object."""
 
         # Get stored sampling interval
-        peripheral_state = self.state.peripherals.get(self.name, {})
-        stored = peripheral_state.get("stored", {})
+        controller_state = self.state.controllers.get(self.name, {})
+        stored = controller_state.get("stored", {})
         stored_sampling_interval = stored.get("sampling_interval", None)
 
         # Check if stored sampling interval exists
@@ -106,14 +112,14 @@ class ControllerManager(StateMachineManager):
     def sampling_interval(self, value: float) -> None:
         """Safely updates sampling interval in state object."""
         with self.state.lock:
-            if "stored" not in self.state.peripherals[self.name]:
-                self.state.peripherals[self.name]["stored"] = {}
-            self.state.peripherals[self.name]["stored"]["sampling_interval"] = value
+            if "stored" not in self.state.controllers[self.name]:
+                self.state.controllers[self.name]["stored"] = {}
+            self.state.controllers[self.name]["stored"]["sampling_interval"] = value
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 
     def run(self) -> None:
-        """Runs peripheral state machine."""
+        """Runs controller state machine."""
 
         # Loop forever
         while True:
@@ -145,7 +151,7 @@ class ControllerManager(StateMachineManager):
         next state machine update."""
         self.logger.info("Entered INIT")
 
-        # Initialize peripheral
+        # Initialize controller
         self.initialize_controller()
 
         # Check for transitions
@@ -170,12 +176,12 @@ class ControllerManager(StateMachineManager):
             # Update every sampling interval
             self.last_update_interval = time.time() - self.last_update
             if self.sampling_interval < self.last_update_interval:
-                message = "Updating peripheral, delta: {:.3f}".format(
+                message = "Updating controller, delta: {:.3f}".format(
                     self.last_update_interval
                 )
                 self.logger.debug(message)
                 self.last_update = time.time()
-                self.update_peripheral()
+                self.update_controller()
 
             # Check for transitions
             if self.new_transition(modes.NORMAL):
@@ -225,7 +231,7 @@ class ControllerManager(StateMachineManager):
         resulting transitions (e.g. errors) then transitions to init mode."""
         self.logger.info("Entered RESET")
 
-        # Reset peripheral
+        # Reset controller
         self.reset_controller()
 
         # Check for transitions
@@ -240,8 +246,8 @@ class ControllerManager(StateMachineManager):
         new events and transitions. Logs shutdown state every update interval."""
         self.logger.info("Entered SHUTDOWN")
 
-        # Shutdown peripheral
-        self.shutdown_peripheral()
+        # Shutdown controller
+        self.shutdown_controller()
         self.is_shutdown = True
 
     ##### HELPER FUNCTIONS #############################################################
@@ -259,7 +265,7 @@ class ControllerManager(StateMachineManager):
         return dict(setup_dict)
 
     def initialize_controller(self) -> None:
-        """Initializes peripheral."""
+        """Initializes controller."""
         self.logger.debug("No initialization required.")
 
     def update_controller(self) -> None:

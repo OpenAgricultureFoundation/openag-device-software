@@ -82,9 +82,6 @@ class HystereticControllerManager(manager.ControllerManager):
 
     def update_controller(self) -> None:
         """Updates controller."""
-        self.logger.debug("sensor_value = {}".format(self.sensor_value))
-        self.logger.debug("desired_sensor_value = {}".format(self.desired_sensor_value))
-        self.logger.debug("accuracy_value = {}".format(self.accuracy_value))
 
         # Check sensor values are initialized
         if (

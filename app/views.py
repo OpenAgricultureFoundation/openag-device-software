@@ -155,7 +155,7 @@ class Logs(views.APIView):
         """Gets logs view."""
         self.logger.debug("Getting logs view")
 
-        # TODO: Clean up the method
+        # TODO: Clean up the method / make more DRY
 
         # Load device config
         if os.path.exists(DEVICE_CONFIG_PATH):
@@ -179,6 +179,30 @@ class Logs(views.APIView):
 
             # Load in log file
             log_file = open(PERIPHERAL_PATH)
+            lines = log_file.readlines()
+
+            # Return up to 500 lines
+            if len(lines) < 500:
+                entries = lines
+            else:
+                entries = lines[-500:]
+
+            # Append to log
+            logs.append({"name": name, "entries": entries})
+
+        # Build controller logs
+        for controller in device_config["controllers"]:
+
+            # Get log file path
+            name = controller["name"]
+            CONTROLLER_PATH = LOG_DIR + "controllers/{}.log".format(name)
+
+            # Check path exists
+            if not os.path.exists(CONTROLLER_PATH):
+                continue
+
+            # Load in log file
+            log_file = open(CONTROLLER_PATH)
             lines = log_file.readlines()
 
             # Return up to 500 lines
