@@ -27,9 +27,7 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
     @property
     def desired_output(self) -> Optional[float]:
         """Gets desired output value."""
-        value = self.state.get_environment_desired_actuator_value(
-            self.name, self.actuator_name
-        )
+        value = self.state.get_environment_desired_actuator_value(self.actuator_name)
         if value != None:
             return float(value)
         return None
@@ -92,17 +90,17 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
         reports them to shared state."""
 
         # Check if desired output is unchanged
-        if self.desired_output != None and self.desired_output != self.reported_output:
+        if self.desired_output == None or self.desired_output == self.reported_output:
             return
 
         # Output has changed, set output and update reported value
-        if desired_output == 1:
+        if self.desired_output == 1:
             if self.is_active_high:
                 self.driver.set_high()
             else:
                 self.driver.set_low()
             self.health = 100.0
-        elif desired_output == 0:
+        elif self.desired_output == 0:
             if self.is_active_high:
                 self.driver.set_low()
             else:

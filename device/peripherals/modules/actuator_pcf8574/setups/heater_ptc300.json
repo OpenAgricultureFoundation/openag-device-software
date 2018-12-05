@@ -66,5 +66,10 @@
 	        "sequence": null
 	    }
 	],
-	"info": null
-}}
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	}
+}
