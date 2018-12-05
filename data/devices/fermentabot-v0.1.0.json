@@ -122,5 +122,22 @@
             }
         }
     ],
-    "controllers": null
+    "controllers": [
+        {
+            "name": "TemperatureController",
+            "type": "HystereticController",
+            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "parameters": {
+                "setup": {
+                    "name": "Temperature Controller Default",
+                    "file_name": "hysteretic/setups/temperature"
+                },
+                "variables": {
+                    "sensor_name": "air_temperature_celcius",
+                    "positive_actuator_name": "air_heater",
+                    "negative_actuator_name": null
+                }
+            }
+        }
+    ]
 }

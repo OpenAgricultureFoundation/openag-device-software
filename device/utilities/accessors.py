@@ -67,16 +67,6 @@ def get_nested_dict_safely(nested_dict: Dict, keys: List) -> Any:
     return value
 
 
-def get_peripheral_config(
-    peripheral_configs: List[Dict[str, Any]], name: str
-) -> Dict[str, Any]:
-    """ Gets peripheral config from list of peripheral configs. """
-    for peripheral_config in peripheral_configs:
-        if peripheral_config["name"] == name:
-            return peripheral_config
-    raise KeyError("`{}` not in peripheral configs".format(name))
-
-
 def floatify_string(value: str) -> float:
     """Converts a num string (e.g. 10M or 10K) to a float."""
     unit = value[-1]
@@ -89,3 +79,24 @@ def floatify_string(value: str) -> float:
         return number * float(constants.GIGABYTE)
     else:
         raise ValueError("Invalid unit type `{}`".format(unit))
+
+
+# TODO: Make these general case
+def get_peripheral_config(
+    peripheral_configs: List[Dict[str, Any]], name: str
+) -> Dict[str, Any]:
+    """ Gets peripheral config from list of peripheral configs. """
+    for peripheral_config in peripheral_configs:
+        if peripheral_config["name"] == name:
+            return peripheral_config
+    raise KeyError("`{}` not in peripheral configs".format(name))
+
+
+def get_controller_config(
+    controller_configs: List[Dict[str, Any]], name: str
+) -> Dict[str, Any]:
+    """ Gets controller config from list of peripheral configs. """
+    for controller_config in controller_configs:
+        if controller_config["name"] == name:
+            return controller_config
+    raise KeyError("`{}` not in controller configs".format(name))

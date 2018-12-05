@@ -1,0 +1,21 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "Test Config",
+    "uuid": "261c7228-22bb-48d5-9857-c87ea23ccbb5",
+    "peripherals": null,
+    "controllers": [
+        {
+            "name": "HeaterController",
+            "type": "HystereticController",
+            "uuid": "...",
+            "parameters": {
+                "setup": null,
+                "variables": {
+                    "sensor_name": "air_temperature_celcius",
+                    "positive_actuator_name": "air_heater",
+                    "negative_actuator_name": null
+                }
+            }
+        }
+    ]
+}
