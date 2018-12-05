@@ -36,6 +36,9 @@ class PCF8574Driver:
         logname = "PCF8574-({})".format(name)
         self.logger = Logger(logname, __name__)
 
+        # Initialize i2c lock
+        self.i2c_lock = i2c_lock
+
         # Check if simulating
         if simulate:
             self.logger.info("Simulating driver")
@@ -58,15 +61,15 @@ class PCF8574Driver:
         except I2CError as e:
             raise exceptions.InitError(logger=self.logger) from e
 
-    def get_port_byte(self, retry: bool = True) -> int:
-        """Gets port byte."""
-        self.logger.debug("Getting port byte")
+    def get_port_status_byte(self, retry: bool = True) -> int:
+        """Gets port status byte."""
+        self.logger.debug("Getting port status byte")
         try:
-            port_byte = self.i2c.read(1, retry=retry)[0]
+            port_status_byte = self.i2c.read(1, retry=retry)[0]
         except I2CError as e:
             raise exceptions.GetPortByteError(logger=self.logger) from e
-        self.logger.debug("Got port byte: 0x{:02X}".format(byte))
-        return port_byte
+        self.logger.debug("Got port status byte: 0x{:02X}".format(port_status_byte))
+        return port_status_byte
 
     def set_high(
         self, port: int, retry: bool = True, disable_mux: bool = False
@@ -84,27 +87,26 @@ class PCF8574Driver:
 
             # Get current port byte
             try:
-                port_byte = self.get_port_byte()
+                port_status_byte = self.get_port_status_byte()
             except Exception as e:
                 message = "unable to get port byte"
-                raise exceptions.SetHighError(message=message, logger=self.logger) from e
+                raise exceptions.SetHighError(
+                    message=message, logger=self.logger
+                ) from e
 
             # Build new port byte
-            new_port_byte = port_byte && (1 << port)
+            new_port_status_byte = port_status_byte & (1 << port)
 
             # Send set output command to dac
-            self.logger.debug("Writing port byte: {}".format(new_port_byte))
+            self.logger.debug("Writing port byte: {}".format(new_port_status_byte))
             try:
-                self.i2c.write(bytes([new_port_byte]), disable_mux=disable_mux)
+                self.i2c.write(bytes([new_port_status_byte]), disable_mux=disable_mux)
             except I2CError as e:
                 raise exceptions.SetHighError(logger=self.logger) from e
 
-
-    def set_low(
-        self, port: int, retry: bool = True, disable_mux: bool = False
-    ) -> None:
+    def set_low(self, port: int, retry: bool = True, disable_mux: bool = False) -> None:
         """Sets port high."""
-        self.logger.debug("Setting port {} high".format(port))
+        self.logger.debug("Setting port {} low".format(port))
 
         # Lock thread in case we have multiple io expander instances
         with self.i2c_lock:
@@ -116,17 +118,19 @@ class PCF8574Driver:
 
             # Get current port byte
             try:
-                port_byte = self.get_port_byte()
+                port_status_byte = self.get_port_status_byte()
             except Exception as e:
                 message = "unable to get port byte"
                 raise exceptions.SetLowError(message=message, logger=self.logger) from e
 
             # Build new port byte
-            new_port_byte = port_byte && (0xff & ~port)
+            new_port_status_byte = port_status_byte & (0xff - (1 << port))
 
             # Send set output command to dac
-            self.logger.debug("Writing port byte: {}".format(new_port_byte))
+            self.logger.debug(
+                "Writing port byte: 0x{:02X}".format(new_port_status_byte)
+            )
             try:
-                self.i2c.write(bytes([new_port_byte]), disable_mux=disable_mux)
+                self.i2c.write(bytes([new_port_status_byte]), disable_mux=disable_mux)
             except I2CError as e:
                 raise exceptions.SetLowError(logger=self.logger) from e

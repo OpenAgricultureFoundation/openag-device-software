@@ -1,9 +1,9 @@
 {
     "peripherals": [
         {
-            "name": "SHT25-Top",
-            "type": "SHT25",
-            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "name": "HeaterPTC300",
+            "type": "ActuatorPCF8574",
+            "uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
             "parameters": {
                 "setup": {
                     "name": "Heater PTC 300W",

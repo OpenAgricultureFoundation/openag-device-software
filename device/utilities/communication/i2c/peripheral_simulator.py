@@ -89,21 +89,7 @@ class PeripheralSimulator:
             message = "Address not found: 0x{:02X}".format(device_addr)
             raise ReadError(message)
 
-        # Pop bytes from buffer and return
-        bytes_ = []
-        while num_bytes > 0:
-
-            # Check for empty buffer or pop byte from buffer
-            if len(self.buffer) == 0:
-                bytes_.append(0x00)
-            else:
-                bytes_.append(self.buffer.pop())
-
-            # Decrement num bytes to read
-            num_bytes = num_bytes - 1
-
-        # Successfully read bytes
-        return bytes(bytes_)
+        return self.get_read_response_bytes(num_bytes)
 
     def write(self, address: int, bytes_: bytes) -> None:
         """Writes bytes to buffer."""
@@ -128,7 +114,7 @@ class PeripheralSimulator:
                 self.mux_simulator.verify(address, channel)  # type: ignore
 
             # Get response bytes
-            response_bytes = self.writes.get(byte_str(bytes_), None)
+            response_bytes = self.get_write_response_bytes(bytes_)
 
             # Verify known write bytes
             if response_bytes == None:
@@ -192,3 +178,26 @@ class PeripheralSimulator:
 
         # Write value to register
         self.registers[register_addr] = value
+
+    def get_write_response_bytes(self, write_bytes: bytes) -> Optional[bytes]:
+        """Gets response byte for write command. Handles state based writes."""
+        return self.writes.get(byte_str(write_bytes), None)
+
+    def get_read_response_bytes(self, num_bytes: int) -> bytes:
+        """Gets response bytes from read command. Handles state based reads."""
+
+        # Pop bytes from buffer and return
+        bytes_ = []
+        while num_bytes > 0:
+
+            # Check for empty buffer or pop byte from buffer
+            if len(self.buffer) == 0:
+                bytes_.append(0x00)
+            else:
+                bytes_.append(self.buffer.pop())
+
+            # Decrement num bytes to read
+            num_bytes = num_bytes - 1
+
+        # Successfully read bytes
+        return bytes(bytes_)

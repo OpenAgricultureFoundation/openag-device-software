@@ -1,5 +1,5 @@
 # Import python types
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 # Import device utilities
 from device.utilities.bitwise import byte_str
@@ -17,19 +17,22 @@ class PCF8574Simulator(PeripheralSimulator):  # type: ignore
         # Intialize parent class
         super().__init__(*args, **kwargs)
 
+        # Initialize registers and write dicts
         self.registers: Dict = {}
         self.writes: Dict = {}
 
-        # POWER_REGISTER_WRITE_BYTES = bytes([0x40])
-        # POWER_REGISTER_RESPONSE_BYTES = bytes([0x00, 0x00])
+        # Initialize port byte
+        self.port_status_byte = 0x00
 
-        # self.writes = {
-        #     byte_str(POWER_REGISTER_WRITE_BYTES): POWER_REGISTER_RESPONSE_BYTES
-        # }
+    def get_write_response_bytes(self, write_bytes: bytes) -> Optional[bytes]:
+        """Gets response byte for write command. Handles state based writes. This driver
+        will only ever write 1 byte to the deivce that corresponds to the port status 
+        byte."""
+        self.port_status_byte = write_bytes[0]
+        return bytes([0x00])  # TODO: Check was is returned from the hardware function
 
-        # # Add all possible dac outputs to writes dict
-        # for channel in range(0x30, 0x37 + 1):
-        #     for output in range(0x00, 0xFF + 1):
-        #         OUTPUT_WRITE_BYTES = bytes([channel, output, 0x00])
-        #         OUTPUT_RESPONSE_BYTES = bytes([])  # TODO
-        #         self.writes[byte_str(OUTPUT_WRITE_BYTES)] = OUTPUT_RESPONSE_BYTES
+    def get_read_response_bytes(self, num_bytes: int) -> bytes:
+        """Gets response bytes from read command. Handles state based reads. This 
+        driver will only ever read 1 byte from the device. That byte corresponds to 
+        the port status byte."""
+        return bytes([self.port_status_byte])
