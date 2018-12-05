@@ -481,10 +481,9 @@ class IotManager(manager.StateMachineManager):
         try:
             payload = message.payload.decode("utf-8")
             payload_dict = json.loads(payload)
-            # message_version = int(payload_dict["lastConfigVersion"])
         except json.decoder.JSONDecodeError:
             self.logger.warning("Unable to process message, payload is invalid json")
-            self.logger.debug("payload = `{}`".format(payload))
+            self.logger.warning("payload = `{}`".format(payload))
             return
         except KeyError:
             self.logger.warning("Unable to get message version, setting to 0")
