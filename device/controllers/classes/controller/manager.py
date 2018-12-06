@@ -20,7 +20,7 @@ class ControllerManager(StateMachineManager):
     """Manages an actuator controlled by a pcf85764 io expander."""
 
     # Initialize timing variables
-    default_sampling_interval = 2  # seconds
+    default_sampling_interval = 1  # seconds
     min_sampling_interval = 1  # seconds
     last_update = None  # seconds
     last_update_interval = None  # Seconds

@@ -25,6 +25,9 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
         # Initialize variable names
         self.output_name = self.variables["actuator"]["output_variable"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 1
+
     @property
     def desired_output(self) -> Optional[float]:
         """Gets desired output value."""
@@ -93,8 +96,20 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
         """Updates sensor by reading temperature and humidity values then 
         reports them to shared state."""
 
+        # Check for no desired output, if none turn off
+        if self.desired_output == None:
+            if self.output != 0.0:
+                if self.is_active_high:
+                    self.driver.set_low(self.port)
+                else:
+                    self.driver.set_high(self.port)
+                self.output = self.desired_output
+                self.health = 100.0
+            else:
+                return
+
         # Check if desired output is unchanged
-        if self.desired_output == None or self.desired_output == self.output:
+        if self.desired_output == self.output:
             return
 
         # Output has changed, set output and update reported value
