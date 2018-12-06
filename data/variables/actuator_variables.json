@@ -3,8 +3,8 @@
 		"key": "light_channel_output_percents",
 		"info": {
 			"name": {
-				"brief": "Output",
-				"verbose": "Light Channel Output"
+				"brief": "Light Outputs",
+				"verbose": "Light Channel Outputs"
 			},
 			"unit": {
 				"brief": "%",
@@ -14,7 +14,7 @@
 		}
 	},
 	{
-		"key": "air_heater",
+		"key": "air_heater_percent",
 		"info": {
 			"name": {
 				"brief": "Air Heater",
@@ -26,5 +26,48 @@
 				"type": "object"
 			}
 		}
+	},
+	{
+		"key": "air_chiller_percent",
+		"info": {
+			"name": {
+				"brief": "Air Chiller",
+				"verbose": "Air Chiller Output"
+			},
+			"unit": {
+				"brief": "%",
+				"verbose": "Percent",
+				"type": "object"
+			}
+		}
+	},
+	{
+		"key": "air_humidifier_percent",
+		"info": {
+			"name": {
+				"brief": "Air Humidifier",
+				"verbose": "Air Humidifier Output"
+			},
+			"unit": {
+				"brief": "%",
+				"verbose": "Percent",
+				"type": "object"
+			}
+		}
+	},
+	{
+		"key": "air_dehumidifier_percent",
+		"info": {
+			"name": {
+				"brief": "Air Dehumidifier",
+				"verbose": "Air Dehumidifier Output"
+			},
+			"unit": {
+				"brief": "%",
+				"verbose": "Percent",
+				"type": "object"
+			}
+		}
 	}
+
 ]

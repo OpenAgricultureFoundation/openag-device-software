@@ -222,11 +222,7 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
 
         # Turn on driver and update reported variables
         try:
-            if self.is_active_high:
-                self.driver.set_high(self.port)
-            else:
-                self.driver.set_low(self.port)
-            self.output = 100.0
+            self.set_on()
         except exceptions.DriverError as e:
             self.mode = modes.ERROR
             message = "Unable to turn on: {}".format(e)
@@ -261,11 +257,7 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
 
         # Turn off driver and update reported variables
         try:
-            if self.is_active_high:
-                self.driver.set_low(self.port)
-            else:
-                self.driver.set_high(self.port)
-            self.output = 0.0
+            self.set_off()
         except exceptions.DriverError as e:
             self.mode = modes.ERROR
             message = "Unable to turn off: {}".format(e)

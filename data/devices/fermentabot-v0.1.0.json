@@ -108,7 +108,32 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_heater"
+                        "output_variable": "air_heater_percent"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x20",
+                    "port": 2,
+                    "is_active_high": true
+                }
+            }
+        },
+        {
+            "name": "HumidifierULT400",
+            "type": "ActuatorPCF8574",
+            "uuid": "1cd6986d-022b-4d7d-b40e-25f42ac1fe78",
+            "parameters": {
+                "setup": {
+                    "name": "Humidifier ULT400",
+                    "file_name": "actuator_pcf8574/setups/humidifier_ult400"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_humidifier_percent"
                     }
                 },
                 "communication": {
@@ -129,12 +154,28 @@
             "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
             "parameters": {
                 "setup": {
-                    "name": "Temperature Controller Default",
-                    "file_name": "hysteretic/setups/temperature"
+                    "name": "Temperature Controller +/- 2C",
+                    "file_name": "hysteretic/setups/temperature_2c"
                 },
                 "variables": {
                     "sensor_name": "air_temperature_celcius",
-                    "positive_actuator_name": "air_heater",
+                    "positive_actuator_name": "air_heater_percent",
+                    "negative_actuator_name": null
+                }
+            }
+        },
+        {
+            "name": "HumidityController",
+            "type": "HystereticController",
+            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "parameters": {
+                "setup": {
+                    "name": "Humidity Controller +/- 4%RH",
+                    "file_name": "hysteretic/setups/humidity_4pct"
+                },
+                "variables": {
+                    "sensor_name": "air_humidity_percent",
+                    "positive_actuator_name": "air_humidifier_percent",
                     "negative_actuator_name": null
                 }
             }

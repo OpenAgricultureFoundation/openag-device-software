@@ -1,28 +1,28 @@
 {
-	"name":  "Temperature Controller Default",
+	"name":  "Humidity Controller +/- 4%RH",
 	"version": "1",
-	"uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+	"uuid": "bc87bf9b-17a8-4b11-a56f-9d5024c54060",
 	"module_name": "hysteretic.manager",
 	"class_name": "HystereticControllerManager",
 	"parameters": {
 		"variables": {
 			"sensor_name": {
 				"type": "string", 
-				"default": "air_temperature_celcius"
+				"default": "air_humidity_celcius"
 			},
 			"positive_actuator_name": {
 				"type": "string",
-				"default": "air_heater"
+				"default": "air_humidifier_percent"
 			},
 			"negative_actuator_name": {
 				"type": "string",
-				"default": "air_chiller"
+				"default": "air_dehumidifier_percent"
 			}
 
 		}
 	},
 	"properties": {
-		"accuracy_value": 2.0
+		"accuracy_value": 4.0
 	},
 	"events": null,
 	"info": {}

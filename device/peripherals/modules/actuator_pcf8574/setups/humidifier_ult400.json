@@ -1,7 +1,7 @@
 {
-	"name":  "Heater PTC300W",
+	"name":  "Humidifier ULT400",
 	"version": "1",
-	"uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
+	"uuid": "1cd6986d-022b-4d7d-b40e-25f42ac1fe78",
 	"module_name": "actuator_pcf8574.manager",
 	"class_name": "ActuatorPCF8574Manager",
 	"parameters": {
@@ -11,7 +11,7 @@
 				"output_variable": {
 					"name": {
 						"type": "string", 
-						"default": "air_heater_percent"
+						"default": "air_humidifier_percent"
 					}
 				}
 			}
@@ -35,7 +35,7 @@
 			},
 			"port": {
 				"type": "number",
-				"default": 0
+				"default": 1
 			},
 			"is_active_high": {
 				"type": "boolean",
@@ -73,14 +73,14 @@
 	    },
 	    {
 	        "name": "Turn On",
-	        "description": "Turns on heater.",
+	        "description": "Turns on humidifier.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
 	    },
 	    {
 	        "name": "Turn Off",
-	        "description": "Turns off heater.",
+	        "description": "Turns off humidifier.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
