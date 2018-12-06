@@ -1,4 +1,7 @@
 # Import standard python modules
+import time
+
+# Import python types
 from typing import Optional, Tuple, Dict, Any
 
 # Import peripheral parent class
@@ -25,8 +28,10 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
         # Initialize variable names
         self.output_name = self.variables["actuator"]["output_variable"]
 
-        # Set default sampling interval
-        self.default_sampling_interval = 1
+        # Set default sampling interval and heartbeat
+        self.default_sampling_interval = 1  # second
+        self.heartbeat = 60  # seconds
+        self.prev_update = 0  # timestamp
 
     @property
     def desired_output(self) -> Optional[float]:
@@ -77,89 +82,97 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
                 mux_simulator=self.mux_simulator,
             )
         except exceptions.DriverError as e:
-            self.logger.debug("Unable to initialize: {}".format(e))
+            self.logger.exception("Unable to initialize: {}".format(e))
             self.health = 0.0
             self.mode = modes.ERROR
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
         self.logger.debug("Setting up peripheral")
-
-        # Initialize driver to be off
-        if self.is_active_high:
-            self.driver.set_low(self.port)
-        else:
-            self.driver.set_high(self.port)
-        self.output = 0.0
+        try:
+            self.set_off()
+        except exceptions.DriverError as e:
+            self.logger.exception("Unable to setup: {}".format(e))
+            self.mode = modes.ERROR
+            self.health = 0.0
 
     def update_peripheral(self) -> None:
-        """Updates sensor by reading temperature and humidity values then 
-        reports them to shared state."""
+        """Updates peripheral by setting output to desired state."""
+        try:
+            # Check if desired output is not set
+            if self.desired_output == None and self.output != 0.0:
+                self.set_off()
 
-        # Check for no desired output, if none turn off
-        if self.desired_output == None:
-            if self.output != 0.0:
-                if self.is_active_high:
-                    self.driver.set_low(self.port)
-                else:
-                    self.driver.set_high(self.port)
-                self.output = self.desired_output
-                self.health = 100.0
-            else:
-                return
+            # Check if output is set to desired value
+            elif self.desired_output != None and self.output != self.desired_output:
+                self.set_output(self.desired_output)
 
-        # Check if desired output is unchanged
-        if self.desired_output == self.output:
-            return
+            # Check for heartbeat
+            if time.time() - self.prev_update > self.heartbeat:
+                self.logger.debug("Sending heartbeat")
+                self.set_output(self.output)
 
-        # Output has changed, set output and update reported value
-        if self.desired_output == 100:
-            if self.is_active_high:
-                self.driver.set_high(self.port)
-            else:
-                self.driver.set_low(self.port)
-            self.output = self.desired_output
-            self.health = 100.0
-        elif self.desired_output == 0:
-            if self.is_active_high:
-                self.driver.set_low(self.port)
-            else:
-                self.driver.set_high(self.port)
-            self.output = self.desired_output
-            self.health = 100.0
-        else:
-            message = "Received invalid desired output value: {}".format(
-                self.desired_output
-            )
-            self.logger.error(message)
-            self.health = 0.0
+        except exceptions.DriverError as e:
+            self.logger.exception("Unable to update peripheral: {}".format(e))
             self.mode = modes.ERROR
+            self.health = 0.0
 
     def reset_peripheral(self) -> None:
         """Resets sensor."""
         self.logger.info("Resetting")
-
-        # Clear reported values
         self.clear_reported_values()
 
     def shutdown_peripheral(self) -> None:
         """Shutsdown peripheral."""
         self.logger.info("Shutting down")
         try:
-            if self.is_active_high:
-                self.driver.set_low(self.port)
-            else:
-                self.driver.set_high(self.port)
-        except Exception as e:
+            self.set_low()
+        except exceptions.DriverError as e:
             message = "Unable to turn off actuator before shutting down: {}".format(
                 type(e)
             )
-            self.logger.warning()
+            self.logger.warning(message)
         self.clear_reported_values()
 
     def clear_reported_values(self) -> None:
         """Clears reported values."""
         self.output = None
+
+    ##### HELPER FUNCTIONS #############################################################
+
+    def set_output(self, value: float):
+        """Sets output."""
+        if value == 100.0:
+            self.set_on()
+        elif value == 0.0:
+            self.set_off()
+        else:
+            self.logger.error("Invalid set output value: {}".format(value))
+            self.mode = modes.ERROR
+            self.health = 0.0
+            return
+
+    def set_on(self):
+        """Sets driver on."""
+        self.logger.debug("Setting on")
+        if self.is_active_high:
+            self.driver.set_high(self.port)
+        else:
+            self.driver.set_low(self.port)
+        self.output = 100.0
+        self.health = 100.0
+        self.prev_update = time.time()
+
+    def set_off(self):
+        """Sets driver off."""
+        self.logger.debug("Setting off")
+        if self.is_active_high:
+            self.driver.set_low(self.port)
+        else:
+            self.driver.set_high(self.port)
+        self.output = 0.0
+        self.health = 100.0
+        self.prev_update = time.time()
 
     ##### EVENT FUNCTIONS ##############################################################
 

@@ -33,7 +33,7 @@ class DAC5578Driver:
         """Initializes DAC5578."""
 
         # Initialize logger
-        logname = "DAC5578-({})".format(name)
+        logname = "DAC5578({})".format(name)
         self.logger = Logger(logname, __name__)
 
         # Check if simulating

@@ -5,8 +5,7 @@ import time, threading
 from typing import NamedTuple, Optional, Dict
 
 # Import device utilities
-from device.utilities.logger import Logger
-from device.utilities import bitwise
+from device.utilities import bitwise, logger
 from device.utilities.communication.i2c.main import I2C
 from device.utilities.communication.i2c.exceptions import I2CError
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator
@@ -33,8 +32,8 @@ class PCF8574Driver:
         """Initializes PCF8574."""
 
         # Initialize logger
-        logname = "PCF8574-({})".format(name)
-        self.logger = Logger(logname, __name__)
+        logname = "PCF8574({})".format(name)
+        self.logger = logger.Logger(logname, "peripherals")
 
         # Initialize i2c lock
         self.i2c_lock = i2c_lock
