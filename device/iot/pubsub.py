@@ -10,9 +10,6 @@ from device.utilities import logger
 from device.utilities.state.main import State
 from device.utilities.iot import registration, tokens
 
-# Import app models, TODO: Remove this
-from app import models
-
 # Import module elements
 from device.iot import commands
 
@@ -234,6 +231,16 @@ class PubSub:
         # Check if client is initialized
         if not self.is_initialized:
             self.logger.warning("Tried to publish message before client initialized")
+            return
+
+        # Validate the values
+        valid = False
+        for vname in values_dict:
+            val = values_dict[vname]
+            if val is not None:
+                valid = True
+                break
+        if not valid:
             return
 
         # Build values json
