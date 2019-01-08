@@ -781,7 +781,9 @@ class SystemViewSet(viewsets.ModelViewSet):
                 "message": "Successfully got system info",
                 "is_beaglebone": system.is_beaglebone(),
                 "is_wifi_beaglebone": system.is_wifi_beaglebone(),
+                "is_raspberry_pi_3": system.is_raspberry_pi_3(),
                 "beaglebone_serial_number": system.beaglebone_serial_number(),
+                "raspberry_pi_3_serial_number:": system.raspberry_pi_3_serial_number(),
                 "remote_device_ui_url": system.remote_device_ui_url(),
             }
             self.logger.debug("Returning response: {}".format(response))

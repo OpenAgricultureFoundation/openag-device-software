@@ -1,5 +1,5 @@
 # Import standard python modules
-import subprocess, os
+import subprocess, os, re
 
 # Import device utilities
 from device.utilities.logger import Logger
@@ -16,8 +16,26 @@ BBB_SERIAL_SCRIPT_PATH = "scripts/get_bbb_serial.sh"
 WIFI_ACCESS_POINT_SCRIPT_PATH = "scripts/get_access_point.sh"
 
 
+def is_raspberry_pi_3() -> bool:
+    """Check if current system is a raspberry pi 3"""
+
+    try:
+        # Read cpu info
+        with open("/proc/cpuinfo", "r") as infile:
+            cpu_info = infile.read()
+
+        # Check for the processor used in raspi 3
+        if "BCM2835" in cpu_info:
+            return True
+        else:
+            return False
+    except:
+        # TODO: Handle this exception
+        return False
+
+
 def is_beaglebone() -> bool:
-    """Checks if current system is a beaglebone."""
+    """Checks if current system is a beaglebone. TODO: Don't use bash functions."""
     logger.debug("Checking if system is a beaglebone")
 
     # Build command
@@ -87,7 +105,7 @@ def beaglebone_serial_number() -> str:
 
     # Check system is a beaglebone
     if not is_beaglebone():
-        logger.debug("Unable to get beaglebone serial number, system not a beaglebone")
+        logger.debug("Unable to get serial number, system not a beaglebone")
         return "Unknown"
 
     # Build command
@@ -115,6 +133,37 @@ def beaglebone_serial_number() -> str:
     return serial_number
 
 
+def raspberry_pi_3_serial_number() -> str:
+    """Gets the serial number from a raspberry pi 3."""
+
+    # Check system is a raspberry pi 3
+    if not is_raspberry_pi_3():
+        logger.debug(
+            "Unable to get raspberry pi 3 serial number, system not a raspberry pi 3"
+        )
+        return "Unknown"
+
+    try:
+        # Read cpu info
+        with open("/proc/cpuinfo", "r") as infile:
+            cpu_info = infile.read()
+
+        # Parse out serial number
+        output = re.search(r"Serial.*", cpu_info).group()  # type: ignore
+        serial_number = str(output.replace("Serial", "").replace(":", "").strip())
+
+    except Exception as e:
+        message = "Unable to get raspberry pi 3 serial number, unhandled exception: {}".format(
+            type(e)
+        )
+        logger.exception(message)
+        return "Unknown"
+
+    # Successfully got serial number
+    logger.debug("Successfully got serial number: {}".format(serial_number))
+    return serial_number
+
+
 def remote_device_ui_url() -> str:
     """Gets remote device ui url. Currently only works for beaglebones."""
     logger.debug("Getting remote device ui url")
@@ -127,9 +176,13 @@ def remote_device_ui_url() -> str:
         serial_number = beaglebone_serial_number()
         url = "https://{}.serveo.net".format(serial_number)
         return url
+    elif is_raspberry_pi_3():
+        serial_number = raspberry_pi_3_serial_number()
+        url = "https://{}.serveo.net".format(serial_number)
+        return url
 
     # Device is not a beaglebone
-    return "Remote device UI currently only supported for beaglebones"
+    return "Remote device UI currently only supported for beaglebone or raspberry pi 3"
 
 
 def device_config_name() -> str:

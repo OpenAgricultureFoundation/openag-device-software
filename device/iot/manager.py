@@ -334,6 +334,7 @@ class IotManager(manager.StateMachineManager):
             "IP": self.state.network.get("ip_address"),
             "access_point": system.beaglebone_wifi_access_point_name(),
             "bbb_serial": system.beaglebone_serial_number(),
+            "raspi3_serial": system.raspberry_pi_3_serial_number(),
             "remote_URL": system.remote_device_ui_url(),
         }
 
