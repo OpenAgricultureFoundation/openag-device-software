@@ -27,6 +27,7 @@ def retry(
     """
 
     def deco_retry(f: F) -> F:
+
         @wraps(f)
         def f_retry(*args: Any, **kwargs: Any) -> Any:
 

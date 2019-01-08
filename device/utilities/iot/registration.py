@@ -39,7 +39,7 @@ def device_id() -> str:
         with open(DEVICE_ID_PATH) as f:
             contents = f.read()
             index = contents.find("=")
-            device_id = contents[index + 1 :].strip()
+            device_id = contents[index + 1:].strip()
             return device_id
     except Exception as e:
         message = "Unable to get device id, unhandled exception: {}".format(type(e))

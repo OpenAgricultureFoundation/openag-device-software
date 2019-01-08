@@ -499,6 +499,7 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
 
 class EventViewSet(viewsets.ModelViewSet):
     """View set for creating peripheral and controller events."""
+
     permission_classes = [IsAuthenticated]
 
     def create(self, request: Request) -> Response:

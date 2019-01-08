@@ -60,7 +60,9 @@ def test_write_unknown():
 
 
 def test_write_read():
+
     class CustomPeripheralSimulator(PeripheralSimulator):
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.writes = {byte_str(bytes([0x01])): bytes([0x02])}
@@ -126,7 +128,9 @@ def test_write_read_register():
 
 
 def test_read_custom_register():
+
     class CustomPeripheralSimulator(PeripheralSimulator):
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
