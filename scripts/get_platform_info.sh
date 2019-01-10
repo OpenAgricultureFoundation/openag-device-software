@@ -20,7 +20,7 @@ if [ -f /etc/dogtag ]; then
       if [[ $WLAN == *"wlan0: flags"* ]]; then
       	PLATFORM=beaglebone-black-wireless
         IS_WIFI_ENABLED=true
-        WIFI_ACCESS_POINT=`cat /tmp/hostapd-wl18xx.conf | grep "^ssid" | cut -d '=' -f 2`
+        WIFI_ACCESS_POINT=BeagleBone-`cat /tmp/hostapd-wl18xx.conf | grep "^ssid" | cut -d '=' -f 2 | awk '{print toupper($0)}'`
       else
       	PLATFORM=beaglebone-black-wired
         IS_WIFI_ENABLED=false
@@ -47,6 +47,7 @@ fi
 # Set general raspberry pi info
 if [[ $PLATFORM == *"raspberry-pi"* ]]; then
   SERIAL_NUMBER=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
+  WIFI_ACCESS_POINT=RaspberryPi-`echo $SERIAL_NUMBER | tail -c 5 | awk '{print toupper($0)}'`
   IS_WIFI_ENABLED=true
   IS_I2C_ENABLED=true
   DEFAULT_I2C_BUS=1
