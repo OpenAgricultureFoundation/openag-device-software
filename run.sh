@@ -24,6 +24,10 @@ fi
 # Activate the python env for this bash process
 source $DIR/venv/bin/activate
 
+# Initialize platform info
+source $DIR/scripts/get_platform_info.sh
+
+# Initialize registration data directory
 REG_DATA_DIR=$DIR/data/registration
 
 # Pass all these to django as env vars.

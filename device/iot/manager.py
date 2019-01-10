@@ -332,10 +332,10 @@ class IotManager(manager.StateMachineManager):
             "device_config": system.device_config_name(),
             "package_version": self.state.upgrade.get("current_version"),
             "IP": self.state.network.get("ip_address"),
-            "access_point": system.beaglebone_wifi_access_point_name(),
-            "bbb_serial": system.beaglebone_serial_number(),
-            "raspi3_serial": system.raspberry_pi_3_serial_number(),
-            "remote_URL": system.remote_device_ui_url(),
+            "access_point": os.getenv("WIFI_ACCESS_POINT"),
+            "serial_number": os.getenv("SERIAL_NUMBER"),
+            "remote_URL": os.getenv("REMOTE_DEVICE_UI_URL"),
+            "bbb_serial": "DEPRECATED",
         }
 
         # Publish boot message

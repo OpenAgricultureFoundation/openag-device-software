@@ -493,7 +493,6 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self) -> QuerySet:
         """Gets state queryset."""
         queryset = models.StateModel.objects.all()
-        self.logger.debug("~~~~~~~ queryset type = {}".format(type(queryset)))
         return queryset
 
 
@@ -780,12 +779,10 @@ class SystemViewSet(viewsets.ModelViewSet):
         try:
             response = {
                 "message": "Successfully got system info",
-                "is_beaglebone": system.is_beaglebone(),
-                "is_wifi_beaglebone": system.is_wifi_beaglebone(),
-                "is_raspberry_pi_3": system.is_raspberry_pi_3(),
-                "beaglebone_serial_number": system.beaglebone_serial_number(),
-                "raspberry_pi_3_serial_number:": system.raspberry_pi_3_serial_number(),
-                "remote_device_ui_url": system.remote_device_ui_url(),
+                "platform": os.getenv("PLATFORM"),
+                "serial_number": os.getenv("SERIAL_NUMBER"),
+                "remote_device_ui_url": os.getenv("REMOTE_DEVICE_UI_URL"),
+                "is_wifi_enabled": os.getenv("IS_WIFI_ENABLED") == "true",
             }
             self.logger.debug("Returning response: {}".format(response))
             return Response(response, 200)

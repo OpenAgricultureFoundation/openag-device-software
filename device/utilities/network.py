@@ -1,5 +1,5 @@
 # Import standard python modules
-import subprocess, socket, urllib.request, re
+import os, subprocess, socket, urllib.request, re
 
 # Import python types
 from typing import List, Dict, Union
@@ -48,7 +48,7 @@ def get_wifi_access_points(
     logger.debug("Getting wifi access points")
 
     # Check system is a wifi beaglebone
-    if not system.is_wifi_beaglebone():
+    if os.getenv("PLATFORM") != "beaglebone-wireless":
         logger.error("Unable to get wifi access points, system not a wifi beaglebone")
         return []
 
@@ -118,7 +118,7 @@ def join_wifi(wifi: str, password: str) -> None:
     logger.debug("Joining wifi")
 
     # Check system is a wifi beaglebone
-    if not system.is_wifi_beaglebone():
+    if os.getenv("PLATFORM") != "beaglebone-wireless":
         message = "Unable to join wifi, system not a wifi beaglebone"
         logger.error(message)
         raise SystemError(message)
@@ -189,7 +189,7 @@ def delete_wifis() -> None:
     logger.debug("Deleting wifis")
 
     # Check system is a wifi beaglebone
-    if not system.is_wifi_beaglebone():
+    if os.getenv("PLATFORM") != "beaglebone-wireless":
         message = "Unable to delete wifis, system not a wifi beaglebone"
         logger.error(message)
         raise SystemError(message)
