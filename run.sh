@@ -12,13 +12,13 @@ fi
 
 # Only if we are on linux, we run a light weight web server to vend images.
 if [[ "$OSTYPE" == "linux"* ]]; then
-    pkill busybox
-    busybox httpd -p 8080 -h $DIR/data/images/stored/
+    sudo pkill busybox
+    sudo busybox httpd -p 8080 -h $DIR/data/images/stored/
 fi
 
 # If there is a current python virtual environment, deactivate it.
 if ! [ -z "${VIRTUAL_ENV}" ] ; then
-    deactivate
+    source deactivate
 fi
 
 # Activate the python env for this bash process
@@ -77,5 +77,5 @@ export NO_DEVICE
 export SIMULATE
 
 # Run app
-python3.6 manage.py runserver 0.0.0.0:80
+python3.6 manage.py runserver 0.0.0.0:8000
 

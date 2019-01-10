@@ -5,6 +5,10 @@ TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOPDIR+=/..
 cd $TOPDIR
 
+# Initialize platform info
+bash scripts/get_platform_info.sh
+
+# Set linux specific config
 if [[ "$OSTYPE" == "linux"* ]]; then
 
   # If the brain is running from /etc/rc.local, stop it.
@@ -13,12 +17,19 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
   # Fix up some directories and files that may be owned by root
   sudo chmod -f -R 777 data/logs/ data/images/ 
-  sudo chown -R debian:debian .
+  sudo chown -R $USER:$USER .
+
 fi
 
 # For upgrade to version 1.0.4 we need to remove old symlinks
 sudo rm -f $TOPDIR/app/staticfiles/images
 sudo rm -f $TOPDIR/app/static/stored_images
+
+# Instead of requiring django to run as root and host app on port 80
+# Host app on port 8000 and forward port 80 to port 8000
+# On raspberry pi, openssl does not work properly if ran as root
+# So we need  to be able to run django as non-root user
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
 
 # Install any new python modules
 source venv/bin/activate

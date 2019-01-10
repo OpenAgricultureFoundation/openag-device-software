@@ -50,3 +50,6 @@ python3 -m pip install -U mypy
 
 # Install autossh for persistent ssh forwarding
 sudo apt-get install autossh
+
+# Install busybox for hosting images
+sudo apt-get install busybox
