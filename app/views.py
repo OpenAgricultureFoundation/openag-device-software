@@ -814,7 +814,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
             "message": "Successfully got network info",
             "is_connected": network_manager.is_connected,
             "ip_address": network_manager.ip_address,
-            "wifi_access_points": network_manager.wifi_access_points,
+            "wifi_ssids": network_manager.wifi_ssids,
         }
 
         # Return response

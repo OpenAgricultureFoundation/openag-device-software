@@ -13,13 +13,6 @@ from device.utilities import network as network_utilities
 # Import manager elements
 from device.network import modes
 
-# TODO: Should we bring persist ports for port forwarding? Probably want as much of
-# the code to live in python land as possible so we don't have to keep track of bash
-# scripts?
-
-# TODO: Should we break out the bash scripts so we're never even calling them, just
-# the commands inside of them?
-
 
 class NetworkManager(manager.StateMachineManager):
     """Manages network connections."""
@@ -86,15 +79,15 @@ class NetworkManager(manager.StateMachineManager):
             self.state.network["is_connected"] = value
 
     @property
-    def wifi_access_points(self) -> List[Dict[str, str]]:
+    def wifi_ssids(self) -> List[Dict[str, str]]:
         """Gets value."""
-        return self.state.network.get("wifi_access_points")  # type: ignore
+        return self.state.network.get("wifi_ssids")  # type: ignore
 
-    @wifi_access_points.setter
-    def wifi_access_points(self, value: List[Dict[str, str]]) -> None:
+    @wifi_ssids.setter
+    def wifi_ssids(self, value: List[Dict[str, str]]) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
-            self.state.network["wifi_access_points"] = value
+            self.state.network["wifi_ssids"] = value
 
     @property
     def ip_address(self) -> str:
@@ -204,7 +197,7 @@ class NetworkManager(manager.StateMachineManager):
         else:
             self.ip_address = "UNKNOWN"
 
-        self.wifi_access_points = network_utilities.get_wifi_access_points()
+        self.wifi_ssids = network_utilities.get_wifi_ssids()
 
     ##### EVENT FUNCTIONS ##############################################################
 

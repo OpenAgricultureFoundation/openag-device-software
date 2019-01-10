@@ -27,6 +27,9 @@ source $DIR/venv/bin/activate
 # Initialize platform info
 source $DIR/scripts/get_platform_info.sh
 
+# Needed for openssl
+export LD_LIBRARY_PATH=/usr/local/lib
+
 # Initialize registration data directory
 REG_DATA_DIR=$DIR/data/registration
 

@@ -81,10 +81,10 @@
     // Update view for disconnected network and wifi-enabled system
     else if (!networkInfo["isConnected"] && systemInfo["isWifiEnabled"]) {
       document.getElementById("status").innerHTML = "Please configure your wifi network"
-      updateWifiAccessPoints(networkInfo["wifiAccessPoints"]);
+      updateWifiSSIDs(networkInfo["wifiSSIDs"]);
 
       // Check wifi networks have loaded
-      var wifiSelect = document.getElementById("wifi-access-points-select");
+      var wifiSelect = document.getElementById("wifi-ssids-select");
       if (wifiSelect != null && wifiSelect.options.length < 1) {
         document.getElementById("status").innerHTML = "Please wait for network connections to load...refresh page in a few moments";
       }
@@ -126,27 +126,27 @@
     });
   }
 
-  function updateWifiAccessPoints(wifiAccessPoints) {
-    console.log("Updating wifi access points")
+  function updateWifiSSIDs(wifiSSIDs) {
+    console.log("Updating wifi ssids")
 
-    // Get wifi access point select
-    var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
+    // Get wifi ssids select
+    var wifiSSIDSelect = document.getElementById("wifi-ssids-select");
 
-    // Remove stale wifi access point selections
-    if (wifiAccessPointSelect != null) {
-      for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
-        wifiAccessPointSelect.remove(i);
+    // Remove stale wifi ssid selections
+    if (wifiSSIDSelect != null) {
+      for( i=wifiSSIDSelect.length - 1; i >= 0; i-- ) { // must do in reverse
+        wifiSSIDSelect.remove(i);
       } 
     }
 
-    // Add updated wifi access point selections
-    if (wifiAccessPoints != null) {
-      for( i=0; i < wifiAccessPoints.length; i++ ) {
-        wifiAccessPoint = wifiAccessPoints[i];
+    // Add updated wifi ssid selections
+    if (wifiSSIDs != null) {
+      for( i=0; i < wifiSSIDs.length; i++ ) {
+        wifiSSID = wifiSSIDs[i];
         var option = document.createElement("option");
-        option.text = wifiAccessPoint.ssid;
-        option.value = wifiAccessPoint.psk;
-        wifiAccessPointSelect.add(option);
+        option.text = wifiSSID.ssid;
+        option.value = wifiSSID.psk;
+        wifiSSIDSelect.add(option);
       }
     }
   }
@@ -166,7 +166,7 @@
           var networkInfo = {
             "isConnected": data["is_connected"],
             "ipAddress": data["ip_address"],
-            "wifiAccessPoints": data["wifi_access_points"]
+            "wifiSSIDs": data["wifi_ssids"]
           }
           resolve(networkInfo);
         },
@@ -221,10 +221,10 @@
 
 
     // Get wifi psk
-    var wifiSelect = document.getElementById("wifi-access-points-select");
+    var wifiSelect = document.getElementById("wifi-ssids-select");
     var wifiPsk = wifiSelect.options[wifiSelect.selectedIndex];
     if( wifiPsk == null ) {
-      console.log("Error: could not get wifiAccessPoints element");
+      console.log("Error: could not get wifiSSIDs element");
       return;
     }
 
@@ -280,7 +280,7 @@
 
 <html>
 
-<input type="hidden" id="wifi-access-points" name="variable", value="temp">
+<input type="hidden" id="wifi-ssids" name="variable", value="temp">
 
 <body>
 
@@ -296,7 +296,7 @@
     </p>
     
     <div class="collapse" id="configure-wifi-collapse">
-      <select id="wifi-access-points-select" class="selectpicker" style="width:200px">
+      <select id="wifi-ssids-select" class="selectpicker" style="width:200px">
       </select>
 
       <p>
