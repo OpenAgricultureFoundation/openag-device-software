@@ -42,6 +42,10 @@ class NetworkManager(manager.StateMachineManager):
             modes.ERROR: [modes.SHUTDOWN],
         }
 
+        # Initialize raspberry pi access point mode
+        if "raspberry-pi" in os.getenv("PLATFORM"):
+            self._disable_raspi_access_point()
+
         # Initialize state machine mode
         self.mode = modes.DISCONNECTED
 
@@ -99,6 +103,17 @@ class NetworkManager(manager.StateMachineManager):
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.network["ip_address"] = value
+
+    @property
+    def access_point_enabled(self) -> str:
+        """Gets value."""
+        return self.state.network.get("access_point_enabled")  # type: ignore
+
+    @access_point_enabled.setter
+    def access_point_enabled(self, value: str) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.network["access_point_enabled"] = value
 
     ##### EXTERNAL STATE DECORATORS ####################################################
 
@@ -181,7 +196,7 @@ class NetworkManager(manager.StateMachineManager):
                     self.logger.info(message)
 
                     # Re-enable access point
-                    network_utilities.enable_raspi_access_point()
+                    self._enable_raspi_access_point()
 
                     # Give access point time to initialize
                     time.sleep(10)
@@ -219,22 +234,13 @@ class NetworkManager(manager.StateMachineManager):
             if self.new_transition(modes.DISCONNECTED):
                 break
 
-            # Check if raspberry pi failed initial network connection event
-            # This occurs when the user first tries to connect the device to the internet
-            # but failed (likely due to incorrect wifi credentials). If this is the case
-            # we need to re-enable to raspi access point so the user can try to connect
-            # to the internet again.
-            # if "raspberry-pi" in os.getenv("PLATFORM") and not self.iot_is_registered:
-            #     message = "Detected raspberry pi failed initial network connection event"
-            #     self.logger.info(message)
+            # Check if raspi access point is disabled but device not registered (and network
+            # disconnected)
+            if "raspberry-pi" in os.getenv("PLATFORM"):
+                if not self.iot_is_registered and not self.access_point_enabled:
 
-            #     # Make sure the device isn't in the middle of the registration process
-            #     time.sleep(10)
-            #     if self.iot_is_registered:
-            #         break
-
-            #     # Re-enable access point
-            #     network_utilities.enable_raspi_access_point()
+                    # Re-enable access point
+                    self._enable_raspi_access_point()
 
             # Update every 100ms
             time.sleep(0.1)
@@ -242,6 +248,8 @@ class NetworkManager(manager.StateMachineManager):
         # If completing raspi registration, give the iot manager enough time to
         # establish a new connection
         if "raspberry-pi" in os.getenv("PLATFORM") and self.iot_is_registered:
+
+            # Initialize timing variables
             timeout = 120  # seconds
             start_time = time.time()
 
@@ -270,6 +278,28 @@ class NetworkManager(manager.StateMachineManager):
             self.ip_address = "UNKNOWN"
 
         self.wifi_ssids = network_utilities.get_wifi_ssids()
+
+    def _enable_raspi_access_point(self) -> None:
+        """Enables raspberry pi access point."""
+        try:
+            network_utilities.enable_raspi_access_point()
+            self.access_point_enabled = True
+        except Exception as e:
+            message = "Unable to enable raspi access point"
+            self.logger.exception(message)
+            self.access_point_enabled = False
+            raise e
+
+    def _disable_raspi_access_point(self) -> None:
+        """Disables raspberry pi access point."""
+        try:
+            network_utilities.disable_raspi_access_point()
+            self.access_point_enabled = False
+        except Exception as e:
+            message = "Unable to disable raspi access point"
+            self.logger.exception(message)
+            self.access_point_enabled = True
+            raise e
 
     ##### EVENT FUNCTIONS ##############################################################
 
@@ -303,8 +333,13 @@ class NetworkManager(manager.StateMachineManager):
             # Check for timeout
             if time.time() - start_time > timeout:
                 message = "Did not connect to internet within {} ".format(timeout)
-                message += "seconds of joining wifi, recheck if internet is connected"
+                message += "seconds of joining wifi"
                 self.logger.warning(message)
+
+                # Re-enable raspi access point
+                if "raspberry-pi" in os.getenv("PLATFORM"):
+                    self._enable_raspi_access_point()
+
                 return message, 202
 
             # Recheck if internet is connected every second
@@ -410,7 +445,7 @@ class NetworkManager(manager.StateMachineManager):
         self.logger.debug("Disabling raspberry pi access point")
 
         try:
-            network_utilities.disable_raspi_access_point()
+            self._disable_raspi_access_point()
         except Exception as e:
             message = "Unable to disable raspi access point, unhandled exception: {}".format(
                 type(e)
