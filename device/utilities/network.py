@@ -19,6 +19,7 @@ JOIN_WIFI_SCRIPT_PATH = "scripts/join_wifi.sh"
 DELETE_WIFIS_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
 ENABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/enable_raspi_access_point.sh"
 DISABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/disable_raspi_access_point.sh"
+REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH = "scripts/remove_raspi_prev_wifi_entry.sh"
 
 
 # Initialize logger
@@ -116,13 +117,10 @@ def join_wifi(ssid: str, password: str) -> None:
         ) as process1:
             output = process1.stdout.read().decode("utf-8")
             output += process1.stderr.read().decode("utf-8")
+        logger.debug(output)
     except Exception as e:
         logger.exception("Unable to join wifi, unhandled exception: {}".format(type(e)))
         raise
-    print(output)
-
-    # Successfully joined wifi
-    logger.debug("Successfully joined wifi")
 
 
 def join_wifi_advanced(
@@ -203,9 +201,9 @@ def delete_wifis() -> None:
 
 def enable_raspi_access_point() -> None:
     """Enables the raspberry pi access point."""
-    logger.debug("Enabling raspberry pi access point.")
+    logger.debug("Enabling raspberry pi access point")
 
-    # Check system is a wifi enabled
+    # Check system is a raspberry pi
     if "raspberry-pi" not in os.getenv("PLATFORM"):
         message = "Unable to enable raspberry pi access point, platform not a raspberry pi"
         logger.error(message)
@@ -228,17 +226,13 @@ def enable_raspi_access_point() -> None:
             )
         )
         raise
-    print(output)
-
-    # Successfully enabled raspberry pi access point
-    logger.debug("Successfully enabled raspberry pi access point")
 
 
 def disable_raspi_access_point() -> None:
     """Disables the raspberry pi access point."""
     logger.debug("Disabling raspberry pi access point.")
 
-    # Check system is a wifi enabled
+    # Check system is a raspberry pi
     if "raspberry-pi" not in os.getenv("PLATFORM"):
         message = "Unable to disable raspberry pi access point, platform not a raspberry pi"
         logger.error(message)
@@ -261,14 +255,35 @@ def disable_raspi_access_point() -> None:
             )
         )
         raise
-    print(output)
-
-    # Successfully disabled raspberry pi access point
-    logger.debug("Successfully disabled raspberry pi access point")
 
 
-if __name__ == "__main__":
-    print(get_wifi_ssids())
+def remove_raspi_prev_wifi_entry() -> None:
+    """Removes previous wifi entry."""
+    logger.debug("Removing previous wifi entry")
+
+    # Check system is a raspberry pi
+    if "raspberry-pi" not in os.getenv("PLATFORM"):
+        message = "Unable to remove previous wifi entry, platform not a raspberry pi"
+        logger.error(message)
+        raise SystemError(message)
+
+    # Build command
+    command = [REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH]
+
+    # Execute command
+    try:
+        with subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        ) as process1:
+            output = process1.stdout.read().decode("utf-8")
+            output += process1.stderr.read().decode("utf-8")
+    except Exception as e:
+        logger.exception(
+            "Unable to remove previous wifi entry, unhandled exception: {}".format(
+                type(e)
+            )
+        )
+        raise
 
 
 # def get_wifi_access_points(

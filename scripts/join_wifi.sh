@@ -17,7 +17,7 @@ if [[ -z "$PLATFORM" ]]; then
 fi
 
 # Display status information
-printf "\nJoining wifi...\n"
+echo "Joining wifi..."
 
 # Set wifi credentials
 SSID=$1

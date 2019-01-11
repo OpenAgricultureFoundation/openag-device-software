@@ -41,6 +41,8 @@ def device_id() -> str:
             index = contents.find("=")
             device_id = contents[index + 1:].strip()
             return device_id
+    except FileNotFoundError:
+        return "UNKNOWN"
     except Exception as e:
         message = "Unable to get device id, unhandled exception: {}".format(type(e))
         logger.exception(message)
@@ -54,6 +56,8 @@ def verification_code() -> str:
         with open(VERIFICATION_CODE_PATH) as f:
             verification_code = f.read().strip()
             return verification_code
+    except FileNotFoundError:
+        return "INVALID"
     except Exception as e:
         message = "Unable to get verification code, unhandled exception: {}".format(
             type(e)

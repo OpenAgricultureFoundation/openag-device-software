@@ -43,8 +43,8 @@ class NetworkManager(manager.StateMachineManager):
         }
 
         # Initialize raspberry pi access point mode
-        if "raspberry-pi" in os.getenv("PLATFORM"):
-            self._disable_raspi_access_point()
+        # if "raspberry-pi" in os.getenv("PLATFORM"):
+        # self._disable_raspi_access_point()
 
         # Initialize state machine mode
         self.mode = modes.DISCONNECTED
@@ -336,8 +336,9 @@ class NetworkManager(manager.StateMachineManager):
                 message += "seconds of joining wifi"
                 self.logger.warning(message)
 
-                # Re-enable raspi access point
+                # Remove failed wifi entry and re-enable raspi access point
                 if "raspberry-pi" in os.getenv("PLATFORM"):
+                    network_utilities.remove_raspi_prev_wifi_entry()
                     self._enable_raspi_access_point()
 
                 return message, 202
@@ -391,7 +392,7 @@ class NetworkManager(manager.StateMachineManager):
             # Check for timeout
             if time.time() - start_time > timeout:
                 message = "Did not connect to internet within {} ".format(timeout)
-                message += "seconds of joining wifi, recheck if internet is connected"
+                message += "seconds of joining wifi"
                 self.logger.warning(message)
                 return message, 202
 
