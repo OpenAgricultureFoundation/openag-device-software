@@ -888,6 +888,31 @@ class NetworkViewSet(viewsets.ModelViewSet):
         self.logger.debug("Returning response: {}".format(response))
         return Response(response, status)
 
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def disableraspiaccesspoint(self, request: Request) -> Response:
+        """Disables raspberry pi access point."""
+        self.logger.debug("Disabling raspberry pi access point")
+
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
+        iot_manager = app_config.coordinator.iot
+
+        # Disable raspi access point
+        try:
+            message, status = network_manager.disable_raspi_access_point()
+        except Exception as e:
+            message = "Unable to disable raspi access point, unhandled exception: `{}`".format(
+                type(e)
+            )
+            self.logger.exception(message)
+            status = 500
+
+        # Build and return response
+        response = {"message": message}
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
+
 
 class IotViewSet(viewsets.ModelViewSet):
     """View set for iot interactions."""

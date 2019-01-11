@@ -22,3 +22,7 @@ cp hostapd /etc/default/hostapd
 
 # Configure dhcp server
 cp dnsmasq.conf /etc/dnsmasq.conf
+
+# Allow user to access wpa conf w/out being root
+sudo chown $USER:$USER /etc/wpa_supplicant/wpa_supplicant.conf
+

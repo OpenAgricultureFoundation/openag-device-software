@@ -1,6 +1,6 @@
 #! /bin/bash
 
-printf "\nForwarding ports...\n\n"
+echo "Forwarding ports..."
 
 # Check if we can connect outbound (and DNS works)
 ping -c 1 mit.edu > /dev/null 2>&1

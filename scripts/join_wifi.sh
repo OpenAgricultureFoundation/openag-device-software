@@ -2,23 +2,32 @@
 
 if [ $# -eq 0 ]; then
     echo "Please provide the following command line arguments:"
-    echo "  wifi_<...> (beaglebone) | <ssid> (raspi) name you want to connect to,"
-    echo "  password of the wifi you want to connect to."
+    echo "  wifi ssid (e.g. ElectricElephant)"
+    echo "  wifi password (e.g. mysecretpasword)"
     exit 1
 fi
 if [ $# -eq 1 ]; then
-    echo "Please provide the password for the wifi you want to connect to (or '' for no password."
+    echo "Please provide the password for the wifi you want to connect to (or '' for no password.)"
     exit 1
 fi
 
 # Make sure platform info is sourced
 if [[ -z "$PLATFORM" ]]; then
-	source get_platform_info.sh
+	source $OPENAG_BRAIN_ROOT/scripts/get_platform_info.sh
 fi
 
-printf "\nConnecting to wifi...\n\n"
+# Display status information
+printf "\nJoining wifi...\n"
 
-# Connect to wifi on a beaglebone
+# Set wifi credentials
+SSID=$1
+PASSWORD=$2
+
+# Display wifi credentials
+echo SSID: $SSID
+echo PASSWORD: $PASSWORD
+
+# Join wifi on a beaglebone
 if [[ $PLATFORM == "beaglebone-wireless" ]]; then
 	 
 	# Get the SSID for this service
@@ -42,32 +51,28 @@ if [[ $PLATFORM == "beaglebone-wireless" ]]; then
 	echo "Using sudo to configure your networking, please enter your password:"
 	sudo service connman restart
 
-# Connect to wifi on a raspberry pi
+# Join wifi on a raspberry pi
 elif [[ $PLATFORM == "raspberry-pi"* ]]; then
 
-	# Set wifi credentials
-	SSID=$1
-	PSK=$2
-
-	# Display wifi credentials
-	echo SSID: $SSID
-	echo PSK: $PSK
-
 	# Append network config to wpa supplicant config file
-	NETWORK_STRING=$'\n'"network={"$'\n\t'"ssid="$'"'"${SSID}"$'"'$'\n\t'"psk="$'"'"${PSK}"$'"'$'\n'"}"$'\n'
+	NETWORK_STRING=$'\n'"network={"$'\n\t'"ssid="$'"'"${SSID}"$'"'$'\n\t'"psk="$'"'"${PASSWORD}"$'"'$'\n'"}"$'\n'
 	sudo echo "${NETWORK_STRING}" >> /etc/wpa_supplicant/wpa_supplicant.conf
 
+	# Disable wifi access point
+	echo "Disabling access point..."
+	bash $OPENAG_BRAIN_ROOT/scripts/disable_raspi_access_point.sh
+	sleep 3
+
 	# Restart wifi connection
-	printf "\nRestarting wifi connection...\n\n"
+	echo "Restarting wifi connection..."
 	wpa_cli -i wlan0 reconfigure
 
 # Invalid platform
 else
 	echo "Wifi not supported for $PLATFORM"
-	return
+	exit 0
 fi
 
-# We must restart autossh, otherwise serveo.net won't let us back in.
-printf "\nRestarting autossh...\n\n"
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-bash $DIR/forward_ports.sh &
+# Restart port forwarding
+echo "Restarting port forwarding..."
+bash $OPENAG_BRAIN_ROOT/scripts/forward_ports.sh
