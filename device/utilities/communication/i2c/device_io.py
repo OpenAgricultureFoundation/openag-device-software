@@ -1,10 +1,13 @@
 # Import standard python modules
-import fcntl, io
+import fcntl, io, os
 from typing import Optional, Type, Callable, cast, Any, TypeVar
 from types import TracebackType
 
 # Import device utilities
 from device.utilities.logger import Logger
+
+# Import usb-i2c driver
+from pyftdi.i2c import I2cController
 
 # Import i2c package elements
 from device.utilities.communication.i2c.exceptions import (
@@ -18,7 +21,6 @@ from device.utilities.communication.i2c.utilities import (
     c_uint8,
     pointer,
 )
-
 
 # Initialize I2C communication options
 I2C_SLAVE = 0x0703  # Use this slave address
@@ -84,8 +86,12 @@ class DeviceIO(object):
     def open(self) -> None:
         """Opens io stream."""
         try:
-            device_name = "/dev/i2c-{}".format(self.bus)
-            self.io = io.open(device_name, "r+b", buffering=0)
+            if os.getenv("IS_I2C_ENABLED") == "true":
+                device_name = "/dev/i2c-{}".format(self.bus)
+                self.io = io.open(device_name, "r+b", buffering=0)
+            elif os.getenv("IS_USB_I2C_ENABLED") == "true":
+                self.io = I2cController()
+                self.io.configure("ftdi://ftdi:232h/1")
         except PermissionError as e:
             message = "Unable to open device io: {}".format(device_name)
             raise InitError(message, logger=self.logger) from e
@@ -93,7 +99,10 @@ class DeviceIO(object):
     def close(self) -> None:
         """Closes io stream."""
         try:
-            self.io.close()
+            if os.getenv("IS_I2C_ENABLED") == "true":
+                self.io.close()
+            elif os.getenv("IS_USB_I2C_ENABLED") == "true":
+                self.io.terminate()
         except:
             self.logger.exception("Unable to close")
 
@@ -101,8 +110,12 @@ class DeviceIO(object):
     def write(self, address: int, bytes_: bytes) -> None:
         """ Writes bytes to IO stream. """
         try:
-            fcntl.ioctl(self.io, I2C_SLAVE, address)
-            self.io.write(bytes_)
+            if os.getenv("IS_I2C_ENABLED") == "true":
+                fcntl.ioctl(self.io, I2C_SLAVE, address)
+                self.io.write(bytes_)
+            elif os.getenv("IS_USB_I2C_ENABLED") == "true":
+                device = i2c_controller.get_port(address)
+                device.write(bytes_)
         except IOError as e:
             message = "Unable to write: {}".format(bytes_)
             raise WriteError(message) from e
@@ -111,8 +124,12 @@ class DeviceIO(object):
     def read(self, address: int, num_bytes: int) -> bytes:
         """Reads bytes from io stream."""
         try:
-            fcntl.ioctl(self.io, I2C_SLAVE, address)
-            return bytes(self.io.read(num_bytes))
+            if os.getenv("IS_I2C_ENABLED") == "true":
+                fcntl.ioctl(self.io, I2C_SLAVE, address)
+                return bytes(self.io.read(num_bytes))
+            elif os.getenv("IS_USB_I2C_ENABLED") == "true":
+                device = i2c_controller.get_port(address)
+                return bytes(device.read(readlen=num_bytes))
         except IOError as e:
             message = "Unable to read {} bytes".format(num_bytes)
             raise ReadError(message) from e
@@ -121,19 +138,27 @@ class DeviceIO(object):
     def read_register(self, address: int, register: int) -> int:
         """Reads register from io stream."""
         try:
-            reg = c_uint8(register)
-            result = c_uint8()
-            request = make_i2c_rdwr_data(  # type: ignore
-                [
-                    (address, 0, 1, pointer(reg)),  # write cmd register
-                    (address, I2C_M_RD, 1, pointer(result)),  # read 1 byte as result
-                ]
-            )
-            fcntl.ioctl(self.io.fileno(), I2C_RDWR, request)
-            byte_ = int(result.value)
-            message = "Read register 0x{:02X}, value: 0x{:02X}".format(register, byte_)
-            self.logger.debug(message)
-            return byte_
+            if os.getenv("IS_I2C_ENABLED") == "true":
+                reg = c_uint8(register)
+                result = c_uint8()
+                request = make_i2c_rdwr_data(  # type: ignore
+                    [
+                        (address, 0, 1, pointer(reg)),  # write cmd register
+                        (
+                            address, I2C_M_RD, 1, pointer(result)
+                        ),  # read 1 byte as result
+                    ]
+                )
+                fcntl.ioctl(self.io.fileno(), I2C_RDWR, request)
+                byte_ = int(result.value)
+                message = "Read register 0x{:02X}, value: 0x{:02X}".format(
+                    register, byte_
+                )
+                self.logger.debug(message)
+                return byte_
+            elif os.getenv("IS_USB_I2C_ENABLED") == "true":
+                device = i2c_controller.get_port(address)
+                return bytes(device.read_from(register))
         except IOError as e:
             message = "Unable to read register 0x{:02}".format(register)
             raise ReadError(message) from e
@@ -153,4 +178,12 @@ class DeviceIO(object):
             raise WriteError(message)
 
         # Write to register
-        self.write(address, bytes([register, value]))
+        try:
+            if os.getenv("IS_I2C_ENABLED") == "true":
+                self.write(address, bytes([register, value]))
+            elif os.getenv("IS_USB_I2C_ENABLED") == "true":
+                device = i2c_controller.get_port(address)
+                device.write_to(register, [value])
+        except IOError as e:
+            message = "Unable to write register 0x{:02}".format(register)
+            raise WriteError(message) from e
