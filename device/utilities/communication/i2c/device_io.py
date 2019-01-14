@@ -114,7 +114,7 @@ class DeviceIO(object):
                 fcntl.ioctl(self.io, I2C_SLAVE, address)
                 self.io.write(bytes_)
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = i2c_controller.get_port(address)
+                device = self.io.get_port(address)
                 device.write(bytes_)
         except IOError as e:
             message = "Unable to write: {}".format(bytes_)
@@ -128,7 +128,7 @@ class DeviceIO(object):
                 fcntl.ioctl(self.io, I2C_SLAVE, address)
                 return bytes(self.io.read(num_bytes))
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = i2c_controller.get_port(address)
+                device = self.io.get_port(address)
                 return bytes(device.read(readlen=num_bytes))
         except IOError as e:
             message = "Unable to read {} bytes".format(num_bytes)
@@ -157,7 +157,7 @@ class DeviceIO(object):
                 self.logger.debug(message)
                 return byte_
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = i2c_controller.get_port(address)
+                device = self.io.get_port(address)
                 return bytes(device.read_from(register))
         except IOError as e:
             message = "Unable to read register 0x{:02}".format(register)
@@ -182,7 +182,7 @@ class DeviceIO(object):
             if os.getenv("IS_I2C_ENABLED") == "true":
                 self.write(address, bytes([register, value]))
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = i2c_controller.get_port(address)
+                device = self.io.get_port(address)
                 device.write_to(register, [value])
         except IOError as e:
             message = "Unable to write register 0x{:02}".format(register)
