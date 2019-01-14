@@ -8,6 +8,13 @@ cd $TOPDIR
 # Initialize platform info
 bash scripts/get_platform_info.sh
 
+# Instead of requiring django to run as root and host app on port 80
+# Host app on port 8000 and forward port 80 to port 8000
+# On raspberry pi, openssl does not work properly if ran as root
+# So we need  to be able to run django as non-root user
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
+sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+
 # Set linux specific config
 if [[ "$OSTYPE" == "linux"* ]]; then
 
@@ -24,12 +31,6 @@ fi
 # For upgrade to version 1.0.4 we need to remove old symlinks
 sudo rm -f $TOPDIR/app/staticfiles/images
 sudo rm -f $TOPDIR/app/static/stored_images
-
-# Instead of requiring django to run as root and host app on port 80
-# Host app on port 8000 and forward port 80 to port 8000
-# On raspberry pi, openssl does not work properly if ran as root
-# So we need  to be able to run django as non-root user
-sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
 
 # Install any new python modules
 source venv/bin/activate

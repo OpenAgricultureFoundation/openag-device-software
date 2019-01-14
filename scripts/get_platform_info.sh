@@ -20,7 +20,7 @@ if [ -f /etc/dogtag ]; then
       if [[ $WLAN == *"wlan0: flags"* ]]; then
       	PLATFORM=beaglebone-black-wireless
         IS_WIFI_ENABLED=true
-        WIFI_ACCESS_POINT=BeagleBone-`cat /tmp/hostapd-wl18xx.conf | grep "^ssid" | cut -d '=' -f 2 | awk '{print toupper($0)}'`
+        WIFI_ACCESS_POINT=`cat /tmp/hostapd-wl18xx.conf | grep "^ssid" | cut -d '=' -f 2`
       else
       	PLATFORM=beaglebone-black-wired
         IS_WIFI_ENABLED=false

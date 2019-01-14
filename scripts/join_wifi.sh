@@ -1,5 +1,17 @@
-#!/bin/bash
+#! /bin/bash
 
+# Check virtual environment is activated
+if [ -z "${VIRTUAL_ENV}" ] ; then
+    echo "Please activate your virtual environment then re-run script"
+    exit 0
+fi
+
+# Check platform info is sourced
+if [[ -z "$PLATFORM" ]]; then
+	source $OPENAG_BRAIN_ROOT/scripts/get_platform_info.sh
+fi
+
+# Get command line args
 if [ $# -eq 0 ]; then
     echo "Please provide the following command line arguments:"
     echo "  wifi ssid (e.g. ElectricElephant)"
@@ -11,10 +23,6 @@ if [ $# -eq 1 ]; then
     exit 1
 fi
 
-# Make sure platform info is sourced
-if [[ -z "$PLATFORM" ]]; then
-	source $OPENAG_BRAIN_ROOT/scripts/get_platform_info.sh
-fi
 
 # Display status information
 echo "Joining wifi..."
@@ -28,28 +36,19 @@ echo SSID: $SSID
 echo PASSWORD: $PASSWORD
 
 # Join wifi on a beaglebone
-if [[ $PLATFORM == "beaglebone-wireless" ]]; then
-	 
-	# Get the SSID for this service
-	SSID=`connmanctl services $1 | grep "Name =" | cut --delimiter=' ' --fields 5-10`
-	SSIDLEN=`echo -n $SSID | wc -m`
-	if [ $SSIDLEN -eq 0 ]; then
-	    echo "Can't connect to a wifi with a hidden SSID, sorry.  Use connmanctl"
-	    exit 1
-	fi
+if [[ $PLATFORM == "beaglebone-black-wireless" ]]; then
 	 
 	touch "/var/lib/connman/$SSID.config.tmp"
 	chmod 777 "/var/lib/connman/$SSID.config.tmp"
 	echo "[service_$1]
 	Type=wifi
 	Name=$SSID
-	Passphrase=$2
+	Passphrase=$PASSWORD
 	"> "/var/lib/connman/$SSID.config.tmp"
 	mv "/var/lib/connman/$SSID.config.tmp" "/var/lib/connman/$SSID.config"
-	sleep 30
-	 
-	echo "Using sudo to configure your networking, please enter your password:"
+	sleep 3
 	sudo service connman restart
+	sleep 3
 
 # Join wifi on a raspberry pi
 elif [[ $PLATFORM == "raspberry-pi"* ]]; then
@@ -66,10 +65,11 @@ elif [[ $PLATFORM == "raspberry-pi"* ]]; then
 	# Restart wifi connection
 	echo "Restarting wifi connection..."
 	wpa_cli -i wlan0 reconfigure
+	sleep 3
 
 # Invalid platform
 else
-	echo "Wifi not supported for $PLATFORM"
+	echo "Unable to join wifi, wifi not supported for $PLATFORM"
 	exit 0
 fi
 

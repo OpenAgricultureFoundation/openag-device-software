@@ -53,6 +53,8 @@ if [ -f $DIR/data/config/develop ]; then
     export OPENAG_LOG_LEVEL=DEBUG
 fi
 
+# Setup port forwarding
+sudo iptables-restore < /etc/iptables.ipv4.nat
 
 # Initialize command line arg default values
 NO_DEVICE="false"

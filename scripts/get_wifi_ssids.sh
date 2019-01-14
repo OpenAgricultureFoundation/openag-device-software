@@ -6,12 +6,15 @@ if [[ -z "$PLATFORM" ]]; then
 fi
 
 # Get wifi ssids for beaglebone wireless
-if [[ $PLATFORM == "beaglebone-wireless" ]]; then
+if [[ $PLATFORM == "beaglebone-black-wireless" ]]; then
 	connmanctl tether wifi off > /dev/null 2>&1
 	connmanctl enable wifi > /dev/null 2>&1
 	connmanctl scan wifi > /dev/null 2>&1
 	sleep 2
-	connmanctl services
+	# connmanctl services
+	connmanctl services | sed -e 's/wifi_[^ ]*//' -e 's/ *//' | grep '\w\w*'
+
+
 
 # Get wifi ssids for raspberry pi
 elif [[ $PLATFORM == "raspberry-pi"* ]]; then
