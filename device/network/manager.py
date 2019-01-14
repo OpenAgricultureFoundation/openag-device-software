@@ -43,8 +43,8 @@ class NetworkManager(manager.StateMachineManager):
         }
 
         # Initialize raspberry pi access point mode
-        # if "raspberry-pi" in os.getenv("PLATFORM"):
-        # self._disable_raspi_access_point()
+        if "raspberry-pi" in os.getenv("PLATFORM"):
+            self._disable_raspi_access_point()
 
         # Initialize state machine mode
         self.mode = modes.DISCONNECTED

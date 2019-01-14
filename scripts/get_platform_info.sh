@@ -4,10 +4,12 @@
 # Then getting environment variables e.g. in python: os.getenv("VAR_NAME")
 
 # Initialize platform info
+PLATFORM=unknown
 SERIAL_NUMBER=unknown
 WIFI_ACCESS_POINT=unknown
 IS_WIFI_ENABLED=false
 IS_I2C_ENABLED=false
+IS_USB_I2C_ENABLED=false
 DEFAULT_I2C_BUS=none
 
 # Check for beaglebone black
@@ -30,6 +32,7 @@ if [ -f /etc/dogtag ]; then
       SERIAL_NUMBER=`sudo hexdump -e '8/1 "%c"' /sys/bus/i2c/devices/0-0050/eeprom -s 16 -n 12`
       IS_I2C_ENABLED=true
       DEFAULT_I2C_BUS=2
+      IS_USB_I2C_ENABLED=false
 
     fi
 fi
@@ -51,6 +54,7 @@ if [[ $PLATFORM == *"raspberry-pi"* ]]; then
   IS_WIFI_ENABLED=true
   IS_I2C_ENABLED=true
   DEFAULT_I2C_BUS=1
+  IS_USB_I2C_ENABLED=false
 fi
 
 
@@ -63,6 +67,14 @@ if [[ $PLATFORM == "unknown" && $OSTYPE == "linux"* ]]; then
   IS_WIFI_ENABLED=true
   SERIAL_NUMBER=`sudo dmidecode -t system | grep Serial | cut -d ' ' -f 3`
   IS_I2C_ENABLED=false
+
+  # Check if platform has a usb-to-i2c adapter
+  if [[ `lsusb` == *"FT232"* ]]; then
+    IS_USB_I2C_ENABLED=true
+  else
+    IS_USB_I2C_ENABLED=false
+  fi
+
 fi
 
 # Check if platform is an osx machine
@@ -84,9 +96,10 @@ fi
 export PLATFORM=$PLATFORM
 export SERIAL_NUMBER=$SERIAL_NUMBER
 export WIFI_ACCESS_POINT=$WIFI_ACCESS_POINT
-export REMOTE_DEVICE_UI_URL=$REMOTE_DEVICE_UI_URL
+export REMOTE_DEVICE_UI_URL=$REMOTE_DEVICE_UI_URIS_USB_I2C_ENABLEDL
 export IS_WIFI_ENABLED=$IS_WIFI_ENABLED
 export IS_I2C_ENABLED=$IS_I2C_ENABLED
+export IS_USB_I2C_ENABLED=$IS_USB_I2C_ENABLED
 export DEFAULT_I2C_BUS=$DEFAULT_I2C_BUS
 
 # Show platform information
@@ -97,5 +110,6 @@ echo WIFI_ACCESS_POINT: $WIFI_ACCESS_POINT
 echo REMOTE_DEVICE_UI_URL: $REMOTE_DEVICE_UI_URL
 echo IS_WIFI_ENABLED: $IS_WIFI_ENABLED
 echo IS_I2C_ENABLED: $IS_I2C_ENABLED
+echo IS_USB_I2C_ENABLED: $IS_USB_I2C_ENABLED
 echo DEFAULT_I2C_BUS: $DEFAULT_I2C_BUS
 echo ""
