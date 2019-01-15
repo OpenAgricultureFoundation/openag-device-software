@@ -173,20 +173,21 @@ def delete_wifis() -> None:
         raise SystemError(message)
 
     # Disconnect from active wifi access points
-    try:
-        wifi_access_points = get_wifi_access_points(
-            exclude_hidden=False, exclude_beaglebones=False
-        )
-        for wifi_access_point in wifi_access_points:
-            if wifi_access_point["connected"]:
-                psk = wifi_access_point["psk"]
-                command = ["connmanctl", "disconnect", psk]
-                subprocess.run(command)
-    except Exception as e:
-        message = "Unable to delete wifis, unable to disconnect from active "
-        message += "wifi access points, unhandled exception: {}".format(type(e))
-        logger.exception(message)
-        raise
+    # TODO: How important is this? Will this break beaglebones...
+    # try:
+    #     wifi_access_points = get_wifi_access_points(
+    #         exclude_hidden=False, exclude_beaglebones=False
+    #     )
+    #     for wifi_access_point in wifi_access_points:
+    #         if wifi_access_point["connected"]:
+    #             psk = wifi_access_point["psk"]
+    #             command = ["connmanctl", "disconnect", psk]
+    #             subprocess.run(command)
+    # except Exception as e:
+    #     message = "Unable to delete wifis, unable to disconnect from active "
+    #     message += "wifi access points, unhandled exception: {}".format(type(e))
+    #     logger.exception(message)
+    #     raise
 
     # Remove all wifi configs
     try:
@@ -204,7 +205,7 @@ def enable_raspi_access_point() -> None:
     logger.debug("Enabling raspberry pi access point")
 
     # Check system is a raspberry pi
-    if "raspberry-pi" not in os.getenv("PLATFORM"):
+    if "raspberry-pi" not in str(os.getenv("PLATFORM")):
         message = "Unable to enable raspberry pi access point, platform not a raspberry pi"
         logger.error(message)
         raise SystemError(message)
@@ -233,7 +234,7 @@ def disable_raspi_access_point() -> None:
     logger.debug("Disabling raspberry pi access point.")
 
     # Check system is a raspberry pi
-    if "raspberry-pi" not in os.getenv("PLATFORM"):
+    if "raspberry-pi" not in str(os.getenv("PLATFORM")):
         message = "Unable to disable raspberry pi access point, platform not a raspberry pi"
         logger.error(message)
         raise SystemError(message)
@@ -262,7 +263,7 @@ def remove_raspi_prev_wifi_entry() -> None:
     logger.debug("Removing previous wifi entry")
 
     # Check system is a raspberry pi
-    if "raspberry-pi" not in os.getenv("PLATFORM"):
+    if "raspberry-pi" not in str(os.getenv("PLATFORM")):
         message = "Unable to remove previous wifi entry, platform not a raspberry pi"
         logger.error(message)
         raise SystemError(message)

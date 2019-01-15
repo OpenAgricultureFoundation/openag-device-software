@@ -1,7 +1,7 @@
 {
     "peripherals": [
         {
-            "name": "AtlasCo2-Reservoir",
+            "name": "AtlasCo2-Top",
             "type": "AtlasCo2",
             "uuid": "4716f6ef-2231-4a6c-944d-6fc92fb310cd",
             "parameters": {

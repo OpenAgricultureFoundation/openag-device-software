@@ -32,4 +32,4 @@ def test_read_co2() -> None:
         mux_simulator=True,
     )
     co2 = driver.read_co2()
-    assert co2 == 22.97
+    assert co2 == 490.0

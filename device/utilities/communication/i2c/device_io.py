@@ -86,7 +86,10 @@ class DeviceIO(object):
                 self.io = io.open(device_name, "r+b", buffering=0)
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 self.io = I2cController()
-                self.io.configure("ftdi://ftdi:232h/1")
+                self.io.configure("ftdi://ftdi:232h/1")  # type: ignore
+            else:
+                message = "Platform does not support i2c communication"
+                raise InitError(message)
         except (PermissionError, I2cIOError, I2cNackError) as e:
             message = "Unable to open device io: {}".format(device_name)
             raise InitError(message, logger=self.logger) from e
@@ -97,7 +100,10 @@ class DeviceIO(object):
             if os.getenv("IS_I2C_ENABLED") == "true":
                 self.io.close()
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                self.io.terminate()
+                self.io.terminate()  # type: ignore
+            else:
+                message = "Platform does not support i2c communication"
+                raise InitError(message)
         except:
             self.logger.exception("Unable to close")
 
@@ -109,8 +115,11 @@ class DeviceIO(object):
                 fcntl.ioctl(self.io, I2C_SLAVE, address)
                 self.io.write(bytes_)
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = self.io.get_port(address)
+                device = self.io.get_port(address)  # type: ignore
                 device.write(bytes_)
+            else:
+                message = "Platform does not support i2c communication"
+                raise WriteError(message)
         except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to write: {}".format(bytes_)
             raise WriteError(message) from e
@@ -123,9 +132,12 @@ class DeviceIO(object):
                 fcntl.ioctl(self.io, I2C_SLAVE, address)
                 return bytes(self.io.read(num_bytes))
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = self.io.get_port(address)
+                device = self.io.get_port(address)  # type: ignore
                 bytes_ = device.read(readlen=num_bytes)
                 return bytes(bytes_)
+            else:
+                message = "Platform does not support i2c communication"
+                raise ReadError(message)
         except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to read {} bytes".format(num_bytes)
             raise ReadError(message) from e
@@ -153,10 +165,13 @@ class DeviceIO(object):
                 self.logger.debug(message)
                 return byte_
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = self.io.get_port(address)
+                device = self.io.get_port(address)  # type: ignore
                 byte_raw = device.read_from(register, readlen=1)
                 byte = int(byte_raw[0])
                 return byte
+            else:
+                message = "Platform does not support i2c communication"
+                raise ReadError(message)
         except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to read register 0x{:02}".format(register)
             raise ReadError(message) from e
@@ -180,8 +195,11 @@ class DeviceIO(object):
             if os.getenv("IS_I2C_ENABLED") == "true":
                 self.write(address, bytes([register, value]))
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
-                device = self.io.get_port(address)
+                device = self.io.get_port(address)  # type: ignore
                 device.write_to(register, [value])
+            else:
+                message = "Platform does not support i2c communication"
+                raise WriteError(message)
         except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to write register 0x{:02}".format(register)
             raise WriteError(message) from e

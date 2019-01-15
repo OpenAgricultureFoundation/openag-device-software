@@ -43,7 +43,7 @@ class NetworkManager(manager.StateMachineManager):
         }
 
         # Initialize raspberry pi access point mode
-        if "raspberry-pi" in os.getenv("PLATFORM"):
+        if "raspberry-pi" in str(os.getenv("PLATFORM")):
             self._disable_raspi_access_point()
 
         # Initialize state machine mode
@@ -105,12 +105,12 @@ class NetworkManager(manager.StateMachineManager):
             self.state.network["ip_address"] = value
 
     @property
-    def access_point_enabled(self) -> str:
+    def access_point_enabled(self) -> bool:
         """Gets value."""
         return self.state.network.get("access_point_enabled")  # type: ignore
 
     @access_point_enabled.setter
-    def access_point_enabled(self, value: str) -> None:
+    def access_point_enabled(self, value: bool) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.network["access_point_enabled"] = value
@@ -190,7 +190,7 @@ class NetworkManager(manager.StateMachineManager):
             # connected to the iot cloud. The device can only connect to the iot cloud
             # once it is associated with a user account (which happens by entering the
             # iot access code in the cloud ui or clicking on the iot access link)
-            if "raspberry-pi" in os.getenv("PLATFORM"):
+            if "raspberry-pi" in str(os.getenv("PLATFORM")):
                 if self.iot_is_registered and not self.iot_is_connected:
                     message = "Detected raspberry pi successful initial network connection event"
                     self.logger.info(message)
@@ -236,7 +236,7 @@ class NetworkManager(manager.StateMachineManager):
 
             # Check if raspi access point is disabled but device not registered (and network
             # disconnected)
-            if "raspberry-pi" in os.getenv("PLATFORM"):
+            if "raspberry-pi" in str(os.getenv("PLATFORM")):
                 if not self.iot_is_registered and not self.access_point_enabled:
 
                     # Re-enable access point
@@ -247,7 +247,7 @@ class NetworkManager(manager.StateMachineManager):
 
         # If completing raspi registration, give the iot manager enough time to
         # establish a new connection
-        if "raspberry-pi" in os.getenv("PLATFORM") and self.iot_is_registered:
+        if "raspberry-pi" in str(os.getenv("PLATFORM")) and self.iot_is_registered:
 
             # Initialize timing variables
             timeout = 120  # seconds
@@ -337,7 +337,7 @@ class NetworkManager(manager.StateMachineManager):
                 self.logger.warning(message)
 
                 # Remove failed wifi entry and re-enable raspi access point
-                if "raspberry-pi" in os.getenv("PLATFORM"):
+                if "raspberry-pi" in str(os.getenv("PLATFORM")):
                     network_utilities.remove_raspi_prev_wifi_entry()
                     self._enable_raspi_access_point()
 
