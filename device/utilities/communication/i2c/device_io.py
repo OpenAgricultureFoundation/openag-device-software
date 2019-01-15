@@ -48,12 +48,7 @@ def manage_io(func: F) -> F:
 
 
 class DeviceIO(object):
-    """Manages byte-level device IO.
-
-    Attributes:
-        name -- name of device
-        bus -- device i2c bus
-    """
+    """Manages byte-level device IO."""
 
     def __init__(self, name: str, bus: int) -> None:
 
@@ -159,8 +154,9 @@ class DeviceIO(object):
                 return byte_
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 device = self.io.get_port(address)
-                bytes_ = device.read_from(register)
-                return bytes(bytes_)
+                byte_raw = device.read_from(register, readlen=1)
+                byte = int(byte_raw[0])
+                return byte
         except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to read register 0x{:02}".format(register)
             raise ReadError(message) from e
