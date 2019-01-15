@@ -7,7 +7,7 @@ from types import TracebackType
 from device.utilities.logger import Logger
 
 # Import usb-i2c driver
-from pyftdi.i2c import I2cController
+from pyftdi.i2c import I2cController, I2cIOError, I2cNackError
 
 # Import i2c package elements
 from device.utilities.communication.i2c.exceptions import (
@@ -92,7 +92,7 @@ class DeviceIO(object):
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 self.io = I2cController()
                 self.io.configure("ftdi://ftdi:232h/1")
-        except PermissionError as e:
+        except (PermissionError, I2cIOError, I2cNackError) as e:
             message = "Unable to open device io: {}".format(device_name)
             raise InitError(message, logger=self.logger) from e
 
@@ -116,7 +116,7 @@ class DeviceIO(object):
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 device = self.io.get_port(address)
                 device.write(bytes_)
-        except IOError as e:
+        except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to write: {}".format(bytes_)
             raise WriteError(message) from e
 
@@ -129,8 +129,9 @@ class DeviceIO(object):
                 return bytes(self.io.read(num_bytes))
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 device = self.io.get_port(address)
-                return bytes(device.read(readlen=num_bytes))
-        except IOError as e:
+                bytes_ = device.read(readlen=num_bytes)
+                return bytes(bytes_)
+        except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to read {} bytes".format(num_bytes)
             raise ReadError(message) from e
 
@@ -158,8 +159,9 @@ class DeviceIO(object):
                 return byte_
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 device = self.io.get_port(address)
-                return bytes(device.read_from(register))
-        except IOError as e:
+                bytes_ = device.read_from(register)
+                return bytes(bytes_)
+        except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to read register 0x{:02}".format(register)
             raise ReadError(message) from e
 
@@ -184,6 +186,6 @@ class DeviceIO(object):
             elif os.getenv("IS_USB_I2C_ENABLED") == "true":
                 device = self.io.get_port(address)
                 device.write_to(register, [value])
-        except IOError as e:
+        except (IOError, I2cIOError, I2cNackError) as e:
             message = "Unable to write register 0x{:02}".format(register)
             raise WriteError(message) from e

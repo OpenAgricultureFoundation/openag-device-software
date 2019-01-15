@@ -14,6 +14,16 @@ from device.utilities.accessors import get_peripheral_config
 from device.peripherals.classes.atlas.scripts.run_driver import DriverRunner as AtlasDriverRunner
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 
+# Ensure virtual environment is activated
+if os.getenv("VIRTUAL_ENV") == None:
+    print("Please activate your virtual environment then re-run script")
+    exit(0)
+
+# Ensure platform info is sourced
+if os.getenv("PLATFORM") == None:
+    print("Please source your platform info then re-run script")
+    exit(0)
+
 
 class DriverRunner(AtlasDriverRunner):
     """Runs driver."""

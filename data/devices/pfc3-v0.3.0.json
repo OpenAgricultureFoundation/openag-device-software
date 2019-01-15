@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "PFC3 v0.3.0 Soil",
+    "name": "PFC3 v0.3.0",
     "uuid": "e762daf6-298c-408c-8b5d-f3ed14b01710",
     "peripherals": [
         {

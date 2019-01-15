@@ -73,6 +73,7 @@
         dataType: "json",
         success: function(data) {
           var state = data[0];
+          console.log("state = ", state); 
           var peripheralStates = JSON.parse(state["peripherals"]);
           resolve(peripheralStates);
         },
@@ -143,13 +144,14 @@
       console.log("Creating peripherals dict");
 
       // TODO: add error handling
+      console.log("PeripheralData = ", peripheralData)
 
       // Initialize peripherals dict
       peripheralsDict = []
 
       // Loop through each active peripheral
       for (var peripheralName in peripheralData.states) {
-        // console.log(peripheralName, peripheralData.states[peripheralName]);
+        console.log(peripheralName, peripheralData.states[peripheralName]);
         
         // Get reported sensor values
         reportedSensors = [];
