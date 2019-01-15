@@ -2,7 +2,7 @@
 import os, sys, threading
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import run peripheral parent class
 from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase

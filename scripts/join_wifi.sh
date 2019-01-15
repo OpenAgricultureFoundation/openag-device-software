@@ -1,14 +1,14 @@
 #! /bin/bash
 
-# Check virtual environment is activated
-if [ -z "${VIRTUAL_ENV}" ] ; then
+# Ensure virtual environment is activated
+if [[ -z "${VIRTUAL_ENV}" ]] ; then
     echo "Please activate your virtual environment then re-run script"
     exit 0
 fi
 
-# Check platform info is sourced
+# Ensure platform info is sourced
 if [[ -z "$PLATFORM" ]]; then
-	source $OPENAG_BRAIN_ROOT/scripts/get_platform_info.sh
+	source $PROJECT_ROOT/scripts/get_platform_info.sh > /dev/null 2>&1
 fi
 
 # Get command line args
@@ -22,7 +22,6 @@ if [ $# -eq 1 ]; then
     echo "Please provide the password for the wifi you want to connect to (or '' for no password.)"
     exit 1
 fi
-
 
 # Display status information
 echo "Joining wifi..."
@@ -59,7 +58,7 @@ elif [[ $PLATFORM == "raspberry-pi"* ]]; then
 
 	# Disable wifi access point
 	echo "Disabling access point..."
-	bash $OPENAG_BRAIN_ROOT/scripts/disable_raspi_access_point.sh
+	bash $PROJECT_ROOT/scripts/disable_raspi_access_point.sh
 	sleep 3
 
 	# Restart wifi connection
@@ -75,4 +74,4 @@ fi
 
 # Restart port forwarding
 echo "Restarting port forwarding..."
-bash $OPENAG_BRAIN_ROOT/scripts/forward_ports.sh
+bash $PROJECT_ROOT/scripts/forward_ports.sh

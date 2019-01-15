@@ -8,7 +8,7 @@ fi
 
 # Check platform info is sourced
 if [[ -z "$PLATFORM" ]]; then
-	source $OPENAG_BRAIN_ROOT/scripts/get_platform_info.sh
+	source $PROJECT_ROOT/scripts/get_platform_info.sh
 fi
 
 # Delete all wifi connections

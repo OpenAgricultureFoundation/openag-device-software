@@ -3,7 +3,7 @@ import os, sys, pytest, time
 import paho.mqtt.client as mqtt
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import device utilities
 from device.utilities.state.main import State

@@ -2,7 +2,7 @@
 import os, sys, pytest, json, numpy
 
 # Set system path
-root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+root_dir = os.environ["PROJECT_ROOT"]
 sys.path.append(root_dir)
 os.chdir(root_dir)
 

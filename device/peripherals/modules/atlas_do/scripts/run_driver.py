@@ -2,7 +2,7 @@
 import os, sys, logging
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import typing modules
 from typing import Any

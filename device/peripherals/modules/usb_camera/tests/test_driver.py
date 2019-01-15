@@ -5,7 +5,7 @@ import os, sys, pytest, glob, threading
 from typing import List
 
 # Set system path and directory
-root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+root_dir = os.environ["PROJECT_ROOT"]
 sys.path.append(root_dir)
 os.chdir(root_dir)
 

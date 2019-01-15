@@ -68,8 +68,8 @@ echo "from django.contrib.auth.models import User; User.objects.create_superuser
 # openssl s_client -connect mqtt.googleapis.com:443
 
 # Check if brain root env is exported in venv activate, if not add it
-if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
-  echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
+if ! grep "PROJECT_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
+  echo "export PROJECT_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
 fi
 
 

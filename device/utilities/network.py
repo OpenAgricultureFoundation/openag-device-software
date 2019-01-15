@@ -5,7 +5,7 @@ import os, sys, subprocess, socket, urllib.request, re
 from typing import List, Dict, Union
 
 # REMOVE ME!!
-ROOT_DIR = os.environ["OPENAG_BRAIN_ROOT"]
+ROOT_DIR = os.environ["PROJECT_ROOT"]
 sys.path.append(ROOT_DIR)
 os.chdir(ROOT_DIR)
 

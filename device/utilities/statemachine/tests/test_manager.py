@@ -2,7 +2,7 @@
 import os, sys, pytest, logging, time
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import state machine elements
 from device.utilities.statemachine.manager import StateMachineManager

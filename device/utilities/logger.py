@@ -80,7 +80,7 @@ class PeripheralFileHandler(logging.Handler):
         super().__init__(*args, **kwargs)
 
         # Get project root dir
-        ROOT_DIR = os.environ.get("OPENAG_BRAIN_ROOT")
+        ROOT_DIR = os.environ.get("PROJECT_ROOT")
         if ROOT_DIR != None:
             ROOT_DIR += "/"  # type: ignore
         else:

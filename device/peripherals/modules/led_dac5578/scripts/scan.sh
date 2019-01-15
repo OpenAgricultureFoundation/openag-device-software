@@ -1,1 +1,0 @@
-i2cdetect -y -r 2

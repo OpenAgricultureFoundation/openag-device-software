@@ -1,5 +1,5 @@
 # Import standard python modules
-import os
+import os, time
 
 # Import usb-to-i2c communication modules
 from pyftdi.i2c import I2cController
@@ -22,14 +22,21 @@ if os.getenv("IS_USB_I2C_ENABLED") != "true":
 # Initialize i2c instance
 i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
-i2c = i2c_controller.get_port(0x15)
+i2c = i2c_controller.get_port(0x40)
 
-# Get co2 data bytes
-i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01])  # status
-bytes_ = i2c.read(4)
+# Trigger temp measurement (no hold master)
+i2c.write([0xf3])
 
-# Parse co2 data bytes
-_, _, msb, lsb = bytes_
-co2 = float(msb * 256 + lsb)
-co2 = round(co2, 0)
-print("CO2: {} ppm".format(co2))
+# Wait for sensor to process
+time.sleep(0.1)
+
+# Get raw bytes
+msb, lsb, checksum = i2c.read(3)
+
+# Compute temperature
+raw = msb * 256 + lsb
+temperature = float(-46.85 + ((raw * 175.72) / 65536.0))
+temperature = float("{:.0f}".format(temperature))
+
+# Display temperature
+print("Temperature: {} C".format(temperature))
