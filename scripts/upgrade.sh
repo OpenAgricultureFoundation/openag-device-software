@@ -5,6 +5,17 @@ TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOPDIR+=/..
 cd $TOPDIR
 
+# Initialize platform info
+bash scripts/get_platform_info.sh
+
+# Instead of requiring django to run as root and host app on port 80
+# Host app on port 8000 and forward port 80 to port 8000
+# On raspberry pi, openssl does not work properly if ran as root
+# So we need  to be able to run django as non-root user
+sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
+sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+
+# Set linux specific config
 if [[ "$OSTYPE" == "linux"* ]]; then
 
   # If the brain is running from /etc/rc.local, stop it.
@@ -13,7 +24,8 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
   # Fix up some directories and files that may be owned by root
   sudo chmod -f -R 777 data/logs/ data/images/ 
-  sudo chown -R debian:debian .
+  sudo chown -R $USER:$USER .
+
 fi
 
 # For upgrade to version 1.0.4 we need to remove old symlinks
@@ -56,8 +68,8 @@ echo "from django.contrib.auth.models import User; User.objects.create_superuser
 # openssl s_client -connect mqtt.googleapis.com:443
 
 # Check if brain root env is exported in venv activate, if not add it
-if ! grep "OPENAG_BRAIN_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
-  echo "export OPENAG_BRAIN_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
+if ! grep "PROJECT_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
+  echo "export PROJECT_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
 fi
 
 

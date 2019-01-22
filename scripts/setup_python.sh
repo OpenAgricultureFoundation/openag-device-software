@@ -3,10 +3,15 @@
 # Get the full path to this script, the top dir is one up.
 TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TOPDIR+=/..
-cd $TOPDIR
 
-mkdir -p logs/peripherals/
+# Setup log file structure
+mkdir -p $TOPDIR/data/logs/peripherals/
+cd $TOPDIR/data/logs
 touch app.log connect.log device.log iot.log resource.log upgrade.log
+
+# Setup stored image directory
+mkdir -p $TOPDIR/data/images/stored
+cd $TOPDIR
 
 rm -fr venv
 virtualenv -p python3.6 venv

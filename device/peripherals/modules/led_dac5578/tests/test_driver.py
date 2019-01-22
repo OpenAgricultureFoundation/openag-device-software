@@ -2,7 +2,7 @@
 import os, sys, pytest, json, threading
 
 # Set system path
-root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+root_dir = os.environ["PROJECT_ROOT"]
 sys.path.append(root_dir)
 os.chdir(root_dir)
 
@@ -71,10 +71,6 @@ def test_set_spd() -> None:
     distance = 10
     ppfd = 800
     spectrum = {
-        "380-399": 0,
-        "400-499": 26,
-        "500-599": 22,
-        "600-700": 39,
-        "701-780": 13,
+        "380-399": 0, "400-499": 26, "500-599": 22, "600-700": 39, "701-780": 13
     }
     driver.set_spd(distance, ppfd, spectrum)

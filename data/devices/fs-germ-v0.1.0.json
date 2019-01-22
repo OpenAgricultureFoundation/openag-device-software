@@ -20,8 +20,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 0, 
                     "address": "0x40"
                 }
@@ -43,8 +43,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default",
                     "channel": 0, 
                     "address": "0x15"
                 }
@@ -69,9 +69,9 @@
                     }
                 },
                 "communication": {
-                    "bus": 2, 
+                    "bus": "default", 
+                    "mux": "default", 
                     "address": "0x64",
-                    "mux": "0x77", 
                     "channel": 4
                 }
             }
@@ -95,8 +95,8 @@
                     }
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 4, 
                     "address": "0x63"
                 }

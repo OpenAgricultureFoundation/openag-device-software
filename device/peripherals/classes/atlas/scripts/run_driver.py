@@ -2,7 +2,7 @@
 import os, sys, threading
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import type checks
 from typing import Any

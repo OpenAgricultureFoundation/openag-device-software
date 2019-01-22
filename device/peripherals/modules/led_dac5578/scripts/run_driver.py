@@ -5,7 +5,7 @@ import os, sys, threading
 from typing import Any
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import run peripheral parent class
 from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
@@ -80,11 +80,7 @@ class DriverRunner(RunnerBase):  # type: ignore
             distance = 10
             ppfd = 800
             spectrum = {
-                "380-399": 0,
-                "400-499": 26,
-                "500-599": 22,
-                "600-700": 39,
-                "701-780": 13,
+                "380-399": 0, "400-499": 26, "500-599": 22, "600-700": 39, "701-780": 13
             }
             self.driver.set_spd(distance, ppfd, spectrum)
 

@@ -1,5 +1,5 @@
 # Import standard python modules
-import logging, threading, time, platform
+import os, logging, threading, time, platform
 
 # Import python types
 from typing import Dict, Any, Tuple, List
@@ -12,13 +12,6 @@ from device.utilities import network as network_utilities
 
 # Import manager elements
 from device.network import modes
-
-# TODO: Should we bring persist ports for port forwarding? Probably want as much of
-# the code to live in python land as possible so we don't have to keep track of bash
-# scripts?
-
-# TODO: Should we break out the bash scripts so we're never even calling them, just
-# the commands inside of them?
 
 
 class NetworkManager(manager.StateMachineManager):
@@ -48,6 +41,10 @@ class NetworkManager(manager.StateMachineManager):
             modes.DISCONNECTED: [modes.CONNECTED, modes.SHUTDOWN, modes.ERROR],
             modes.ERROR: [modes.SHUTDOWN],
         }
+
+        # Initialize raspberry pi access point mode
+        if "raspberry-pi" in str(os.getenv("PLATFORM")):
+            self._disable_raspi_access_point()
 
         # Initialize state machine mode
         self.mode = modes.DISCONNECTED
@@ -86,15 +83,15 @@ class NetworkManager(manager.StateMachineManager):
             self.state.network["is_connected"] = value
 
     @property
-    def wifi_access_points(self) -> List[Dict[str, str]]:
+    def wifi_ssids(self) -> List[Dict[str, str]]:
         """Gets value."""
-        return self.state.network.get("wifi_access_points")  # type: ignore
+        return self.state.network.get("wifi_ssids")  # type: ignore
 
-    @wifi_access_points.setter
-    def wifi_access_points(self, value: List[Dict[str, str]]) -> None:
+    @wifi_ssids.setter
+    def wifi_ssids(self, value: List[Dict[str, str]]) -> None:
         """Safely updates value in shared state."""
         with self.state.lock:
-            self.state.network["wifi_access_points"] = value
+            self.state.network["wifi_ssids"] = value
 
     @property
     def ip_address(self) -> str:
@@ -106,6 +103,29 @@ class NetworkManager(manager.StateMachineManager):
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.network["ip_address"] = value
+
+    @property
+    def access_point_enabled(self) -> bool:
+        """Gets value."""
+        return self.state.network.get("access_point_enabled")  # type: ignore
+
+    @access_point_enabled.setter
+    def access_point_enabled(self, value: bool) -> None:
+        """Safely updates value in shared state."""
+        with self.state.lock:
+            self.state.network["access_point_enabled"] = value
+
+    ##### EXTERNAL STATE DECORATORS ####################################################
+
+    @property
+    def iot_is_registered(self) -> bool:
+        """Gets value."""
+        return self.state.iot.get("is_registered", False)  # type: ignore
+
+    @property
+    def iot_is_connected(self) -> bool:
+        """Gets value."""
+        return self.state.iot.get("is_connected", False)  # type: ignore
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 
@@ -136,7 +156,7 @@ class NetworkManager(manager.StateMachineManager):
 
     def run_connected_mode(self) -> None:
         """Runs normal mode."""
-        self.logger.debug("Entered CONNECTED")
+        self.logger.info("Entered CONNECTED")
 
         # Initialize timing variables
         last_update_time = 0.0
@@ -161,12 +181,35 @@ class NetworkManager(manager.StateMachineManager):
             if self.new_transition(modes.CONNECTED):
                 break
 
+            # Check for raspberry pi successful initial network connection event
+            # Since raspberry pi can't access the internet and broadcast an access point
+            # simultaneously, we need to re-enable the access point upon initial iot
+            # registration so the user can get the iot access code / link.
+            # The indicator to detect this registration event is that the network is
+            # connected and the iot device is registered with the iot cloud but not
+            # connected to the iot cloud. The device can only connect to the iot cloud
+            # once it is associated with a user account (which happens by entering the
+            # iot access code in the cloud ui or clicking on the iot access link)
+            if "raspberry-pi" in str(os.getenv("PLATFORM")):
+                if self.iot_is_registered and not self.iot_is_connected:
+                    message = "Detected raspberry pi successful initial network connection event"
+                    self.logger.info(message)
+
+                    # Re-enable access point
+                    self._enable_raspi_access_point()
+
+                    # Give access point time to initialize
+                    time.sleep(10)
+
+                    # Update connection information
+                    self.update_connection()
+
             # Update every 100ms
             time.sleep(0.1)
 
     def run_disconnected_mode(self) -> None:
         """Runs normal mode."""
-        self.logger.debug("Entered DISCONNECTED")
+        self.logger.info("Entered DISCONNECTED")
 
         # Initialize timing variables
         last_update_time = 0.0
@@ -191,8 +234,38 @@ class NetworkManager(manager.StateMachineManager):
             if self.new_transition(modes.DISCONNECTED):
                 break
 
+            # Check if raspi access point is disabled but device not registered (and network
+            # disconnected)
+            if "raspberry-pi" in str(os.getenv("PLATFORM")):
+                if not self.iot_is_registered and not self.access_point_enabled:
+
+                    # Re-enable access point
+                    self._enable_raspi_access_point()
+
             # Update every 100ms
             time.sleep(0.1)
+
+        # If completing raspi registration, give the iot manager enough time to
+        # establish a new connection
+        if "raspberry-pi" in str(os.getenv("PLATFORM")) and self.iot_is_registered:
+
+            # Initialize timing variables
+            timeout = 120  # seconds
+            start_time = time.time()
+
+            # Wait for iot to connect to timeout
+            while time.time() - start_time < timeout:
+
+                # Check if iot manager has connected yet
+                if self.iot_is_connected:
+                    return
+
+                # Update every 2 seconds
+                time.sleep(2)
+
+            # Handle timeout events
+            message = "IoT manager did not connect to cloud after completing raspi registration"
+            self.logger.warning(message)
 
     ##### HELPER FUNCTIONS #############################################################
 
@@ -204,7 +277,29 @@ class NetworkManager(manager.StateMachineManager):
         else:
             self.ip_address = "UNKNOWN"
 
-        self.wifi_access_points = network_utilities.get_wifi_access_points()
+        self.wifi_ssids = network_utilities.get_wifi_ssids()
+
+    def _enable_raspi_access_point(self) -> None:
+        """Enables raspberry pi access point."""
+        try:
+            network_utilities.enable_raspi_access_point()
+            self.access_point_enabled = True
+        except Exception as e:
+            message = "Unable to enable raspi access point"
+            self.logger.exception(message)
+            self.access_point_enabled = False
+            raise e
+
+    def _disable_raspi_access_point(self) -> None:
+        """Disables raspberry pi access point."""
+        try:
+            network_utilities.disable_raspi_access_point()
+            self.access_point_enabled = False
+        except Exception as e:
+            message = "Unable to disable raspi access point"
+            self.logger.exception(message)
+            self.access_point_enabled = True
+            raise e
 
     ##### EVENT FUNCTIONS ##############################################################
 
@@ -214,7 +309,7 @@ class NetworkManager(manager.StateMachineManager):
 
         # Get request parameters
         try:
-            wifi_psk = request["wifi_psk"]
+            wifi_ssid = request["wifi_ssid"]
             wifi_password = request["wifi_password"]
         except KeyError as e:
             message = "Unable to join wifi, invalid parameter {}".format(e)
@@ -223,7 +318,7 @@ class NetworkManager(manager.StateMachineManager):
         # Join wifi
         self.logger.debug("Sending join wifi request")
         try:
-            network_utilities.join_wifi(wifi_psk, wifi_password)
+            network_utilities.join_wifi(wifi_ssid, wifi_password)
         except Exception as e:
             message = "Unable to join wifi, unhandled exception: {}".format(type(e))
             self.logger.exception(message)
@@ -238,8 +333,14 @@ class NetworkManager(manager.StateMachineManager):
             # Check for timeout
             if time.time() - start_time > timeout:
                 message = "Did not connect to internet within {} ".format(timeout)
-                message += "seconds of joining wifi, recheck if internet is connected"
+                message += "seconds of joining wifi"
                 self.logger.warning(message)
+
+                # Remove failed wifi entry and re-enable raspi access point
+                if "raspberry-pi" in str(os.getenv("PLATFORM")):
+                    network_utilities.remove_raspi_prev_wifi_entry()
+                    self._enable_raspi_access_point()
+
                 return message, 202
 
             # Recheck if internet is connected every second
@@ -291,7 +392,7 @@ class NetworkManager(manager.StateMachineManager):
             # Check for timeout
             if time.time() - start_time > timeout:
                 message = "Did not connect to internet within {} ".format(timeout)
-                message += "seconds of joining wifi, recheck if internet is connected"
+                message += "seconds of joining wifi"
                 self.logger.warning(message)
                 return message, 202
 
@@ -339,3 +440,39 @@ class NetworkManager(manager.StateMachineManager):
         # Succesfully deleted wifi
         self.logger.debug("Successfully deleted wifis")
         return "Successfully deleted wifis", 200
+
+    def disable_raspi_access_point(self) -> Tuple[str, int]:
+        """Disables raspberry pi access point."""
+        self.logger.debug("Disabling raspberry pi access point")
+
+        try:
+            self._disable_raspi_access_point()
+        except Exception as e:
+            message = "Unable to disable raspi access point, unhandled exception: {}".format(
+                type(e)
+            )
+            self.logger.exception(message)
+            return message, 500
+
+        # Wait for internet connection to be established
+        timeout = 60  # seconds
+        start_time = time.time()
+        while not network_utilities.is_connected():
+            self.logger.debug("Waiting for network connection")
+
+            # Check for timeout
+            if time.time() - start_time > timeout:
+                message = "Did not connect to internet within {} ".format(timeout)
+                message += "seconds of joining wifi, recheck if internet is connected"
+                self.logger.warning(message)
+                return message, 202
+
+            # Recheck if internet is connected every second
+            time.sleep(2)
+
+        # Update connection state
+        self.is_connected = True
+
+        # Succesfully joined wifi
+        self.logger.debug("Successfully disabled raspberry pi access point")
+        return "Successfully disabled raspberry pi access point", 200

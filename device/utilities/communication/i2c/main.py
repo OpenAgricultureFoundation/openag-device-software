@@ -62,7 +62,8 @@ class I2C(object):
             )
         else:
             self.logger.debug("Using device io stream")
-            self.io = DeviceIO(name, bus)
+            with self.i2c_lock:
+                self.io = DeviceIO(name, bus)
 
         # Verify mux exists
         if self.mux != None:

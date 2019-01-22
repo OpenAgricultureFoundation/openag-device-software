@@ -1,5 +1,5 @@
 # Import python modules
-import logging, time, threading, math, json
+import os, logging, time, threading, math, json
 
 # Import python types
 from typing import Dict, Optional, List, Any, Tuple
@@ -63,6 +63,28 @@ class PeripheralManager(StateMachineManager):
         self.address = self.communication.get("address")
         self.mux = self.communication.get("mux")
         self.channel = self.communication.get("channel")
+
+        # Check if using default bus
+        if self.bus == "default":
+            self.logger.debug("Using default i2c bus")
+            self.bus = os.getenv("DEFAULT_I2C_BUS")
+
+            # Convert exported value from non-pythonic none to pythonic None
+            if self.bus == "none":
+                self.bus = None
+
+            if self.bus != None:
+                self.bus = int(self.bus)
+
+        # Check if using default mux
+        if self.mux == "default":
+            self.logger.debug("mux is default")
+            self.mux = os.getenv("DEFAULT_MUX_ADDRESS")
+
+            # Convert exported value from non-pythonic none to pythonic None
+            if self.mux == "none":
+                self.mux = None
+            self.logger.debug("mux = {}".format(self.mux))
 
         # Convert i2c config params from hex to int if they exist
         if self.address != None:

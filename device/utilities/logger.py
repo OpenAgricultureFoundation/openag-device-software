@@ -80,7 +80,7 @@ class PeripheralFileHandler(logging.Handler):
         super().__init__(*args, **kwargs)
 
         # Get project root dir
-        ROOT_DIR = os.environ.get("OPENAG_BRAIN_ROOT")
+        ROOT_DIR = os.environ.get("PROJECT_ROOT")
         if ROOT_DIR != None:
             ROOT_DIR += "/"  # type: ignore
         else:
@@ -97,7 +97,11 @@ class PeripheralFileHandler(logging.Handler):
         device_config = json.load(open(path))
 
         # Get peripheral configs
-        peripheral_configs = device_config["peripherals"]
+        peripheral_configs = device_config.get("peripherals", {})
+
+        # Ensure peripheral configs are not none
+        if peripheral_configs == None:
+            peripheral_configs = {}
 
         # Make sure log directory exists
         LOG_DIR = ROOT_DIR + "data/logs/peripherals/"
@@ -148,7 +152,7 @@ class ControllerFileHandler(logging.Handler):
         super().__init__(*args, **kwargs)
 
         # Get project root dir
-        ROOT_DIR = os.environ.get("OPENAG_BRAIN_ROOT")
+        ROOT_DIR = os.environ.get("PROJECT_ROOT")
         if ROOT_DIR != None:
             ROOT_DIR += "/"  # type: ignore
         else:
@@ -165,7 +169,11 @@ class ControllerFileHandler(logging.Handler):
         device_config = json.load(open(path))
 
         # Get controller configs
-        controller_configs = device_config["controllers"]
+        controller_configs = device_config.get("controllers", {})
+
+        # Ensure controller configs are not none
+        if controller_configs == None:
+            controller_configs = {}
 
         # Make sure log directory exists
         LOG_DIR = ROOT_DIR + "data/logs/controllers/"

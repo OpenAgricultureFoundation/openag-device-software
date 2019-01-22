@@ -2,7 +2,7 @@
 import sys, os, pytest, threading
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import driver elements
 from device.peripherals.classes.atlas.driver import AtlasDriver

@@ -5,7 +5,7 @@ import sys, os, argparse, logging, glob, json
 from typing import List
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import device utilities
 from device.utilities.accessors import get_peripheral_config
@@ -23,7 +23,7 @@ class RunnerBase:
         """Initializes run peripheral."""
 
         # Set os directory
-        self.root_dir = os.environ["OPENAG_BRAIN_ROOT"]
+        self.root_dir = os.environ["PROJECT_ROOT"]
         os.chdir(self.root_dir)
 
         # Initialize parser

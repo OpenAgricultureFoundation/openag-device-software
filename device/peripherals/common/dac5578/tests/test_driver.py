@@ -5,7 +5,7 @@ import os, sys, pytest, threading
 from typing import Dict
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import mux simulator
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator
@@ -164,16 +164,10 @@ def test_read_power_register() -> None:
         mux_simulator=MuxSimulator(),
     )
     powered_channels = driver.read_power_register()
-    assert powered_channels == {
-        0: True,
-        1: True,
-        2: True,
-        3: True,
-        4: True,
-        5: True,
-        6: True,
-        7: True,
-    }
+    assert (
+        powered_channels
+        == {0: True, 1: True, 2: True, 3: True, 4: True, 5: True, 6: True, 7: True}
+    )
 
 
 def test_set_low() -> None:

@@ -23,3 +23,4 @@ dummy.png
 active.png
 device/peripherals/modules/usb_camera/active.jpg
 staticfiles/
+hostapd.conf

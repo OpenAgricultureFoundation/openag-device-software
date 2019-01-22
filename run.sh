@@ -12,18 +12,25 @@ fi
 
 # Only if we are on linux, we run a light weight web server to vend images.
 if [[ "$OSTYPE" == "linux"* ]]; then
-    pkill busybox
-    busybox httpd -p 8080 -h $DIR/data/images/stored/
+    sudo pkill busybox
+    sudo busybox httpd -p 8080 -h $DIR/data/images/stored/
 fi
 
 # If there is a current python virtual environment, deactivate it.
 if ! [ -z "${VIRTUAL_ENV}" ] ; then
-    deactivate
+    source deactivate
 fi
 
 # Activate the python env for this bash process
 source $DIR/venv/bin/activate
 
+# Initialize platform info
+source $DIR/scripts/get_platform_info.sh
+
+# Needed for openssl
+export LD_LIBRARY_PATH=/usr/local/lib
+
+# Initialize registration data directory
 REG_DATA_DIR=$DIR/data/registration
 
 # Pass all these to django as env vars.
@@ -46,6 +53,8 @@ if [ -f $DIR/data/config/develop ]; then
     export OPENAG_LOG_LEVEL=DEBUG
 fi
 
+# Setup port forwarding
+sudo iptables-restore < /etc/iptables.ipv4.nat
 
 # Initialize command line arg default values
 NO_DEVICE="false"
@@ -77,5 +86,5 @@ export NO_DEVICE
 export SIMULATE
 
 # Run app
-python3.6 manage.py runserver 0.0.0.0:80
+python3.6 manage.py runserver 0.0.0.0:8000
 

@@ -517,12 +517,12 @@ class StateViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self) -> QuerySet:
         """Gets state queryset."""
         queryset = models.StateModel.objects.all()
-        self.logger.debug("~~~~~~~ queryset type = {}".format(type(queryset)))
         return queryset
 
 
 class EventViewSet(viewsets.ModelViewSet):
     """View set for creating peripheral and controller events."""
+
     permission_classes = [IsAuthenticated]
 
     def create(self, request: Request) -> Response:
@@ -803,10 +803,10 @@ class SystemViewSet(viewsets.ModelViewSet):
         try:
             response = {
                 "message": "Successfully got system info",
-                "is_beaglebone": system.is_beaglebone(),
-                "is_wifi_beaglebone": system.is_wifi_beaglebone(),
-                "beaglebone_serial_number": system.beaglebone_serial_number(),
-                "remote_device_ui_url": system.remote_device_ui_url(),
+                "platform": os.getenv("PLATFORM"),
+                "serial_number": os.getenv("SERIAL_NUMBER"),
+                "remote_device_ui_url": os.getenv("REMOTE_DEVICE_UI_URL"),
+                "is_wifi_enabled": os.getenv("IS_WIFI_ENABLED") == "true",
             }
             self.logger.debug("Returning response: {}".format(response))
             return Response(response, 200)
@@ -838,7 +838,7 @@ class NetworkViewSet(viewsets.ModelViewSet):
             "message": "Successfully got network info",
             "is_connected": network_manager.is_connected,
             "ip_address": network_manager.ip_address,
-            "wifi_access_points": network_manager.wifi_access_points,
+            "wifi_ssids": network_manager.wifi_ssids,
         }
 
         # Return response
@@ -905,6 +905,31 @@ class NetworkViewSet(viewsets.ModelViewSet):
         except Exception as e:
             message = "Unable to delete wifis, unhandled "
             "exception: `{}`".format(type(e))
+            status = 500
+
+        # Build and return response
+        response = {"message": message}
+        self.logger.debug("Returning response: {}".format(response))
+        return Response(response, status)
+
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def disableraspiaccesspoint(self, request: Request) -> Response:
+        """Disables raspberry pi access point."""
+        self.logger.debug("Disabling raspberry pi access point")
+
+        # Get network manager
+        app_config = apps.get_app_config(APP_NAME)
+        network_manager = app_config.coordinator.network
+        iot_manager = app_config.coordinator.iot
+
+        # Disable raspi access point
+        try:
+            message, status = network_manager.disable_raspi_access_point()
+        except Exception as e:
+            message = "Unable to disable raspi access point, unhandled exception: `{}`".format(
+                type(e)
+            )
+            self.logger.exception(message)
             status = 500
 
         # Build and return response
