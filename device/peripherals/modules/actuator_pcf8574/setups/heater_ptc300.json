@@ -1,0 +1,95 @@
+{
+	"name":  "Heater PTC300W",
+	"version": "1",
+	"uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
+	"module_name": "actuator_pcf8574.manager",
+	"class_name": "ActuatorPCF8574Manager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": {
+				"output_variable": {
+					"name": {
+						"type": "string", 
+						"default": "air_heater_percent"
+					}
+				}
+			}
+		},	
+		"communication": {
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "string",
+				"default": "0x20"
+			},
+			"port": {
+				"type": "number",
+				"default": 0
+			},
+			"is_active_high": {
+				"type": "boolean",
+				"default": true
+			}
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    },
+	    {
+	        "name": "Enable Manual Mode",
+	        "description": "Allows actuator to be controlled by manual events.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Turn On",
+	        "description": "Turns on heater.",
+	        "value": null,
+	        "sequence": null,
+	        "is_manual": true
+	    },
+	    {
+	        "name": "Turn Off",
+	        "description": "Turns off heater.",
+	        "value": null,
+	        "sequence": null,
+	        "is_manual": true
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	}
+}

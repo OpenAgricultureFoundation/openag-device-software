@@ -183,6 +183,11 @@ LOGGING = {
             "class": "device.utilities.logger.PeripheralFileHandler",
             "formatter": "device_file",
         },
+        "controller_files": {
+            "level": LOG_LEVEL,
+            "class": "device.utilities.logger.ControllerFileHandler",
+            "formatter": "device_file",
+        },
         "event_file": {
             "level": LOG_LEVEL,
             "class": "logging.handlers.RotatingFileHandler",
@@ -256,6 +261,9 @@ LOGGING = {
         },
         "peripherals": {
             "handlers": ["device_console", "peripheral_files"], "level": LOG_LEVEL
+        },
+        "controllers": {
+            "handlers": ["device_console", "controller_files"], "level": LOG_LEVEL
         },
         "event": {"handlers": ["device_console", "event_file"], "level": LOG_LEVEL},
         "recipe": {"handlers": ["device_console", "recipe_file"], "level": LOG_LEVEL},

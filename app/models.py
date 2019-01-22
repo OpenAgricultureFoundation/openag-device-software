@@ -83,6 +83,23 @@ class PeripheralSetupModel(models.Model):
         super(PeripheralSetupModel, self).save(*args, **kwargs)
 
 
+class ControllerSetupModel(models.Model):
+    uuid = models.UUIDField(primary_key=True, unique=True)
+    name = models.TextField()
+    json = JSONField()
+
+    class Meta:
+        verbose_name = "Controller Setup"
+        verbose_name_plural = "Controller Setups"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """ Extracts uuid and name from json on save. """
+        dict_ = json_.loads(self.json)
+        self.uuid = dict_["uuid"]
+        self.name = dict_["name"]
+        super(ControllerSetupModel, self).save(*args, **kwargs)
+
+
 class SensorVariableModel(models.Model):
     key = models.TextField(unique=True)
     json = JSONField()

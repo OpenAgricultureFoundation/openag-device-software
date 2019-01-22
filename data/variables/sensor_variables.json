@@ -194,5 +194,19 @@
 				"type": "number"
 			}
 		}
+	},
+	{
+		"key": "tray_temperature_celcius",
+		"info": {
+			"name": {
+				"brief": "Tray Temp",
+				"verbose": "Tray Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celcius",
+				"type": "number"
+			}
+		}
 	}
 ]

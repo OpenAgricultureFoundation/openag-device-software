@@ -1,0 +1,51 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2018-12-05T16:45:41Z",
+	"name": "Test Air Temp @18C",
+	"uuid": "921445ad-3b65-4d60-8028-ed838663bf47",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Holds air temperature at 18C for 12 hours.",
+		"verbose": "Holds air temperature at 18C for 12 hours."
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Scarlet Kale",
+			"uuid": "d6d76ff9-b12e-47bb-8e83-f872c7870856"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"day": {
+			"name": "Day",
+			"air_temperature_celcius": 18
+		}
+	},
+	"phases": [
+		{
+			"name": "Test Day",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "day",
+					"duration_hours": 12
+				}
+			]
+		}
+	]
+}

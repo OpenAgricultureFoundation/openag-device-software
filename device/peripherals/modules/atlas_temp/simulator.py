@@ -5,7 +5,7 @@ from typing import Any, Dict
 from device.utilities.bitwise import byte_str
 
 # Import simulator base clase
-from device.peripherals.classes.atlas.simulator import AtlasSimulator
+from device.peripherals.classes.atlas.simulator import AtlasSimulator, ATLAS_SUCCESS_31
 
 
 class AtlasTempSimulator(AtlasSimulator):  # type: ignore
@@ -56,5 +56,18 @@ class AtlasTempSimulator(AtlasSimulator):  # type: ignore
                 0x00,
             ]
         )
-
         self.writes[byte_str(TEMPERATURE_WRITE_BYTES)] = TEMPERATURE_RESPONSE_BYTES
+
+        # Set temperature scale celcius
+        SET_TEMPERATURE_SCALE_CELCIUS_WRITE_BYTES = bytes([0x53, 0x2C, 0x63, 0x00])
+        SET_TEMPERATURE_SCALE_CELCIUS_RESPONSE_BYTES = ATLAS_SUCCESS_31
+        self.writes[
+            byte_str(SET_TEMPERATURE_SCALE_CELCIUS_WRITE_BYTES)
+        ] = SET_TEMPERATURE_SCALE_CELCIUS_RESPONSE_BYTES
+
+        # Disable data logger
+        DISABLE_DATA_LOGGER_WRITE_BYTES = bytes([0x44, 0x2C, 0x30, 0x00])
+        DISABLE_DATA_LOGGER_RESPONSE_BYTES = ATLAS_SUCCESS_31
+        self.writes[
+            byte_str(DISABLE_DATA_LOGGER_WRITE_BYTES)
+        ] = DISABLE_DATA_LOGGER_RESPONSE_BYTES

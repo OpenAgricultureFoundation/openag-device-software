@@ -28,6 +28,8 @@ from device.coordinator import modes, events
 RECIPES_PATH = "data/recipes/*.json"
 PERIPHERAL_SETUP_FILES_PATH = "device/peripherals/modules/*/setups/*.json"
 PERIPHERAL_SETUP_SCHEMA_PATH = "data/schemas/peripheral_setup.json"
+CONTROLLER_SETUP_FILES_PATH = "device/controllers/modules/*/setups/*.json"
+CONTROLLER_SETUP_SCHEMA_PATH = "data/schemas/controller_setup.json"
 DEVICE_CONFIG_PATH = "data/config/device.txt"
 DEVICE_CONFIG_SCHEMA_PATH = "data/schemas/device_config.json"
 DEVICE_CONFIG_FILES_PATH = "data/devices/*.json"
@@ -160,6 +162,10 @@ class CoordinatorManager(StateMachineManager):
         # Get peripheral manager modes
         for peripheral_name, peripheral_manager in self.peripherals.items():
             modes[peripheral_name] = peripheral_manager.mode
+
+        # Get controller manager modes
+        for controller_name, controller_manager in self.controllers.items():
+            modes[controller_name] = controller_manager.mode
 
         # Return modes
         self.logger.debug("Returning modes: {}".format(modes))
@@ -446,9 +452,13 @@ class CoordinatorManager(StateMachineManager):
         # cultivation methods since verification depends on them
         self.load_recipe_files()
 
-        # Load peripherals after sensor/actuator variable since verification
+        # Load peripheral setup files after sensor/actuator variable since verification
         # depends on them
         self.load_peripheral_setup_files()
+
+        # Load controller setup files after sensor/actuator variable since verification
+        # depends on them
+        self.load_controller_setup_files()
 
         # Load device config after peripheral setups since verification
         # depends on  them
@@ -579,6 +589,36 @@ class CoordinatorManager(StateMachineManager):
         for peripheral_setup in peripheral_setups:
             models.PeripheralSetupModel.objects.create(
                 json=json.dumps(peripheral_setup)
+            )
+
+    def load_controller_setup_files(self) -> None:
+        """Loads controller setup files from codebase into database by creating new 
+        entries after deleting existing entries. Verification depends on sensor and 
+        actuator variables."""
+        self.logger.info("Loading controller setup files")
+
+        # Get controller setups
+        controller_setups = []
+        for filepath in glob.glob(CONTROLLER_SETUP_FILES_PATH):
+            self.logger.debug("Loading controller setup file: {}".format(filepath))
+            controller_setups.append(json.load(open(filepath)))
+
+        # Get get controller setup schema
+        controller_setup_schema = json.load(open(CONTROLLER_SETUP_SCHEMA_PATH))
+
+        # Validate peripheral setups with schema
+        for controller_setup in controller_setups:
+            jsonschema.validate(controller_setup, controller_setup_schema)
+
+        # Delete all peripheral setup entries from database
+        models.ControllerSetupModel.objects.all().delete()
+
+        # TODO: Validate controller setup variables with database variables
+
+        # Create peripheral setup entries in database
+        for controller_setup in controller_setups:
+            models.ControllerSetupModel.objects.create(
+                json=json.dumps(controller_setup)
             )
 
     def load_device_config_files(self) -> None:
@@ -724,21 +764,22 @@ class CoordinatorManager(StateMachineManager):
             self.peripherals[peripheral_name] = peripheral
 
     def get_peripheral_setup_dict(self, uuid: str) -> Dict[str, Any]:
-        """ Gets peripheral setup dict for uuid in peripheral setup table. """
+        """Gets peripheral setup dict for uuid in peripheral setup table."""
         if not models.PeripheralSetupModel.objects.filter(uuid=uuid).exists():
             return {}
         else:
             json_ = models.PeripheralSetupModel.objects.get(uuid=uuid).json
-        return json.loads(json_)  # type: ignore
+        peripheral_setup_dict = json.loads(json_)
+        return peripheral_setup_dict  # type: ignore
 
     def get_controller_setup_dict(self, uuid: str) -> Dict[str, Any]:
-        """ Gets controller setup dict for uuid in peripheral setup table. """
-        CSM = models.ControllerSetupModel  # type: ignore
-        if not CSM.objects.filter(uuid=uuid).exists():
+        """Gets controller setup dict for uuid in peripheral setup table."""
+        if not models.ControllerSetupModel.objects.filter(uuid=uuid).exists():
             return {}
         else:
-            json_ = CSM.objects.get(uuid=uuid).json
-        return json.loads(json_)  # type: ignore
+            json_ = models.ControllerSetupModel.objects.get(uuid=uuid).json
+        controller_setup_dict = json.loads(json_)
+        return controller_setup_dict  # type: ignore
 
     def spawn_peripherals(self) -> None:
         """ Spawns peripherals. """
@@ -778,7 +819,7 @@ class CoordinatorManager(StateMachineManager):
 
             # Get controller module and class name
             module_name = (
-                "device.controllers.drivers." + controller_setup_dict["module_name"]
+                "device.controllers.modules." + controller_setup_dict["module_name"]
             )
             class_name = controller_setup_dict["class_name"]
 
@@ -800,6 +841,7 @@ class CoordinatorManager(StateMachineManager):
         else:
             self.logger.info("Spawning controllers")
             for name, manager in self.controllers.items():
+                self.logger.debug("Spawning {}".format(name))
                 manager.spawn()
 
     def all_managers_initialized(self) -> bool:

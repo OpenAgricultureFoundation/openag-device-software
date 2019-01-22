@@ -17,7 +17,7 @@ class DisableDataLoggerError(exceptions.DriverError):
 
 
 class SetTemperatureScaleCelciusError(exceptions.DriverError):
-    message_base = "Unable to set temperature scale to calcius"
+    message_base = "Unable to set temperature scale to celcius"
 
 
 class SetTemperatureScaleFarenheitError(exceptions.DriverError):

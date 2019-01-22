@@ -1,0 +1,184 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "Fermentabot v0.1.0",
+    "uuid": "0b27ce21-8c86-4c3e-83de-33ccc9c882ac",
+    "peripherals": [
+        {
+            "name": "SHT25-Top",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor Default",
+                    "file_name": "sht25/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"                    
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x40"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-TopTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 5, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-MiddleTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 6, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-BottomTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 7, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
+            "name": "HeaterPTC300",
+            "type": "ActuatorPCF8574",
+            "uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
+            "parameters": {
+                "setup": {
+                    "name": "Heater PTC 300W",
+                    "file_name": "actuator_pcf8574/setups/heater_ptc300"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_heater_percent"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x20",
+                    "port": 2,
+                    "is_active_high": true
+                }
+            }
+        },
+        {
+            "name": "HumidifierULT400",
+            "type": "ActuatorPCF8574",
+            "uuid": "1cd6986d-022b-4d7d-b40e-25f42ac1fe78",
+            "parameters": {
+                "setup": {
+                    "name": "Humidifier ULT400",
+                    "file_name": "actuator_pcf8574/setups/humidifier_ult400"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_humidifier_percent"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x20",
+                    "port": 2,
+                    "is_active_high": true
+                }
+            }
+        }
+    ],
+    "controllers": [
+        {
+            "name": "TemperatureController",
+            "type": "HystereticController",
+            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "parameters": {
+                "setup": {
+                    "name": "Temperature Controller +/- 2C",
+                    "file_name": "hysteretic/setups/temperature_2c"
+                },
+                "variables": {
+                    "sensor_name": "air_temperature_celcius",
+                    "positive_actuator_name": "air_heater_percent",
+                    "negative_actuator_name": null
+                }
+            }
+        },
+        {
+            "name": "HumidityController",
+            "type": "HystereticController",
+            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "parameters": {
+                "setup": {
+                    "name": "Humidity Controller +/- 4%RH",
+                    "file_name": "hysteretic/setups/humidity_4pct"
+                },
+                "variables": {
+                    "sensor_name": "air_humidity_percent",
+                    "positive_actuator_name": "air_humidifier_percent",
+                    "negative_actuator_name": null
+                }
+            }
+        }
+    ]
+}
