@@ -2,7 +2,7 @@
 import os, sys, logging
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import typing modules
 from typing import Any
@@ -11,9 +11,7 @@ from typing import Any
 from device.utilities.accessors import get_peripheral_config
 
 # Import driver modules
-from device.peripherals.classes.atlas.scripts.run_driver import (
-    DriverRunner as AtlasDriverRunner
-)
+from device.peripherals.classes.atlas.scripts.run_driver import DriverRunner as AtlasDriverRunner
 from device.peripherals.modules.atlas_ph.driver import AtlasPHDriver
 
 

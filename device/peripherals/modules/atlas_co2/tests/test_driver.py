@@ -2,7 +2,7 @@
 import os, sys, pytest, threading
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import mux simulator
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator
@@ -32,4 +32,4 @@ def test_read_co2() -> None:
         mux_simulator=True,
     )
     co2 = driver.read_co2()
-    assert co2 == 22.97
+    assert co2 == 490.0

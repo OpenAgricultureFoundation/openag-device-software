@@ -2,16 +2,14 @@
 import os, sys, pytest, threading
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import mux simulator
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
 # Import peripheral driver
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
-from device.peripherals.modules.atlas_ec.exceptions import (
-    TakeSinglePointCalibrationError
-)
+from device.peripherals.modules.atlas_ec.exceptions import TakeSinglePointCalibrationError
 
 
 def test_init() -> None:

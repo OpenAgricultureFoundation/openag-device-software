@@ -78,15 +78,15 @@
       $('#danger-zone-collapse').collapse("show");
     }
 
-    // Update view for disconnected network and non-wifi-beaglebone system
-    else if (!networkInfo["isConnected"] && !systemInfo["isWifiBeaglebone"]) {
-        document.getElementById("status").innerHTML = "Unable to connect, not a wifi beaglebone"
+    // Update view for disconnected network and non-wifi-enabled system
+    else if (!networkInfo["isConnected"] && !systemInfo["isWifiEnabled"]) {
+        document.getElementById("status").innerHTML = "Unable to connect, not a wifi enabled"
         $("#configure-wifi-collapse").collapse("hide");
         $("#connection-info-collapse").collapse("hide");
     }
 
-    // Update view for disconnected network and wifi-beaglebone system
-    else if (!networkInfo["isConnected"] && systemInfo["isWifiBeaglebone"]) {
+    // Update view for disconnected network and wifi-enabled system
+    else if (!networkInfo["isConnected"] && systemInfo["isWifiEnabled"]) {
       document.getElementById("status").innerHTML = "Please configure your wifi network"
       updateWifiAccessPoints(networkInfo["wifiAccessPoints"])
       $("#configure-wifi-collapse").collapse("show");
@@ -133,9 +133,9 @@
         success: function(data) {
           console.log("Got system info")
           var systemInfo = {
-            "isBeaglebone": data["is_beaglebone"],
-            "isWifiBeaglebone": data["is_wifi_beaglebone"],
-            "beagleboneSerialNumber": data["beaglebone_serial_number"],
+            "platform": data["platform"],
+            "isWifiEnabled": data["is_wifi_enabled"],
+            "serialNumber": data["serial_number"],
             "remoteDeviceUiUrl": data["remote_device_ui_url"]
           };
           resolve(systemInfo);

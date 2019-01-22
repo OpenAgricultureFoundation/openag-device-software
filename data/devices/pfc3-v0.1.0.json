@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
+                        {"name": "LP1", "bus": "default", "mux": "default", "channel": 3, "address": "0x47", "active_low": true}
                     ]
                 }
             }
@@ -63,8 +63,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x40"
                 }
@@ -86,8 +86,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x15"
                 }
@@ -112,10 +112,10 @@
                     }
                 },
                 "communication": {
-                    "bus": 2, 
-                    "address": "0x64",
-                    "mux": "0x77", 
-                    "channel": 4
+                    "bus": "default", 
+                    "mux": "default", 
+                    "channel": 4,
+                    "address": "0x64"
                 }
             }
         },
@@ -138,8 +138,8 @@
                     }
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 4, 
                     "address": "0x63"
                 }

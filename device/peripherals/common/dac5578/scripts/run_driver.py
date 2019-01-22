@@ -5,13 +5,23 @@ import os, sys, threading
 from typing import Any, Dict
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(os.environ["PROJECT_ROOT"])
 
 # Import run peripheral parent class
 from device.peripherals.classes.peripheral.scripts.run_peripheral import RunnerBase
 
 # Import peripheral driver
 from device.peripherals.common.dac5578.driver import DAC5578Driver
+
+# Ensure virtual environment is activated
+if os.getenv("VIRTUAL_ENV") == None:
+    print("Please activate your virtual environment then re-run script")
+    exit(0)
+
+# Ensure platform info is sourced
+if os.getenv("PLATFORM") == None:
+    print("Please source your platform info then re-run script")
+    exit(0)
 
 
 class DriverRunner(RunnerBase):  # type: ignore

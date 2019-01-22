@@ -2,7 +2,7 @@
 import sys, os
 
 # Set system path
-ROOT_DIR = os.environ["OPENAG_BRAIN_ROOT"]
+ROOT_DIR = os.environ["PROJECT_ROOT"]
 sys.path.append(ROOT_DIR)
 os.chdir(ROOT_DIR)
 

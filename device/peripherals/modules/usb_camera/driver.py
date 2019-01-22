@@ -55,7 +55,7 @@ class USBCameraDriver:
         self.logger = logger.Logger(logname, "peripherals")
 
         # Check if simulating
-        if simulate:
+        if self.simulate:
             self.logger.info("Simulating driver")
             self.directory = SIMULATE_IMAGE_DIR
         else:
@@ -70,21 +70,50 @@ class USBCameraDriver:
             self.usb_mux_enabled = False
             return
 
-        # Get optional i2c parameters
-        mux = usb_mux_comms.get("mux", None)  # type: ignore
-        if mux != None:
-            mux = int(mux, 16)
+        # Initialize usb mux properties
+        self.bus = usb_mux_comms.get("bus")
+        self.mux = usb_mux_comms.get("mux")
+        self.channel = usb_mux_comms.get("channel")
+        self.address = usb_mux_comms.get("address")
+
+        # Check if using default bus
+        if self.bus == "default":
+            self.logger.debug("Using default i2c bus")
+            self.bus = os.getenv("DEFAULT_I2C_BUS")
+
+            # Convert exported value from non-pythonic none to pythonic None
+            if self.bus == "none":
+                self.bus = None
+
+            if self.bus != None:
+                self.bus = int(self.bus)
+
+        # Check if using default mux
+        if self.mux == "default":
+            self.logger.debug("mux is default")
+            self.mux = os.getenv("DEFAULT_MUX_ADDRESS")
+
+            # Convert exported value from non-pythonic none to pythonic None
+            if self.mux == "none":
+                self.mux = None
+            self.logger.debug("mux = {}".format(self.mux))
+
+        # Convert i2c config params from hex to int if they exist
+        if self.address != None:
+            address = int(self.address, 16)
+        if self.mux != None:
+            self.mux = int(self.mux, 16)
 
         # Using usb mux, initialize driver
         try:
             self.dac5578 = DAC5578Driver(
                 name=name,
                 i2c_lock=i2c_lock,  # type: ignore
-                bus=usb_mux_comms.get("bus", None),  # type: ignore
-                address=int(usb_mux_comms.get("address", None), 16),  # type: ignore
-                mux=mux,
-                channel=usb_mux_comms.get("channel", None),  # type: ignore
-                simulate=simulate,
+                bus=self.bus,
+                mux=self.mux,
+                channel=self.channel,
+                address=self.address,
+                simulate=self.simulate,
                 mux_simulator=mux_simulator,
             )
             self.usb_mux_channel = usb_mux_channel

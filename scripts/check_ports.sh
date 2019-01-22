@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# Get beaglebone serial number
-serial=`sudo hexdump -e '8/1 "%c"' "/sys/bus/i2c/devices/0-0050/eeprom" -s 16 -n 12 2>&1`
-
-# Build url
-url=$serial.serveo.net
+echo "Checking ports..."
 
 # Check if site is up
-wget --server-response --spider $url > /dev/null 2>&1
+wget --server-response --spider $REMOTE_DEVICE_UI_URL -T 3 -t 2 > /dev/null 2>&1
 if [ "$?" -eq 0 ]
 then
 	echo 'Site is up'

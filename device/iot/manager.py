@@ -218,6 +218,11 @@ class IotManager(manager.StateMachineManager):
         # Initialize iot connection state
         self.is_connected = False
 
+        # Initialize registration state
+        self.is_registered = registration.is_registered()
+        self.device_id = registration.device_id()
+        self.verification_code = registration.verification_code()
+
         # Check if network is connected
         if not self.network_is_connected:
             self.logger.info("Waiting for network to come online")
@@ -233,19 +238,20 @@ class IotManager(manager.StateMachineManager):
             # Update every 100ms
             time.sleep(0.1)
 
-        # Initialize registration state
-        self.is_registered = registration.is_registered()
+        # Give the network time to initialize
+        time.sleep(30)
 
         # Check if device is registered
         if not self.is_registered:
             self.logger.debug("Device not registered, registering device")
             registration.register()
 
-        # Update registration state
-        self.device_id = registration.device_id()
-        self.verification_code = registration.verification_code()
+            # Update registration state
+            self.is_registered = registration.is_registered()
+            self.device_id = registration.device_id()
+            self.verification_code = registration.verification_code()
 
-        # Initialize client
+        # Initialize pubsub client
         self.pubsub.initialize()
 
         # Transition to disconnected mode on next state machine update
@@ -262,7 +268,10 @@ class IotManager(manager.StateMachineManager):
         while True:
 
             # Update mqtt broker
-            self.pubsub.update()
+            try:
+                self.pubsub.update()
+            except:
+                self.pubsub.initialize()
 
             # Check if connected, transition if so
             if self.is_connected:
@@ -332,9 +341,10 @@ class IotManager(manager.StateMachineManager):
             "device_config": system.device_config_name(),
             "package_version": self.state.upgrade.get("current_version"),
             "IP": self.state.network.get("ip_address"),
-            "access_point": system.beaglebone_wifi_access_point_name(),
-            "bbb_serial": system.beaglebone_serial_number(),
-            "remote_URL": system.remote_device_ui_url(),
+            "access_point": os.getenv("WIFI_ACCESS_POINT"),
+            "serial_number": os.getenv("SERIAL_NUMBER"),
+            "remote_URL": os.getenv("REMOTE_DEVICE_UI_URL"),
+            "bbb_serial": "DEPRECATED",
         }
 
         # Publish boot message

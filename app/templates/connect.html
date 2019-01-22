@@ -2,6 +2,8 @@
 
 {% block javascript %}
 <script>
+
+  var platform = "unknown"
   
   window.onload = function() {
     getInfoAndUpdateView()
@@ -20,6 +22,7 @@
     getSystemInfo()
       .then(function(systemInfo) {
         var systemInfo = systemInfo;
+        platform = systemInfo["platform"];
         
         // Get network info
         getNetworkInfo()
@@ -57,6 +60,8 @@
       document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login/";
       $('#connection-info-collapse').collapse("show");
       $('#configure-wifi-collapse').collapse("hide");
+      $("#additional-network-message-collapse").collapse("hide");
+      $("#registration-complete-collapse").collapse("hide");
     }
 
     // Update view for connected network and unconnected iot
@@ -69,29 +74,63 @@
       document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login?vcode=" + iotInfo["verificationCode"];
       $('#connection-info-collapse').collapse("show");
       $('#configure-wifi-collapse').collapse("hide");
+      $("#additional-network-message-collapse").collapse("hide");
+      $("#registration-complete-collapse").collapse("hide");
     }
 
-    // Update view for disconnected network and non-wifi-beaglebone system
-    else if (!networkInfo["isConnected"] && !systemInfo["isWifiBeaglebone"]) {
-        document.getElementById("status").innerHTML = "Unable to connect, not a wifi beaglebone"
+    // Update view for disconnected network and non-wifi-enabled system
+    else if (!networkInfo["isConnected"] && !systemInfo["isWifiEnabled"]) {
+        document.getElementById("status").innerHTML = "Unable to connect, platform is not wifi-enabled"
         $("#configure-wifi-collapse").collapse("hide");
         $("#connection-info-collapse").collapse("hide");
+        $("#additional-network-message-collapse").collapse("hide");
     }
 
-    // Update view for disconnected network and wifi-beaglebone system
-    else if (!networkInfo["isConnected"] && systemInfo["isWifiBeaglebone"]) {
-      document.getElementById("status").innerHTML = "Please configure your wifi network"
-      updateWifiAccessPoints(networkInfo["wifiAccessPoints"]);
+    // Update view for disconnected network and wifi-enabled system and registered iot
+    else if (!networkInfo["isConnected"] && systemInfo["isWifiEnabled"] && iotInfo["isRegistered"]) {
+      if (systemInfo["platform"] == "raspberry-pi-3") {
+        document.getElementById("status").innerHTML = "Please register your device to your cloud user account. To do so, copy the web ui link, disconnect your laptop from the device access point then reconnect your laptop to an active network and paste in the web ui link. Once your device is registered to your cloud account, reconnect to the device access point and press the `Registration Complete` button below."
+        document.getElementById("ip-address").innerHTML = "N/A";
+        document.getElementById("cloud-ui-url").innerHTML = "https://openag-v1.appspot.com/login?vcode=" + iotInfo["verificationCode"];
+        document.getElementById("cloud-ui-url").href = "https://openag-v1.appspot.com/login?vcode=" + iotInfo["verificationCode"];
+        document.getElementById("remote-device-ui-url").innerHTML = systemInfo["remoteDeviceUiUrl"];
+        document.getElementById("remote-device-ui-url").href = systemInfo["remoteDeviceUiUrl"];
+        $("#connection-info-collapse").collapse("show");
+        $("#additional-network-message-collapse").collapse("show");
+        $("#registration-complete-collapse").collapse("show");
+      }
+      else {
+        document.getElementById("status").innerHTML = "Please configure your wifi network"
+      }
+
+      updateWifiSSIDs(networkInfo["wifiSSIDs"]);
 
       // Check wifi networks have loaded
-      var wifiSelect = document.getElementById("wifi-access-points-select");
+      var wifiSelect = document.getElementById("wifi-ssids-select");
+      if (wifiSelect != null && wifiSelect.options.length < 1) {
+        document.getElementById("status").innerHTML = "Please wait for network connections to load...refresh page in a few moments";
+      }
+
+      $("#configure-wifi-collapse").collapse("show");
+    }
+
+    // Update view for disconnected network and wifi-enabled system and unregistered iot
+    else if (!networkInfo["isConnected"] && systemInfo["isWifiEnabled"] && !iotInfo["isRegistered"]) {
+      document.getElementById("status").innerHTML = "Please configure your wifi network"
+      updateWifiSSIDs(networkInfo["wifiSSIDs"]);
+
+      // Check wifi networks have loaded
+      var wifiSelect = document.getElementById("wifi-ssids-select");
       if (wifiSelect != null && wifiSelect.options.length < 1) {
         document.getElementById("status").innerHTML = "Please wait for network connections to load...refresh page in a few moments";
       }
 
       $("#network-info-collapse").collapse("hide");
       $("#configure-wifi-collapse").collapse("show");
+      $("#additional-network-message-collapse").collapse("hide");
+      $("#registration-complete-collapse").collapse("hide");
     }
+
   }
 
 
@@ -108,10 +147,10 @@
         success: function(data) {
           console.log("Got system info")
           var systemInfo = {
-            "isBeaglebone": data["is_beaglebone"],
-            "isWifiBeaglebone": data["is_wifi_beaglebone"],
-            "beagleboneSerialNumber": data["beaglebone_serial_number"],
-            "remoteDeviceUiUrl": data["remote_device_ui_url"]
+            "platform": data["platform"],
+            "serialNumber": data["serial_number"],
+            "remoteDeviceUiUrl": data["remote_device_ui_url"],
+            "isWifiEnabled": data["is_wifi_enabled"]
           };
           resolve(systemInfo);
         },
@@ -126,27 +165,28 @@
     });
   }
 
-  function updateWifiAccessPoints(wifiAccessPoints) {
-    console.log("Updating wifi access points")
+  function updateWifiSSIDs(wifiSSIDs) {
+    console.log("Updating wifi ssids")
+    console.log(wifiSSIDs)
 
-    // Get wifi access point select
-    var wifiAccessPointSelect = document.getElementById("wifi-access-points-select");
+    // Get wifi ssids select
+    var wifiSSIDSelect = document.getElementById("wifi-ssids-select");
 
-    // Remove stale wifi access point selections
-    if (wifiAccessPointSelect != null) {
-      for( i=wifiAccessPointSelect.length - 1; i >= 0; i-- ) { // must do in reverse
-        wifiAccessPointSelect.remove(i);
+    // Remove stale wifi ssid selections
+    if (wifiSSIDSelect != null) {
+      for( i=wifiSSIDSelect.length - 1; i >= 0; i-- ) { // must do in reverse
+        wifiSSIDSelect.remove(i);
       } 
     }
 
-    // Add updated wifi access point selections
-    if (wifiAccessPoints != null) {
-      for( i=0; i < wifiAccessPoints.length; i++ ) {
-        wifiAccessPoint = wifiAccessPoints[i];
+    // Add updated wifi ssid selections
+    if (wifiSSIDs != null) {
+      for( i=0; i < wifiSSIDs.length; i++ ) {
+        wifiSSID = wifiSSIDs[i];
         var option = document.createElement("option");
-        option.text = wifiAccessPoint.ssid;
-        option.value = wifiAccessPoint.psk;
-        wifiAccessPointSelect.add(option);
+        option.text = wifiSSID;
+        option.value = wifiSSID;
+        wifiSSIDSelect.add(option);
       }
     }
   }
@@ -166,8 +206,9 @@
           var networkInfo = {
             "isConnected": data["is_connected"],
             "ipAddress": data["ip_address"],
-            "wifiAccessPoints": data["wifi_access_points"]
+            "wifiSSIDs": data["wifi_ssids"]
           }
+          console.log(networkInfo);
           resolve(networkInfo);
         },
         error: function(data) {
@@ -216,15 +257,21 @@
     console.log("Joining wifi")
     
     // Update status and processing view
-    document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
+    console.log(platform);
+    if (platform == "raspberry-pi-3") {
+      document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes...please wait for the device to reboot then reconnect your laptop to the device access point to finish setup."
+    }
+    else {
+      document.getElementById("status").innerHTML = "Joining wifi, this will take a few minutes..."
+    }
     $('#configure-wifi-collapse').collapse("hide");
 
 
-    // Get wifi psk
-    var wifiSelect = document.getElementById("wifi-access-points-select");
-    var wifiPsk = wifiSelect.options[wifiSelect.selectedIndex];
-    if( wifiPsk == null ) {
-      console.log("Error: could not get wifiAccessPoints element");
+    // Get wifi ssid
+    var wifiSelect = document.getElementById("wifi-ssids-select");
+    var wifiSSID = wifiSelect.options[wifiSelect.selectedIndex];
+    if( wifiSSID == null ) {
+      console.log("Error: could not get wifiSSIDs element");
       return;
     }
 
@@ -242,7 +289,7 @@
       type: "POST",
       data: {
         "csrfmiddlewaretoken": "{{ csrf_token }}",
-        "wifi_psk": wifiPsk.value,
+        "wifi_ssid": wifiSSID.value,
         "wifi_password": wifiPassword.value
       },
       dataType: 'json',
@@ -252,6 +299,40 @@
       },
       error: function(data) {
         console.log("Unable to join wifi");
+        response_dict = JSON.parse(data.responseText);
+        message = response_dict["message"];
+        console.log(message);
+        console.log(response_dict);
+        getInfoAndUpdateView();
+      }
+    });
+  }
+
+  function disableRaspiAccessPoint() {
+    console.log("Disabling raspberry pi access point")
+    
+    // Update status and processing view
+    document.getElementById("status").innerHTML = "Completing registration...please use cloud ui for all further interactions."
+    $('#configure-wifi-collapse').collapse("hide");
+    $("#connection-info-collapse").collapse("hide");
+    $("#additional-network-message-collapse").collapse("hide");
+    $("#registration-complete-collapse").collapse("hide");
+
+    // Send join wifi request
+    console.log("Sending join wifi request");
+    $.ajax({
+      url: "/api/network/disableraspiaccesspoint/",
+      type: "POST",
+      data: {
+        "csrfmiddlewaretoken": "{{ csrf_token }}",
+      },
+      dataType: 'json',
+      success: function(data) {
+        console.log("Successfully disabled raspberry pi access point");
+        getInfoAndUpdateView();
+      },
+      error: function(data) {
+        console.log("Failed to disable raspberry pi access point");
         response_dict = JSON.parse(data.responseText);
         message = response_dict["message"];
         console.log(message);
@@ -280,7 +361,7 @@
 
 <html>
 
-<input type="hidden" id="wifi-access-points" name="variable", value="temp">
+<input type="hidden" id="wifi-ssids" name="variable", value="temp">
 
 <body>
 
@@ -294,9 +375,35 @@
     <p>
       <b>Status:</b> <span id="status"></span>
     </p>
+
+    <div class="collapse" id="connection-info-collapse">
+      <ul>
+        <li><b>Device IP Address:</b> <span id="ip-address"></span>
+        <li><b>Web UI:</b> <a id="cloud-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg Web UI</a>
+        <li><b>Remotely Accessible Device UI:</b> <a id="remote-device-ui-url" href="" target="_blank"></a>
+      </ul>
+    </div>
+
+    <div class="collapse" id="registration-complete-collapse">
+      <p></br>
+        Cloud registration complete?
+        
+        <a class="badge badge-secondary" data-toggle="collapse" id="join-wifi-button"
+        style="width:200px" href="" role="button" onclick="disableRaspiAccessPoint();">
+        Registration Complete </a>
+
+      </p>
+    </div>
+    
+
+    <div class="collapse" id="additional-network-message-collapse">
+      <p></br>
+        <b>Optional:</b> If you have already connected to a wifi network, please disregard this. However, if you would like to connect to a new wifi network please enter the information below.
+      </p>
+    </div>
     
     <div class="collapse" id="configure-wifi-collapse">
-      <select id="wifi-access-points-select" class="selectpicker" style="width:200px">
+      <select id="wifi-ssids-select" class="selectpicker" style="width:200px">
       </select>
 
       <p>
@@ -316,14 +423,6 @@
       </p>
     </div>
 
-    
-    <div class="collapse" id="connection-info-collapse">
-      <ul>
-        <li><b>Device IP Address:</b> <span id="ip-address"></span>
-        <li><b>Web UI:</b> <a id="cloud-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">OpenAg Web UI</a>
-        <li><b>Remotely Accessible Device UI:</b> <a id="remote-device-ui-url" href="" target="_blank"></a>
-      </ul>
-    </div>
 
   </div>
   </div>

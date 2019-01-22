@@ -204,9 +204,7 @@ class PubSub:
 
         # Build message
         message = {
-            "messageType": COMMAND_REPLY_MESSAGE,
-            "var": command,
-            "values": values,
+            "messageType": COMMAND_REPLY_MESSAGE, "var": command, "values": values
         }
         message_json = json.dumps(message)
 
@@ -257,8 +255,7 @@ class PubSub:
             if isinstance(val, float):
                 val = "{0:.2f}".format(val)
                 values_json += "{'name':'%s', 'type':'float', 'value':%s}" % (
-                    vname,
-                    val,
+                    vname, val
                 )
 
             elif isinstance(val, int):
@@ -266,8 +263,7 @@ class PubSub:
 
             else:  # assume str
                 values_json += "{'name':'%s', 'type':'str', 'value':'%s'}" % (
-                    vname,
-                    val,
+                    vname, val
                 )
         values_json += "]}"
 
