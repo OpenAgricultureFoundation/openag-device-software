@@ -1,5 +1,5 @@
 # Import standard python modules
-import time, threading
+import os, time, threading
 
 # Import python types
 from typing import NamedTuple, Optional, Tuple, Dict, Any, List
@@ -41,20 +41,44 @@ class LEDDAC5578Panel(object):
         self.name = str(config.get("name"))
         self.full_name = driver_name + "-" + self.name
         self.bus = config.get("bus")
-        self.address = int(config.get("address"), 16)  # type: ignore
+        self.mux = config.get("mux")
+        self.channel = config.get("channel")
+        self.address = config.get("address")
         self.active_low = config.get("active_low")
         self.i2c_lock = i2c_lock
         self.simulate = simulate
         self.mux_simulator = mux_simulator
         self.logger = logger
 
-        # Initialize i2c mux address
-        self.mux = config.get("mux")
-        if self.mux != None:
-            self.mux = int(self.mux, 16)  # type: ignore
+        # Check if using default bus
+        if self.bus == "default":
+            self.logger.debug("Using default i2c bus")
+            self.bus = os.getenv("DEFAULT_I2C_BUS")
 
-        # Initialize i2c channel value
-        self.channel = config.get("channel")
+            # Convert exported value from non-pythonic none to pythonic None
+            if self.bus == "none":
+                self.bus = None
+
+            if self.bus != None:
+                self.bus = int(self.bus)
+
+        # Check if using default mux
+        if self.mux == "default":
+            self.logger.debug("mux is default")
+            self.mux = os.getenv("DEFAULT_MUX_ADDRESS")
+
+            # Convert exported value from non-pythonic none to pythonic None
+            if self.mux == "none":
+                self.mux = None
+            self.logger.debug("mux = {}".format(self.mux))
+
+        # Convert i2c config params from hex to int if they exist
+        if self.address != None:
+            self.address = int(self.address, 16)
+        if self.mux != None:
+            self.mux = int(self.mux, 16)
+
+        # Check for valid i2c channel
         if self.channel != None:
             self.channel = int(self.channel)  # type: ignore
 

@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true}
+                        {"name": "LEDPanel-Top", "bus": "default", "mux": "default", "channel": 3, "address": "0x47", "active_low": true}
                     ]
                 }
             }
@@ -63,8 +63,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x40"
                 }
@@ -86,8 +86,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x15"
                 }

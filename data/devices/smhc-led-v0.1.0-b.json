@@ -25,14 +25,14 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP11", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 6, "active_low": true},
-                        {"name": "LP12", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 4, "active_low": true},
-                        {"name": "LP21", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 7, "active_low": true},
-                        {"name": "LP22", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": true},
-                        {"name": "LP31", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 5, "active_low": true},
-                        {"name": "LP51", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 0, "active_low": true},
-                        {"name": "LP52", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 1, "active_low": true},
-                        {"name": "LP53", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2, "active_low": true}
+                        {"name": "LP11", "bus": "default", "mux": "default", "channel": 6, "address": "0x47", "active_low": true},
+                        {"name": "LP12", "bus": "default", "mux": "default", "channel": 4, "address": "0x47", "active_low": true},
+                        {"name": "LP21", "bus": "default", "mux": "default", "channel": 7, "address": "0x47", "active_low": true},
+                        {"name": "LP22", "bus": "default", "mux": "default", "channel": 3, "address": "0x47", "active_low": true},
+                        {"name": "LP31", "bus": "default", "mux": "default", "channel": 5, "address": "0x47", "active_low": true},
+                        {"name": "LP51", "bus": "default", "mux": "default", "channel": 0, "address": "0x47", "active_low": true},
+                        {"name": "LP52", "bus": "default", "mux": "default", "channel": 1, "address": "0x47", "active_low": true},
+                        {"name": "LP53", "bus": "default", "mux": "default", "channel": 2, "address": "0x47", "active_low": true}
                     ]
                 }
             }

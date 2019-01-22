@@ -25,7 +25,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LP1", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 2}
+                        {"name": "LP1", "bus": "default", "mux": "default", "channel": 2, "address": "0x47"}
                     ]
                 },
                 "location": {"x_cm": 72, "y_cm": 36, "z_cm": 145, "roll_deg": 0, "pitch_deg": 0, "yaw_deg": 0}
@@ -66,8 +66,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x40"
                 },

@@ -20,8 +20,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 3, 
                     "address": "0x40"
                 }
@@ -43,8 +43,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 3, 
                     "address": "0x15"
                 }

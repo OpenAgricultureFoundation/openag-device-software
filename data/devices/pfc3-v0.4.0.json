@@ -24,7 +24,7 @@
                 },
                 "communication": {
                     "panels": [
-                        {"name": "LEDPanel-Top", "bus": 2, "address": "0x47", "mux": "0x77", "channel": 3, "active_low": false}
+                        {"name": "LEDPanel-Top", "bus": "default", "mux": "default", "channel": 3, "address": "0x47", "active_low": false}
                     ]
                 }
             }
@@ -43,7 +43,7 @@
                     "actuator": null
                 },
                 "communication": {
-                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                    "usb_mux_comms": {"bus": "default", "mux": "default", "channel": 3, "address": "0x47"},
                     "usb_mux_channel": 1
                 },
                 "num_cameras": 1
@@ -63,7 +63,7 @@
                     "actuator": null
                 },
                 "communication": {
-                    "usb_mux_comms": {"bus": 2, "address": "0x47", "mux": "0x77", "channel": 3},
+                    "usb_mux_comms": {"bus": "default", "mux": "default", "channel": 3, "address": "0x47"},
                     "usb_mux_channel": 3
                 },
                 "num_cameras": 1
@@ -86,8 +86,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x40"
                 }
@@ -114,8 +114,8 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 2, 
                     "address": "0x5a"
                 }
@@ -140,10 +140,10 @@
                     }
                 },
                 "communication": {
-                    "bus": 2, 
-                    "address": "0x64",
-                    "mux": "0x77", 
-                    "channel": 6
+                    "bus": "default", 
+                    "mux": "default", 
+                    "channel": 6,
+                    "address": "0x64"
                 }
             }
         },
@@ -166,8 +166,8 @@
                     }
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
+                    "bus": "default", 
+                    "mux": "default", 
                     "channel": 6, 
                     "address": "0x63"
                 }

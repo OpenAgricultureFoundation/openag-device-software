@@ -56,10 +56,10 @@ class T6713Manager(manager.PeripheralManager):
             self.driver = driver.T6713Driver(
                 name=self.name,
                 i2c_lock=self.i2c_lock,
-                bus=self.parameters["communication"]["bus"],
-                mux=int(self.parameters["communication"]["mux"], 16),
-                channel=self.parameters["communication"]["channel"],
-                address=int(self.parameters["communication"]["address"], 16),
+                bus=self.bus,
+                mux=self.mux,
+                channel=self.channel,
+                address=self.address,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
             )
