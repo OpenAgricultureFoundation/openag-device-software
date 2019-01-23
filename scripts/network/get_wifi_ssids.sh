@@ -17,7 +17,6 @@ if [[ $PLATFORM == "beaglebone-black-wireless" ]]; then
 	connmanctl enable wifi > /dev/null 2>&1
 	connmanctl scan wifi > /dev/null 2>&1
 	sleep 2
-	# connmanctl services
 	connmanctl services | sed -e 's/wifi_[^ ]*//' -e 's/ *//' | grep '\w\w*'
 
 

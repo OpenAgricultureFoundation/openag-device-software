@@ -39,12 +39,6 @@ echo "from django.contrib.auth.models import User; User.objects.filter(email='op
 echo "from django.contrib.auth.models import User; User.objects.create_superuser('backdoor', 'openag@openag.edu', 'B@ckd00r')" | python3.6 manage.py shell
 
 
-# How to list the databases:
-# psql --username=openag openag_brain -c '\l'
-
-# How to list the tables in our database:
-# psql --username=openag openag_brain -c '\dt'
-
 # How to log into postgres interactively:
 # psql --username=openag openag_brain 
 
