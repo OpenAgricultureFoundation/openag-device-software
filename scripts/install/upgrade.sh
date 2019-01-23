@@ -1,108 +1,53 @@
 #!/bin/bash
 
-# Get the full path to this script, the top dir is one up.
-TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-TOPDIR+=/..
-cd $TOPDIR
+# Log upgrade status
+echo "Upgrading software..."
 
-# Initialize platform info
-bash scripts/get_platform_info.sh
+# Check virtual environment is activated
+if [[ -z "${VIRTUAL_ENV}" ]] ; then
+        echo "Please activate your virtual environment then re-run script"
+        exit 1
+fi
 
-# Instead of requiring django to run as root and host app on port 80
-# Host app on port 8000 and forward port 80 to port 8000
-# On raspberry pi, openssl does not work properly if ran as root
-# So we need  to be able to run django as non-root user
-sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8000
-sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
+# Check project root exists
+if [[ -z "$PROJECT_ROOT" ]]; then
+    echo "Please set your project root in your virtual environment then re-run script"
+        exit 1
+fi
 
-# Set linux specific config
+# Stop currently running software if on linux operating system
 if [[ "$OSTYPE" == "linux"* ]]; then
-
-  # If the brain is running from /etc/rc.local, stop it.
-  sudo service rc.local stop
-  sudo systemctl daemon-reload
-
-  # Fix up some directories and files that may be owned by root
-  sudo chmod -f -R 777 data/logs/ data/images/ 
-  sudo chown -R $USER:$USER .
-
+    sudo service rc.local stop
+    sudo systemctl daemon-reload
 fi
 
-# For upgrade to version 1.0.4 we need to remove old symlinks
-sudo rm -f $TOPDIR/app/staticfiles/images
-sudo rm -f $TOPDIR/app/static/stored_images
+# Activate the virtual environment
+source $PROJECT_ROOT/venv/bin/activate
 
-# Install any new python modules
-source venv/bin/activate
-pip3 install -f venv/pip_download -r requirements.txt 
+# Install new python requirements
+pip3.6 install -f $PROJECT_ROOT/venv/pip_download -r $PROJECT_ROOT/requirements.txt 
 
-# Remove all rows in the state table only.
-echo 'Updating database...'
-if [[ "$OSTYPE" == "linux"* ]]; then
-  sudo -u postgres psql openag_brain -c "DELETE FROM app_statemodel;"
-  sudo -u postgres psql openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 0;"
-else # we are on OSX
-  psql openag_brain -c "DELETE FROM app_statemodel;"
-  psql openag_brain -c "UPDATE app_iotconfigmodel set last_config_version = 0;"
-fi
+# Drop the state table
+bash $PROJECT_ROOT/scripts/database/drop_state_table.sh
 
-# If there is no device type configured, make an unspecified one
-DEV_FILE='data/config/device.txt'
-if [ ! -f $DEV_FILE ]; then
-  # No file, so create one
-  echo "unspecified" > $DEV_FILE
-fi
-
-# Load our models
-echo 'Migrating the django/postgres database...'
-python3.6 manage.py migrate
-
-# Also need to make our user super again for the django admin
-echo "from django.contrib.auth.models import User; User.objects.filter(email='openag@openag.edu').delete(); User.objects.create_superuser('openag', 'openag@openag.edu', 'openag')" | python3.6 manage.py shell
-echo "from django.contrib.auth.models import User; User.objects.create_superuser('backdoor', 'openag@openag.edu', 'B@ckd00r')" | python3.6 manage.py shell
-
-# How to test access to the backend, if you see weird IoT errors:
-# openssl s_client -connect mqtt.googleapis.com:8883
-#
-# If the above fails and below works, go change the port in iot_pubsub.py
-# openssl s_client -connect mqtt.googleapis.com:443
-
-# Check if brain root env is exported in venv activate, if not add it
-if ! grep "PROJECT_ROOT" $TOPDIR/venv/bin/activate > /dev/null; then
-  echo "export PROJECT_ROOT=$TOPDIR" >> $TOPDIR/venv/bin/activate
-fi
+# Migrate the database
+bash $PROJECT_ROOT/scripts/database/migrate_database.sh
 
 
 if [[ "$OSTYPE" == "linux"* ]]; then
 
-  # Remove rc.local
-  sudo rm -f /etc/rc.local
+    # Install a new system log config file, to avoid filling the disk
+    sudo cp $DEVICE_CONFIG_PATH/rsyslog /etc/logrotate.d/
+    sudo service rsyslog restart
 
-  # Sym link to data/config/rc.local.<run_context>
-  DEVICE_CONFIG_PATH=$TOPDIR/data/config
-  if [ ! -f $DEVICE_CONFIG_PATH/develop ]; then
-    echo "Sym linking rc.local.production"
-    sudo ln -s $DEVICE_CONFIG_PATH/rc.local.production /etc/rc.local
-  else
-    echo "Sym linking rc.local.development"
-    sudo ln -s $DEVICE_CONFIG_PATH/rc.local.development /etc/rc.local
-  fi
+    # Collect static files
+    sudo bash $PROJECT_ROOT/scripts/install/collect_static_files.sh
 
-  # Install a new system log config file, to avoid filling the disk
-  sudo cp $DEVICE_CONFIG_PATH/rsyslog /etc/logrotate.d/
-  sudo service rsyslog restart
+    # Reload rc.local daemon
+    sudo systemctl daemon-reload
 
-  # Collect static files
-  sudo scripts/collectstatic.sh
-
-  # Make sure stored image dir exists
-  sudo mkdir -p data/images/stored
-
-  # Reload rc.local daemon
-  sudo systemctl daemon-reload
-
-  # Start the OpenAg Brain as a service running as rc.local
-  sudo service rc.local start
-  sudo systemctl status rc.local -l --no-pager
+    # Start the OpenAg Brain as a service running as rc.local
+    sudo service rc.local start
+    sudo systemctl status rc.local -l --no-pager
 fi
 

@@ -1,7 +1,0 @@
-#!/bin/sh
-
-TOPDIR=/home/debian/openag-device-software
-chdir $TOPDIR
-$TOPDIR/run.sh &
-sleep 15
-$TOPDIR/scripts/persist_ports.sh &

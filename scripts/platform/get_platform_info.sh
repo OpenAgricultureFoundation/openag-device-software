@@ -50,8 +50,8 @@ fi
 
 # Set general raspberry pi info
 if [[ $PLATFORM == *"raspberry-pi"* ]]; then
-  SERIAL_NUMBER=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2`
-  WIFI_ACCESS_POINT=RaspberryPi-`echo $SERIAL_NUMBER | tail -c 5 | awk '{print toupper($0)}'`
+  SERIAL_NUMBER=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2 | sed 's/^0*//' | awk '{print toupper($0)}'`
+  WIFI_ACCESS_POINT=RaspberryPi-`echo $SERIAL_NUMBER | tail -c 5 | awk '{print toupper($0)}' `
   IS_WIFI_ENABLED=true
   IS_I2C_ENABLED=true
   DEFAULT_I2C_BUS=1
@@ -66,7 +66,7 @@ fi
 if [[ $PLATFORM == "unknown" && $OSTYPE == "linux"* ]]; then
   PLATFORM=linux-machine
   IS_WIFI_ENABLED=true
-  SERIAL_NUMBER=`sudo dmidecode -t system | grep Serial | cut -d ' ' -f 3`
+  SERIAL_NUMBER=`sudo dmidecode -t system | grep Serial | cut -d ' ' -f 3 `
   IS_I2C_ENABLED=false
 
   # Check if platform has a usb-to-i2c adapter
@@ -89,6 +89,7 @@ fi
 # Set remote device ui url
 if [[ ! $SERIAL_NUMBER == "unknown" ]]; then
   REMOTE_DEVICE_UI_URL=openag-$SERIAL_NUMBER.serveo.net
+  REMOTE_DEVICE_UI_URL=`echo $REMOTE_DEVICE_UI_URL | awk '{print tolower($0)}'`
 else
   REMOTE_DEVICE_UI_URL=unknown
 fi

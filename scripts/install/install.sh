@@ -42,6 +42,16 @@ echo PROJECT_ROOT: $PROJECT_ROOT
 echo "Moving to project root..."
 cd $PROJECT_ROOT
 
+# Set device config file to unspecified
+echo "unspecified" > $PROJECT_ROOT/data/config/device.txt
+
+# Sym link rc.local to project rc.local
+sudo rm -f /etc/rc.local
+sudo ln -s $PROJECT_ROOT/data/config/rc.local.production /etc/rc.local
+
+# TODO: Remove this: Initialize directory structure
+sudo mkdir -p $PROJECT_ROOT/data/images/stored
+
 # Install full system
 echo "Installing full system..."
 bash $PROJECT_ROOT/scripts/install/update_operating_system.sh
