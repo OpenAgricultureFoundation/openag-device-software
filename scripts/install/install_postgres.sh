@@ -1,4 +1,4 @@
-#!/bin/bash
+./#!/bin/bash
 
 # Log install status
 echo "Installing postgres..."
@@ -24,6 +24,8 @@ if [[ "$OSTYPE" == "linux"* ]]; then
     if [[ ! -f "$INSTALL_PATH" ]]; then
       echo "Unable to verify install, unknown error"
       exit 1
+    else
+      echo "Successfully installed postgres"
     fi
 
 # Install on darwin operating system
@@ -45,6 +47,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     if [[ ! -f "$INSTALL_PATH" ]]; then
       echo "Unable to verify install, unknown error"
       exit 1
+    else
+      echo "Successfully installed postgres"
     fi
 
 # Invalid operating system
