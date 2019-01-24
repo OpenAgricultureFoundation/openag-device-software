@@ -1,4 +1,4 @@
-cd#!/bin/bash
+#!/bin/bash
 
 # Log creation status
 echo "Creating virtual environment..."
