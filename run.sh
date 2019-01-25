@@ -6,15 +6,10 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Source virtual environment
 source $PROJECT_ROOT/venv/bin/activate
 
-# Turn on debug logging if we are in developer mode
-if [ -f $PROJECT_ROOT/data/config/develop ]; then
-    export OPENAG_LOG_LEVEL=DEBUG
-fi
-
 # Only if we are on linux, we run a light weight web server to vend images
 if [[ "$OSTYPE" == "linux"* ]]; then
     sudo pkill busybox
-    sudo busybox httpd -p 8080 -h $DIR/data/images/stored/
+    sudo busybox httpd -p 8080 -h $PROJECT_ROOT/data/images/stored/
 fi
 
 # Initialize command line arg default values
@@ -28,10 +23,10 @@ do
 key="$1"
 
 case $key in
-    -nd | --no-device)           shift               
+    --no-device)           shift               
                                 NO_DEVICE="true"
                                 ;;
-    -nd | --simulate)           shift               
+    --simulate)           shift               
                                 SIMULATE="true"
                                 ;;
     *) 
@@ -48,4 +43,3 @@ export SIMULATE
 
 # Run app
 python3.6 manage.py runserver 0.0.0.0:8000
-
