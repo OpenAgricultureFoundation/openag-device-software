@@ -54,20 +54,20 @@ echo PROJECT_ROOT: $PROJECT_ROOT
 echo "Installing software..."
 bash $PROJECT_ROOT/scripts/install/initialize_device_config.sh $PROJECT_ROOT
 bash $PROJECT_ROOT/scripts/install/initialize_directory_structure.sh $PROJECT_ROOT
-# bash $PROJECT_ROOT/scripts/install/update_operating_system.sh
-# bash $PROJECT_ROOT/scripts/install/install_python36.sh
-# bash $PROJECT_ROOT/scripts/install/install_postgres.sh
-# bash $PROJECT_ROOT/scripts/install/initialize_port80_forwarding.sh
-# bash $PROJECT_ROOT/scripts/install/create_virtual_environment.sh $PROJECT_ROOT
-# bash $PROJECT_ROOT/scripts/install/initialize_virtual_environment_activate.sh $PROJECT_ROOT
-# source $PROJECT_ROOT/venv/bin/activate
-# bash $PROJECT_ROOT/scripts/install/install_cryptography_dependencies.sh
-# bash $PROJECT_ROOT/scripts/install/install_python_requirements.sh
-# bash $PROJECT_ROOT/scripts/install/install_network_utilities.sh
-# bash $PROJECT_ROOT/scripts/database/create_postgres_user.sh
-# bash $PROJECT_ROOT/scripts/database/create_database.sh
-# bash $PROJECT_ROOT/scripts/database/migrate_database.sh
-# bash $PROJECT_ROOT/scripts/database/create_project_users.sh
+bash $PROJECT_ROOT/scripts/install/update_operating_system.sh
+bash $PROJECT_ROOT/scripts/install/install_python36.sh
+bash $PROJECT_ROOT/scripts/install/install_postgres.sh
+bash $PROJECT_ROOT/scripts/install/initialize_port80_forwarding.sh
+bash $PROJECT_ROOT/scripts/install/create_virtual_environment.sh $PROJECT_ROOT
+bash $PROJECT_ROOT/scripts/install/initialize_virtual_environment_activate.sh $PROJECT_ROOT
+source $PROJECT_ROOT/venv/bin/activate
+bash $PROJECT_ROOT/scripts/install/install_cryptography_dependencies.sh
+bash $PROJECT_ROOT/scripts/install/install_python_requirements.sh
+bash $PROJECT_ROOT/scripts/install/install_network_utilities.sh
+bash $PROJECT_ROOT/scripts/database/create_postgres_user.sh
+bash $PROJECT_ROOT/scripts/database/create_database.sh
+bash $PROJECT_ROOT/scripts/database/migrate_database.sh
+bash $PROJECT_ROOT/scripts/database/create_project_users.sh
 bash $PROJECT_ROOT/scripts/install/initialize_rc_local.sh $PROJECT_ROOT $RUNTIME_MODE
 
 # Installation complete
