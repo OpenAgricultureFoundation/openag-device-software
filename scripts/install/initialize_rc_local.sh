@@ -45,3 +45,6 @@ fi
 # Symlink system rc.local to project rc.local
 sudo rm -f /etc/rc.local 
 sudo ln -s $PROJECT_ROOT/data/config/rc.local /etc/rc.local
+
+# Restart rc.local service
+sudo service rc.local restart
