@@ -1,4 +1,4 @@
 chdir $PROJECT_ROOT
 $PROJECT_ROOT/run.sh &
 sleep 15
-$PROJECT_ROOT/scripts/network/persist_remote_access.sh &
+bash $PROJECT_ROOT/scripts/network/persist_remote_access.sh $PROJECT_ROOT $REMOTE_DEVICE_UI_URL &
