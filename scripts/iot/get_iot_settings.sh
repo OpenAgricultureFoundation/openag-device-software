@@ -23,9 +23,12 @@ export GCLOUD_DEV_REG=device-registry
 
 # Load the device id file if it exists
 DEVICE_ID_FILE=$PROJECT_ROOT/data/registration/device_id.bash
-if [ -f $DEVICE_ID_FILE ]; then
+if [[ -f $DEVICE_ID_FILE ]]; then
     source $DEVICE_ID_FILE
+else
+	DEVICE_ID="not-set-yet"
 fi
+
 
 # Log results
 echo IOT_PRIVATE_KEY: $IOT_PRIVATE_KEY
