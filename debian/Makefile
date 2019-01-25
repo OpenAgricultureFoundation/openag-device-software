@@ -11,4 +11,4 @@ clean:
 install:
 	echo "Makefile $@ target"
 	# copy all the dirs and files we will install
-	./scripts/copy_files_for_deb_pkg.sh $(DESTDIR)$(appdir)
+	./scripts/debian/copy_files_for_deb_pkg.sh $(DESTDIR)$(appdir)

@@ -1,0 +1,2 @@
+chdir $PROJECT_ROOT
+bash $PROJECT_ROOT/scripts/network/persist_ports.sh &

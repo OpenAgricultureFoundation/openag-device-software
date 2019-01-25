@@ -102,9 +102,8 @@ DATABASES = {
 }
 
 # Set log level
-# If you touch data/config/develop, this env var will be set to DEBUG in run.sh
-LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "WARNING")
-CONSOLE_LOG_LEVEL = os.getenv("OPENAG_LOG_LEVEL", "ERROR")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
+CONSOLE_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 # Set device into debug mode if log level at debug
 if LOG_LEVEL == "DEBUG":

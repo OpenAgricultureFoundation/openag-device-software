@@ -6,11 +6,6 @@ if [[ -z "${VIRTUAL_ENV}" ]] ; then
     exit 0
 fi
 
-# Ensure platform info is sourced
-if [[ -z "$PLATFORM" ]]; then
-	source $PROJECT_ROOT/scripts/get_platform_info.sh > /dev/null 2>&1
-fi
-
 # Ensure platform is i2c enabled
 if [[ "$IS_I2C_ENABLED" != "true" ]]; then
 	echo "Platform is not i2c enabled"

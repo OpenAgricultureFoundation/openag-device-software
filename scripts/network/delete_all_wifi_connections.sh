@@ -6,11 +6,6 @@ if [ -z "${VIRTUAL_ENV}" ] ; then
     exit 0
 fi
 
-# Check platform info is sourced
-if [[ -z "$PLATFORM" ]]; then
-	source $PROJECT_ROOT/scripts/get_platform_info.sh
-fi
-
 # Delete all wifi connections
 echo "Deleting all wifi connections..."
 

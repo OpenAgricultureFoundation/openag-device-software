@@ -3,6 +3,10 @@
 # This script creates a debian package of the OpenAg Brain python app for
 # installation on a Beaglebone that controls a Food Computer.
 
+# TODO: Clean up debian scripts to use the same conventions used by the other bash scripts 
+# in this project -- only need to do this if plan to make more debian packages as opposed
+# to distributing images and ota-updates with a service like mender.io
+
 if [ $# -lt 2 ]; then
     echo "Error: missing two mandatory command line args."
     echo "Usage: major.minor patch"
@@ -36,10 +40,12 @@ Exiting.'
     exit 1
 fi
 
-
-# Downloaded the packages we need.
-$DIR/../scripts/download_pip_packages.sh
-
+# Downloaded the packages we need
+# Save the path to THIS script (before we go changing dirs)
+TOPDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# The top of our source tree is the parent of this scripts dir
+TOPDIR+=/..
+pip3.6 download -d $TOPDIR/venv/pip_download -r $TOPDIR/requirements.txt
 
 # Install any new python modules
 echo 'Installing any new python modules into the virtual env we package...'
@@ -86,7 +92,7 @@ cp debian/Makefile $SUBDIR/$VERDIR
 
 # Copy ONLY the dirs & files that we need to deploy. 
 # (not this script, .git/, etc.)
-./scripts/copy_files_for_deb_pkg.sh $SUBDIR/$VERDIR
+./scripts/debian/copy_files_for_deb_pkg.sh $SUBDIR/$VERDIR
 
 # Create the source tarball that the deb pkg tools require.
 # NOTE: dir uses a '_' between package and major.minor
@@ -120,5 +126,5 @@ echo ""
 echo "Remember to VERIFY, git add, commit, push change to the $TOPDIR/debian/changelog"
 echo ""
 
-echo "Then run scripts/git_tag_deb_package.sh"
+echo "Then run scripts/debian/git_tag_deb_package.sh"
 echo ""

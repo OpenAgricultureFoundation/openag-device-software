@@ -1,7 +1,4 @@
-#!/bin/sh
-
-TOPDIR=/opt/openagbrain
-chdir $TOPDIR
-$TOPDIR/run.sh &
+chdir $PROJECT_ROOT
+$PROJECT_ROOT/run.sh &
 sleep 15
-$TOPDIR/scripts/persist_ports.sh &
+$PROJECT_ROOT/scripts/network/persist_remote_access.sh &

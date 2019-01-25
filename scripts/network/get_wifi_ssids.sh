@@ -3,12 +3,7 @@
 # Ensure virtual environment is activated
 if [[ -z "${VIRTUAL_ENV}" ]] ; then
     echo "Please activate your virtual environment then re-run script"
-    exit 0
-fi
-
-# Ensure platform info is sourced
-if [[ -z "$PLATFORM" ]]; then
-	source $PROJECT_ROOT/scripts/get_platform_info.sh > /dev/null 2>&1
+    exit 1
 fi
 
 # Get wifi ssids for beaglebone wireless

@@ -7,12 +7,12 @@ from device.utilities import network
 
 # Initialize file paths
 REGISTRATION_DATA_DIR = "data/registration/"
-DEVICE_ID_PATH = REGISTRATION_DATA_DIR + "device_id.bash"
-ROOTS_PATH = REGISTRATION_DATA_DIR + "roots.pem"
-RSA_CERT_PATH = REGISTRATION_DATA_DIR + "rsa_cert.pem"
-RSA_PRIVATE_PATH = REGISTRATION_DATA_DIR + "rsa_private.pem"
-VERIFICATION_CODE_PATH = REGISTRATION_DATA_DIR + "verification_code.txt"
-REGISTER_SCRIPT_PATH = "scripts/one_time_key_creation_and_iot_device_registration.sh"
+DEVICE_ID_PATH = "data/registration/device_id.bash"
+ROOTS_PATH = "data/registration/roots.pem"
+RSA_CERT_PATH = "data/registration/rsa_cert.pem"
+RSA_PRIVATE_PATH = "data/registration/rsa_private.pem"
+VERIFICATION_CODE_PATH = "data/registration/verification_code.txt"
+REGISTER_SCRIPT_PATH = "scripts/iot/one_time_key_creation_and_iot_device_registration.sh"
 
 # Initialize logger
 logger = Logger("IotRegistrationUtility", "iot")

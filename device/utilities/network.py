@@ -14,13 +14,13 @@ from device.utilities import system
 from device.utilities.logger import Logger
 
 # Initialize file paths
-GET_WIFI_SSIDS_SCRIPT_PATH = "scripts/get_wifi_ssids.sh"
-JOIN_WIFI_SCRIPT_PATH = "scripts/join_wifi.sh"
-DELETE_WIFIS_SCRIPT_PATH = "scripts/delete_all_wifi_connections.sh"
-ENABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/enable_raspi_access_point.sh"
-DISABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/disable_raspi_access_point.sh"
-REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH = "scripts/remove_raspi_prev_wifi_entry.sh"
-
+GET_WIFI_SSIDS_SCRIPT_PATH = "scripts/network/get_wifi_ssids.sh"
+JOIN_WIFI_SCRIPT_PATH = "scripts/network/join_wifi.sh"
+DELETE_WIFIS_SCRIPT_PATH = "scripts/network/delete_all_wifi_connections.sh"
+ENABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/network/enable_raspi_access_point.sh"
+DISABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/network/disable_raspi_access_point.sh"
+REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH = "scripts/network/remove_raspi_prev_wifi_entry.sh"
+ADVANCED_WIFI_CONNECT_SCRIPT_PATH = "scripts/network/advanced_connect_wifi.sh"
 
 # Initialize logger
 logger = Logger("NetworkUtility", "network")
@@ -141,7 +141,7 @@ def join_wifi_advanced(
 
     # Build command
     command = [
-        "scripts/advanced_connect_wifi.sh",
+        ADVANCED_WIFI_CONNECT_SCRIPT_PATH,
         ssid_name,
         passphrase,
         hidden_ssid,
