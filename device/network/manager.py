@@ -191,7 +191,11 @@ class NetworkManager(manager.StateMachineManager):
             # once it is associated with a user account (which happens by entering the
             # iot access code in the cloud ui or clicking on the iot access link)
             if "raspberry-pi" in str(os.getenv("PLATFORM")):
-                if self.iot_is_registered and not self.iot_is_connected:
+                if (
+                    self.iot_is_registered
+                    and not self.iot_is_connected
+                    and not self.access_point_enabled
+                ):
                     message = "Detected raspberry pi successful initial network connection event"
                     self.logger.info(message)
 
