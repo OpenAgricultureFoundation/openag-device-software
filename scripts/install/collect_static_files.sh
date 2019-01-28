@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # Log collection status
-echo "Collecting static files"
+echo "Collecting static files..."
+
+# Check virtual environment is activated
+if [[ -z "${VIRTUAL_ENV}" ]] ; then
+    echo "Please activate your virtual environment then re-run script"
+    exit 1
+fi
 
 # Collect static files
-sudo python3.6 manage.py collectstatic --clear --link --noinput
+python3.6 manage.py collectstatic --clear --link --noinput

@@ -276,6 +276,7 @@ class NetworkManager(manager.StateMachineManager):
     def update_connection(self) -> None:
         """Updates connection state."""
         self.is_connected = network_utilities.is_connected()
+        self.logger.debug("Is connected: {}".format(self.is_connected))
         if self.is_connected:
             self.ip_address = network_utilities.get_ip_address()
         else:

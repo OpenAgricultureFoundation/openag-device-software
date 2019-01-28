@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "bootstrap",
     "fontawesome",
+    "jquery",
     "app",
     "device",
     "device.coordinator",

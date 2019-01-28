@@ -29,9 +29,10 @@ logger = Logger("NetworkUtility", "network")
 def is_connected() -> bool:
     """Checks if connected to network."""
     try:
-        urllib.request.urlopen("http://google.com")
+        urllib.request.urlopen("https://google.com")
         return True
-    except urllib.error.URLError:  # type: ignore
+    except urllib.error.URLError as e:  # type: ignore
+        logger.debug("Network is not connected: {}".format(e))
         return False
 
 

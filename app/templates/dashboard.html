@@ -60,8 +60,11 @@
       /* Starts a recipe. */
       console.log("Starting recipe")
       var uuid = $("#recipe_uuid").val()
-      var date = document.getElementById('id_start_time').value
-
+      const startTime = document.getElementById('id_start_time');
+      var date = undefined;
+      if (startTime != undefined) {
+        date = startTime.value
+      }
       console.log('startRecipe uuid='+uuid);
       console.log('startRecipe date='+date);
 
@@ -165,8 +168,9 @@
 {% csrf_token %}
 
 <head>
+    <!-- https://code.jquery.com/jquery-3.2.1.min.js -->
     {% if network_is_connected %}
-      <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+      <script crossorigin="anonymous" integrity="sha384-xBuQ/xzmlsLoJpyjoggmTEz8OWUFM0/RC5BsqQBDX2v5cMvDHcMakNTNrHIW2I5f" src="/app/static/js/jquery.js"></script>
       {{ datetime_form.media }}
     {% endif %}
 </head>
