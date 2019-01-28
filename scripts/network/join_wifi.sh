@@ -31,35 +31,11 @@ echo PASSWORD: $PASSWORD
 
 # Join wifi on a beaglebone
 if [[ $PLATFORM == "beaglebone-black-wireless" ]]; then
-	 
-	touch "/var/lib/connman/$SSID.config.tmp"
-	chmod 777 "/var/lib/connman/$SSID.config.tmp"
-	echo "[service_$1]
-	Type=wifi
-	Name=$SSID
-	Passphrase=$PASSWORD
-	"> "/var/lib/connman/$SSID.config.tmp"
-	mv "/var/lib/connman/$SSID.config.tmp" "/var/lib/connman/$SSID.config"
-	sleep 3
-	sudo service connman restart
-	sleep 3
+	bash $PROJECT_ROOT/join_wifi_beaglebone.sh $SSID $PASSWORD
 
 # Join wifi on a raspberry pi
 elif [[ $PLATFORM == "raspberry-pi"* ]]; then
-
-	# Append network config to wpa supplicant config file
-	NETWORK_STRING=$'\n'"network={"$'\n\t'"ssid="$'"'"${SSID}"$'"'$'\n\t'"psk="$'"'"${PASSWORD}"$'"'$'\n'"}"$'\n'
-	sudo echo "${NETWORK_STRING}" >> /etc/wpa_supplicant/wpa_supplicant.conf
-
-	# Disable wifi access point
-	echo "Disabling access point..."
-	bash $PROJECT_ROOT/scripts/network/disable_raspi_access_point.sh
-	sleep 3
-
-	# Restart wifi connection
-	echo "Restarting wifi connection..."
-	wpa_cli -i wlan0 reconfigure
-	sleep 3
+	bash $PROJECT_ROOT/join_wifi_raspi.sh $SSID $PASSWORD
 
 # Invalid platform
 else
