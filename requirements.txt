@@ -7,6 +7,7 @@ jsonschema==2.6.0
 numpy==1.14.3
 pytest==3.5.1
 pytest-django==3.2.1
+setuptools==34.3.0
 google-api-python-client==1.6.5
 google-auth-httplib2==0.0.3
 google-auth==1.4.1
