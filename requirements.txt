@@ -18,4 +18,5 @@ pyudev==0.21.0
 whitenoise==4.1
 django-bootstrap-static==4.0.0
 django-tempus-dominus==5.0.1.2
+django-jquery==3.1.0
 pyftdi==0.29.2
