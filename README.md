@@ -1,31 +1,26 @@
-# OpenAg™ Device Software
-Software for running controlled grow environments on embedded linux devices (e.g. Raspberry Pi, Beaglebone, etc.). The two main parts of the code base are the device threads and on-device app. The device threads coordinate recipes, control loops, and peripheral (sensor/actuator) interactions. The on-device django-based app coordinates the interations with the on-device database and hosts the local device UI (a.k.a. developer UI) + local device API. There is also an MQTT-based iot manager for communication with the OpenAg cloud.
+# OpenAg Device Software
+Software for running controlled grow environments on embedded linux devices such Raspberry Pi and Beaglebone. 
 
-## Installation
-While this software is designed to be used on any embedded linux microprocessor, the current harware this codebase is being developed for is the Beagle Bone Black Wireless. If you are familiar with a Raspberry Pi, it is effectively the same thing with a few minor differences.
+## Overview
+This software is designed to be used on any embedded linux devices. 
+It currently supports the Beaglebone, Raspberry Pi, and Standalone Linux-machines with a usb-to-i2c dongle.
+It can easily be adaped to a new platform such as a Dragonboard 410C or an Orange Pi.
+The two main parts of the code base are the device threads and on-device app. 
+The device threads coordinate recipes, control loops, and peripheral (sensor/actuator) interactions. 
+The on-device django-based app coordinates the interations with the on-device database and hosts a local device UI and API. 
+There is also an MQTT-based iot manager for communication with the OpenAg cloud.
 
-The entire install process includes:
- 1. [Purchase a BeagleBone Black](docs/purchase_bbb.md).
- 2. [Prepare SD Card Image](docs/prepare_sd.md).
- 3. [Flash Image onto BBB](docs/flash_bbb.md).
- 4. [Provision BBB](docs/provision_bbb.md).
- 5. [User Setup](docs/user_setup.md).
+## Introductory Videos
+1. [Getting Started](https://youtu.be/M3rPBoFnRuo)
+2. [Architecture Overview](https://youtu.be/tYYAANnXESI) 
+3. [Device Overview](https://youtu.be/lotOETQ6RsQ)
+4. [App Overview](https://youtu.be/2YWZdtC_ApQ)
+5. [Data Overview](https://youtu.be/DeByYZ-9yeI)
+6. [Scripts Overview](https://youtu.be/glc1fmoQOr4)
+7. [Tests, Type Checks, Coding Conventions](https://youtu.be/USms_7X83aE)
 
-Proceed to [Installation Part 1: Purchase BBB + SD Card](docs/purchase_bbb.md)
-
-## Contributing to the software projects
+## Contributing Instructions
 See [Contributing](docs/contributing.md) for links to our forum and wiki.
 
-This repo is distrubuted on production devices via debian packaging. For local development you have 3 choices:
- 1. Start with one of the developer BBB images.  Follow step 3: [Flash Image onto BBB](docs/flash_bbb.md).
- 2. Start with a brand new BBB.  Follow step 2: [Prepare SD Card Image](docs/prepare_sd.md).
- 3. Use your OSX or Linux machine and use the **Getting the code** steps below.
-
-
-### Getting the code
- - [Installing the code](docs/install.md).
-
-## Design
+## Design Documents
  - [Light control](docs/light/overview.md).
-
-

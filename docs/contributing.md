@@ -11,7 +11,7 @@ making easier to purchase a dev kit for. In the mean time, if you want to get st
 now we recommend purchasing a beaglebone black or just running the code in 
 `simulation mode` on a laptop with Ubuntu or OSX. The software is designed to easily
 communicate with any I2C device. To see the currently supported sensors / actuators, 
-check out the [peripheral modules](device/peripherals/modules).
+check out the [peripheral modules](../device/peripherals/modules).
 
 This code is written with `Python` where we try to follow standard best practices. For 
 a short overview of these practices, check out: 
@@ -20,16 +20,9 @@ a short overview of these practices, check out:
 [Code Style Guide (Black)](https://black.readthedocs.io/en/stable/the_black_code_style.html), 
 and [Type Checking Intro](https://mypy.readthedocs.io/en/stable/introduction.html).
 
-To get up and running the fastest, familiarize yourself with the architecture and code 
-structure diagrams, clone the repo on your laptop, follow the 
-[install instructions](https://github.com/OpenAgInitiative/openag-device-software/blob/master/docs/install.md) 
-then start the software in simulation mode with the `./simulate.sh` command. 
+To get up and running the fastest, watch all of the introductory videos to get familiar
+with the code then install it and start the software in simulation mode with the 
+`./simulate.sh` command. 
 
 For all feature requests, bugs, or ideas for ways to contribute, check out this 
 repo's [issue page](https://github.com/OpenAgInitiative/openag-device-software/issues).
-
-## IoT Architecture
-![](iot_architecture.jpg)
-
-## Device Code Structure
-![](code_structure.png)

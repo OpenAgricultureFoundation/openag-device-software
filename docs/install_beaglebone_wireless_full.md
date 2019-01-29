@@ -33,5 +33,5 @@ git clone https://github.com/OpenAgInitiative/openag-device-software.git
 8. Install the software in development mode
 ```
 cd ~/openag-device-software
-sudo ./install.sh --development
+./install.sh --development
 ``
