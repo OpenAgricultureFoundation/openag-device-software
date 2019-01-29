@@ -8,21 +8,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('app', '0010_statemodel_upgrade'),
-    ]
+    dependencies = [("app", "0010_statemodel_upgrade")]
 
     operations = [
         migrations.CreateModel(
-            name='ControllerSetupModel',
+            name="ControllerSetupModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", django.contrib.postgres.fields.jsonb.JSONField()),
             ],
             options={
-                'verbose_name': 'Controller Setup',
-                'verbose_name_plural': 'Controller Setups',
+                "verbose_name": "Controller Setup",
+                "verbose_name_plural": "Controller Setups",
             },
-        ),
+        )
     ]

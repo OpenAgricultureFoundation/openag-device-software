@@ -11,7 +11,7 @@
             "parameters": {
                 "setup": {
                     "name": "Temperature Controller Default",
-                    "file_name": "hysteretic/setups/temperature"
+                    "file_name": "hysteretic/setups/temperature_2c"
                 },
                 "variables": {
                     "sensor_name": "air_temperature_celcius",

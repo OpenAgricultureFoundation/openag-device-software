@@ -74,7 +74,7 @@ class PeripheralManager(StateMachineManager):
                 self.bus = None
 
             if self.bus != None:
-                self.bus = int(self.bus)
+                self.bus = int(self.bus)  # type: ignore
 
         # Check if using default mux
         if self.mux == "default":

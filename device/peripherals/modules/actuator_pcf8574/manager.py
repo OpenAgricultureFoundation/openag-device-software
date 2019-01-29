@@ -126,7 +126,7 @@ class ActuatorPCF8574Manager(manager.PeripheralManager):
         """Shutsdown peripheral."""
         self.logger.info("Shutting down")
         try:
-            self.set_low()
+            self.set_off()
         except exceptions.DriverError as e:
             message = "Unable to turn off actuator before shutting down: {}".format(
                 type(e)
