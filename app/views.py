@@ -25,11 +25,14 @@ from app import forms, models, serializers, viewers
 # Import device utilities
 from device.utilities import logger, system
 
+# Initialize project root
+PROJECT_ROOT = os.getenv("PROJECT_ROOT")
+
 # Initialize file paths
 APP_NAME = "app"
 LOG_DIR = "data/logs/"
-IMAGE_DIR = "data/images/"
-STORED_IMAGE_DIR = IMAGE_DIR + "stored/"
+IMAGE_PATH = PROJECT_ROOT + "/data/images/*.png"
+STORED_IMAGE_PATH = PROJECT_ROOT + "/data/images/stored/*.png"
 DEVICE_CONFIG_PATH = "data/config/device.txt"
 
 
@@ -342,35 +345,24 @@ class Images(views.APIView):
         """Gets images view."""
         self.logger.debug("Getting image view")
 
-        # TODO: Clean up this code flow, it is hard to follow
+        # Get absolute image paths
+        non_stored_image_paths = glob.glob(IMAGE_PATH)
+        stored_image_paths = glob.glob(STORED_IMAGE_PATH)
+        non_stored_image_paths.sort()
+        stored_image_paths.sort()
+        absolute_image_paths = stored_image_paths + non_stored_image_paths
 
-        # Get stored image filepaths
-        stored_files = os.listdir(STORED_IMAGE_DIR)
-        stored_files.sort()
-        filepaths = []
-        for f in stored_files:
-
-            # Clean up any place holder images
-            if f.startswith("This_"):
-                os.remove(STORED_IMAGE_DIR + f)
-                continue
-            if f.endswith(".png"):
-                filepaths.append(f)
-
-        if 0 == len(filepaths):
-            if not os.path.isdir(STORED_IMAGE_DIR):
-                os.mkdir(STORED_IMAGE_DIR)
-            s = "device/peripherals/modules/usb_camera/tests/simulation_image.png"
-            place_holder = (
-                "This_is_just_a_sample_image_until_your_EDU_takes_its_own_picture.png"
+        # Convert to relative image paths
+        relative_image_paths = []
+        for absolute_image_path in absolute_image_paths:
+            relative_image_path = absolute_image_path.replace(
+                PROJECT_ROOT + "/data/images/", ""
             )
-            shutil.copy(s, STORED_IMAGE_DIR + place_holder)
-            filepaths.append(place_holder)
-
-        self.logger.debug("filepaths = {}".format(filepaths))
+            relative_image_paths.append(relative_image_path)
 
         # Build response
-        filepaths_json = json.dumps(filepaths)
+        self.logger.debug("relative_image_paths = {}".format(relative_image_paths))
+        filepaths_json = json.dumps(relative_image_paths)
         response = {"filepaths_json": filepaths_json}
 
         # Return response

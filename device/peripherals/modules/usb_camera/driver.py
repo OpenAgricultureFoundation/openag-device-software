@@ -4,6 +4,11 @@ import time, os, datetime, glob, threading
 # Import python types
 from typing import Optional, Tuple, Dict, Any, List
 
+# Import pygame modules
+import pygame
+import pygame.camera
+from pygame.locals import *
+
 # Import device utilities
 from device.utilities import logger, usb
 from device.utilities.communication.i2c.main import I2C
@@ -53,6 +58,10 @@ class USBCameraDriver:
         # Initialize logger
         logname = "Driver({})".format(name)
         self.logger = logger.Logger(logname, "peripherals")
+
+        # Initialize pygame
+        pygame.init()
+        pygame.camera.init()
 
         # Check if simulating
         if self.simulate:
@@ -175,9 +184,36 @@ class USBCameraDriver:
             image_path = self.directory + filename
 
             # Capture image
-            self.capture_image(camera_path, image_path)
+            self.capture_image_pygame(camera_path, image_path)
 
-    def capture_image(self, camera_path: str, image_path: str) -> None:
+    def capture_image_pygame(self, camera_path: str, image_path: str) -> None:
+        """Captures an image with pygame."""
+        self.logger.debug("Capturing image from camera: {}".format(camera_path))
+
+        # Capture image
+        try:
+
+            # Check if simulated
+            if self.simulate:
+                message = "Simulating capture, saving image to: {}".format(image_path)
+                self.logger.info(message)
+                command = "cp {} {}".format(SIMULATION_IMAGE_PATH, image_path)
+                os.system(command)
+                return
+
+            # Capture and save image
+            resolution_array = self.resolution.split("x")
+            resolution = (int(resolution_array[0]), int(resolution_array[1]))
+            camera = pygame.camera.Camera(camera_path, resolution)
+            camera.start()
+            image = camera.get_image()
+            pygame.image.save(image, image_path)
+            camera.stop()
+
+        except Exception as e:
+            raise exceptions.CaptureImageError(logger=self.logger) from e
+
+    def capture_image_fswebcam(self, camera_path: str, image_path: str) -> None:
         """Captures an image."""
         self.logger.debug("Capturing image from camera: {}".format(camera_path))
 

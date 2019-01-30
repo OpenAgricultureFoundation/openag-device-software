@@ -9,7 +9,7 @@ source $PROJECT_ROOT/venv/bin/activate
 # Only if we are on linux, we run a light weight web server to vend images
 if [[ "$OSTYPE" == "linux"* ]]; then
     sudo pkill busybox
-    sudo busybox httpd -p 8080 -h $PROJECT_ROOT/data/images/stored/
+    sudo busybox httpd -p 8088 -h $PROJECT_ROOT/data/images/ 
 fi
 
 # Initialize command line arg default values
