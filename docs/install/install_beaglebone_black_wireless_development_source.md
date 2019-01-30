@@ -1,6 +1,6 @@
-# Installation on a Beaglebone Black Wireless (Full)
+# Installation on a Beaglebone Black Wireless for Development from Source
 1. Download [Debian Stretch IoT Image](https://beagleboard.org/latest-images)
-2. Flash image to sd card with [Balena Etcher](https://www.balena.io/etcher/) and insert into beaglebone
+2. Flash image to [micro sd card](https://goo.gl/GHaCMB) with [Balena Etcher](https://www.balena.io/etcher/) and insert into beaglebone
 3. Connect to beaglebone wifi access point (SSID: BeagleBone-XXXX, PWD: BeagleBone)
 4. Login to beaglebone
 ```
@@ -24,7 +24,7 @@ ping google.com  # To verify network is connected
 sudo apt-get update -y
 sudo apt-get upgrade -y
 # When prompted, choose to not use the robotics cape
-``
+```
 7. Clone project repository
 ```
 cd ~
@@ -34,4 +34,9 @@ git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
 cd ~/openag-device-software
 ./install.sh --development
-``
+```
+9. Run the software
+```
+cd ~/openag-device-software
+./run.sh
+```

@@ -167,7 +167,10 @@ class Logs(views.APIView):
 
         # Build peripheral logs
         logs = []
-        for peripheral in device_config["peripherals"]:
+        peripherals = device_config.get("peripherals", {})
+        if peripherals == None:
+            peripherals = {}
+        for peripheral in peripherals:
 
             # Get log file path
             name = peripheral["name"]
@@ -191,7 +194,10 @@ class Logs(views.APIView):
             logs.append({"name": name, "entries": entries})
 
         # Build controller logs
-        for controller in device_config["controllers"]:
+        controllers = device_config.get("controllers", {})
+        if controllers == None:
+            controllers = {}
+        for controller in controllers:
 
             # Get log file path
             name = controller["name"]
