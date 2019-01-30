@@ -19,6 +19,7 @@
     }
 
     // Push images to be hosted
+    console.log("Pushing images to be hosted")
     for(var i=0; i<filepaths.length; i++) {
       var filepath = filepaths[i];
       console.log("filepath = " + filepath);
@@ -47,12 +48,8 @@
   function showImage() {
     var slider = $("#image-slider");
     var img = document.getElementById("image");
-
-    // Images are served by busybox, see run.sh
-    var url = "{{ request.META.HTTP_REFERER }}"; // get URL / localhost
-    var origin = getOriginFromURL(url); // clean the URL
-    url = origin + ':8080/'; // add the port busybox is using
-    img.src = url + images[ slider.val() ];
+    img.src = 'http://localhost:8088/' + images[ slider.val() ];
+    console.log(`Showing image from: ${img.src}`)
     var fn = $("#file_name");
     var fntext = images[ slider.val() ];
     fntext = fntext.replace( /_/g, ' ' ); // replace all '_' with ' '
