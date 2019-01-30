@@ -20,7 +20,7 @@ DELETE_WIFIS_SCRIPT_PATH = "scripts/network/delete_all_wifi_connections.sh"
 ENABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/network/enable_raspi_access_point.sh"
 DISABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/network/disable_raspi_access_point.sh"
 REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH = "scripts/network/remove_raspi_prev_wifi_entry.sh"
-ADVANCED_WIFI_CONNECT_SCRIPT_PATH = "scripts/network/advanced_connect_wifi.sh"
+JOIN_WIFI_ADVANCED_SCRIPT_PATH = "scripts/network/join_wifi_advanced.sh"
 
 # Initialize logger
 logger = Logger("NetworkUtility", "network")
@@ -142,7 +142,7 @@ def join_wifi_advanced(
 
     # Build command
     command = [
-        ADVANCED_WIFI_CONNECT_SCRIPT_PATH,
+        JOIN_WIFI_ADVANCED_SCRIPT_PATH,
         ssid_name,
         passphrase,
         hidden_ssid,

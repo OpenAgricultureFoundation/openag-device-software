@@ -32,4 +32,4 @@ There is also an MQTT-based iot manager for communication with the OpenAg cloud.
 See [Contributing](docs/contributing.md) for links to our forum and wiki.
 
 ## Design Documents
- - [Light Control](docs/light/overview.md).
+ - [Light Control](docs/light/overview.md)
