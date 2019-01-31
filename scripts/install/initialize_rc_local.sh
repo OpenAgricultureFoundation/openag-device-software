@@ -22,7 +22,7 @@ elif [[ $# -eq 2 ]]; then
     echo "  REMOTE_DEVICE_UI_URL (e.g. openag-pq485.serveo.net)"
     echo "  PLATFORM (e.g. raspberry-pi-3)"
     exit 1
-elif [[ $# -eq 4 ]]; then
+elif [[ $# -eq 3 ]]; then
     echo "Please provide the following command line arguments:"
     echo "  PLATFORM (e.g. raspberry-pi-3)"
     exit 1
