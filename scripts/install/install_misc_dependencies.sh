@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Log installation status
-echo "Installing cryptography dependencies..."
+echo "Installing misc dependencies..."
 
 # Install on linux operating system
 if [[ "$OSTYPE" == "linux"* ]]; then

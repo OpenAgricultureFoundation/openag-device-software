@@ -73,6 +73,7 @@ bash $PROJECT_ROOT/scripts/database/create_postgres_user.sh
 bash $PROJECT_ROOT/scripts/database/create_database.sh
 bash $PROJECT_ROOT/scripts/database/migrate_database.sh
 bash $PROJECT_ROOT/scripts/database/create_project_users.sh
+bash $PROJECT_ROOT/scripts/install/collect_static_files.sh
 bash $PROJECT_ROOT/scripts/install/initialize_rc_local.sh $PROJECT_ROOT $RUNTIME_MODE $REMOTE_DEVICE_UI_URL
 
 # Installation complete

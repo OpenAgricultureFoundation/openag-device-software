@@ -22,8 +22,8 @@ ping google.com  # To verify network is connected
 7. Update & Upgrade Software
 ```
 sudo apt-get update -y
-sudo apt-get upgrade -y
-# When prompted, choose to not use the robotics cape
+ sudo apt-get upgrade -y
+# When prompted, choose to not use the robotics cape and select none for the initial boot program
 ```
 7. Clone project repository
 ```
