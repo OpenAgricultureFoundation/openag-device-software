@@ -11,13 +11,14 @@ The on-device django-based app coordinates the interactions with the on-device d
 There is also an MQTT-based iot manager for communication with the OpenAg cloud.
 
 ## Introductory Videos
-1. [Getting Started](https://youtu.be/M3rPBoFnRuo)
-2. [Architecture Overview](https://youtu.be/tYYAANnXESI) 
-3. [Device Overview](https://youtu.be/lotOETQ6RsQ)
-4. [App Overview](https://youtu.be/2YWZdtC_ApQ)
-5. [Data Overview](https://youtu.be/DeByYZ-9yeI)
-6. [Scripts Overview](https://youtu.be/glc1fmoQOr4)
-7. [Tests, Type Checks, Coding Conventions](https://youtu.be/USms_7X83aE)
+1. [Introduction](https://www.youtube.com/watch?v=RByKZJ7bDx8&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=1)
+2. [Getting Started](https://www.youtube.com/watch?v=M3rPBoFnRuo&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=2)
+3. [Architecture Overview](https://www.youtube.com/watch?v=tYYAANnXESI&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=3) 
+4. [Device Overview](https://www.youtube.com/watch?v=lotOETQ6RsQ&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=4)
+5. [App Overview](https://www.youtube.com/watch?v=2YWZdtC_ApQ&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=5)
+6. [Data Overview](https://www.youtube.com/watch?v=DeByYZ-9yeI&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=6)
+7. [Scripts Overview](https://www.youtube.com/watch?v=glc1fmoQOr4&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=7)
+8. [Tests, Type Checks, Coding Conventions](https://www.youtube.com/watch?v=USms_7X83aE&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=8)
 
 ## Installation Instructions
  - [Raspberry Pi 3 Production](docs/install/install_raspberry_pi_3_production.md)
