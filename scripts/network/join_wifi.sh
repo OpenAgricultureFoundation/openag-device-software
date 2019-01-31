@@ -31,11 +31,11 @@ echo PASSWORD: $PASSWORD
 
 # Join wifi on a beaglebone
 if [[ $PLATFORM == "beaglebone-black-wireless" ]]; then
-	bash $PROJECT_ROOT/join_wifi_beaglebone.sh $SSID $PASSWORD
+	bash $PROJECT_ROOT/scripts/network/join_wifi_beaglebone.sh $SSID $PASSWORD
 
 # Join wifi on a raspberry pi
 elif [[ $PLATFORM == "raspberry-pi"* ]]; then
-	bash $PROJECT_ROOT/join_wifi_raspi.sh $SSID $PASSWORD
+	bash $PROJECT_ROOT/scripts/network/join_wifi_raspi.sh $SSID $PASSWORD
 
 # Invalid platform
 else
