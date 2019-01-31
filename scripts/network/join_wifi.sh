@@ -45,4 +45,4 @@ fi
 
 # Restart port forwarding
 echo "Restarting remote access..."
-bash $PROJECT_ROOT/scripts/network/enable_remote_access.sh
+bash $PROJECT_ROOT/scripts/network/enable_remote_access.sh $REMOTE_DEVICE_UI_URL
