@@ -6,36 +6,48 @@
 ```
 ssh debian@192.168.8.1  # password: temppwd
 ```
-5. Copy & paste [get_wifi_ssids_beaglebone.sh](../scripts/network/get_wifi_ssids_beaglebone.sh) and [join_wifi_beaglebone.sh](../scripts/network/join_wifi_beaglebone.sh) scripts onto device
+5. Expand the file system
+```
+df -h /
+sudo fdisk /dev/mmcblk0
+>> p  # print current partition table
+>> d  # delete current partition (scary!)
+>> n -> p -> Enter, Enter, Enter  # create new partition and accept defaults
+# Sample output: 'Created a new partition 1 of type 'Linux' and of size 29.7 GiB'
+>> w  # write the new partition config (will see another scary error message)
+sudo partprobe
+```
+6. Copy & paste [get_wifi_ssids_beaglebone.sh](../scripts/network/get_wifi_ssids_beaglebone.sh) and [join_wifi_beaglebone.sh](../scripts/network/join_wifi_beaglebone.sh) scripts onto device
 ```
 cd ~
 nano get_wifi_ssids_beaglebone.sh  # Paste in code from script (see link)
 nano join_wifi_beaglebone.sh  # Paste in code from script (see link)
 chmod +x get_wifi_ssids_beaglebone.sh join_wifi_beaglebone.sh
 ```
-6. Connect beaglebone to wifi network
+7. Connect beaglebone to wifi network
 ```
 ./get_wifi_ssids_beaglebone.sh
 sudo ./join_wifi_beaglebone.sh <wifi-ssid> <wifi-password>
 ping google.com  # To verify network is connected
 ```
-7. Update & Upgrade Software
+8. Update & Upgrade Software
 ```
 sudo apt-get update -y
  sudo apt-get upgrade -y
 # When prompted, choose to not use the robotics cape and select none for the initial boot program
 ```
-7. Clone project repository
+
+9. Clone project repository
 ```
 cd ~
 git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
-8. Install the software in development mode
+10. Install the software in development mode
 ```
 cd ~/openag-device-software
 ./install.sh --development
 ```
-9. Run the software
+11. Run the software
 ```
 cd ~/openag-device-software
 ./run.sh

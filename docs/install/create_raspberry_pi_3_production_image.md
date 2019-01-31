@@ -14,6 +14,10 @@ passwd  # default password is raspberry
 ```
 sudo rm -rf ~/openag-device-software/data/registration
 ```
+6. Delete the wifi networks
+```
+bash $PROJECT_ROOT/scripts/network/delete_all_wifi_networks.sh
+```
 6. Make sure you can see the raspberry pi wifi access point from your laptop `RaspberryPi-XXXX`
 7. Power off the raspberry pi then remove the sd card  and insert it into your laptop
 8. Copy the contents from the sd card (For Ubuntu 16.04)
@@ -21,7 +25,7 @@ sudo rm -rf ~/openag-device-software/data/registration
 sudo fdisk -l  # list connected disks
 # Look for /dev/sdb or /dev/sdc, ignore partitions /sdb/sdb1, /sdb/bd2, /sdb/sdb3, etc.
 # Alternatively look for /dev/mmcblk0, ignore /dev/mmcblk0p0 and /dev/mmcblk0p1
-sudo dd bs=4M if=/dev/sdb of=<image-name>.img  # copy contents of sd card
+sudo dd bs=4M if=/dev/mmcblk0 of=<image-name>.img  # copy contents of sd card
 
 ```
 9. Install [PiShrink](https://github.com/Drewsif/PiShrink)
