@@ -1,2 +1,2 @@
 chdir $PROJECT_ROOT
-bash $PROJECT_ROOT/scripts/network/persist_remote_access.sh $PROJECT_ROOT $REMOTE_DEVICE_UI_URL &
+bash $PROJECT_ROOT/scripts/network/persist_remote_access.sh $PROJECT_ROOT $REMOTE_DEVICE_UI_URL $PLATFORM &

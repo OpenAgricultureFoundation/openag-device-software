@@ -63,7 +63,7 @@ bash $PROJECT_ROOT/scripts/install/install_postgres.sh
 bash $PROJECT_ROOT/scripts/install/initialize_port80_forwarding.sh
 bash $PROJECT_ROOT/scripts/install/install_misc_dependencies.sh
 bash $PROJECT_ROOT/scripts/install/create_virtual_environment.sh $PROJECT_ROOT
-bash $PROJECT_ROOT/scripts/install/initialize_virtual_environment_activate.sh $PROJECT_ROOT $LOG_LEVEL
+bash $PROJECT_ROOT/scripts/install/initialize_virtual_environment_activate.sh $PROJECT_ROOT $LOG_LEVEL $RUNTIME_MODE
 source $PROJECT_ROOT/venv/bin/activate
 bash $PROJECT_ROOT/scripts/install/install_pygame.sh
 bash $PROJECT_ROOT/scripts/install/install_python_requirements.sh
@@ -74,7 +74,7 @@ bash $PROJECT_ROOT/scripts/database/create_database.sh
 bash $PROJECT_ROOT/scripts/database/migrate_database.sh
 bash $PROJECT_ROOT/scripts/database/create_project_users.sh
 bash $PROJECT_ROOT/scripts/install/collect_static_files.sh
-bash $PROJECT_ROOT/scripts/install/initialize_rc_local.sh $PROJECT_ROOT $RUNTIME_MODE $REMOTE_DEVICE_UI_URL
+bash $PROJECT_ROOT/scripts/install/initialize_rc_local.sh $PROJECT_ROOT $RUNTIME_MODE $REMOTE_DEVICE_UI_URL $PLATFORM
 
 # Installation complete
 echo ""

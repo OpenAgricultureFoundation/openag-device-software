@@ -28,6 +28,9 @@ fi
 # Only restart network for beaglebone blacks now
 if [[ "$PLATFORM" == "beaglebone-black"* ]]; then
 	sudo service connman restart > /dev/null 2>&1
+elif [[ "$PLATFORM" == "raspberry-pi"* ]]; then
+	sudo systemctl daemon-reload
+	sudo systemctl restart dhcpcd
 else
-	echo "Unable to restart network, platform not a beaglebone black"
+	echo "Unable to restart network, unsupported platform $PLATFORM"
 fi
