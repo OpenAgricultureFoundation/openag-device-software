@@ -38,10 +38,11 @@ while true; do
 
 	# Enable remote access if network is online
 	ping -c 1 mit.edu > /dev/null 2>&1
-	if [[ ! "$?" -eq 0 ]]; then
+	if [[ "$?" -eq 0 ]]; then
 		bash $PROJECT_ROOT/scripts/network/enable_remote_access.sh $REMOTE_DEVICE_UI_URL
+		sleep 15
 	fi
-	
+
 	# Update every 5 minutes
 	sleep 300
 	
