@@ -9,6 +9,6 @@ passwd  # default password is temppwd
 ```
 sudo fdisk -l  # list connected disks
 # Look for /dev/sdb or /dev/sdc, ignore partitions /sdb/sdb1, /sdb/bd2, /sdb/sdb3, etc.
-
+sudo dd bs=4M if=/dev/sdb of=<image-name>.img  # copy contents of sd card
 
 ```
