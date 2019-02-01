@@ -1,6 +1,6 @@
 # Create Beaglebone Black Wireless Image
 1. Follow the steps to [Install Beaglebone Black Wireless from Source](install_beaglebone_black_wireless_source) with your preferred runtime option
-2. Run final image prep script
+2. Run image prep script
 ```
 bash $PROJECT_ROOT/scripts/install/prepare_image.sh
 ```
