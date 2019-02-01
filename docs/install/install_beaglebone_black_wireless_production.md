@@ -1,5 +1,5 @@
 # Installation on a Beaglebone Black for Production
-1. Download [Latest Beaglebone Black Production Image (WIP)](https://media0.giphy.com/media/gcZxPiUFzoHgA/giphy.gif?cid=3640f6095c41864c2f56454c6fd3dcea)
+1. Download [Latest Beaglebone Black Production Image](https://drive.google.com/drive/folders/1D7d_C41UBIzNbxtrBHDVWUtdsq5iDstv?usp=sharing)
 2. Flash image to [micro sd card](https://goo.gl/GHaCMB) with [Balena Etcher](https://www.balena.io/etcher/) and insert into beaglebone
 3. Connect to beaglebone wifi access point (SSID: BeagleBone-XXXX, PWD: BeagleBone)
 4. Open the device UI
