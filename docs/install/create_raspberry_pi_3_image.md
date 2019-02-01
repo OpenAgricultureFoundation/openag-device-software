@@ -9,7 +9,7 @@ bash $PROJECT_ROOT/scripts/install/prepare_image.sh &  # need to run in backgrou
 5. Copy the contents from the sd card (For Ubuntu 16.04)
 ```
 sudo fdisk -l  # look for /dev/mmcblk0, ignore partitions /dev/mmcblk0p0 or /dev/mmcblk0p1
-sudo dd bs=4M if=/dev/mmcblk0 of=openag-device-software-raspberry-pi-3-<vX.X.X>.img
+sudo dd bs=4M if=/dev/mmcblk0 of=openag-device-software-raspberry-pi-3-<runtime-mode>-<vX.X.X>.img
 ```
 6. Shrink the image by following the [PiShrink Instructions](https://github.com/Drewsif/PiShrink)
 7. Compress (e.g. zip) and upload the image to the [Google Drive Directory](https://drive.google.com/drive/folders/1D7d_C41UBIzNbxtrBHDVWUtdsq5iDstv?usp=sharing)
