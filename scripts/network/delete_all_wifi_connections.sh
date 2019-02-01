@@ -16,9 +16,12 @@ if [[ $PLATFORM == "beaglebone-black-wireless" ]]; then
 	sudo rm -fr /var/lib/connman/*.config /var/lib/connman/wifi_*
 	sudo service connman start
 
+# Delete wifi connections for raspberry pi
 elif [[ $PLATFORM == "raspberry-pi"* ]]; then
 	echo "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev" > /etc/wpa_supplicant/wpa_supplicant.conf
 	echo "update_config=1" >> /etc/wpa_supplicant/wpa_supplicant.conf
+	sudo systemctl daemon-reload
+	sudo systemctl restart dhcpcd
 
 # Invalid platform
 else

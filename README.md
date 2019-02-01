@@ -22,12 +22,16 @@ There is also an MQTT-based iot manager for communication with the OpenAg cloud.
 
 ## Installation Instructions
  - [Raspberry Pi 3 Production](docs/install/install_raspberry_pi_3_production.md)
- - [Raspberry Pi 3 Development (From Image)](docs/install/install_raspberry_pi_3_development_image.md)
- - [Raspberry Pi 3 Development (From Source)](docs/install/install_raspberry_pi_3_development_source.md)
+ - [Raspberry Pi 3 Development](docs/install/install_raspberry_pi_3_development.md)
+ - [Raspberry Pi 3 Source](docs/install/install_raspberry_pi_3_source.md)
  - [Beaglebone Black Wireless Production](docs/install/install_beaglebone_black_wireless_production.md)
- - [Beaglebone Black Wireless Development (From Image)](docs/install/install_beaglebone_black_wireless_development_image.md)
- - [Beaglebone Black Wireless Development (From Source)](docs/install/install_beaglebone_black_wireless_development_source.md)
- - [Linux Machine (e.g. Laptop or Fanless PC)](docs/install/install_linux_machine.md)
+ - [Beaglebone Black Wireless Development](docs/install/install_beaglebone_black_wireless_development.md)
+ - [Beaglebone Black Wireless Source](docs/install/install_beaglebone_black_wireless_source.md)
+ - [Linux Machine (e.g. Ubuntu Laptop or Fanless PC)](docs/install/install_linux_machine.md)
+
+## Image Creation Instructions
+ - [Create Image for Raspberry Pi 3](docs/install/create_raspberry_pi_3_image.md)
+ - [Create Image for Beaglebone Black Wireless](docs/install/create_beaglebone_black_wireless_image.md)
 
 ## Contributing Instructions
 See [Contributing](docs/contributing.md) for links to our forum and wiki.

@@ -1,0 +1,22 @@
+# Create Beaglebone Black Wireless Image
+1. Follow the steps to [Install Beaglebone Black Wireless from Source](install_beaglebone_black_wireless_source) with your preferred runtime option
+2. Change the password to something more secure
+```
+passwd  # default password is temppwd
+```
+3. Install remote sublime for easy remote text editing 
+```
+sudo wget -O /usr/local/bin/subl https://raw.github.com/aurora/rmate/master/rmate && sudo chmod +x /usr/local/bin/subl
+```
+4. Run final image prep script
+```
+bash $PROJECT_ROOT/scripts/install/prepare_image.sh
+```
+5. Power off the beaglebone then remove the sd card  and insert it into your laptop
+6. Copy the contents from the sd card (For Ubuntu 16.04)
+```
+sudo fdisk -l  # look for /dev/mmcblk0, ignore partitions /dev/mmcblk0p0 or /dev/mmcblk0p1
+sudo dd bs=4M if=/dev/mmcblk0 of=openag-device-software-beaglebone-black-<yyyydd>.img
+```
+7. Shrink the image to 4GB by following the [Software Bakery Instructions](https://softwarebakery.com//shrinking-images-on-linux)
+8. Compress (e.g. zip) and upload the image to the [Google Drive Directory](https://drive.google.com/drive/folders/1D7d_C41UBIzNbxtrBHDVWUtdsq5iDstv?usp=sharing)

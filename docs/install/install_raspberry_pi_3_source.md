@@ -1,4 +1,4 @@
-# Installation on a Raspberry Pi 3 for Development from Source
+# Installation on a Raspberry Pi 3 from Source
 1. Download [Raspbian Stretch Lite Image](https://www.raspberrypi.org/downloads/raspbian/)
 2. Flash image to [micro sd card](https://goo.gl/GHaCMB) with [Balena Etcher](https://www.balena.io/etcher/) and insert into raspberry pi
 3. Connect raspberry pi to monitor, keyboard, and ethernet cable then power on
@@ -29,13 +29,14 @@ sudo apt-get install git -y
 cd ~
 git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
-9. Install the software in development mode
+9. Install the software in preferred runtime mode
 ```
 cd ~/openag-device-software
-./install.sh --development
+sudo ./install.sh --<runtime-mode>  # either --development or --production
 ```
-10. Run the software
+10.  Verify the install
 ```
-cd ~/openag-device-software
-./run.sh
+ps aux | grep autossh  # for both production and development
+ps aux | grep python  # for production only
+./run.sh  # for development only
 ```
