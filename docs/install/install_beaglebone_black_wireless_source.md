@@ -6,6 +6,10 @@
 ```
 ssh debian@192.168.8.1  # password: temppwd
 ```
+5. Change the password to something more secure
+```
+passwd  # default password is temppwd --> for non-secure images just use `openag12`
+```
 5. Expand the file system
 ```
 df -h /  # view current partition size
@@ -43,7 +47,7 @@ git clone https://github.com/OpenAgInitiative/openag-device-software.git
 11. Install the software in preferred runtime mode
 ```
 cd ~/openag-device-software
-sudo ./install.sh --<runtime-mode>  # either --development or --production
+sudo -H -u debian ./install.sh --<runtime-mode>  # either --development or --production
 ```
 12. Verify the install
 ```
