@@ -3,11 +3,7 @@
 option
 2. Change the password to something more secure
 ```
-passwd  # default password is raspberry
-```
-3. Install remote sublime for easy remote text editing 
-```
-sudo wget -O /usr/local/bin/subl https://raw.github.com/aurora/rmate/master/rmate && sudo chmod +x /usr/local/bin/subl
+passwd  # default password is raspberry --> for non-secure images just use `openag12`
 ```
 4. Run final image prep script
 ```

@@ -26,22 +26,26 @@ chmod +x get_wifi_ssids_beaglebone.sh join_wifi_beaglebone.sh
 sudo ./join_wifi_beaglebone.sh <wifi-ssid> <wifi-password>
 ping google.com  # verify network is connected
 ```
-8. Update & Upgrade Software
+8. Install remote sublime for easy remote text editing 
+```
+sudo wget -O /usr/local/bin/subl https://raw.github.com/aurora/rmate/master/rmate && sudo chmod +x /usr/local/bin/subl
+```
+9. Update & Upgrade Software
 ```
 sudo apt-get update -y && sudo apt-get upgrade -y
 # When prompted, choose to not use the robotics cape and select none for the initial boot program
 ```
-9. Clone project repository
+10. Clone project repository
 ```
 cd ~
 git clone https://github.com/OpenAgInitiative/openag-device-software.git
 ```
-10. Install the software in preferred runtime mode
+11. Install the software in preferred runtime mode
 ```
 cd ~/openag-device-software
 sudo ./install.sh --<runtime-mode>  # either --development or --production
 ```
-11. Verify the install
+12. Verify the install
 ```
 ps aux | grep autossh  # for both production and development
 ps aux | grep python  # for production only

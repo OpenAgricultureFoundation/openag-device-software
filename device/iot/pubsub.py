@@ -148,7 +148,10 @@ class PubSub:
 
         # Check if client is initialized
         if not self.is_initialized:
-            self.logger.warning("Tried to update before client initialized")
+            self.logger.warning(
+                "Tried to update before client initialized, initializing client"
+            )
+            self.initialize()
             return
 
         # Check if json webtoken is expired, if so renew client
