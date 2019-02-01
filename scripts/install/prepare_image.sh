@@ -10,6 +10,6 @@ if [[ -z "${VIRTUAL_ENV}" ]] ; then
 fi
 
 # Prepare image
+sudo service rc.local stop
 bash $PROJECT_ROOT/scripts/network/delete_all_wifi_connections.sh
-
 sudo rm -f $PROJECT_ROOT/data/registration
