@@ -5,7 +5,7 @@
 4. Make a note of the IP address from the console output. Look for the line "My IP address is <ip-address>"
 5. Login to raspberry pi via ssh from your laptop
 ```
-ssh pi@<ip-address>  # password: raspberry
+ssh pi@<ip-address>  # password: openag12 (if that doesn't work try raspberry)
 ```
 6. Run the software
 ```
