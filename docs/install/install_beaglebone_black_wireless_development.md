@@ -4,7 +4,7 @@
 3. Connect to beaglebone wifi access point (SSID: BeagleBone-XXXX, PWD: BeagleBone)
 4. Login to beaglebone
 ```
-ssh debian@192.168.8.1  # password: temppwd
+ssh debian@192.168.8.1  # password: openag12 (if that doesn't work try temppwd)
 ```
 5. Run the software
 ```
