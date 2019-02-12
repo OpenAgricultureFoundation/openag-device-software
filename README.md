@@ -8,7 +8,7 @@ It can easily be adaped to a new platform such as a Dragonboard 410C or an Orang
 The two main parts of the code base are the device threads and on-device app. 
 The device threads coordinate recipes, control loops, and peripheral (sensor/actuator) interactions. 
 The on-device django-based app coordinates the interactions with the on-device database and hosts a local device UI and API. 
-There is also an MQTT-based iot manager for communication with the OpenAg cloud.
+There is also an MQTT-based IoT manager for communication with the OpenAg cloud service.
 
 ## Introductory Videos
 1. [Introduction](https://www.youtube.com/watch?v=RByKZJ7bDx8&list=PL7dmhIGxrpXE0EEOFxz7wbVOLJXYAMqE0&index=1)
