@@ -61,7 +61,8 @@ class ResourceManager(manager.StateMachineManager):
 
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
-            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR], modes.ERROR: [modes.SHUTDOWN]
+            modes.NORMAL: [modes.SHUTDOWN, modes.ERROR],
+            modes.ERROR: [modes.SHUTDOWN],
         }
 
         # Initialize state machine mode

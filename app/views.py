@@ -26,7 +26,7 @@ from app import forms, models, serializers, viewers
 from device.utilities import logger, system
 
 # Initialize project root
-PROJECT_ROOT = os.getenv("PROJECT_ROOT")
+PROJECT_ROOT = str(os.getenv("PROJECT_ROOT", ""))
 
 # Initialize file paths
 APP_NAME = "app"

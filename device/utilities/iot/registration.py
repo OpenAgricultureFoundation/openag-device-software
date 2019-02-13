@@ -12,7 +12,9 @@ ROOTS_PATH = "data/registration/roots.pem"
 RSA_CERT_PATH = "data/registration/rsa_cert.pem"
 RSA_PRIVATE_PATH = "data/registration/rsa_private.pem"
 VERIFICATION_CODE_PATH = "data/registration/verification_code.txt"
-REGISTER_SCRIPT_PATH = "scripts/iot/one_time_key_creation_and_iot_device_registration.sh"
+REGISTER_SCRIPT_PATH = (
+    "scripts/iot/one_time_key_creation_and_iot_device_registration.sh"
+)
 
 # Initialize logger
 logger = Logger("IotRegistrationUtility", "iot")
@@ -39,7 +41,7 @@ def device_id() -> str:
         with open(DEVICE_ID_PATH) as f:
             contents = f.read()
             index = contents.find("=")
-            device_id = contents[index + 1:].strip()
+            device_id = contents[index + 1 :].strip()
             return device_id
     except FileNotFoundError:
         return "UNKNOWN"

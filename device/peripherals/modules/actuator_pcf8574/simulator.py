@@ -11,6 +11,7 @@ from device.utilities.communication.i2c.peripheral_simulator import (
 )
 
 
+# debugrob: wrong class name!  fix this. TODO
 class SHT25Simulator(PeripheralSimulator):  # type: ignore
     """Simulates communication with sht25 sensor."""
 
