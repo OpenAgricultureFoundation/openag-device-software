@@ -5,7 +5,7 @@ import os, sys, threading
 from typing import Any, Dict
 
 # Set system path
-sys.path.append(str(os.getenv("OPENAG_BRAIN_ROOT", "")))
+sys.path.append(str(os.getenv("PROJECT_ROOT", "")))
 
 
 # Import run peripheral parent class

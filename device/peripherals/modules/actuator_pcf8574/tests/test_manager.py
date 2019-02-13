@@ -2,7 +2,7 @@
 import os, sys, json, threading, pytest
 
 # Set system path and directory
-ROOT_DIR = str(os.getenv("OPENAG_BRAIN_ROOT", "."))
+ROOT_DIR = str(os.getenv("PROJECT_ROOT", "."))
 sys.path.append(ROOT_DIR)
 os.chdir(ROOT_DIR)
 
