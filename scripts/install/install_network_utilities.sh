@@ -26,7 +26,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 
 # Unsupported operating system
 else
-    echo "Unable to create database, unsupported operating system: $OSTYPE"
+    echo "Unable to install network utils, unsupported operating system: $OSTYPE"
     exit 1
 fi
 

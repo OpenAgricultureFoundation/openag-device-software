@@ -3,10 +3,9 @@
 # Log update status
 echo "Updating operating system..."
 
-# Install on linux linux operating system
+# Update the linux operating system packages
 if [[ "$OSTYPE" == "linux"* ]]; then
     sudo apt-get update -y
-    sudo apt-get upgrade -y
 
 # Install on darwin operating system
 elif [[ "$OSTYPE" == "darwin"* ]]; then

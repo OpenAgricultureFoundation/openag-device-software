@@ -46,7 +46,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
         fi
 
         # Install python3.6
-        brew install python3  # Does this actually work? How does it know 3.6 vs 3.7?
+        brew install python3  
 
         # Verify install
         INSTALL_PATH=`which python3.6`

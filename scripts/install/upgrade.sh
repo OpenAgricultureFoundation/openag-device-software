@@ -21,9 +21,6 @@ if [[ "$OSTYPE" == "linux"* ]]; then
     sudo systemctl daemon-reload
 fi
 
-# Activate the virtual environment
-source $PROJECT_ROOT/venv/bin/activate
-
 # Install new python requirements
 pip3.6 install -f $PROJECT_ROOT/venv/pip_download -r $PROJECT_ROOT/requirements.txt 
 

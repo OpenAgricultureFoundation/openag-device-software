@@ -3,6 +3,11 @@
 # Log initialization status
 echo "Inititalizing rc.local..."
 
+# Do nothing on OSX operating system
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    exit 0    
+fi
+
 # Check valid command line arguments
 if [[ $# -eq 0 ]]; then
     echo "Please provide the following command line arguments:"

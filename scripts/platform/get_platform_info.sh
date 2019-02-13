@@ -21,11 +21,11 @@ if [ -f /etc/dogtag ]; then
       # Check for beaglebone black wireless
       WLAN=`ifconfig wlan0`
       if [[ $WLAN == *"wlan0: flags"* ]]; then
-      	PLATFORM=beaglebone-black-wireless
+          PLATFORM=beaglebone-black-wireless
         IS_WIFI_ENABLED=true
         WIFI_ACCESS_POINT=`cat /tmp/hostapd-wl18xx.conf | grep "^ssid" | cut -d '=' -f 2`
       else
-      	PLATFORM=beaglebone-black-wired
+          PLATFORM=beaglebone-black-wired
         IS_WIFI_ENABLED=false
       fi
 
@@ -39,13 +39,15 @@ if [ -f /etc/dogtag ]; then
 fi
 
 # Check for raspberry pi
-CPUINFO=`cat /proc/cpuinfo`
-if [[ $CPUINFO == *"BCM2708"* ]]; then
-	PLATFORM=raspberry-pi-1
-elif [[ $CPUINFO == *"BCM2709"* ]]; then
-	PLATFORM=raspberry-pi-2
-elif [[ $CPUINFO == *"BCM2835"* ]]; then
-	PLATFORM=raspberry-pi-3
+if [ -f '/proc/cpuinfo' ]; then
+    CPUINFO=`cat /proc/cpuinfo`
+    if [[ $CPUINFO == *"BCM2708"* ]]; then
+        PLATFORM=raspberry-pi-1
+    elif [[ $CPUINFO == *"BCM2709"* ]]; then
+        PLATFORM=raspberry-pi-2
+    elif [[ $CPUINFO == *"BCM2835"* ]]; then
+        PLATFORM=raspberry-pi-3
+    fi
 fi
 
 # Set general raspberry pi info
@@ -60,9 +62,10 @@ fi
 
 
 # Check if platform is a linux machine
-# TODO: This is a bit unclear, but might be fine for awhile
-# The uses cases this is build for is a development machine that runs ubuntu 16.04
-# And a fanless PC that runs the hazelnut computer that runs ubuntu 18.04
+# TODO: This is a bit unclear, but might be fine for a while
+# The uses cases this is built for are: 
+#  - A development machine that runs Ubuntu 16.04
+#  - A fanless PC that runs the hazelnut computer and runs ubuntu 18.04
 if [[ $PLATFORM == "unknown" && $OSTYPE == "linux"* ]]; then
   PLATFORM=linux-machine
   IS_WIFI_ENABLED=true
@@ -75,20 +78,28 @@ if [[ $PLATFORM == "unknown" && $OSTYPE == "linux"* ]]; then
   else
     IS_USB_I2C_ENABLED=false
   fi
-
 fi
 
 # Check if platform is an osx machine
 if [[ $PLATFORM == "unknown" && $OSTYPE == "darwin"* ]]; then
   PLATFORM=osx-machine
   IS_WIFI_ENABLED=true
-  SERIAL_NUMBER=unknown-but-easily-knowable-if-you-edit-me
+  SERIAL_NUMBER=`system_profiler SPHardwareDataType | grep "Serial Number (system)" | awk '{print $4}'`
   IS_I2C_ENABLED=false
+
+#debugrob TEST this on macbook
+  # Check if platform has a usb-to-i2c adapter
+  if [[ `system_profiler SPUSBDataType` == *"FT232"* ]]; then
+    IS_USB_I2C_ENABLED=true
+  else
+    IS_USB_I2C_ENABLED=false
+  fi
 fi
 
-# Set remote device ui url
+# Set remote device UI URL
 if [[ ! $SERIAL_NUMBER == "unknown" ]]; then
-  REMOTE_DEVICE_UI_URL=openag-$SERIAL_NUMBER.serveo.net
+  REMOTE_DEVICE_UI_URL=http://openag-$SERIAL_NUMBER.serveo.net
+  # Serveo only works with lower case URLs
   REMOTE_DEVICE_UI_URL=`echo $REMOTE_DEVICE_UI_URL | awk '{print tolower($0)}'`
 else
   REMOTE_DEVICE_UI_URL=unknown
@@ -117,3 +128,4 @@ echo IS_USB_I2C_ENABLED: $IS_USB_I2C_ENABLED
 echo DEFAULT_I2C_BUS: $DEFAULT_I2C_BUS
 echo DEFAULT_MUX_ADDRESS: $DEFAULT_MUX_ADDRESS
 echo ""
+

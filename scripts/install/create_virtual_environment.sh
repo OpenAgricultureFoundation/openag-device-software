@@ -32,7 +32,6 @@ if [[ "$OSTYPE" == "linux"* || "$OSTYPE" == "darwin"* ]]; then
 
         # Install virtualenv
         sudo pip3.6 install virtualenv
-
     fi
 
     # Remove any existing virtual environment
