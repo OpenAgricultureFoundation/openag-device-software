@@ -46,16 +46,9 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
         fi
 
         # Install python3.6
-        brew install python3  
+        echo "Download and install Python3.6 from: https://www.python.org/downloads/mac-osx/"
+        exit 0
 
-        # Verify install
-        INSTALL_PATH=`which python3.6`
-        if [[ ! -f "$INSTALL_PATH" ]]; then
-            echo "Unable to verify install, unknown error"
-            exit 1
-        else
-          echo "Successfully installed python3.6"
-        fi
 
 # Invalid operating system
 else
