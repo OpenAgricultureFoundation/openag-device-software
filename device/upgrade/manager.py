@@ -269,7 +269,13 @@ class UpgradeManager(manager.StateMachineManager):
         # Execute at commands
         try:
             command = [
-                "at", "-f", "/tmp/openagbrain-at-commands", "now", "+", "1", "minute"
+                "at",
+                "-f",
+                "/tmp/openagbrain-at-commands",
+                "now",
+                "+",
+                "1",
+                "minute",
             ]
             subprocess.Popen(command)
             self.status = "Upgrading software, will restart in 2 minutes"

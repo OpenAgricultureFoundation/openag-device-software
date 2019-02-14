@@ -2,7 +2,7 @@
 import os, sys, json, threading, pytest
 
 # Set system path and directory
-ROOT_DIR = os.environ["OPENAG_BRAIN_ROOT"]
+ROOT_DIR = str(os.getenv("PROJECT_ROOT", "."))
 sys.path.append(ROOT_DIR)
 os.chdir(ROOT_DIR)
 
@@ -15,7 +15,9 @@ from device.utilities.state.main import State
 from device.peripherals.modules.actuator_pcf8574.manager import ActuatorPCF8574Manager
 
 # Load test config
-CONFIG_PATH = ROOT_DIR + "/device/peripherals/modules/actuator_pcf8574/tests/config.json"
+CONFIG_PATH = (
+    ROOT_DIR + "/device/peripherals/modules/actuator_pcf8574/tests/config.json"
+)
 device_config = json.load(open(CONFIG_PATH))
 peripheral_config = accessors.get_peripheral_config(
     device_config["peripherals"], "HeaterPTC300"

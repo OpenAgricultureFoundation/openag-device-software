@@ -75,6 +75,4 @@ urlpatterns = [
     url(r"^$", views.Connect.as_view(), name="connect"),
     url(r"^upgrade/$", views.Upgrade.as_view(), name="upgrade"),
     url(r"^connect_advanced/$", connect_advanced_view, name="connect_advanced"),
-] + static(
-    settings.STATIC_URL, document_root=settings.STATIC_ROOT
-)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

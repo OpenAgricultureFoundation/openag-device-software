@@ -104,10 +104,18 @@ class PeripheralManager(StateMachineManager):
             modes.INIT: [modes.SETUP, modes.ERROR, modes.SHUTDOWN],
             modes.SETUP: [modes.NORMAL, modes.ERROR, modes.SHUTDOWN],
             modes.NORMAL: [
-                modes.CALIBRATE, modes.MANUAL, modes.RESET, modes.ERROR, modes.SHUTDOWN
+                modes.CALIBRATE,
+                modes.MANUAL,
+                modes.RESET,
+                modes.ERROR,
+                modes.SHUTDOWN,
             ],
             modes.MANUAL: [
-                modes.NORMAL, modes.CALIBRATE, modes.RESET, modes.ERROR, modes.SHUTDOWN
+                modes.NORMAL,
+                modes.CALIBRATE,
+                modes.RESET,
+                modes.ERROR,
+                modes.SHUTDOWN,
             ],
             modes.CALIBRATE: [modes.RESET, modes.ERROR, modes.SHUTDOWN],
             modes.RESET: [modes.INIT, modes.ERROR, modes.SHUTDOWN],

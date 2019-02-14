@@ -5,7 +5,7 @@ import os, sys, pytest, threading
 from typing import Dict
 
 # Set system path
-sys.path.append(os.environ["OPENAG_BRAIN_ROOT"])
+sys.path.append(str(os.getenv("PROJECT_ROOT", "")))
 
 # Import mux simulator
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator

@@ -7,6 +7,7 @@ from device.controllers.classes.controller import manager, modes
 
 class HystereticControllerManager(manager.ControllerManager):
     """Manages an actuator controlled by a pcf85764 io expander."""
+
     actuation_direction = None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

@@ -11,7 +11,9 @@ from typing import Any
 from device.utilities.accessors import get_peripheral_config
 
 # Import driver modules
-from device.peripherals.classes.atlas.scripts.run_driver import DriverRunner as AtlasDriverRunner
+from device.peripherals.classes.atlas.scripts.run_driver import (
+    DriverRunner as AtlasDriverRunner
+)
 from device.peripherals.modules.atlas_co2.driver import AtlasCo2Driver
 
 

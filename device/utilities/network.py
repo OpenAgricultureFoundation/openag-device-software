@@ -19,7 +19,9 @@ JOIN_WIFI_SCRIPT_PATH = "scripts/network/join_wifi.sh"
 DELETE_WIFIS_SCRIPT_PATH = "scripts/network/delete_all_wifi_connections.sh"
 ENABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/network/enable_raspi_access_point.sh"
 DISABLE_RASPI_ACCESS_POINT_SCRIPT_PATH = "scripts/network/disable_raspi_access_point.sh"
-REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH = "scripts/network/remove_raspi_prev_wifi_entry.sh"
+REMOVE_RASPI_PREV_WIFI_ENTRY_SCRIPT_PATH = (
+    "scripts/network/remove_raspi_prev_wifi_entry.sh"
+)
 JOIN_WIFI_ADVANCED_SCRIPT_PATH = "scripts/network/join_wifi_advanced.sh"
 
 # Initialize logger
@@ -207,7 +209,9 @@ def enable_raspi_access_point() -> None:
 
     # Check system is a raspberry pi
     if "raspberry-pi" not in str(os.getenv("PLATFORM")):
-        message = "Unable to enable raspberry pi access point, platform not a raspberry pi"
+        message = (
+            "Unable to enable raspberry pi access point, platform not a raspberry pi"
+        )
         logger.error(message)
         raise SystemError(message)
 
@@ -236,7 +240,9 @@ def disable_raspi_access_point() -> None:
 
     # Check system is a raspberry pi
     if "raspberry-pi" not in str(os.getenv("PLATFORM")):
-        message = "Unable to disable raspberry pi access point, platform not a raspberry pi"
+        message = (
+            "Unable to disable raspberry pi access point, platform not a raspberry pi"
+        )
         logger.error(message)
         raise SystemError(message)
 

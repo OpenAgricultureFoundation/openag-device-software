@@ -36,14 +36,14 @@ bytes_ = i2c.read(4)
 
 # Parse data bytes
 _, _, status_msb, status_lsb = bytes_
-error_condition = bool(bitwise.get_bit_from_byte(0, status_lsb)),
-flash_error = bool(bitwise.get_bit_from_byte(1, status_lsb)),
-calibration_error = bool(bitwise.get_bit_from_byte(2, status_lsb)),
-rs232 = bool(bitwise.get_bit_from_byte(0, status_msb)),
-rs485 = bool(bitwise.get_bit_from_byte(1, status_msb)),
-i2c_ = bool(bitwise.get_bit_from_byte(2, status_msb)),
-warm_up_mode = bool(bitwise.get_bit_from_byte(3, status_msb)),
-single_point_calibration = bool(bitwise.get_bit_from_byte(7, status_msb)),
+error_condition = (bool(bitwise.get_bit_from_byte(0, status_lsb)),)
+flash_error = (bool(bitwise.get_bit_from_byte(1, status_lsb)),)
+calibration_error = (bool(bitwise.get_bit_from_byte(2, status_lsb)),)
+rs232 = (bool(bitwise.get_bit_from_byte(0, status_msb)),)
+rs485 = (bool(bitwise.get_bit_from_byte(1, status_msb)),)
+i2c_ = (bool(bitwise.get_bit_from_byte(2, status_msb)),)
+warm_up_mode = (bool(bitwise.get_bit_from_byte(3, status_msb)),)
+single_point_calibration = (bool(bitwise.get_bit_from_byte(7, status_msb)),)
 
 # Display status
 print("Error Condition: {}".format(bool(error_condition)))

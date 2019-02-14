@@ -65,8 +65,8 @@ bash $PROJECT_ROOT/scripts/install/install_misc_dependencies.sh
 bash $PROJECT_ROOT/scripts/install/create_virtual_environment.sh $PROJECT_ROOT
 bash $PROJECT_ROOT/scripts/install/initialize_virtual_environment_activate.sh $PROJECT_ROOT $LOG_LEVEL $RUNTIME_MODE
 source $PROJECT_ROOT/venv/bin/activate
-bash $PROJECT_ROOT/scripts/install/install_pygame.sh
 bash $PROJECT_ROOT/scripts/install/install_python_requirements.sh
+bash $PROJECT_ROOT/scripts/install/install_pygame.sh
 bash $PROJECT_ROOT/scripts/install/set_file_ownership.sh
 bash $PROJECT_ROOT/scripts/install/install_network_utilities.sh
 bash $PROJECT_ROOT/scripts/database/create_postgres_user.sh

@@ -13,7 +13,7 @@ from device.peripherals.modules.actuator_pcf8574 import exceptions, events
 
 
 class ActuatorPCF8574Manager(manager.PeripheralManager):
-    """Manages an actuator controlled by a pcf85764 io expander."""
+    """Manages an actuator controlled by a pcf8574 io expander."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes manager."""

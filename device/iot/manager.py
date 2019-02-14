@@ -68,13 +68,22 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine transitions
         self.transitions: Dict[str, List[str]] = {
             modes.INIT: [
-                modes.CONNECTED, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
+                modes.CONNECTED,
+                modes.DISCONNECTED,
+                modes.ERROR,
+                modes.SHUTDOWN,
             ],
             modes.CONNECTED: [
-                modes.INIT, modes.DISCONNECTED, modes.ERROR, modes.SHUTDOWN
+                modes.INIT,
+                modes.DISCONNECTED,
+                modes.ERROR,
+                modes.SHUTDOWN,
             ],
             modes.DISCONNECTED: [
-                modes.INIT, modes.CONNECTED, modes.SHUTDOWN, modes.ERROR
+                modes.INIT,
+                modes.CONNECTED,
+                modes.SHUTDOWN,
+                modes.ERROR,
             ],
             modes.ERROR: [modes.SHUTDOWN],
         }

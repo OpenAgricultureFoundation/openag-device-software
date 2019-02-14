@@ -14,4 +14,5 @@ fi
 PROJECT_ROOT=$1
 
 # Initialize directory structure
+echo "Using sudo to run mkdir, please enter your user password:"
 sudo mkdir -p $PROJECT_ROOT/data/images/stored

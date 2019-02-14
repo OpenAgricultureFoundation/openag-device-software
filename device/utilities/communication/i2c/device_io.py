@@ -153,7 +153,10 @@ class DeviceIO(object):
                     [
                         (address, 0, 1, pointer(reg)),  # write cmd register
                         (
-                            address, I2C_M_RD, 1, pointer(result)
+                            address,
+                            I2C_M_RD,
+                            1,
+                            pointer(result),
                         ),  # read 1 byte as result
                     ]
                 )
