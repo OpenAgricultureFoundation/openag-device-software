@@ -18,7 +18,7 @@ from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 # Import driver elements
 from device.peripherals.common.dac5578.driver import DAC5578Driver
 from device.peripherals.common.dac5578.exceptions import (
-    DriverError as DAC5578DriverError
+    DriverError as DAC5578DriverError,
 )
 from device.peripherals.modules.usb_camera import exceptions
 

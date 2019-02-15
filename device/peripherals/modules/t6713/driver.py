@@ -136,7 +136,7 @@ class T6713Driver:
         # Read co2 data, requires mux disable to read all x4 bytes
         try:
             with self.i2c_lock:
-                self.i2c.write(bytes([0x04, 0x13, 0x8b, 0x00, 0x01]), retry=retry)
+                self.i2c.write(bytes([0x04, 0x13, 0x8B, 0x00, 0x01]), retry=retry)
                 bytes_ = self.i2c.read(4, retry=retry, disable_mux=True)
         except I2CError as e:
             raise exceptions.ReadCo2Error(logger=self.logger) from e
@@ -162,7 +162,7 @@ class T6713Driver:
         # Read status data, requires mux diable to read all x4 bytes
         try:
             with self.i2c_lock:
-                self.i2c.write(bytes([0x04, 0x13, 0x8a, 0x00, 0x01]), retry=retry)
+                self.i2c.write(bytes([0x04, 0x13, 0x8A, 0x00, 0x01]), retry=retry)
                 bytes_ = self.i2c.read(4, retry=retry, disable_mux=True)
         except I2CError as e:
             raise exceptions.ReadStatusError(logger=self.logger) from e

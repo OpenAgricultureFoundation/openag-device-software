@@ -12,7 +12,7 @@ from device.utilities.accessors import get_peripheral_config
 
 # Import driver modules
 from device.peripherals.classes.atlas.scripts.run_driver import (
-    DriverRunner as AtlasDriverRunner
+    DriverRunner as AtlasDriverRunner,
 )
 from device.peripherals.modules.atlas_ec.driver import AtlasECDriver
 

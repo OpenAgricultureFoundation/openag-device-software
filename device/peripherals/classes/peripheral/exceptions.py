@@ -1,4 +1,3 @@
-
 # Import exception type base class
 from device.utilities.exceptions import ExceptionLogger
 

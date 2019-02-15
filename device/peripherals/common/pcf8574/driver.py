@@ -123,7 +123,7 @@ class PCF8574Driver:
                 raise exceptions.SetLowError(message=message, logger=self.logger) from e
 
             # Build new port byte
-            new_port_status_byte = port_status_byte & (0xff - (1 << port))
+            new_port_status_byte = port_status_byte & (0xFF - (1 << port))
 
             # Send set output command to dac
             self.logger.debug(

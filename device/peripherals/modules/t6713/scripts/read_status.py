@@ -31,7 +31,7 @@ i2c_controller.configure("ftdi://ftdi:232h/1")
 i2c = i2c_controller.get_port(0x15)
 
 # Read data bytes
-i2c.write([0x04, 0x13, 0x8b, 0x00, 0x01])
+i2c.write([0x04, 0x13, 0x8B, 0x00, 0x01])
 bytes_ = i2c.read(4)
 
 # Parse data bytes
