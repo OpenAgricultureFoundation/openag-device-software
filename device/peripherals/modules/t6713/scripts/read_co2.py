@@ -25,7 +25,7 @@ i2c_controller.configure("ftdi://ftdi:232h/1")
 i2c = i2c_controller.get_port(0x15)
 
 # Get co2 data bytes
-i2c.write([0x04, 0x13, 0x8a, 0x00, 0x01])  # status
+i2c.write([0x04, 0x13, 0x8A, 0x00, 0x01])  # status
 bytes_ = i2c.read(4)
 
 # Parse co2 data bytes

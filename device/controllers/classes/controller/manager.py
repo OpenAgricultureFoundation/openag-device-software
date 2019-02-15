@@ -17,11 +17,10 @@ from device.controllers.classes.controller import modes
 
 
 class ControllerManager(StateMachineManager):
-    """Manages an actuator controlled by a pcf85764 io expander."""
+    """Manages all controllers."""
 
     # Initialize timing variables
     default_sampling_interval = 1  # seconds
-    min_sampling_interval = 1  # seconds
     last_update = None  # seconds
     last_update_interval = None  # Seconds
 
@@ -45,7 +44,7 @@ class ControllerManager(StateMachineManager):
         self.variables = self.parameters.get("variables", {})
         self.communication = self.parameters.get("communication", {})
 
-        # Enfore communication to be empty dict if none
+        # Enforce communication to be empty dict if none
         if self.communication == None:
             self.communication = {}
 
@@ -116,7 +115,7 @@ class ControllerManager(StateMachineManager):
                 self.state.controllers[self.name]["stored"] = {}
             self.state.controllers[self.name]["stored"]["sampling_interval"] = value
 
-    ##### STATE MACHINE FUNCTIONS ######################################################
+    ##### STATE MACHINE FUNCTIONS #############################################
 
     def run(self) -> None:
         """Runs controller state machine."""
@@ -146,9 +145,9 @@ class ControllerManager(StateMachineManager):
                 break
 
     def run_init_mode(self) -> None:
-        """Runs init mode. Executes child class initialize function, checks for any 
-        resulting transitions (e.g. errors) then transitions to setup mode on the 
-        next state machine update."""
+        """Runs init mode. Executes child class initialize function, checks for
+        any resulting transitions (e.g. errors) then transitions to setup mode
+        on the next state machine update."""
         self.logger.info("Entered INIT")
 
         # Initialize controller
@@ -242,15 +241,16 @@ class ControllerManager(StateMachineManager):
         self.mode = modes.INIT
 
     def run_shutdown_mode(self) -> None:
-        """Runs shutdown mode. Executes child class shutdown function then waits for 
-        new events and transitions. Logs shutdown state every update interval."""
+        """Runs shutdown mode. Executes child class shutdown function then
+        waits for new events and transitions. Logs shutdown state every update
+        interval."""
         self.logger.info("Entered SHUTDOWN")
 
         # Shutdown controller
         self.shutdown_controller()
         self.is_shutdown = True
 
-    ##### HELPER FUNCTIONS #############################################################
+    ##### HELPER FUNCTIONS ####################################################
 
     def load_setup_dict_from_file(self) -> Dict:
         """Loads setup dict from setup filename parameter."""

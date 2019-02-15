@@ -25,7 +25,7 @@ i2c_controller.configure("ftdi://ftdi:232h/1")
 i2c = i2c_controller.get_port(0x40)
 
 # Trigger temp measurement (no hold master)
-i2c.write([0xf3])
+i2c.write([0xF3])
 
 # Wait for sensor to process
 time.sleep(0.1)

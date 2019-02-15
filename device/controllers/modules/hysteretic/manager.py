@@ -6,7 +6,7 @@ from device.controllers.classes.controller import manager, modes
 
 
 class HystereticControllerManager(manager.ControllerManager):
-    """Manages an actuator controlled by a pcf85764 io expander."""
+    """Manages a controller with hystretic logic."""
 
     actuation_direction = None
 

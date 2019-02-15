@@ -27,4 +27,4 @@ i2c = i2c_controller.get_port(0x47)
 # Set all channels low
 for i in range(8):
     byte = 0x30 + i
-    i2c.write([byte, 0xff, 0x00])
+    i2c.write([byte, 0xFF, 0x00])

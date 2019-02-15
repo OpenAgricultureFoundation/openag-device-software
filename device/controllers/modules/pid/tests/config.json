@@ -1,17 +1,17 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Test Config",
-    "uuid": "261c7228-22bb-48d5-9857-c87ea23ccbb5",
+    "name": "PID Test Config",
+    "uuid": "5bc9a15c-7e8b-4089-aa96-b03b09a28259",
     "peripherals": null,
     "controllers": [
         {
             "name": "TemperatureController",
-            "type": "HystereticController",
-            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "type": "PIDController",
+            "uuid": "b981bc2f-1d08-438c-8a8e-06dcd4005064",
             "parameters": {
                 "setup": {
                     "name": "Temperature Controller Default",
-                    "file_name": "hysteretic/setups/temperature_2c"
+                    "file_name": "pid/setups/air_temperature"
                 },
                 "variables": {
                     "sensor_name": "air_temperature_celcius",

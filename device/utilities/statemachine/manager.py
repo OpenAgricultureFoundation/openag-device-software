@@ -40,7 +40,7 @@ class StateMachineManager:
         """Sets mode."""
         self._mode = value
 
-    ##### STATE MACHINE FUNCTIONS ######################################################
+    ##### STATE MACHINE FUNCTIONS #############################################
 
     def spawn(self) -> None:
         """ Spawns state machine thread. """
@@ -207,7 +207,7 @@ class StateMachineManager:
         """Pre-processes shutdown event. Returns message and http status code."""
         self.logger.debug("Pre-processing shutdown event request")
 
-        # Add start recipe event request to event queue
+        # Add shutdown event request to event queue
         request = {"type": events.SHUTDOWN}
         self.event_queue.put(request)
 
