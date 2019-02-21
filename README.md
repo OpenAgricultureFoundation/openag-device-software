@@ -37,4 +37,6 @@ There is also an MQTT-based IoT manager for communication with the OpenAg cloud 
 See [Contributing](docs/contributing.md) for links to our forum and wiki.
 
 ## Design Documents
+ - [Code Structure Diagram](docs/code_structure.png)
+ - [System Architecture Diagram](docs/iot_architecture.jpg)
  - [Light Control](docs/light/overview.md)
