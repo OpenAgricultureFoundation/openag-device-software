@@ -40,3 +40,8 @@ See [Contributing](docs/contributing.md) for links to our forum and wiki.
  - [Code Structure Diagram](docs/code_structure.png)
  - [System Architecture Diagram](docs/iot_architecture.jpg)
  - [Light Control](docs/light/overview.md)
+
+## Development
+See [USB to I2C communication cable](docs/usb_i2c_cable/USB-I2C.md) for I2C development notes.
+
+
