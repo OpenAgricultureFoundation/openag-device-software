@@ -87,9 +87,8 @@ if [[ $PLATFORM == "unknown" && $OSTYPE == "darwin"* ]]; then
   SERIAL_NUMBER=`system_profiler SPHardwareDataType | grep "Serial Number (system)" | awk '{print $4}'`
   IS_I2C_ENABLED=false
 
-#debugrob TEST this on macbook
   # Check if platform has a usb-to-i2c adapter
-  if [[ `system_profiler SPUSBDataType` == *"FT232"* ]]; then
+  if [[ `system_profiler SPUSBDataType` == *"FTDI"* ]]; then
     IS_USB_I2C_ENABLED=true
   else
     IS_USB_I2C_ENABLED=false

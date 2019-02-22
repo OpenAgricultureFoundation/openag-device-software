@@ -35,7 +35,7 @@ if [[ "$OSTYPE" == "linux"* ]]; then
           echo "Successfully installed python3.6"
         fi
 
-# Install on darwin operating system
+# Install on OSX operating system
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 
         # Check if python3.6 is already installed

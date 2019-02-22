@@ -1,9 +1,15 @@
+#!/usr/bin/env python3
+
 # Import standard python modules
 import os, sys
 
 # Import usb-to-i2c communication modules
 from pyftdi.ftdi import Ftdi
 from pyftdi.i2c import I2cController
+
+if len( sys.argv ) == 1: # no command line args
+    print("Please provide the multiplexer channel (0 to 7) on the command line")
+    exit(1)
 
 # Ensure virtual environment is activated
 if os.getenv("VIRTUAL_ENV") == None:

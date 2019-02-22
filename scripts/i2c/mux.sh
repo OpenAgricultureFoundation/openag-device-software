@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# For use on devices with an I2C bus built in: beaglebone, Pi
+
 # Ensure virtual environment is activated
 if [[ -z "${VIRTUAL_ENV}" ]] ; then
     echo "Please activate your virtual environment then re-run script"

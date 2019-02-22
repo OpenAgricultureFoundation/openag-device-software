@@ -1,9 +1,0 @@
-{
-  "comms/tests/test_i2c.py": true,
-  "drivers/classes/tests/test_driver_manager.py": true,
-  "drivers/classes/tests/test_i2c_driver_core.py": true,
-  "drivers/cores/tests/test_dac5578.py": true,
-  "drivers/managers/tests/test_dac5578.py": true,
-  "utilities/tests/test_error.py": true,
-  "utilities/tests/test_health.py": true
-}
