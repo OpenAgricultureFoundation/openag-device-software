@@ -56,17 +56,20 @@ on = 0xFF # full intensity
 off = 0x00 # off
 while True: # Forever
     for channel in channels:
-        name = channel.get('name') 
-        port = channel.get('port')
-        print(name)
-        chanadx = 0x30 + port
-        for intensity in range(15, 255, 5):
-            led_dac.write([chanadx, intensity, 0x00, port])
-            time.sleep(0.005)
-        for intensity in range(250, 0, -10):
-            led_dac.write([chanadx, intensity, 0x00, port])
-            time.sleep(0.0025)
-        led_dac.write([chanadx, off, 0x00, port])
+        try:
+            name = channel.get('name') 
+            port = channel.get('port')
+            print(name)
+            chanadx = 0x30 + port
+            for intensity in range(15, 255, 5):
+                led_dac.write([chanadx, intensity, 0x00, port])
+                time.sleep(0.005)
+            for intensity in range(250, 0, -10):
+                led_dac.write([chanadx, intensity, 0x00, port])
+                time.sleep(0.0025)
+            led_dac.write([chanadx, off, 0x00, port])
+        except Exception as e:
+            print('Error: ', e)
 
 
 
