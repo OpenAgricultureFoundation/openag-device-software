@@ -1,0 +1,95 @@
+{
+	"name":  "Adafruit STEMMA Soil Sensor",
+	"version": "1",
+	"uuid": "14844e52-f8bd-489b-a70b-c561ce0855ea",
+	"module_name": "adafruit_soil.manager",
+	"class_name": "AdafruitSoilManager",
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"temperature_celcius": {
+					"name": {
+						"type": "string",
+						"default": "air_temperature_celcius"
+					}
+				},
+				"soil_moisture_level": {
+					"name": {
+						"type": "string",
+						"default": "soil_moisture_level"
+					}
+				}
+			},
+			"actuator": null
+		},
+		"communication": {
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "string",
+				"default": "0x36"
+			}
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor":{
+				"temperature_celcius": {
+					"range": [-40, 125],
+			        "accuracy": {
+			            "typical": 2,
+			            "plot": [[-40, 0.5],[5,0.2],[60,0.2],
+			            	[100,0.5],[120,0.7]]
+			        },
+			        "repeatability": 0.1,
+			        "response_time_seconds": 15,
+			        "yearly_drift": 0.02
+				},
+				"soil_moisture_level": {
+                    "range": [0, 4095],
+                    "accuracy": {
+                        "typical": 1.8,
+                        "plot": [[0,3],[10,2],[90,2],[100,3]]
+                    },
+                    "repeatability": 0.1,
+                    "response_time_seconds": 8,
+                    "yearly_drift": 0.25
+				}
+			},
+			"actuator": null
+		}
+	}
+}
