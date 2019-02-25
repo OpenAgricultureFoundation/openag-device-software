@@ -1,0 +1,27 @@
+{
+    "peripherals": [
+        {
+            "name": "AdafruitSoil",
+            "type": "AdafruitSoil",
+            "uuid": "14844e52-f8bd-489b-a70b-c561ce0855ea",
+            "parameters": {
+                "setup": {
+                    "name": "Adafruit STEMMA Soil Sensor Default",
+                    "file_name": "adafruit_soil/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celsius": "air_temperature_celsius",
+                        "soil_moisture_level": "soil_moisture_level"                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x36"
+                }
+            }
+        }
+    ]
+}
