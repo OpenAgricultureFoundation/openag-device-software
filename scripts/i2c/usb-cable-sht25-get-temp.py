@@ -17,6 +17,11 @@ if os.getenv("PLATFORM") == None:
     print("Please source your platform info then re-run script")
     exit(0)
 
+# Ensure platform is usb-to-i2c enabled
+if os.getenv("IS_USB_I2C_ENABLED") != "true":
+    print("Platform is not usb-to-i2c enabled")
+    exit(0)
+
 # Initialize i2c instance
 i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
