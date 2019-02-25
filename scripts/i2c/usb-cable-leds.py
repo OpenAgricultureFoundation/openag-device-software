@@ -54,9 +54,9 @@ channels = [
 # Write the color channel and intensity
 on = 0xFF # full intensity
 off = 0x00 # off
-while True: # Forever
-    for channel in channels:
-        try:
+try:
+    while True: # Forever
+        for channel in channels:
             name = channel.get('name') 
             port = channel.get('port')
             print(name)
@@ -68,8 +68,10 @@ while True: # Forever
                 led_dac.write([chanadx, intensity, 0x00, port])
                 time.sleep(0.0025)
             led_dac.write([chanadx, off, 0x00, port])
-        except Exception as e:
-            print('Error: ', e)
+            # must have a small delay between commands or it NACs
+            time.sleep(0.005) 
+except Exception as e:
+    print('Error: ', e)
 
 
 
