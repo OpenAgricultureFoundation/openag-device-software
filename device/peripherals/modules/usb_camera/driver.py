@@ -4,10 +4,12 @@ import time, os, datetime, glob, threading
 # Import python types
 from typing import Optional, Tuple, Dict, Any, List
 
-# Import pygame modules
-import pygame
-import pygame.camera
-from pygame.locals import *
+# Import pygame modules (only if running Linux!)
+PLATFORM = os.getenv("PLATFORM")
+if PLATFORM is not None and PLATFORM != "osx-machine" and PLATFORM != "unknown":
+    import pygame
+    import pygame.camera
+    from pygame.locals import *
 
 # Import device utilities
 from device.utilities import logger, usb
@@ -61,9 +63,15 @@ class USBCameraDriver:
         logname = "Driver({})".format(name)
         self.logger = logger.Logger(logname, "peripherals")
 
-        # Initialize pygame
-        pygame.init()
-        pygame.camera.init()
+        # pygame only supports Linux.  If not running Linux, then simulate.
+        if PLATFORM is not None and \
+                PLATFORM != "osx-machine" and PLATFORM != "unknown":
+            # Initialize pygame
+            pygame.init()
+            pygame.camera.init()
+        else:
+            self.logger.info("usb_camera module: Not running on Linux OS, so pygame is not supported.  Turning on simulation mode.")
+            self.simulate = True
 
         # Check if simulating
         if self.simulate:
