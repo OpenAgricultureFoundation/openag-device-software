@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 
 # Import standard python modules
-import os, sys
-
-if len( sys.argv ) == 1: # no command line args
-    print("Please provide the multiplexer channel (0 to 7) on the command line")
-    exit(1)
+import os, time
 
 # Import usb-to-i2c communication modules
-from pyftdi.ftdi import Ftdi
 from pyftdi.i2c import I2cController
 
 # Ensure virtual environment is activated
@@ -29,12 +24,9 @@ if os.getenv("IS_USB_I2C_ENABLED") != "true":
 # Initialize i2c instance
 i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
-mux_address = int(os.getenv("DEFAULT_MUX_ADDRESS"), 16)
-i2c = i2c_controller.get_port(mux_address)
+i2c = i2c_controller.get_port(0x47)
 
-# Get channel byte
-channel = int(sys.argv[1])
-channel_byte = 0x01 << channel
-
-# Write to the device
-i2c.write([channel_byte])
+# Set all channels low
+for i in range(8):
+    byte = 0x30 + i
+    i2c.write([byte, 0x00, 0x00])

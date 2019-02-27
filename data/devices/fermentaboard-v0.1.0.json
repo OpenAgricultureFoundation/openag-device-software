@@ -1,0 +1,151 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "Fermentaboard v0.1.0 2019-02-27 Sebastians design, debugrob add SHT25 on air board and three atlas water temps",
+    "uuid": "0e42e366-7c66-4a71-8ec6-67c2f31844b0",
+    "peripherals": [
+        {
+            "name": "Fan",
+            "type": "ActuatorDAC5578",
+            "uuid": "28221e85-16fb-447e-b450-84682402fe9a",
+            "parameters": {
+                "setup": {
+                    "name": "Fan",
+                    "file_name": "actuator_dac5578/setups/fan"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_fan_percent"
+                    }
+                },
+                "communication": {
+                    "mux": "none", 
+                    "address": "0x47",
+                    "port": 0
+                }
+            }
+        },
+        {
+            "name": "Heater",
+            "type": "ActuatorDAC5578",
+            "uuid": "55a36dbd-76c7-4f97-a7a1-5328a1251b27",
+            "parameters": {
+                "setup": {
+                    "name": "Heater",
+                    "file_name": "actuator_dac5578/setups/heater"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_heater_percent"
+                    }
+                },
+                "communication": {
+                    "mux": "none", 
+                    "address": "0x47",
+                    "port": 2
+                }
+            }
+        },
+        {
+            "name": "Humidifier1",
+            "type": "ActuatorDAC5578",
+            "uuid": "b4c6ab23-eed6-40a5-8426-fd33a82af483",
+            "parameters": {
+                "setup": {
+                    "name": "Humidifier1",
+                    "file_name": "actuator_dac5578/setups/humdifier"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_humidifier_percent"
+                    }
+                },
+                "communication": {
+                    "mux": "none", 
+                    "address": "0x47",
+                    "port": 4
+                }
+            }
+        },
+        {
+            "name": "Humidifier2",
+            "type": "ActuatorDAC5578",
+            "uuid": "75da5f80-5c00-4466-b19c-62a4aa224cdb",
+            "parameters": {
+                "setup": {
+                    "name": "Humidifier1",
+                    "file_name": "actuator_dac5578/setups/humdifier"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_humidifier_percent"
+                    }
+                },
+                "communication": {
+                    "mux": "none", 
+                    "address": "0x47",
+                    "port": 6
+                }
+            }
+        },
+        {
+            "name": "Chiller",
+            "type": "ActuatorDAC5578",
+            "uuid": "2989b61a-055a-4e21-b62d-bb8aabf0bae3",
+            "parameters": {
+                "setup": {
+                    "name": "Chiller",
+                    "file_name": "actuator_dac5578/setups/chiller"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_chiller_percent"
+                    }
+                },
+                "communication": {
+                    "mux": "none", 
+                    "address": "0x47",
+                    "port": 7
+                }
+            }
+        }
+    ],
+    "controllers": [
+        {
+            "name": "TemperatureController",
+            "type": "HystereticController",
+            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "parameters": {
+                "setup": {
+                    "name": "Temperature Controller +/- 2C",
+                    "file_name": "hysteretic/setups/temperature_2c"
+                },
+                "variables": {
+                    "sensor_name": "air_temperature_celcius",
+                    "positive_actuator_name": "air_heater_percent",
+                    "negative_actuator_name": null
+                }
+            }
+        },
+        {
+            "name": "HumidityController",
+            "type": "HystereticController",
+            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "parameters": {
+                "setup": {
+                    "name": "Humidity Controller +/- 4%RH",
+                    "file_name": "hysteretic/setups/humidity_4pct"
+                },
+                "variables": {
+                    "sensor_name": "air_humidity_percent",
+                    "positive_actuator_name": "air_humidifier_percent",
+                    "negative_actuator_name": null
+                }
+            }
+        }
+    ]
+}
