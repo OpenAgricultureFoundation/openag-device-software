@@ -159,7 +159,7 @@ class DAC5578Driver:
         if channel != None:
             self.logger.debug("Setting channel {} low".format(channel))
             try:
-                self.write_output(channel, 100, retry=retry)  # type: ignore
+                self.write_output(channel, 0, retry=retry)  # type: ignore
             except exceptions.WriteOutputError as e:
                 raise exceptions.SetLowError(logger=self.logger) from e
         else:

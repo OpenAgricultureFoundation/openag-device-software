@@ -1,0 +1,25 @@
+{
+    "peripherals": [
+        {
+            "name": "Fan",
+            "type": "ActuatorDAC5578",
+            "uuid": "28221e85-16fb-447e-b450-84682402fe9a",
+            "parameters": {
+                "setup": {
+                    "name": "Fan",
+                    "file_name": "actuator_dac5578/setups/fan"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_fan_percent"
+                    }
+                },
+                "communication": {
+                    "address": "0x47",
+                    "port": 0
+                }
+            }
+        }
+    ]
+}
