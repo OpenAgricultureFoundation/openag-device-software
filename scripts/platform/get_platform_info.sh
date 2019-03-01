@@ -72,7 +72,7 @@ if [[ $PLATFORM == "unknown" && $OSTYPE == "linux"* ]]; then
   SERIAL_NUMBER=`sudo dmidecode -t system | grep Serial | cut -d ' ' -f 3 `
   IS_I2C_ENABLED=false
 
-  # Check if platform has a usb-to-i2c adapter
+  # Check if platform has a usb-to-i2c adapter cable
   if [[ `lsusb` == *"FT232"* ]]; then
     IS_USB_I2C_ENABLED=true
   else
@@ -87,7 +87,7 @@ if [[ $PLATFORM == "unknown" && $OSTYPE == "darwin"* ]]; then
   SERIAL_NUMBER=`system_profiler SPHardwareDataType | grep "Serial Number (system)" | awk '{print $4}'`
   IS_I2C_ENABLED=false
 
-  # Check if platform has a usb-to-i2c adapter
+  # Check if platform has a usb-to-i2c adapter cable
   if [[ `system_profiler SPUSBDataType` == *"FTDI"* ]]; then
     IS_USB_I2C_ENABLED=true
   else

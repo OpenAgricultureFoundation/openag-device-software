@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Fermentabot v0.1.0 old POC now deprecated",
+    "name": "old Fermentabot v0.1.0, now deprecated",
     "uuid": "0b27ce21-8c86-4c3e-83de-33ccc9c882ac",
     "peripherals": [
         {

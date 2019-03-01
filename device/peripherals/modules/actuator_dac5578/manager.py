@@ -50,10 +50,10 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
         if self.is_active_high is not None:
             self.is_active_high = bool(self.is_active_high)
 
-        self.logger.info("address={} port={}".format(self.address,self.port))
+        self.logger.info("address=0x{:02X} port={}".format(self.address, self.port))
 
         # Initialize variable names
-        self.output_name = 'actuator output'
+        self.output_name = "actuator output"
         act = self.variables.get("actuator")
         if act is not None:
             self.output_name = act.get("output_variable")
@@ -64,25 +64,25 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
         self.prev_update = 0  # timestamp
 
     @property
-    def desired_output(self) -> Optional[float]:
+    def desired_output(self) -> Optional[bool]:
         """Gets desired output value."""
         value = self.state.get_environment_desired_actuator_value(self.output_name)
         if value != None:
-            return float(value)
+            return bool(value)
         return None
 
     @property
-    def output(self) -> Optional[float]:
+    def output(self) -> Optional[bool]:
         """Gets reported output value."""
         value = self.state.get_peripheral_reported_actuator_value(
             self.name, self.output_name
         )
         if value != None:
-            return float(value)
+            return bool(value)
         return None
 
     @output.setter
-    def output(self, value: float) -> None:
+    def output(self, value: bool) -> None:
         """Sets reported output value in shared state."""
         self.state.set_peripheral_reported_actuator_value(
             self.name, self.output_name, value
@@ -170,17 +170,12 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
 
     ##### HELPER FUNCTIONS ####################################################
 
-    def set_output(self, value: float):
+    def set_output(self, value: bool):
         """Sets output."""
-        if value == 100.0:
+        if value:
             self.set_on()
-        elif value == 0.0:
-            self.set_off()
         else:
-            self.logger.error("Invalid set output value: {}".format(value))
-            self.mode = modes.ERROR
-            self.health = 0.0
-            return
+            self.set_off()
 
     def set_on(self):
         """Sets driver on."""
@@ -189,7 +184,7 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
             self.driver.set_high(self.port)
         else:
             self.driver.set_low(self.port)
-        self.output = 100.0
+        self.output = True
         self.health = 100.0
         self.prev_update = time.time()
 
@@ -200,7 +195,7 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
             self.driver.set_low(self.port)
         else:
             self.driver.set_high(self.port)
-        self.output = 0.0
+        self.output = False
         self.health = 100.0
         self.prev_update = time.time()
 

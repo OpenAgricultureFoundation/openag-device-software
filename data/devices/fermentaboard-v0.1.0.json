@@ -1,12 +1,12 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Fermentaboard v0.1.0 2019-02-27 debugrob add SHT25 on air board and three atlas water temps",
+    "name": "Fermentaboard v0.1.0 2019-02-27 debugrob add SHT25 on air board",
     "uuid": "0e42e366-7c66-4a71-8ec6-67c2f31844b0",
     "peripherals": [
         {
             "name": "Fan",
             "type": "ActuatorDAC5578",
-	        "uuid": "1aa7a8af-158d-4ee1-9b8a-3472b78e4b88",
+            "uuid": "1aa7a8af-158d-4ee1-9b8a-3472b78e4b88",
             "parameters": {
                 "setup": {
                     "name": "Fan",
@@ -15,7 +15,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_fan_percent"
+                        "output_variable": "fan_relay"
                     }
                 },
                 "communication": {
@@ -30,7 +30,7 @@
         {
             "name": "Heater",
             "type": "ActuatorDAC5578",
-	        "uuid": "1788b3c3-c58f-47de-8548-b7b8451f5b70",
+            "uuid": "1788b3c3-c58f-47de-8548-b7b8451f5b70",
             "parameters": {
                 "setup": {
                     "name": "Heater",
@@ -39,7 +39,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_heater_percent"
+                        "output_variable": "air_heater_relay"
                     }
                 },
                 "communication": {
@@ -54,7 +54,7 @@
         {
             "name": "Humidifier1",
             "type": "ActuatorDAC5578",
-	        "uuid": "0bd2a67b-6720-484c-b041-fa78179b2400",
+            "uuid": "0bd2a67b-6720-484c-b041-fa78179b2400",
             "parameters": {
                 "setup": {
                     "name": "Humidifier1",
@@ -63,7 +63,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_humidifier_percent"
+                        "output_variable": "air_humidifier1_relay"
                     }
                 },
                 "communication": {
@@ -78,7 +78,7 @@
         {
             "name": "Humidifier2",
             "type": "ActuatorDAC5578",
-	        "uuid": "0bd2a67b-6720-484c-b041-fa78179b2400",
+            "uuid": "0bd2a67b-6720-484c-b041-fa78179b2400",
             "parameters": {
                 "setup": {
                     "name": "Humidifier1",
@@ -87,7 +87,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_humidifier_percent"
+                        "output_variable": "air_humidifier2_relay"
                     }
                 },
                 "communication": {
@@ -102,7 +102,7 @@
         {
             "name": "Chiller",
             "type": "ActuatorDAC5578",
-	        "uuid": "a19dbbce-599c-45f8-9389-fdb5e4bc391a",
+            "uuid": "a19dbbce-599c-45f8-9389-fdb5e4bc391a",
             "parameters": {
                 "setup": {
                     "name": "Chiller",
@@ -111,7 +111,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_chiller_percent"
+                        "output_variable": "air_chiller_relay"
                     }
                 },
                 "communication": {
@@ -120,6 +120,75 @@
                     "is_active_high": true,
                     "address": "0x47",
                     "port": 7
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-TopTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "top_tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "channel": 0, 
+                    "address": "0x66"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-MiddleTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "middle_tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "channel": 0, 
+                    "address": "0x67"
+                }
+            }
+        },
+        {
+            "name": "AtlasTemp-BottomTray",
+            "type": "AtlasTemp",
+            "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+            "parameters": {
+                "setup": {
+                    "name": "Atlas Temperature Sensor Default",
+                    "file_name": "atlas_temp/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "bottom_tray_temperature_celcius"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "channel": 0, 
+                    "address": "0x68"
                 }
             }
         }

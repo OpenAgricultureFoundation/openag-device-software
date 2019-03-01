@@ -1,73 +1,129 @@
  [
-	{
-		"key": "light_channel_output_percents",
-		"info": {
-			"name": {
-				"brief": "Light Outputs",
-				"verbose": "Light Channel Outputs"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "Percent",
-				"type": "object"
-			}
-		}
-	},
-	{
-		"key": "air_heater_percent",
-		"info": {
-			"name": {
-				"brief": "Air Heater",
-				"verbose": "Air Heater Output"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "Percent",
-				"type": "object"
-			}
-		}
-	},
-	{
-		"key": "air_chiller_percent",
-		"info": {
-			"name": {
-				"brief": "Air Chiller",
-				"verbose": "Air Chiller Output"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "Percent",
-				"type": "object"
-			}
-		}
-	},
-	{
-		"key": "air_humidifier_percent",
-		"info": {
-			"name": {
-				"brief": "Air Humidifier",
-				"verbose": "Air Humidifier Output"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "Percent",
-				"type": "object"
-			}
-		}
-	},
-	{
-		"key": "air_dehumidifier_percent",
-		"info": {
-			"name": {
-				"brief": "Air Dehumidifier",
-				"verbose": "Air Dehumidifier Output"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "Percent",
-				"type": "object"
-			}
-		}
-	}
+    {
+        "key": "light_channel_output_percents",
+        "info": {
+            "name": {
+                "brief": "Light Outputs",
+                "verbose": "Light Channel Outputs"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_heater_percent",
+        "info": {
+            "name": {
+                "brief": "Air Heater",
+                "verbose": "Air Heater Output"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_heater_relay",
+        "info": {
+            "name": {
+                "brief": "Air Heater",
+                "verbose": "Air Heater Relay"
+            },
+            "unit": {
+                "brief": "On?",
+                "verbose": "On?",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "fan_relay",
+        "info": {
+            "name": {
+                "brief": "Fan",
+                "verbose": "Fan Relay"
+            },
+            "unit": {
+                "brief": "On?",
+                "verbose": "On?",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_chiller_relay",
+        "info": {
+            "name": {
+                "brief": "Air Chiller",
+                "verbose": "Air Chiller Relay"
+            },
+            "unit": {
+                "brief": "On?",
+                "verbose": "On?",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_humidifier_percent",
+        "info": {
+            "name": {
+                "brief": "Air Humidifier",
+                "verbose": "Air Humidifier Output"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_humidifier1_relay",
+        "info": {
+            "name": {
+                "brief": "Air Humidifier 1",
+                "verbose": "Air Humidifier 1 Relay"
+            },
+            "unit": {
+                "brief": "On?",
+                "verbose": "On?",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_humidifier2_relay",
+        "info": {
+            "name": {
+                "brief": "Air Humidifier 2",
+                "verbose": "Air Humidifier 2 Relay"
+            },
+            "unit": {
+                "brief": "On?",
+                "verbose": "On?",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "air_dehumidifier_percent",
+        "info": {
+            "name": {
+                "brief": "Air Dehumidifier",
+                "verbose": "Air Dehumidifier Output"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
+    }
 
 ]

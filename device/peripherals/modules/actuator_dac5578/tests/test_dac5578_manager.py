@@ -23,9 +23,7 @@ CONFIG_PATH = (
     ROOT_DIR + "/device/peripherals/modules/actuator_dac5578/tests/config.json"
 )
 device_config = json.load(open(CONFIG_PATH))
-peripheral_config = accessors.get_peripheral_config(
-    device_config["peripherals"], "Fan"
-)
+peripheral_config = accessors.get_peripheral_config(device_config["peripherals"], "Fan")
 
 
 def test_init() -> None:

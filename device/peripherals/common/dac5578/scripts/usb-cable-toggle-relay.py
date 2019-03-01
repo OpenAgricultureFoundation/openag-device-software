@@ -3,7 +3,7 @@
 # Import standard python modules
 import os, time, sys
 
-if len( sys.argv ) == 1: # no command line args
+if len(sys.argv) == 1:  # no command line args
     print("Please provide the DAC channel (0 to 7) on the command line")
     exit(1)
 
@@ -35,8 +35,6 @@ channel = int(sys.argv[1])
 byte = 0x30 + channel
 
 # Toggle the channel high, wait a sec, then low.
-i2c.write([byte, 0xFF, 0x00]) # to high
-time.sleep(1) 
-i2c.write([byte, 0x00, 0x00]) # to low
-
-
+i2c.write([byte, 0xFF, 0x00])  # to high
+time.sleep(1)
+i2c.write([byte, 0x00, 0x00])  # to low
