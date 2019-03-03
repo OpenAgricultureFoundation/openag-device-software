@@ -19,6 +19,26 @@ class AtlasTempManager(manager.PeripheralManager):
         # Initialize variable names
         self.temperature_name = self.variables["sensor"]["temperature"]
 
+        # Initialize communication variables
+        self.bus = self.communication.get("bus")
+        self.mux = self.communication.get("mux")
+        self.address = self.communication.get("address")
+        if self.bus == "none":
+            self.bus = None
+        if self.mux == "none":
+            self.mux = None
+        if self.address is None:
+            self.logger.critical("Missing I2C address")
+            return
+
+        # Convert i2c config params from hex to int if they exist
+        self.address = int(self.address, 16)
+        if self.bus is not None:
+            self.bus = int(self.bus)
+        if self.mux is not None:
+            self.mux = int(self.mux, 16)
+        self.logger.info("address=0x{:02X}".format(self.address))
+
     @property
     def temperature(self) -> Optional[float]:
         """Gets temperature value."""

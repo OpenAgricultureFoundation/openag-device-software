@@ -208,5 +208,47 @@
 				"type": "number"
 			}
 		}
+	},
+	{
+		"key": "top_tray_temperature_celcius",
+		"info": {
+			"name": {
+				"brief": "Top Tray Temp",
+				"verbose": "Top Tray Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celcius",
+				"type": "number"
+			}
+		}
+	},
+	{
+		"key": "middle_tray_temperature_celcius",
+		"info": {
+			"name": {
+				"brief": "Middle Tray Temp",
+				"verbose": "Middle Tray Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celcius",
+				"type": "number"
+			}
+		}
+	},
+	{
+		"key": "bottom_tray_temperature_celcius",
+		"info": {
+			"name": {
+				"brief": "Bottom Tray Temp",
+				"verbose": "Bottom Tray Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celcius",
+				"type": "number"
+			}
+		}
 	}
 ]

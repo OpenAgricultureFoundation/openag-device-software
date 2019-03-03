@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+# A convient script to program the I2C atlas chips we use.  
+# This is the data sheet for the water temp sensor:
+# https://www.atlas-scientific.com/_files/_datasheets/_circuit/EZO_RTD_Datasheet.pdf
+
 # Import standard python modules
-import os, sys
+import os, sys, time
 
 if len( sys.argv ) == 1: # no command line args
-    print("Please provide the multiplexer channel (0 to 7) on the command line")
+    print("Please provide the atlas chip I2C address on the command line in DECIMAL. e.g. 102")
     exit(1)
 
 # Import usb-to-i2c communication modules
@@ -29,12 +33,17 @@ if os.getenv("IS_USB_I2C_ENABLED") != "true":
 # Initialize i2c instance
 i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
-mux_address = int(os.getenv("DEFAULT_MUX_ADDRESS"), 16)
-i2c = i2c_controller.get_port(mux_address)
+i2c_address = int(sys.argv[1])
+print("Using I2C address {}".format(i2c_address))
 
-# Get channel byte
-channel = int(sys.argv[1])
-channel_byte = 0x01 << channel
+# Get the device at that address
+slave = i2c_controller.get_port(i2c_address)
+
+# I2C command to write
+LED_on = b"L,1"
+cmd = LED_on
 
 # Write to the device
-i2c.write([channel_byte])
+print("Sending {}".format(cmd))
+slave.write(cmd)
+

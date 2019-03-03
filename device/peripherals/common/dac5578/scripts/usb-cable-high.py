@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Import standard python modules
 import os, time
 
@@ -24,7 +26,7 @@ i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
 i2c = i2c_controller.get_port(0x47)
 
-# Set all channels low
+# Set all channels high
 for i in range(8):
     byte = 0x30 + i
     i2c.write([byte, 0xFF, 0x00])

@@ -161,7 +161,7 @@ class EnvironmentViewer:
                     "`peripheral_type` must be either `sensor` or `actuator`"
                 )
 
-            if info is None:
+            if info is None or info == {}:
                 continue
 
             # Get peripheral name and unit

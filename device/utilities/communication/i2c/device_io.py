@@ -50,7 +50,7 @@ def manage_io(func: F) -> F:
 class DeviceIO(object):
     """Manages byte-level device IO."""
 
-    def __init__(self, name: str, bus: int) -> None:
+    def __init__(self, name: str, bus: Optional[int] = None) -> None:
 
         # Initialize parameters
         self.name = name

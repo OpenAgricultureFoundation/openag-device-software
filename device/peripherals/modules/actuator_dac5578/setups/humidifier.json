@@ -1,0 +1,86 @@
+{
+	"name":  "Humidifier",
+	"version": "1",
+	"uuid": "0bd2a67b-6720-484c-b041-fa78179b2400",
+	"module_name": "actuator_dac5578.manager",
+	"class_name": "ActuatorDAC5578Manager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": {
+				"output_variable": {
+					"name": {
+						"type": "string", 
+						"default": "air_humidifier_percent"
+					}
+				}
+			}
+		},	
+		"communication": {
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 0
+			},
+			"address": {
+				"type": "string",
+				"default": "0x47"
+			},
+			"port": {
+				"type": "number",
+				"default": 4
+			},
+			"is_active_high": {
+				"type": "boolean",
+				"default": true
+			}
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset actuator.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown actuator.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Enable Manual Mode",
+	        "description": "Allows actuator to be controlled by manual events.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Turn On",
+	        "description": "Turns on humidifier.",
+	        "value": null,
+	        "sequence": null,
+	        "is_manual": true
+	    },
+	    {
+	        "name": "Turn Off",
+	        "description": "Turns off humidifier.",
+	        "value": null,
+	        "sequence": null,
+	        "is_manual": true
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	}
+}

@@ -64,13 +64,14 @@ class USBCameraDriver:
         self.logger = logger.Logger(logname, "peripherals")
 
         # pygame only supports Linux.  If not running Linux, then simulate.
-        if PLATFORM is not None and \
-                PLATFORM != "osx-machine" and PLATFORM != "unknown":
+        if PLATFORM is not None and PLATFORM != "osx-machine" and PLATFORM != "unknown":
             # Initialize pygame
             pygame.init()
             pygame.camera.init()
         else:
-            self.logger.info("usb_camera module: Not running on Linux OS, so pygame is not supported.  Turning on simulation mode.")
+            self.logger.info(
+                "usb_camera module: Not running on Linux OS, so pygame is not supported.  Turning on simulation mode."
+            )
             self.simulate = True
 
         # Check if simulating
