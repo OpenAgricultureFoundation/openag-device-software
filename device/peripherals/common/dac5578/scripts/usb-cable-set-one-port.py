@@ -3,8 +3,8 @@
 # Import standard python modules
 import os, time, sys
 
-if len(sys.argv) < 3:  # no command line args
-    print("Please provide the DAC address (0x47) and port (0 to 7) on the command line")
+if len(sys.argv) < 4:  # no command line args
+    print("Please provide the DAC address (0x47), port (0 to 7) and output(0 to 0xFF) on the command line")
     exit(1)
 
 # Import usb-to-i2c communication modules
@@ -37,9 +37,10 @@ i2c = i2c_controller.get_port(address)
 port = int(sys.argv[2])
 byte = 0x30 + port
 
-# Toggle the port high, wait a sec, then low.
-print("Port {} high...".format(port))
-i2c.write([byte, 0xFF, 0x00])  # to high
-time.sleep(2)
-print("Port {} low...".format(port))
-i2c.write([byte, 0x00, 0x00])  # to low
+# Get the value in hex from the command line
+value = int(sys.argv[3], 16)
+
+# Set the port high
+print("Port={} value={}/0x{:2X}".format(port, value, value))
+i2c.write([byte, value, 0x00])  
+
