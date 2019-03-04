@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Import standard python modules
-import os, time
+import os, time, sys
 
 # Import usb-to-i2c communication modules
 from pyftdi.i2c import I2cController
@@ -45,7 +45,7 @@ ADC_ONE_SHOT        = 0x09
 ADC_DEEP_SHUTDOWN   = 0x0a
 ADC_ADV_CONFIG      = 0x0b
 ADC_STATUS          = 0x0c
-ADC_CH_READ         = 0x20 #[0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27]
+ADC_CH_READ         = 0x20 
 ADC_LIMIT_MIN       = [0x2a, 0x2c, 0x2e, 0x30, 0x32, 0x34, 0x36, 0x38]
 ADC_LIMIT_MAX       = [0x2b, 0x2d, 0x2f, 0x31, 0x33, 0x35, 0x37, 0x39]
 ADC_MANU_ID         = 0x3e
@@ -62,16 +62,37 @@ ADC_CHANNEL_IN6     = 0x06
 ADC_CHANNEL_IN7     = 0x07
 ADC_CHANNEL_TEMP    = 0x07
 
+Busy_Status_Register_Not_Ready = 1<<1
+
+
 # Initialize i2c instance
 i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
 adc = i2c_controller.get_port(ADC_ADDRESS)
 
-print("Status={}".format( adc.read(ADC_STATUS)))
+#print("Status={}".format( adc.read(ADC_STATUS)))
+
+cmd = ADC_STATUS
+adc.write([cmd])
+bytes_ = adc.read(1) # read one byte
+status = bytes_[0]
+if (status & Busy_Status_Register_Not_Ready) == 1:
+    print("ADC is busy, exiting.")
+    sys.exit(0)
+print("ADC is ready. (status={})".format(status))
+
+
+# write config mode 0
+#adc.write_to(ADC_CONFIG, 0x00)
+
+# write one byte to read a channel, then receive two bytes
+#cmd = ADC_CH_READ + ADC_CHANNEL_IN0 # read channel 0
+#bytes_ = adc.exchange([cmd], 2)
+#print("Channel 0={}".format( bytes_))
 
 #bytes_ = adc.read(ADC_CHANNEL_IN0, 2)
-bytes_ = adc.read(ADC_CH_READ, 2)
-print("Channel 0={}".format( bytes_))
+#bytes_ = adc.read(ADC_CH_READ, 2)
+#print("Channel 0={}".format( bytes_))
 
 #bytes_ = adc.read(ADC_CHANNEL_TEMP, readlen=2)
 #print("Temp={}".format( adc.read(ADC_CHANNEL_TEMP)))
