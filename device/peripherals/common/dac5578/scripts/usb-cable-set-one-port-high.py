@@ -37,9 +37,7 @@ i2c = i2c_controller.get_port(address)
 port = int(sys.argv[2])
 byte = 0x30 + port
 
-# Toggle the port high, wait a sec, then low.
+# Set the port high
 print("Port {} high...".format(port))
 i2c.write([byte, 0xFF, 0x00])  # to high
-time.sleep(2)
-print("Port {} low...".format(port))
-i2c.write([byte, 0x00, 0x00])  # to low
+

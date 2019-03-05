@@ -20,7 +20,7 @@ class ControllerManager(StateMachineManager):
     """Manages all controllers."""
 
     # Initialize timing variables
-    default_sampling_interval = 1  # seconds
+    default_sampling_interval = 5  # seconds
     last_update = None  # seconds
     last_update_interval = None  # Seconds
 

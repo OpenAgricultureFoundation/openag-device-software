@@ -8,7 +8,7 @@
 		"variables": {
 			"sensor_name": {
 				"type": "string", 
-				"default": "air_humidity_celcius"
+				"default": "air_humidity_percent"
 			},
 			"positive_actuator_name": {
 				"type": "string",

@@ -1,0 +1,157 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "GPIO board v0.1.0",
+    "uuid": "8e18f94f-774b-42c4-bea5-2d8f42a3a4ef",
+    "description": {
+        "brief": "GPIO: 6 DAC outputs, 8 ADC inputs",
+        "verbose": "DAC ports as wired don't line up with the board graphics. This is the mapping of value-given-to-DAC vs. board graphic: 0:4, 1:N/A, 2:3, 3:N/A, 4:2, 5:6, 6:1, 7:5.   debugrob, still have to add sensors 8 port ADC128D818 once I write a driver for it."
+    },
+    "peripherals": [
+        {
+            "name": "Port1",
+            "type": "ActuatorDAC5578",
+            "uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
+            "parameters": {
+                "setup": {
+                    "name": "Any Port",
+                    "file_name": "actuator_dac5578/setups/any_port"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "port_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x4A",
+                    "port": 6
+                }
+            }
+        },
+        {
+            "name": "Port2",
+            "type": "ActuatorDAC5578",
+            "uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
+            "parameters": {
+                "setup": {
+                    "name": "Any Port",
+                    "file_name": "actuator_dac5578/setups/any_port"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "port_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x4A",
+                    "port": 4
+                }
+            }
+        },
+        {
+            "name": "Port3",
+            "type": "ActuatorDAC5578",
+            "uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
+            "parameters": {
+                "setup": {
+                    "name": "Any Port",
+                    "file_name": "actuator_dac5578/setups/any_port"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "port_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x4A",
+                    "port": 2
+                }
+            }
+        },
+        {
+            "name": "Port4",
+            "type": "ActuatorDAC5578",
+            "uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
+            "parameters": {
+                "setup": {
+                    "name": "Any Port",
+                    "file_name": "actuator_dac5578/setups/any_port"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "port_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x4A",
+                    "port": 0
+                }
+            }
+        },
+        {
+            "name": "Port5",
+            "type": "ActuatorDAC5578",
+            "uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
+            "parameters": {
+                "setup": {
+                    "name": "Any Port",
+                    "file_name": "actuator_dac5578/setups/any_port"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "port_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x4A",
+                    "port": 7
+                }
+            }
+        },
+        {
+            "name": "Port6",
+            "type": "ActuatorDAC5578",
+            "uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
+            "parameters": {
+                "setup": {
+                    "name": "Any Port",
+                    "file_name": "actuator_dac5578/setups/any_port"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "port_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x4A",
+                    "port": 5
+                }
+            }
+        }
+    ],
+    "controllers": [
+    ]
+}

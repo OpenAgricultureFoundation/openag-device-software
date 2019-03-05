@@ -1,7 +1,7 @@
 {
-	"name":  "Fan",
+	"name":  "Port",
 	"version": "1",
-	"uuid": "1aa7a8af-158d-4ee1-9b8a-3472b78e4b88",
+	"uuid": "c2749599-117a-4005-b5ff-692dfef95d6e",
 	"module_name": "actuator_dac5578.manager",
 	"class_name": "ActuatorDAC5578Manager",
 	"parameters": {
@@ -10,8 +10,8 @@
 			"actuator": {
 				"output_variable": {
 					"name": {
-						"type": "string", 
-						"default": "air_fan_percent"
+						"type": "object", 
+						"default": "port_state"
 					}
 				}
 			}
@@ -19,19 +19,19 @@
 		"communication": {
 			"bus": {
 				"type": "integer",
-				"default": 2
+				"default": "none"
 			},
 			"mux": {
 				"type": "string",
-				"default": "0x77"
+				"default": "none"
 			},
 			"channel": {
 				"type": "integer",
-				"default": 0
+				"default": "none"
 			},
 			"address": {
 				"type": "string",
-				"default": "0x47"
+				"default": "0x4A"
 			},
 			"port": {
 				"type": "number",
@@ -64,14 +64,14 @@
 	    },
 	    {
 	        "name": "Turn On",
-	        "description": "Turn on fan.",
+	        "description": "Turn on port.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
 	    },
 	    {
 	        "name": "Turn Off",
-	        "description": "Turn off fan.",
+	        "description": "Turns off port.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true

@@ -4,6 +4,30 @@
     "uuid": "0e42e366-7c66-4a71-8ec6-67c2f31844b0",
     "peripherals": [
         {
+            "name": "SHT25-Top",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor Default",
+                    "file_name": "sht25/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celcius": "air_temperature_celcius",
+                        "humidity_percent": "air_humidity_percent"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "channel": 0, 
+                    "address": "0x40"
+                }
+            }
+        },
+        {
             "name": "Fan",
             "type": "ActuatorDAC5578",
             "uuid": "1aa7a8af-158d-4ee1-9b8a-3472b78e4b88",
@@ -39,7 +63,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_heater_relay"
+                        "output_variable": "air_heater_percent"
                     }
                 },
                 "communication": {
@@ -63,7 +87,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_humidifier1_relay"
+                        "output_variable": "air_humidifier_percent"
                     }
                 },
                 "communication": {
@@ -87,7 +111,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_humidifier2_relay"
+                        "output_variable": "air_humidifier_percent"
                     }
                 },
                 "communication": {
@@ -111,7 +135,7 @@
                 "variables": {
                     "sensor": null,
                     "actuator": {
-                        "output_variable": "air_chiller_relay"
+                        "output_variable": "air_chiller_percent"
                     }
                 },
                 "communication": {
@@ -206,7 +230,7 @@
                 "variables": {
                     "sensor_name": "air_temperature_celcius",
                     "positive_actuator_name": "air_heater_percent",
-                    "negative_actuator_name": null
+                    "negative_actuator_name": "air_chiller_percent"
                 }
             }
         },
