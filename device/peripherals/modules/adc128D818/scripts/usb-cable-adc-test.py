@@ -31,11 +31,11 @@ if os.getenv("IS_USB_I2C_ENABLED") != "true":
 ADC_ADDRESS         = [0x1d, 0x1e, 0x1f, 0x2d, 0x2e, 0x2f, 0x35, 0x36, 0x37]
 ADC_ADDRESS         = 0x4A # should be at 0x35, but I see 4A on the scan
 
-# Support Values
-READ = 0
-WRITE = 1
+# Limits
+ADC_LIMIT_HIGH      = 0x00
+ADC_LIMIT_LOW       = 0x01
 
-# Register
+# Registers
 ADC_CONFIG          = 0x00
 ADC_INTERRUPT       = 0x01
 ADC_INTERRUPT_MASK  = 0x03
@@ -62,7 +62,37 @@ ADC_CHANNEL_IN6     = 0x06
 ADC_CHANNEL_IN7     = 0x07
 ADC_CHANNEL_TEMP    = 0x07
 
+ADC_ENABLE_IN0      = ~(0x01 <<0)
+ADC_ENABLE_IN1      = ~(0x01 <<1)
+ADC_ENABLE_IN2      = ~(0x01 <<2)
+ADC_ENABLE_IN3      = ~(0x01 <<3)
+ADC_ENABLE_IN4      = ~(0x01 <<4)
+ADC_ENABLE_IN5      = ~(0x01 <<5)
+ADC_ENABLE_IN6      = ~(0x01 <<6)
+ADC_ENABLE_IN7      = ~(0x01 <<7)
+ADC_ENABLE_TEMP     = ~(0x01 <<7)
+ADC_ENABLE_ALL      = 0x00
+
+ADC_INT_IN0         = ~(0x01 <<0)
+ADC_INT_IN1         = ~(0x01 <<1)
+ADC_INT_IN2         = ~(0x01 <<2)
+ADC_INT_IN3         = ~(0x01 <<3)
+ADC_INT_IN4         = ~(0x01 <<4)
+ADC_INT_IN5         = ~(0x01 <<5)
+ADC_INT_IN6         = ~(0x01 <<6)
+ADC_INT_IN7         = ~(0x01 <<7)
+ADC_INT_TEMP        = ~(0x01 <<7)
+ADC_INT_ALL         = 0x00
+
+# Status and config values
 Busy_Status_Register_Not_Ready = 1<<1
+Advanced_Configuration_Register_External_Reference_Enable = 1<<0
+Advanced_Configuration_Register_Mode_Select_0 = 1<<1
+Advanced_Configuration_Register_Mode_Select_1 = 1<<2
+Configuration_Register_Start = 1<<0
+Configuration_Register_INT_Enable = 1<<1
+Configuration_Register_INT_Clear = 1<<3
+Configuration_Register_Initialization = 1<<7
 
 
 # Initialize i2c instance
@@ -70,33 +100,87 @@ i2c_controller = I2cController()
 i2c_controller.configure("ftdi://ftdi:232h/1")
 adc = i2c_controller.get_port(ADC_ADDRESS)
 
-#print("Status={}".format( adc.read(ADC_STATUS)))
-
-cmd = ADC_STATUS
-adc.write([cmd])
+# Get the ADC status to see if it is ready
+adc.write([ADC_STATUS])
 bytes_ = adc.read(1) # read one byte
+#bytes_ = adc.read_from(ADC_STATUS, 1) 
+print("debugrob ADC_STATUS bytes={})".format(bytes_))
 status = bytes_[0]
 if (status & Busy_Status_Register_Not_Ready) == 1:
     print("ADC is busy, exiting.")
     sys.exit(0)
 print("ADC is ready. (status={})".format(status))
 
+# Read the IDs from the chip
+adc.write([ADC_MANU_ID])
+manID_ = adc.read(2) 
+#manID_ = adc.read_from(ADC_MANU_ID, 1) 
+#debugrob: need to use read_from to read a register everywhere?
 
-# write config mode 0
-#adc.write_to(ADC_CONFIG, 0x00)
+adc.write([ADC_REV_ID])
+revID_ = adc.read(2) 
+#revID_ = adc.read_from(ADC_REV_ID, 1) 
+print("ADC manufacturer ID={}, revision ID={})".format(manID_, revID_))
 
-# write one byte to read a channel, then receive two bytes
-#cmd = ADC_CH_READ + ADC_CHANNEL_IN0 # read channel 0
-#bytes_ = adc.exchange([cmd], 2)
-#print("Channel 0={}".format( bytes_))
 
-#bytes_ = adc.read(ADC_CHANNEL_IN0, 2)
-#bytes_ = adc.read(ADC_CH_READ, 2)
-#print("Channel 0={}".format( bytes_))
+# Initialize the ADC ##########################################################
 
-#bytes_ = adc.read(ADC_CHANNEL_TEMP, readlen=2)
-#print("Temp={}".format( adc.read(ADC_CHANNEL_TEMP)))
+# Tell ADC to stop: config command + zero 
+adc.write_to(ADC_CONFIG, bytes(0x00))
 
+# init the advance config register
+cmd_data = 0x00
+# ADC_VREF_INT use internal reference voltage
+cmd_data &= ~Advanced_Configuration_Register_External_Reference_Enable
+# ADC_MODE_0 see data sheet
+cmd_data &= ~Advanced_Configuration_Register_Mode_Select_0
+cmd_data &= ~Advanced_Configuration_Register_Mode_Select_1
+print('debugrob ADC_ADV_CONFIG, cmd_data={}'.format(cmd_data))
+adc.write_to(ADC_ADV_CONFIG, bytes(cmd_data))
+
+# init the conversion rate register, set to continous 
+cmd_data = 0x00
+cmd_data |= Advanced_Configuration_Register_External_Reference_Enable
+print('debugrob ADC_CONV_RATE, cmd_data={}'.format(cmd_data))
+adc.write_to(ADC_CONV_RATE, bytes(cmd_data))
+
+# choose to enable or disable the channels using the Channel Disable Register
+#debugrob cmd_data = ADC_ENABLE_TEMP & ADC_ENABLE_IN1 
+cmd_data = 0x00
+print('debugrob ADC_CH_DISABLE, cmd_data={}'.format(cmd_data))
+adc.write_to(ADC_CH_DISABLE, bytes(cmd_data)) 
+
+# using the Interrupt Mask Register
+#debugrob: cmd_data = ADC_INT_TEMP
+cmd_data = 0x00
+print('debugrob ADC_INTERRUPT_MASK, cmd_data={}'.format(cmd_data))
+adc.write_to(ADC_INTERRUPT_MASK, bytes(cmd_data))
+ 
+# set the high limit voltage for channel 0
+high_limit_voltage = 0x80 #debugrob, WTF does this mean?
+channel = 0
+cmd = ADC_LIMIT_MIN[0] + (channel * 2) + ADC_LIMIT_HIGH
+print('debugrob cmd={}'.format(cmd))
+adc.write_to(cmd, bytes(high_limit_voltage))
+
+# Tell ADC to start: config command + start and interrupt enable
+cmd_data = 0x00
+cmd_data = Configuration_Register_Start | Configuration_Register_INT_Enable
+print('debugrob ADC_CONFIG, cmd_data={}'.format(cmd_data))
+adc.write_to(ADC_CONFIG, bytes(cmd_data))
+
+# Read channel input 0
+channel = ADC_CHANNEL_IN0
+cmd = ADC_CH_READ + channel
+#debugrob: should this be a "write_to" for a register write??
+adc.write([cmd]) # write the 'read channel zero' command
+while True:
+    bytes_ = adc.read(2) # read two bytes for the value
+    print("{} Channel 0={}".format(time.asctime(), bytes_))
+    time.sleep(1)
+
+
+#debugrob: later try to read temp?
 
 
 
