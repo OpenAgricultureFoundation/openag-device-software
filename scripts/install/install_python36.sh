@@ -16,15 +16,15 @@ if [[ "$OSTYPE" == "linux"* ]]; then
         # Install python3.6
         sudo apt-get update
         sudo apt-get install -y build-essential tk-dev libncurses5-dev libncursesw5-dev libreadline6-dev libdb5.3-dev libgdbm-dev libsqlite3-dev libssl-dev libbz2-dev libexpat1-dev liblzma-dev zlib1g-dev
-        wget https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz -P /tmp
-        sudo tar xf /tmp/Python-3.6.5.tar.xz -C /tmp/
-        cd /tmp/Python-3.6.5/
+        wget https://www.python.org/ftp/python/3.6.8/Python-3.6.8.tar.xz -P /tmp
+        sudo tar xf /tmp/Python-3.6.8.tar.xz -C /tmp/
+        cd /tmp/Python-3.6.8/
         sudo bash configure
-        sudo make -C /tmp/Python-3.6.5/
-        sudo make altinstall -C /tmp/Python-3.6.5/
+        sudo make -C /tmp/Python-3.6.8/
+        sudo make altinstall -C /tmp/Python-3.6.8/
         cd $PROJECT_ROOT
-        sudo rm -R /tmp/Python-3.6.5
-        rm /tmp/Python-3.6.5.tar.xz
+        sudo rm -R /tmp/Python-3.6.8
+        rm /tmp/Python-3.6.8.tar.xz
 
         # Verify install
         INSTALL_PATH=`which python3.6`
