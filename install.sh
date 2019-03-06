@@ -53,6 +53,12 @@ echo PROJECT_ROOT: $PROJECT_ROOT
 # Stop installation on any error
 set -e
 
+# Clean up before doing a full install
+sudo rm -fr $PROJECT_ROOT/venv
+sudo apt-get purge -y python3.6 
+sudo apt-get purge -y python3.5
+sudo apt-get purge -y python3 
+
 # Install software
 echo "Installing software..."
 bash $PROJECT_ROOT/scripts/install/initialize_device_config.sh $PROJECT_ROOT 
