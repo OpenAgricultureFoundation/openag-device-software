@@ -56,6 +56,20 @@
         }
     },
     {
+        "key": "air_chiller_percent",
+        "info": {
+            "name": {
+                "brief": "Air Chiller",
+                "verbose": "Air Chiller Output"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
+    },
+    {
         "key": "air_chiller_relay",
         "info": {
             "name": {

@@ -1,6 +1,6 @@
 {   
     "format": "openag-standard-v1",
-    "name": "Fermentaboard v0.1.0 2019-02-27 debugrob add SHT25 on air board",
+    "name": "Fermentaboard v0.1.0",
     "uuid": "0e42e366-7c66-4a71-8ec6-67c2f31844b0",
     "peripherals": [
         {

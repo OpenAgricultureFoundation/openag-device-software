@@ -4,7 +4,9 @@
 import os, time, sys
 
 if len(sys.argv) < 4:  # no command line args
-    print("Please provide the DAC address (0x47), port (0 to 7) and output(0 to 0xFF) on the command line")
+    print(
+        "Please provide the DAC address (0x47), port (0 to 7) and output(0 to 0xFF) on the command line"
+    )
     exit(1)
 
 # Import usb-to-i2c communication modules
@@ -42,5 +44,4 @@ value = int(sys.argv[3], 16)
 
 # Set the port high
 print("Port={} value={}/0x{:2X}".format(port, value, value))
-i2c.write([byte, value, 0x00])  
-
+i2c.write([byte, value, 0x00])
