@@ -57,7 +57,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature_celcius": "air_temperature_celcius",
+                        "temperature_celsius": "air_temperature_celsius",
                         "humidity_percent": "air_humidity_percent"                    
                     },
                     "actuator": null
@@ -108,7 +108,7 @@
                     },
                     "actuator": null,
                     "compensation": {
-                        "temperature_celcius": null
+                        "temperature_celsius": null
                     }
                 },
                 "communication": {
@@ -134,7 +134,7 @@
                     },
                     "actuator": null,
                     "compensation": {
-                        "temperature_celcius": "water_temperature_celcius"
+                        "temperature_celsius": "water_temperature_celsius"
                     }
                 },
                 "communication": {

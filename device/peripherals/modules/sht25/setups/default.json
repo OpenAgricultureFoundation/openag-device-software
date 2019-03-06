@@ -7,10 +7,10 @@
 	"parameters": {
 		"variables": {
 			"sensor": {
-				"temperature_celcius": {
+				"temperature_celsius": {
 					"name": {
 						"type": "string", 
-						"default": "air_temperature_celcius"
+						"default": "air_temperature_celsius"
 					}
 				},
 				"humidity_percent": {
@@ -67,7 +67,7 @@
 	"info": {
 		"variables": {
 			"sensor":{
-				"temperature_celcius": {
+				"temperature_celsius": {
 					"range": [-40, 125],
 			        "accuracy": {
 			            "typical": 0.2,

@@ -11,7 +11,7 @@
             "parameters": {
                 "setup": null,
                 "variables": {
-                    "sensor_name": "air_temperature_celcius",
+                    "sensor_name": "air_temperature_celsius",
                     "positive_actuator_name": "air_heater",
                     "negative_actuator_name": null
                 }

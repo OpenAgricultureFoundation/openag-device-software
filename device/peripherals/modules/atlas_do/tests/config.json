@@ -15,7 +15,7 @@
                     },
                     "actuator": null,
                     "compensation": {
-                        "temperature_celcius": "water_temperature_celcius",
+                        "temperature_celsius": "water_temperature_celsius",
                         "ec_ms_cm": "water_electrical_conductivity_ms_cm",
                         "pressure_kpa": "water_pressure_kpa"
                     }

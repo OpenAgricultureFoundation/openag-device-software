@@ -12,7 +12,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     """Manages an ccs811 co2 sensor."""
 
     # Initialize compensation variable parameters
-    temperature_threshold = 0.1  # celcius
+    temperature_threshold = 0.1  # celsius
     prev_temperature: Optional[float] = 25.0
     humidity_threshold = 0.1  # percent
     prev_humidity: Optional[float] = 50.0
@@ -26,7 +26,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         # Initialize variable names
         self.co2_name = self.variables["sensor"]["co2_ppm"]
         self.tvoc_name = self.variables["sensor"]["tvoc_ppb"]
-        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
+        self.temperature_name = self.variables["compensation"]["temperature_celsius"]
         self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
     @property

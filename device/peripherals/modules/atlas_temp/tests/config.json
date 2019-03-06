@@ -11,7 +11,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature": "water_temperature_celcius"
+                        "temperature": "water_temperature_celsius"
                     },
                     "actuator": null
                 },

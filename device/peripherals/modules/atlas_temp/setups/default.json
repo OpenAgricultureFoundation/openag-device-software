@@ -10,7 +10,7 @@
 				"temperature": {
 					"name": {
                         "type": "string",
-                        "default": "water_temperature_celcius"
+                        "default": "water_temperature_celsius"
                     }
 				}
 			},

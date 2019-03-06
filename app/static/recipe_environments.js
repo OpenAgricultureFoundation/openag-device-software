@@ -101,7 +101,7 @@ function getAvailableVariables(){
     return {
         "light_spectrum_taurus": "list",
         "light_intensity_par": "int",
-        "air_temperature_celcius": "int"
+        "air_temperature_celsius": "int"
     }
 }
 

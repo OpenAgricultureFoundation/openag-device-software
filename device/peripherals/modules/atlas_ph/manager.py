@@ -11,8 +11,8 @@ class AtlasPHManager(manager.PeripheralManager):
     """Manages an Atlas Scientific pH sensor."""
 
     # Initialize compensation temperature parameters
-    temperature_threshold = 0.1  # celcius
-    prev_temperature = 0.0  # celcius
+    temperature_threshold = 0.1  # celsius
+    prev_temperature = 0.0  # celsius
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes manager."""
@@ -22,7 +22,7 @@ class AtlasPHManager(manager.PeripheralManager):
 
         # Initialize variable names
         self.ph_name = self.variables["sensor"]["ph"]
-        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
+        self.temperature_name = self.variables["compensation"]["temperature_celsius"]
 
     @property
     def ph(self) -> Optional[float]:

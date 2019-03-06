@@ -7,7 +7,7 @@ from device.controllers.classes.controller import manager, modes
 # Import PID class
 from device.controllers.modules.pid.pid import PID
 
-# TODO: the temp set point is the "desired value" of "air_temperature_celcius" sensor.
+# TODO: the temp set point is the "desired value" of "air_temperature_celsius" sensor.
 
 # TODO: how do I handle the defrost loop?  need to put the actuator in manual mode? Create a Defrost controller.   It puts this PIDController in manual mode, does defrost loop, puts it back in auto
 
@@ -127,7 +127,7 @@ class PIDControllerManager(manager.ControllerManager):
             self.logger.warning("sensor_value or desired_sensor_value is not a float.")
             return
 
-        # The temp set point is the "desired" "air_temperature_celcius" sensor value.
+        # The temp set point is the "desired" "air_temperature_celsius" sensor value.
         self.pid.setSetPoint(self.desired_sensor_value)
         self.logger.info(
             "Desired set point for {} is {}.".format(

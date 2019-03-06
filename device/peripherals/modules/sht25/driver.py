@@ -27,8 +27,8 @@ class SHT25Driver:
     """Driver for sht25 temperature and humidity sensor."""
 
     # Initialize variable properties
-    min_temperature = -40  # celcius
-    max_temperature = 125  # celcius
+    min_temperature = -40  # celsius
+    max_temperature = 125  # celsius
     min_humidity = 0  # %RH
     max_humidity = 100  # %RH
 

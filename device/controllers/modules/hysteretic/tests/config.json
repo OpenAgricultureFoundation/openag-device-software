@@ -14,7 +14,7 @@
                     "file_name": "hysteretic/setups/temperature_2c"
                 },
                 "variables": {
-                    "sensor_name": "air_temperature_celcius",
+                    "sensor_name": "air_temperature_celsius",
                     "positive_actuator_name": "air_heater",
                     "negative_actuator_name": "air_chiller"
                 }

@@ -8,7 +8,7 @@
 		"variables": {
 			"sensor_name": {
 				"type": "string", 
-				"default": "air_temperature_celcius"
+				"default": "air_temperature_celsius"
 			},
 			"positive_actuator_name": {
 				"type": "string",

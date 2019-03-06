@@ -35,7 +35,7 @@
 			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
 			"light_ppfd_umol_m2_s": 50,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 22
+			"air_temperature_celsius": 22
 		}
 	},
 	"phases": [

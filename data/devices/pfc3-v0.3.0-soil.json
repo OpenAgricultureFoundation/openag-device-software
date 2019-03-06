@@ -57,7 +57,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature_celcius": "air_temperature_celcius",
+                        "temperature_celsius": "air_temperature_celsius",
                         "humidity_percent": "air_humidity_percent"                    
                     },
                     "actuator": null
@@ -104,7 +104,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature": "soil_temperature_celcius"
+                        "temperature": "soil_temperature_celsius"
                     },
                     "actuator": null
                 },

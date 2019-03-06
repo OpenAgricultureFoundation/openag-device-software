@@ -11,8 +11,8 @@ class AtlasECManager(manager.PeripheralManager):
     """Manages an atlas scientific electrical conductivity sensor."""
 
     # Initialize compensation temperature parameters
-    temperature_threshold = 0.1  # celcius
-    prev_temperature = 0  # celcius
+    temperature_threshold = 0.1  # celsius
+    prev_temperature = 0  # celsius
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes manager."""
@@ -22,7 +22,7 @@ class AtlasECManager(manager.PeripheralManager):
 
         # Initialize variable names
         self.ec_name = self.variables["sensor"]["ec_ms_cm"]
-        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
+        self.temperature_name = self.variables["compensation"]["temperature_celsius"]
 
     @property
     def ec(self) -> Optional[float]:

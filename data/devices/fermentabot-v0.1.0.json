@@ -14,7 +14,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature_celcius": "air_temperature_celcius",
+                        "temperature_celsius": "air_temperature_celsius",
                         "humidity_percent": "air_humidity_percent"                    
                     },
                     "actuator": null
@@ -38,7 +38,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature": "tray_temperature_celcius"
+                        "temperature": "tray_temperature_celsius"
                     },
                     "actuator": null
                 },
@@ -61,7 +61,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature": "tray_temperature_celcius"
+                        "temperature": "tray_temperature_celsius"
                     },
                     "actuator": null
                 },
@@ -84,7 +84,7 @@
                 },
                 "variables": {
                     "sensor": {
-                        "temperature": "tray_temperature_celcius"
+                        "temperature": "tray_temperature_celsius"
                     },
                     "actuator": null
                 },
@@ -158,7 +158,7 @@
                     "file_name": "hysteretic/setups/temperature_2c"
                 },
                 "variables": {
-                    "sensor_name": "air_temperature_celcius",
+                    "sensor_name": "air_temperature_celsius",
                     "positive_actuator_name": "air_heater_percent",
                     "negative_actuator_name": null
                 }

@@ -35,8 +35,8 @@ Furthermore, a uuid is also included in the variable information dictionary
 so a global database of non-redundant variables can be generated as  
 system capabilities evolve. Avoiding redundancy is important for recipe 
 inter-operability. For example, a device with a control loop configured to 
-drive the `air_temperature_celcius` variable would not be able to run a recipe 
-that specifies an `air_temp_celcius` setpoint.
+drive the `air_temperature_celsius` variable would not be able to run a recipe 
+that specifies an `air_temp_celsius` setpoint.
 
 ## General Mindset
 As a general mindset, it is important to view the recipe as a definition of 
@@ -52,7 +52,7 @@ expression of cultivar traits.
 
 ## Hardware Agnostic
 Therefore, recipes must be hardware agnostic and speak the language of climate.
-A more appropriate device command would be `set the temperature to 20 celcius 
+A more appropriate device command would be `set the temperature to 20 celsius 
 until hearing otherwise`. As cost is a constraint for many devices, having a 
 physical sensor for every actuator is not always pragmatic, however much can 
 be reasoned about an actuators influence on the environment it is actuating 

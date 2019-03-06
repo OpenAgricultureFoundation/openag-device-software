@@ -49,7 +49,7 @@ class DriverRunner(RunnerBase):  # type: ignore
             "--sleep", action="store_true", help="enable sleep mode"
         )
         self.parser.add_argument(
-            "--set-temp", type=float, help="set compensation temperature in Celcius"
+            "--set-temp", type=float, help="set compensation temperature in Celsius"
         )
         self.parser.add_argument(
             "--calibrate-low", type=float, help="take low point calibration reading"
