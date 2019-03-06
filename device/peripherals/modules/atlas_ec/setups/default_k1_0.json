@@ -193,7 +193,7 @@
         "operating_conditions": {
             "max_pressure_psi": 500,
             "max_depth_meters": 1125,
-            "temperature_range_celcius": [1, 110],
+            "temperature_range_celsius": [1, 110],
             "recalibration_interval_years": 10,
             "life_expectancy_years": 10
         },

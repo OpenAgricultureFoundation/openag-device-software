@@ -10,7 +10,7 @@ class AtlasDOManager(manager.PeripheralManager):
     """Manages an atlas scientific dissolved oxygen driver."""
 
     # Initialize variable parameters
-    temperature_threshold = 0.1  # celcius
+    temperature_threshold = 0.1  # celsius
     prev_temperature = 0
     pressure_threshold = 0.1  # kPa
     prev_pressure = 0
@@ -25,7 +25,7 @@ class AtlasDOManager(manager.PeripheralManager):
 
         # Initialize variable names
         self.do_name = self.variables["sensor"]["do_mg_l"]
-        self.temperature_name = self.variables["compensation"]["temperature_celcius"]
+        self.temperature_name = self.variables["compensation"]["temperature_celsius"]
         self.pressure_name = self.variables["compensation"]["pressure_kpa"]
         self.ec_name = self.variables["compensation"]["ec_ms_cm"]
 

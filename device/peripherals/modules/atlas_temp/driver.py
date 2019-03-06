@@ -63,7 +63,7 @@ class AtlasTempDriver(driver.AtlasDriver):
             info = self.read_info(retry=retry)
             if info.firmware_version > 1.94:
                 self.enable_protocol_lock(retry=retry)
-            self.set_temperature_scale_celcius(retry=retry)
+            self.set_temperature_scale_celsius(retry=retry)
             self.disable_data_logger(retry=retry)
         except Exception as e:
             raise exceptions.SetupError(logger=self.logger) from e
@@ -73,7 +73,7 @@ class AtlasTempDriver(driver.AtlasDriver):
         self.logger.debug("Reading Temperature")
 
         # Get temperature reading from hardware
-        # Assumes temperature output is in celcius
+        # Assumes temperature output is in celsius
         try:
             response = self.process_command("R", process_seconds=0.6, retry=retry)
         except Exception as e:
@@ -110,16 +110,16 @@ class AtlasTempDriver(driver.AtlasDriver):
         except Exception as e:
             raise exceptions.DisableDataLoggerError(logger=self.logger) from e
 
-    def set_temperature_scale_celcius(self, retry: bool = True) -> None:
-        """Sets temperature scale to celcius."""
-        self.logger.info("Setting temperature scale to celcius")
+    def set_temperature_scale_celsius(self, retry: bool = True) -> None:
+        """Sets temperature scale to celsius."""
+        self.logger.info("Setting temperature scale to celsius")
         try:
             self.process_command("S,c", process_seconds=0.3, retry=retry)
         except Exception as e:
-            raise exceptions.SetTemperatureScaleCelciusError(logger=self.logger) from e
+            raise exceptions.SetTemperatureScaleCelsiusError(logger=self.logger) from e
 
     def set_temperature_scale_farenheit(self, retry: bool = True) -> None:
-        """Sets temperature scale to celcius."""
+        """Sets temperature scale to celsius."""
         self.logger.info("Setting temperature scale to farenheit")
         try:
             self.process_command("S,f", process_seconds=0.3, retry=retry)

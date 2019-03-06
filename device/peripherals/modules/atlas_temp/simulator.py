@@ -58,12 +58,12 @@ class AtlasTempSimulator(AtlasSimulator):  # type: ignore
         )
         self.writes[byte_str(TEMPERATURE_WRITE_BYTES)] = TEMPERATURE_RESPONSE_BYTES
 
-        # Set temperature scale celcius
-        SET_TEMPERATURE_SCALE_CELCIUS_WRITE_BYTES = bytes([0x53, 0x2C, 0x63, 0x00])
-        SET_TEMPERATURE_SCALE_CELCIUS_RESPONSE_BYTES = ATLAS_SUCCESS_31
+        # Set temperature scale celsius
+        SET_TEMPERATURE_SCALE_CELSIUS_WRITE_BYTES = bytes([0x53, 0x2C, 0x63, 0x00])
+        SET_TEMPERATURE_SCALE_CELSIUS_RESPONSE_BYTES = ATLAS_SUCCESS_31
         self.writes[
-            byte_str(SET_TEMPERATURE_SCALE_CELCIUS_WRITE_BYTES)
-        ] = SET_TEMPERATURE_SCALE_CELCIUS_RESPONSE_BYTES
+            byte_str(SET_TEMPERATURE_SCALE_CELSIUS_WRITE_BYTES)
+        ] = SET_TEMPERATURE_SCALE_CELSIUS_RESPONSE_BYTES
 
         # Disable data logger
         DISABLE_DATA_LOGGER_WRITE_BYTES = bytes([0x44, 0x2C, 0x30, 0x00])

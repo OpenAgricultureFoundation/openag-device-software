@@ -21,10 +21,10 @@
 				}
 			},
 			"compensation": {
-				"temperature_celcius": {
+				"temperature_celsius": {
 					"name": {
 						"type": "string",
-						"default": "air_temperature_celcius"
+						"default": "air_temperature_celsius"
 					}
 				},
 				"humidity_percent": {

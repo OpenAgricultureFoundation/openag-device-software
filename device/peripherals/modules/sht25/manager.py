@@ -18,7 +18,7 @@ class SHT25Manager(manager.PeripheralManager):
         super().__init__(*args, **kwargs)
 
         # Initialize variable names
-        self.temperature_name = self.variables["sensor"]["temperature_celcius"]
+        self.temperature_name = self.variables["sensor"]["temperature_celsius"]
         self.humidity_name = self.variables["sensor"]["humidity_percent"]
 
     @property

@@ -35,28 +35,28 @@
 			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"standard_night": {
 			"name": "Standard Night",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
 			"light_ppfd_umol_m2_s": 0,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 18
+			"air_temperature_celsius": 18
 		},
 		"cold_day": {
 			"name": "Cold Day",
 			"light_spectrum_nm_percent": {"380-399": 2.03, "400-499": 20.30, "500-599": 23.27, "600-700": 31.09, "701-780": 23.31},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 10
+			"air_temperature_celsius": 10
 		},
 		"frost_night": {
 			"name": "Frost Night",
 			"light_spectrum_nm_percent": {"380-399": 0.0, "400-499": 0.0, "500-599": 0.0, "600-700": 0.0, "701-780": 0.0},
 			"light_ppfd_umol_m2_s": 0,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 2
+			"air_temperature_celsius": 2
 		}
 	},
 	"phases": [

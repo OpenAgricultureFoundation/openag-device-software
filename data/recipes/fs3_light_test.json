@@ -35,7 +35,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_two": {
 			"name": "Hour Two",
@@ -48,7 +48,7 @@
 			},
 			"light_ppfd_umol_m2_s": 150,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_three": {
 			"name": "Hour Three",
@@ -61,7 +61,7 @@
 			},
 			"light_ppfd_umol_m2_s": 50,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_four": {
 			"name": "Hour Four",
@@ -74,7 +74,7 @@
 			},
 			"light_ppfd_umol_m2_s": 0,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_five": {
 			"name": "Hour Five",
@@ -87,7 +87,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_six": {
 			"name": "Hour Six",
@@ -100,7 +100,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_seven": {
 			"name": "Hour Seven",
@@ -113,7 +113,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_eight": {
 			"name": "Hour Eight",
@@ -126,7 +126,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_nine": {
 			"name": "Hour Nine",
@@ -139,7 +139,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_ten": {
 			"name": "Hour Ten",
@@ -152,7 +152,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_eleven": {
 			"name": "Hour Eleven",
@@ -165,7 +165,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_tweleve": {
 			"name": "Hour Twelve",
@@ -178,7 +178,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_thirteen": {
 			"name": "Hour Thirteen",
@@ -191,7 +191,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_fourteen": {
 			"name": "Hour Fourteen",
@@ -204,7 +204,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_fifteen": {
 			"name": "Hour Fifteen",
@@ -217,7 +217,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_sixteen": {
 			"name": "Hour Sixteen",
@@ -230,7 +230,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_seventeen": {
 			"name": "Hour One",
@@ -243,7 +243,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_eighteen": {
 			"name": "Hour Eighteen",
@@ -256,7 +256,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_nineteen": {
 			"name": "Hour Nineteen",
@@ -269,7 +269,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_twenty": {
 			"name": "Hour Twenty",
@@ -282,7 +282,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_twentyone": {
 			"name": "Hour Twenty One",
@@ -295,7 +295,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_twentytwo": {
 			"name": "Hour Twenty Two",
@@ -308,7 +308,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_twentythree": {
 			"name": "Hour Twenty Three",
@@ -321,7 +321,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 24
+			"air_temperature_celsius": 24
 		},
 		"hour_twentyfour": {
 			"name": "Hour Twenty Four",
@@ -334,7 +334,7 @@
 			},
 			"light_ppfd_umol_m2_s": 0,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 18
+			"air_temperature_celsius": 18
 		},
 		"cold_day": {
 			"name": "Cold Day",
@@ -347,7 +347,7 @@
 			},
 			"light_ppfd_umol_m2_s": 300,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 10
+			"air_temperature_celsius": 10
 		},
 		"frost_night": {
 			"name": "Frost Night",
@@ -360,7 +360,7 @@
 			},
 			"light_ppfd_umol_m2_s": 0,
 			"light_illumination_distance_cm": 10,
-			"air_temperature_celcius": 2
+			"air_temperature_celsius": 2
 		}
 	},
 	"phases": [{

@@ -32,7 +32,7 @@
 	"environments": {
 		"warm_moist": {
 			"name": "Warm and Moist",
-			"air_temperature_celcius": 30,
+			"air_temperature_celsius": 30,
             "air_humidity_percent": 80
 		}
 	},

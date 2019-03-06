@@ -16,8 +16,8 @@ class DisableDataLoggerError(exceptions.DriverError):
     message_base = "Unable to disable data logger"
 
 
-class SetTemperatureScaleCelciusError(exceptions.DriverError):
-    message_base = "Unable to set temperature scale to celcius"
+class SetTemperatureScaleCelsiusError(exceptions.DriverError):
+    message_base = "Unable to set temperature scale to celsius"
 
 
 class SetTemperatureScaleFarenheitError(exceptions.DriverError):
