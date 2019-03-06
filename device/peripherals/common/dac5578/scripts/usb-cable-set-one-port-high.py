@@ -40,4 +40,3 @@ byte = 0x30 + port
 # Set the port high
 print("Port {} high...".format(port))
 i2c.write([byte, 0xFF, 0x00])  # to high
-
