@@ -19,7 +19,7 @@ if [ -f /etc/dogtag ]; then
     if [[ $DOGTAG == *"Beagle"* ]]; then
      
       # Check for beaglebone black wireless
-      WLAN=`ifconfig wlan0`
+      WLAN=`ifconfig | grep "wlan0:"`
       if [[ $WLAN == *"wlan0: flags"* ]]; then
           PLATFORM=beaglebone-black-wireless
         IS_WIFI_ENABLED=true
