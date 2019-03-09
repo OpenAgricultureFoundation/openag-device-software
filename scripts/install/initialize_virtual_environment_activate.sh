@@ -47,3 +47,5 @@ echo "export RUNTIME_MODE=$RUNTIME_MODE" >> $PROJECT_ROOT/venv/bin/activate
 # Set platform environment variables in virtual environment
 printf "\n# Source project activate file\n" >> $PROJECT_ROOT/venv/bin/activate
 echo "source $PROJECT_ROOT/scripts/install/activate.sh" >> $PROJECT_ROOT/venv/bin/activate
+
+exit 0

@@ -1,0 +1,32 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "SMHC Air v0.1.0",
+    "uuid": "601068b3-68ca-4a6d-8ff3-e11f5a44a1f5",
+    "peripherals": [
+        {
+            "name": "SHT25-Top",
+            "type": "SHT25",
+            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+            "parameters": {
+                "setup": {
+                    "name": "SHT25 Temperature / Humidity Sensor",
+                    "file_name": "sht25/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celsius": "air_temperature_celsius",
+                        "humidity_percent": "air_humidity_percent" 
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "default", 
+                    "mux": "default", 
+                    "channel": 0, 
+                    "address": "0x40"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}

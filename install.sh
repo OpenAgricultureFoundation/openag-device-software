@@ -50,8 +50,13 @@ echo "Getting project root..."
 PROJECT_ROOT=`pwd`
 echo PROJECT_ROOT: $PROJECT_ROOT
 
+#debugrob, this causes us to fail since some of the scripts prompt for sudo
 # Stop installation on any error
-set -e
+#set -e
+
+# Just activate sudo here, so user doesn't have to install as root.
+echo "Using sudo to update your system, please provide your password now:"
+sudo date
 
 # Clean up before doing a full install
 sudo rm -fr $PROJECT_ROOT/venv
