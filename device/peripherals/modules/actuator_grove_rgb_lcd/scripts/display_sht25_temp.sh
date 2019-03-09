@@ -16,9 +16,9 @@ if [[ "$IS_I2C_ENABLED" != "true" ]]; then
 	exit 0
 fi
 
-# converts an ASCII char to its decimal value and puts it in $ordr
+# converts an ASCII char to its decimal value and puts it in $ORDR
 function ord { 
-    printf -v ordr "%d" "'$1"
+    printf -v ORDR "%d" "'$1"
 }
 
 # CNS board uses mux channel zero
@@ -51,7 +51,7 @@ g=1.8
 o=32
 temperature_c=`echo $m*$temperature_signal/$d - $b | bc`
 temperature_f=`echo $temperature_c*$g + $o | bc`
-temp="$temperature_c C/$temperature_f F"
+temp=`printf "%sC / %sF" $temperature_c $temperature_f`
 echo $temp
 
 # SHT25 humidity measurement 
@@ -101,7 +101,7 @@ sleep 0.05 # Wait for lcd to process
 CHAR=0x40
 for (( i=0; i<${#temp}; i++ )); do
   ord "${temp:$i:1}" 
-  i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CHAR $ordr
+  i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CHAR $ORDR
 done
 
 # 16 chars per line limit, this is a newline
@@ -110,6 +110,6 @@ i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CMD 0xC0 # command: new line
 # write the humidity string one char at a time
 for (( i=0; i<${#hum}; i++ )); do
   ord "${hum:$i:1}" 
-  i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CHAR $ordr
+  i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CHAR $ORDR
 done
 
