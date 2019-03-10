@@ -1,0 +1,92 @@
+{
+    "name":  "LCD",
+    "version": "1",
+    "uuid": "9ba7c9b8-c9ed-4f26-ba05-4814b849e957",
+    "module_name": "actuator_grove_rgb_lcd.manager",
+    "class_name": "ActuatorGroveRGBLCDManager",
+    "parameters": {
+        "variables": {
+#debugrob: get in manager, this is wrong, should use the 'standard' way of specifying what the input to this periperhal is - look at a controller.  standard code is in the utilities/state/main.py
+            "sensor_names": [
+			    {
+			    	"type": "string", 
+			    	"default": "air_temperature_celsius"
+    			},
+			    {
+				    "type": "string", 
+				    "default": "air_humidity_percent"
+			    }
+            ],
+            "actuator": {
+                "output_variable": {
+                    "name": {
+                        "type": "string", 
+                        "default": "lcd_message"
+                    }
+                }
+            }
+        },    
+        "communication": {
+            "bus": {
+                "type": "integer",
+                "default": 0
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 0
+            },
+            "rgb_address": {
+                "type": "string",
+                "default": "0x62"
+            },
+            "lcd_address": {
+                "type": "string",
+                "default": "0x3E"
+            }
+        }
+    },
+    "events": [
+        {
+            "name": "Reset",
+            "description": "Reset actuator.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Shutdown",
+            "description": "Shutdown actuator.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Enable Manual Mode",
+            "description": "Allows actuator to be controlled by manual events.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Turn On",
+            "description": "Turn on fan.",
+            "value": null,
+            "sequence": null,
+            "is_manual": true
+        },
+        {
+            "name": "Turn Off",
+            "description": "Turn off fan.",
+            "value": null,
+            "sequence": null,
+            "is_manual": true
+        }
+    ],
+    "info": {
+        "variables": {
+            "sensor": null,
+            "actuator": null
+        }
+    }
+}

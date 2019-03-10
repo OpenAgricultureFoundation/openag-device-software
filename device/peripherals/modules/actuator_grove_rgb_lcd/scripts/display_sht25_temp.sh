@@ -94,7 +94,7 @@ sleep 0.05 # Wait for lcd to process
 i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CMD $((0x08 | 0x04))
  
 # command: 2 lines
-#i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CMD 0x28
+i2cset -y $DEFAULT_I2C_BUS $DISPLAY_TEXT_ADDR $CMD 0x28
 sleep 0.05 # Wait for lcd to process
 
 # write the temp string one char at a time
