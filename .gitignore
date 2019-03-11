@@ -25,3 +25,4 @@ device/peripherals/modules/usb_camera/active.jpg
 staticfiles/
 hostapd.conf
 rc.local
+openag_brain
