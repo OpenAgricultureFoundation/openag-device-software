@@ -1,2 +1,1 @@
-TURN_ON = "Turn On"
-TURN_OFF = "Turn Off"
+DISPLAY_TIME = "Display Time"

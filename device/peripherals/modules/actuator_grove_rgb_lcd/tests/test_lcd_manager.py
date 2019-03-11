@@ -1,8 +1,7 @@
 # To run a single test:
 # . ~/openag-device-software/venv/bin/activate
-# pytest -s -k "test_init" test_manager.py
+# pytest -s -k "test_init" test_lcd_manager.py
 
-#debugrob: 
 
 # Import standard python libraries
 import os, sys, json, threading, pytest
@@ -18,18 +17,19 @@ from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 from device.utilities.state.main import State
 
 # Import peripheral manager
-from device.peripherals.modules.actuator_dac5578.manager import ActuatorDAC5578Manager
+from device.peripherals.modules.actuator_grove_rgb_lcd.manager import ActuatorGroveRGBLCDManager
 
 # Load test config
+PERIPHERAL_NAME = "LCD"
 CONFIG_PATH = (
-    ROOT_DIR + "/device/peripherals/modules/actuator_dac5578/tests/config.json"
+    ROOT_DIR + "/device/peripherals/modules/actuator_grove_rgb_lcd/tests/config.json"
 )
 device_config = json.load(open(CONFIG_PATH))
-peripheral_config = accessors.get_peripheral_config(device_config["peripherals"], "Fan")
+peripheral_config = accessors.get_peripheral_config(device_config["peripherals"], PERIPHERAL_NAME)
 
 
 def test_init() -> None:
-    manager = ActuatorDAC5578Manager(
+    manager = ActuatorGroveRGBLCDManager(
         name="Test",
         i2c_lock=threading.RLock(),
         state=State(),
@@ -40,7 +40,7 @@ def test_init() -> None:
 
 
 def test_peripheral_initialize() -> None:
-    manager = ActuatorDAC5578Manager(
+    manager = ActuatorGroveRGBLCDManager(
         name="Test",
         i2c_lock=threading.RLock(),
         state=State(),
@@ -52,7 +52,7 @@ def test_peripheral_initialize() -> None:
 
 
 def test_peripheral_setup() -> None:
-    manager = ActuatorDAC5578Manager(
+    manager = ActuatorGroveRGBLCDManager(
         name="Test",
         i2c_lock=threading.RLock(),
         state=State(),
@@ -65,7 +65,7 @@ def test_peripheral_setup() -> None:
 
 
 def test_peripheral_update() -> None:
-    manager = ActuatorDAC5578Manager(
+    manager = ActuatorGroveRGBLCDManager(
         name="Test",
         i2c_lock=threading.RLock(),
         state=State(),
@@ -78,7 +78,7 @@ def test_peripheral_update() -> None:
 
 
 def test_peripheral_reset() -> None:
-    manager = ActuatorDAC5578Manager(
+    manager = ActuatorGroveRGBLCDManager(
         name="Test",
         i2c_lock=threading.RLock(),
         state=State(),
@@ -91,7 +91,7 @@ def test_peripheral_reset() -> None:
 
 
 def test_peripheral_shutdown() -> None:
-    manager = ActuatorDAC5578Manager(
+    manager = ActuatorGroveRGBLCDManager(
         name="Test",
         i2c_lock=threading.RLock(),
         state=State(),

@@ -6,25 +6,15 @@
     "class_name": "ActuatorGroveRGBLCDManager",
     "parameters": {
         "variables": {
-#debugrob: get in manager, this is wrong, should use the 'standard' way of specifying what the input to this periperhal is - look at a controller.  standard code is in the utilities/state/main.py
-            "sensor_names": [
-			    {
-			    	"type": "string", 
-			    	"default": "air_temperature_celsius"
-    			},
-			    {
-				    "type": "string", 
-				    "default": "air_humidity_percent"
-			    }
-            ],
-            "actuator": {
-                "output_variable": {
-                    "name": {
-                        "type": "string", 
-                        "default": "lcd_message"
-                    }
-                }
-            }
+            "temperature_sensor": {
+                "type": "string", 
+                "default": "air_temperature_celsius"
+            },
+            "humidity_sensor": {
+                "type": "string", 
+                "default": "air_humidity_percent"
+            },
+            "actuator": null
         },    
         "communication": {
             "bus": {
@@ -69,15 +59,8 @@
             "sequence": null
         },
         {
-            "name": "Turn On",
-            "description": "Turn on fan.",
-            "value": null,
-            "sequence": null,
-            "is_manual": true
-        },
-        {
-            "name": "Turn Off",
-            "description": "Turn off fan.",
+            "name": "Display Time",
+            "description": "Display Time.",
             "value": null,
             "sequence": null,
             "is_manual": true

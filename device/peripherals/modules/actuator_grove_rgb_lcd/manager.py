@@ -11,11 +11,10 @@ from device.peripherals.classes.peripheral import manager, modes
 from device.peripherals.modules.actuator_grove_rgb_lcd import exceptions, events, driver
 
 
-#debugrob: fix here down, fix turn_on/off bool stuff
-
 class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
     """Manages an actuator controlled by a Grove RGB LCD."""
 
+    #--------------------------------------------------------------------------
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes manager."""
 
@@ -32,6 +31,24 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             self.bus = None
         if self.mux == "none":
             self.mux = None
+
+        # Get setup defaults
+        comms = {}
+        if self.setup_dict is not None:
+            params = self.setup_dict.get('parameters')
+            if params is not None:
+                comms = params.get('communication')
+
+        # Try to get settings from setup file, if they are not in peripheral
+        if self.rgb_address is None:
+            rgb = comms.get("rgb_address")
+            if rgb is not None:
+                self.rgb_address = rgb.get("default")
+        if self.lcd_address is None:
+            lcd = comms.get("lcd_address")
+            if lcd is not None:
+                self.lcd_address = lcd.get("default")
+
         if self.rgb_address is None:
             self.logger.critical("Missing RGB I2C address")
             return
@@ -47,53 +64,25 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         if self.mux is not None:
             self.mux = int(self.mux, 16)
 
-        self.logger.info("rgb_address=0x{:02X}, lcd_address=0x{:02X}"
-                .format(self.rgb_address, self.lcd_address))
+        self.logger.info(
+            "rgb_address=0x{:02X}, lcd_address=0x{:02X}".format(
+                self.rgb_address, self.lcd_address
+            )
+        )
 
-#debugrob: validate with setup json, need to figure out how this reads temp and humidity sensor values in the state.  Look at controller code?
         # Initialize variable names
-        self.output_name = "message"
-        act = self.variables.get("actuator")
-        if act is not None:
-            self.output_name = act.get("output_variable")
+        self.temperature_sensor = self.variables.get("temperature_sensor")
+        self.humidity_sensor = self.variables.get("humidity_sensor")
 
         # Set default sampling interval and heartbeat
-        self.default_sampling_interval = 5 # seconds
+        self.default_sampling_interval = 5  # seconds
         self.heartbeat = 60  # seconds
         self.prev_update = 0  # timestamp
 
-    @property
-    def desired_output(self) -> Optional[bool]:
-        """Gets desired output value."""
-        value = self.state.get_environment_desired_actuator_value(self.output_name)
-        if value != None:
-            return bool(value)
-        return None
-
-    @property
-    def output(self) -> Optional[bool]:
-        """Gets reported output value."""
-        value = self.state.get_peripheral_reported_actuator_value(
-            self.name, self.output_name
-        )
-        if value != None:
-            return bool(value)
-        return None
-
-    @output.setter
-    def output(self, value: bool) -> None:
-        """Sets reported output value in shared state."""
-        self.state.set_peripheral_reported_actuator_value(
-            self.name, self.output_name, value
-        )
-        self.state.set_environment_reported_actuator_value(self.output_name, value)
-
+    #--------------------------------------------------------------------------
     def initialize_peripheral(self) -> None:
         """Initializes manager."""
         self.logger.info("Initializing")
-
-        # Clear reported values
-        self.clear_reported_values()
 
         # Initialize health
         self.health = 100.0
@@ -116,173 +105,128 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             self.health = 0.0
             self.mode = modes.ERROR
 
+    #--------------------------------------------------------------------------
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
         self.logger.debug("Setting up peripheral")
         try:
-            self.set_off()
+            self.display_time()
         except exceptions.DriverError as e:
             self.logger.exception("Unable to setup: {}".format(e))
             self.mode = modes.ERROR
             self.health = 0.0
 
+    #--------------------------------------------------------------------------
     def update_peripheral(self) -> None:
         """Updates peripheral by setting output to desired state."""
         try:
-            # Check if desired output is not set
-            if self.desired_output == None and self.output != 0.0:
-                self.set_off()
-
-            # Check if output is set to desired value
-            elif self.desired_output != None and self.output != self.desired_output:
-                self.set_output(self.desired_output)
-
             # Check for heartbeat
             if time.time() - self.prev_update > self.heartbeat:
                 self.logger.debug("Sending heartbeat")
-                self.set_output(self.output)
+                self.set_output()
 
         except exceptions.DriverError as e:
             self.logger.exception("Unable to update peripheral: {}".format(e))
             self.mode = modes.ERROR
             self.health = 0.0
 
+    #--------------------------------------------------------------------------
     def reset_peripheral(self) -> None:
         """Resets sensor."""
         self.logger.info("Resetting")
-        self.clear_reported_values()
 
+    #--------------------------------------------------------------------------
     def shutdown_peripheral(self) -> None:
         """Shutsdown peripheral."""
         self.logger.info("Shutting down")
-        try:
-            self.set_off()
-        except exceptions.DriverError as e:
-            message = "Unable to turn off actuator before shutting down: {}".format(
-                type(e)
-            )
-            self.logger.warning(message)
-        self.clear_reported_values()
-
-    def clear_reported_values(self) -> None:
-        """Clears reported values."""
-        self.output = None
 
     ##### HELPER FUNCTIONS ####################################################
 
-    def set_output(self, value: bool):
-        """Sets output."""
-        if value:
-            self.set_on()
-        else:
-            self.set_off()
+    #--------------------------------------------------------------------------
+    def set_output(self):
+        """Gets desired output value from input sensor values."""
+        tempC = self.state.get_environment_reported_sensor_value(self.temperature_sensor)
+        hum = self.state.get_environment_reported_sensor_value(self.humidity_sensor)
+        if tempC is None:
+            return
 
-    def set_on(self):
-        """Sets driver on."""
-        self.logger.debug("Setting on")
-#debugrob: 
-        self.driver.blah()
-        self.output = True
-        self.health = 100.0
+        tempF = float(tempC) * 1.8 + 32.0
+        output = "{}C / {}F\n{} %RH".format(tempC, tempF, hum)
+        self.logger.debug("Output: {}".format(output))
+
+        # backlight color based on temp
+        if tempF <= 65:
+            self.driver.set_backlight(R=0x00, G=0x00, B=0xFF)
+            self.logger.debug("Cold")
+        if tempF > 65 and tempF < 80:
+            self.driver.set_backlight(R=0x00, G=0xFF, B=0x00)
+            self.logger.debug("Comfortable")
+        if tempF >= 80:
+            self.driver.set_backlight(R=0xFF, G=0x00, B=0x00)
+            self.logger.debug("Hot")
+
+        self.driver.write_string(output)
         self.prev_update = time.time()
 
-    def set_off(self):
-        """Sets driver off."""
-        self.logger.debug("Setting off")
-#debugrob: 
-        self.output = False
-        self.health = 100.0
-        self.prev_update = time.time()
+    #--------------------------------------------------------------------------
+    def display_time(self):
+        """Shows the current time."""
+        self.logger.debug('display time')
+        self.driver.display_time()
 
     ##### EVENT FUNCTIONS #####################################################
 
+    #--------------------------------------------------------------------------
     def create_peripheral_specific_event(
         self, request: Dict[str, Any]
     ) -> Tuple[str, int]:
         """Processes peripheral specific event."""
-        if request["type"] == events.TURN_ON:
-            return self.turn_on()
-        elif request["type"] == events.TURN_OFF:
-            return self.turn_off()
+        if request["type"] == events.DISPLAY_TIME:
+            return self.show_time()
         else:
             return "Unknown event request type", 400
 
+    #--------------------------------------------------------------------------
     def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
         """Checks peripheral specific events."""
-        if request["type"] == events.TURN_ON:
-            self._turn_on()
-        elif request["type"] == events.TURN_OFF:
-            self._turn_off()
+        if request["type"] == events.DISPLAY_TIME:
+            self._show_time()
         else:
             message = "Invalid event request type in queue: {}".format(request["type"])
             self.logger.error(message)
 
-    def turn_on(self) -> Tuple[str, int]:
-        """Pre-processes turn on event request."""
-        self.logger.debug("Pre-processing turn on event request")
+    #--------------------------------------------------------------------------
+    def show_time(self) -> Tuple[str, int]:
+        """Pre-processes display time event request."""
+        self.logger.debug("Pre-processing display time event request")
 
         # Require mode to be in manual
         if self.mode != modes.MANUAL:
             return "Must be in manual mode", 400
 
         # Add event request to event queue
-        request = {"type": events.TURN_ON}
+        request = {"type": events.DISPLAY_TIME}
         self.event_queue.put(request)
 
-        # Successfully turned on
-        return "Turning on", 200
+        # Successful
+        return "Displaying time", 200
 
-    def _turn_on(self) -> None:
-        """Processes turn on event request."""
-        self.logger.debug("Processing turn on event request")
+    #--------------------------------------------------------------------------
+    def _show_time(self) -> None:
+        self.logger.debug("Processing display time event request")
 
         # Require mode to be in manual
         if self.mode != modes.MANUAL:
-            self.logger.critical("Tried to turn on from {} mode".format(self.mode))
+            self.logger.critical("Tried to display time from {} mode".format(self.mode))
 
-        # Turn on driver and update reported variables
         try:
-            self.set_on()
+            self.display_time()
         except exceptions.DriverError as e:
             self.mode = modes.ERROR
-            message = "Unable to turn on: {}".format(e)
+            message = "Unable to display time: {}".format(e)
             self.logger.debug(message)
         except:
             self.mode = modes.ERROR
-            message = "Unable to turn on, unhandled exception"
+            message = "Unable to display time, unhandled exception"
             self.logger.exception(message)
 
-    def turn_off(self) -> Tuple[str, int]:
-        """Pre-processes turn off event request."""
-        self.logger.debug("Pre-processing turn off event request")
-
-        # Require mode to be in manual
-        if self.mode != modes.MANUAL:
-            return "Must be in manual mode", 400
-
-        # Add event request to event queue
-        request = {"type": events.TURN_OFF}
-        self.event_queue.put(request)
-
-        # Successfully turned off
-        return "Turning off", 200
-
-    def _turn_off(self) -> None:
-        """Processes turn off event request."""
-        self.logger.debug("Processing turn off event request")
-
-        # Require mode to be in manual
-        if self.mode != modes.MANUAL:
-            self.logger.critical("Tried to turn off from {} mode".format(self.mode))
-
-        # Turn off driver and update reported variables
-        try:
-            self.set_off()
-        except exceptions.DriverError as e:
-            self.mode = modes.ERROR
-            message = "Unable to turn off: {}".format(e)
-            self.logger.debug(message)
-        except:
-            self.mode = modes.ERROR
-            message = "Unable to turn off, unhandled exception"
-            self.logger.exception(message)
