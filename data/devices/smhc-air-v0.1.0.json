@@ -26,9 +26,6 @@
                     "address": "0x40"
                 }
             }
-        },
-        {
-            "name": "LCD debugrob add this"
         }
     ],
     "controllers": null
