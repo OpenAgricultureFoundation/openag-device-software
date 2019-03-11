@@ -44,6 +44,9 @@
                     "actuator": null
                 },
                 "communication": {
+                    "bus": "default", 
+                    "mux": "default", 
+                    "channel": 0
                 }
             }
         }

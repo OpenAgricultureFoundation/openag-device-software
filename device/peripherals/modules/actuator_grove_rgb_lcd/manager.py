@@ -22,15 +22,8 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         super().__init__(*args, **kwargs)
 
         # Initialize communication variables
-        self.bus = self.communication.get("bus")
-        self.mux = self.communication.get("mux")
         self.rgb_address = self.communication.get("rgb_address")
         self.lcd_address = self.communication.get("lcd_address")
-
-        if self.bus == "none":
-            self.bus = None
-        if self.mux == "none":
-            self.mux = None
 
         # Get setup defaults
         comms = {}
@@ -59,9 +52,12 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         # Convert i2c config params from hex to int if they exist
         self.rgb_address = int(self.rgb_address, 16)
         self.lcd_address = int(self.lcd_address, 16)
-        if self.bus is not None:
+
+        if self.bus is None:
+            self.bus = self.communication.get("bus")
             self.bus = int(self.bus)
-        if self.mux is not None:
+        if self.mux is None:
+            self.mux = self.communication.get("mux")
             self.mux = int(self.mux, 16)
 
         self.logger.info(
@@ -71,8 +67,15 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         )
 
         # Initialize variable names
-        self.temperature_sensor = self.variables.get("temperature_sensor")
-        self.humidity_sensor = self.variables.get("humidity_sensor")
+        self.temperature_sensor = None
+        self.humidity_sensor = None
+        sensor = self.variables.get("sensor")
+        if sensor is not None:
+            self.temperature_sensor = sensor.get("temperature_celsius")
+            self.humidity_sensor = sensor.get("humidity_percent")
+        if self.temperature_sensor is None or self.humidity_sensor is None:
+            self.logger.critical("Missing sensor names")
+            return
 
         # Set default sampling interval and heartbeat
         self.default_sampling_interval = 5  # seconds
@@ -110,7 +113,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         """Sets up peripheral."""
         self.logger.debug("Setting up peripheral")
         try:
-            self.display_time()
+            self.driver.write_string("setup")
         except exceptions.DriverError as e:
             self.logger.exception("Unable to setup: {}".format(e))
             self.mode = modes.ERROR
