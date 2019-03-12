@@ -7,7 +7,9 @@ from typing import Any
 
 # Import django modules
 from django.db import models
-from django.contrib.postgres.fields import JSONField
+
+# from django.contrib.postgres.fields import JSONField
+from jsonfield import JSONField
 
 
 class StateModel(models.Model):
