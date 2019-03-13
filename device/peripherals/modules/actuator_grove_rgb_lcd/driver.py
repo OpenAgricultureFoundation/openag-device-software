@@ -121,9 +121,11 @@ class GroveRGBLCDDriver:
     # --------------------------------------------------------------------------
     def write_string(self, message: str = "") -> None:
         """Writes a string to the LCD (16 chars per line limit, 2 lines). Use a '/n' newline character in the string to start the secone line."""
-        message = "Writing '{}' to LCD".format(message)
-        self.logger.debug(message)
+        self.logger.debug("Writing '{}' to LCD".format(message))
         try:
+            # command: clear display
+            self.i2c_lcd.write(bytes([self.CMD, self.CLEAR]))
+            time.sleep(0.05)  # Wait for lcd to process
             for char in message:
                 # write to the second line? (two lines max, not enforced)
                 if char == "\n":
@@ -144,6 +146,9 @@ class GroveRGBLCDDriver:
         now = "{}".format(time.strftime("%F %X", lt))
         self.logger.debug("Writing time {}".format(now))
         try:
+            # command: clear display
+            self.i2c_lcd.write(bytes([self.CMD, self.CLEAR]))
+            time.sleep(0.05)  # Wait for lcd to process
             self.write_string(now)
         except exceptions.DriverError as e:
             raise exceptions.DriverError(logger=self.logger) from e
