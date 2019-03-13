@@ -87,7 +87,10 @@ class PeripheralFileHandler(logging.Handler):
             ROOT_DIR = ""
 
         # Load device config
-        DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
+        #DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
+        DATA_PATH = os.getenv("STORAGE_LOCATION", ROOT_DIR + "data")
+        DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
+
         if os.path.exists(DEVICE_CONFIG_PATH):
             with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()
@@ -159,7 +162,10 @@ class ControllerFileHandler(logging.Handler):
             ROOT_DIR = ""
 
         # Load device config
-        DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
+        #DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
+        DATA_PATH = os.getenv("STORAGE_LOCATION", ROOT_DIR + "data")
+        DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
+
         if os.path.exists(DEVICE_CONFIG_PATH):
             with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()

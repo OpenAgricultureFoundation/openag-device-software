@@ -5,7 +5,9 @@ import subprocess, os, re
 from device.utilities.logger import Logger
 
 # Initialize file paths
-DEVICE_CONFIG_PATH = "data/config/device.txt"
+#DEVICE_CONFIG_PATH = "data/config/device.txt"
+DATA_PATH = os.getenv("STORAGE_LOCATION", "data")
+DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
 
 # Initialize logger
 logger = Logger("SystemUtility", "system")

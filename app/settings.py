@@ -113,7 +113,9 @@ if LOG_LEVEL == "DEBUG":
     DEBUG = True
 
 # Set log directory
-LOG_DIR = os.path.dirname(BASE_DIR) + "/data/logs/"
+# LOG_DIR = os.path.dirname(BASE_DIR) + "/data/logs/"
+DATA_PATH = os.getenv("STORAGE_LOCATION", os.path.join(os.path.dirname(BASE_DIR), "data"))
+LOG_DIR = DATA_PATH + "/logs/"
 
 # Make sure log directory exists
 if not os.path.exists(LOG_DIR):

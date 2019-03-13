@@ -25,7 +25,8 @@ from device.iot.pubsub import PubSub
 
 # Initialize file paths
 IMAGES_DIR = "data/images/"
-STORED_IMAGES_DIR = "data/images/stored/"
+DATA_DIR = os.getenv("STORAGE_LOCATION", "data")
+STORED_IMAGES_DIR = DATA_DIR + "/images/stored/"
 
 
 class IotManager(manager.StateMachineManager):
