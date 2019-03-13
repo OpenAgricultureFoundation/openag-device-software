@@ -1,0 +1,62 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2019-03-05T00:00:00Z",
+	"name": "Fermentabot 32C to 25c at 80%RH",
+	"uuid": "e76e4d1a-b3c4-4eba-8c10-e975606e904f",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Warm and moist for 40 hours",
+		"verbose": "Holds 32C for 18 hours then 25C for 22 hours."
+	},
+	"authors": [
+		{
+			"name": "Rob Baynes",
+			"email": "rbaynes@media.mit.edu",
+			"uuid": "67ba60a4-45c4-48e7-be24-ad7e8079e82d"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Koji",
+			"uuid": "723a30ca-ec04-4c05-91a2-f8375051ef6f"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Fermentation",
+		"uuid": "6c7e2870-81ed-4e47-9c6e-5137c5e9e84d"
+		}
+	],
+	"environments": {
+		"32_80": {
+			"name": "32C at 80%RH",
+			"air_temperature_celsius": 32,
+            "air_humidity_percent": 80
+		},
+		"25_80": {
+			"name": "25C at 80%RH",
+			"air_temperature_celsius": 25,
+            "air_humidity_percent": 80
+		}
+	},
+	"phases": [
+		{
+			"name": "Fermentation",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Hot",
+					"environment": "32_80",
+					"duration_hours": 18
+				},
+				{
+					"name": "Warm",
+					"environment": "25_80",
+					"duration_hours": 22
+				}
+			]
+		}
+	]
+}
