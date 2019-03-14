@@ -107,7 +107,8 @@ class PeripheralFileHandler(logging.Handler):
             peripheral_configs = {}
 
         # Make sure log directory exists
-        LOG_DIR = ROOT_DIR + "data/logs/peripherals/"
+        #LOG_DIR = ROOT_DIR + "data/logs/peripherals/"
+        LOG_DIR = DATA_PATH + "/logs/peripherals/"
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
 
@@ -182,7 +183,7 @@ class ControllerFileHandler(logging.Handler):
             controller_configs = {}
 
         # Make sure log directory exists
-        LOG_DIR = ROOT_DIR + "data/logs/controllers/"
+        LOG_DIR = DATA_PATH + "/logs/controllers/"
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
 
