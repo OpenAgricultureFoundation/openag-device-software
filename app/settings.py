@@ -87,14 +87,16 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        # "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django.db.backends.sqlite3",
         "NAME": "openag_brain",
         "USER": "openag",
         "PASSWORD": "openag",
         "HOST": "localhost",
         "PORT": "",
         "TEST": {
-            "ENGINE": "django.db.backends.postgresql",
+            # "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django.db.backends.sqlite3",
             "NAME": "test_openag_brain",
             "USER": "openag",
             "PASSWORD": "openag",
