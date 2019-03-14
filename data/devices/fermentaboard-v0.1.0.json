@@ -221,11 +221,11 @@
         {
             "name": "TemperatureController",
             "type": "HystereticController",
-            "uuid": "57ccd50d-d206-49e4-8e34-28163be555a2",
+            "uuid": "f7621396-0007-425d-8eec-e1e3c69097a8",
             "parameters": {
                 "setup": {
-                    "name": "Temperature Controller +/- 2C",
-                    "file_name": "hysteretic/setups/temperature_2c"
+                    "name": "Temperature Controller +/- 0C",
+                    "file_name": "hysteretic/setups/temperature_0c"
                 },
                 "variables": {
                     "sensor_name": "air_temperature_celsius",
