@@ -4,6 +4,8 @@ import logging, sys, json, os
 # Import python types
 from typing import Dict, Any
 
+from django.conf import settings
+
 
 class Logger:
     """Simple logger class. Ensures descriptive logs in run and test environments."""
@@ -87,9 +89,10 @@ class PeripheralFileHandler(logging.Handler):
             ROOT_DIR = ""
 
         # Load device config
-        #DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
-        DATA_PATH = os.getenv("STORAGE_LOCATION", ROOT_DIR + "data")
-        DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
+        # DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
+        # DATA_PATH = os.getenv("STORAGE_LOCATION", ROOT_DIR + "data")
+
+        DEVICE_CONFIG_PATH = settings.DATA_PATH + "/config/device.txt"
 
         if os.path.exists(DEVICE_CONFIG_PATH):
             with open(DEVICE_CONFIG_PATH) as f:
@@ -107,8 +110,8 @@ class PeripheralFileHandler(logging.Handler):
             peripheral_configs = {}
 
         # Make sure log directory exists
-        #LOG_DIR = ROOT_DIR + "data/logs/peripherals/"
-        LOG_DIR = DATA_PATH + "/logs/peripherals/"
+        # LOG_DIR = ROOT_DIR + "data/logs/peripherals/"
+        LOG_DIR = settings.DATA_PATH + "/logs/peripherals/"
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
 
@@ -163,9 +166,9 @@ class ControllerFileHandler(logging.Handler):
             ROOT_DIR = ""
 
         # Load device config
-        #DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
-        DATA_PATH = os.getenv("STORAGE_LOCATION", ROOT_DIR + "data")
-        DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
+        # DEVICE_CONFIG_PATH = ROOT_DIR + "data/config/device.txt"
+        # DATA_PATH = os.getenv("STORAGE_LOCATION", ROOT_DIR + "data")
+        DEVICE_CONFIG_PATH = settings.DATA_PATH + "/config/device.txt"
 
         if os.path.exists(DEVICE_CONFIG_PATH):
             with open(DEVICE_CONFIG_PATH) as f:
@@ -183,7 +186,7 @@ class ControllerFileHandler(logging.Handler):
             controller_configs = {}
 
         # Make sure log directory exists
-        LOG_DIR = DATA_PATH + "/logs/controllers/"
+        LOG_DIR = settings.DATA_PATH + "/logs/controllers/"
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
 

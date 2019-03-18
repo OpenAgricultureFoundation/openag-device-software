@@ -19,12 +19,15 @@ from device.utilities.state.main import State
 from device.iot.manager import IotManager
 from device.utilities import network as network_utilities
 
+from django.conf import settings
+
 # Initialize file paths
 IMAGES_PATH = "data/images/*.png"
 
 # The following paths are written to. We need to be able to move the location using the "STORAGE_LOCATION" env var
 #    So we can point them to a persistent location in some deployments
-DATA_DIR = os.getenv("STORAGE_LOCATION", "data")
+# DATA_DIR = os.getenv("STORAGE_LOCATION", "data")
+DATA_DIR = settings.DATA_PATH
 STORED_IMAGES_PATH = DATA_DIR + "/images/stored/*.png"
 LOGS_PATH = DATA_DIR + "/logs/"
 PERIPHERAL_LOGS_PATH = DATA_DIR + "/logs/peripherals/"

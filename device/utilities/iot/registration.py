@@ -5,8 +5,10 @@ import os, subprocess, shutil
 from device.utilities.logger import Logger
 from device.utilities import network
 
+from django.conf import settings
+
 # Initialize file paths
-DATA_DIR = os.getenv("STORAGE_LOCATION", "data")
+DATA_DIR = settings.DATA_PATH  # os.getenv("STORAGE_LOCATION", "data")
 REGISTRATION_DATA_DIR = DATA_DIR + "/registration/"
 DEVICE_ID_PATH = REGISTRATION_DATA_DIR + "device_id.bash"
 ROOTS_PATH = REGISTRATION_DATA_DIR + "roots.pem"

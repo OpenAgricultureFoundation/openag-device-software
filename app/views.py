@@ -32,14 +32,14 @@ PROJECT_ROOT = str(os.getenv("PROJECT_ROOT", ""))
 
 # Initialize file paths
 APP_NAME = "app"
-#LOG_DIR = "data/logs/"
+# LOG_DIR = "data/logs/"
 LOG_DIR = settings.LOG_DIR
 
 IMAGE_PATH = PROJECT_ROOT + "/data/images/*.png"
-#STORED_IMAGE_PATH = PROJECT_ROOT + "/data/images/stored/*.png"
+# STORED_IMAGE_PATH = PROJECT_ROOT + "/data/images/stored/*.png"
 STORED_IMAGE_PATH = settings.DATA_PATH + "/images/stored/*.png"
 
-#DEVICE_CONFIG_PATH = "data/config/device.txt"
+# DEVICE_CONFIG_PATH = "data/config/device.txt"
 DEVICE_CONFIG_PATH = os.path.join(settings.DATA_PATH, "config", "device.txt")
 
 

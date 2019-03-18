@@ -10,190 +10,251 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ActuatorVariableModel',
+            name="ActuatorVariableModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.TextField(unique=True)),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("key", models.TextField(unique=True)),
+                ("json", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Actuator Variable',
-                'verbose_name_plural': 'Actuator Variables',
+                "verbose_name": "Actuator Variable",
+                "verbose_name_plural": "Actuator Variables",
             },
         ),
         migrations.CreateModel(
-            name='ConnectModel',
+            name="ConnectModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("json", jsonfield.fields.JSONField()),
+            ],
+            options={"verbose_name": "Connect", "verbose_name_plural": "Connects"},
+        ),
+        migrations.CreateModel(
+            name="ControllerSetupModel",
+            fields=[
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Connect',
-                'verbose_name_plural': 'Connects',
+                "verbose_name": "Controller Setup",
+                "verbose_name_plural": "Controller Setups",
             },
         ),
         migrations.CreateModel(
-            name='ControllerSetupModel',
+            name="CultivarModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", jsonfield.fields.JSONField()),
+            ],
+            options={"verbose_name": "Cultivar", "verbose_name_plural": "Cultivars"},
+        ),
+        migrations.CreateModel(
+            name="CultivationMethodModel",
+            fields=[
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Controller Setup',
-                'verbose_name_plural': 'Controller Setups',
+                "verbose_name": "Cultivation Method",
+                "verbose_name_plural": "Cultivation Methods",
             },
         ),
         migrations.CreateModel(
-            name='CultivarModel',
+            name="DeviceConfigModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Cultivar',
-                'verbose_name_plural': 'Cultivars',
+                "verbose_name": "Device Configuration",
+                "verbose_name_plural": "Device Configurations",
             },
         ),
         migrations.CreateModel(
-            name='CultivationMethodModel',
+            name="EnvironmentModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("state", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Cultivation Method',
-                'verbose_name_plural': 'Cultivation Methods',
+                "verbose_name": "Environment",
+                "verbose_name_plural": "Environments",
+                "get_latest_by": "timestamp",
             },
         ),
         migrations.CreateModel(
-            name='DeviceConfigModel',
+            name="EventModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("recipient", jsonfield.fields.JSONField()),
+                ("request", jsonfield.fields.JSONField()),
+                ("response", jsonfield.fields.JSONField(blank=True, null=True)),
             ],
             options={
-                'verbose_name': 'Device Configuration',
-                'verbose_name_plural': 'Device Configurations',
+                "verbose_name": "Event",
+                "verbose_name_plural": "Events",
+                "get_latest_by": "timestamp",
             },
         ),
         migrations.CreateModel(
-            name='EnvironmentModel',
+            name="IoTConfigModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('state', jsonfield.fields.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("last_config_version", models.IntegerField()),
             ],
             options={
-                'verbose_name': 'Environment',
-                'verbose_name_plural': 'Environments',
-                'get_latest_by': 'timestamp',
+                "verbose_name": "IoTConfig",
+                "verbose_name_plural": "IoTConfigs",
+                "get_latest_by": "last_config_version",
             },
         ),
         migrations.CreateModel(
-            name='EventModel',
+            name="PeripheralSetupModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('recipient', jsonfield.fields.JSONField()),
-                ('request', jsonfield.fields.JSONField()),
-                ('response', jsonfield.fields.JSONField(blank=True, null=True)),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("name", models.TextField()),
+                ("json", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Event',
-                'verbose_name_plural': 'Events',
-                'get_latest_by': 'timestamp',
+                "verbose_name": "Peripheral Setup",
+                "verbose_name_plural": "Peripheral Setups",
             },
         ),
         migrations.CreateModel(
-            name='IoTConfigModel',
+            name="RecipeModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('last_config_version', models.IntegerField()),
+                (
+                    "uuid",
+                    models.UUIDField(primary_key=True, serialize=False, unique=True),
+                ),
+                ("json", jsonfield.fields.JSONField()),
+                ("name", models.TextField()),
+                ("version", models.TextField()),
+            ],
+            options={"verbose_name": "Recipe", "verbose_name_plural": "Recipes"},
+        ),
+        migrations.CreateModel(
+            name="RecipeTransitionModel",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("minute", models.IntegerField()),
+                ("phase", models.TextField()),
+                ("cycle", models.TextField()),
+                ("environment_name", models.TextField()),
+                ("environment_state", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'IoTConfig',
-                'verbose_name_plural': 'IoTConfigs',
-                'get_latest_by': 'last_config_version',
+                "verbose_name": "Recipe Transition",
+                "verbose_name_plural": "Recipe Transitions",
             },
         ),
         migrations.CreateModel(
-            name='PeripheralSetupModel',
+            name="SensorVariableModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('name', models.TextField()),
-                ('json', jsonfield.fields.JSONField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("key", models.TextField(unique=True)),
+                ("json", jsonfield.fields.JSONField()),
             ],
             options={
-                'verbose_name': 'Peripheral Setup',
-                'verbose_name_plural': 'Peripheral Setups',
+                "verbose_name": "Sensor Variable",
+                "verbose_name_plural": "Sensor Variables",
             },
         ),
         migrations.CreateModel(
-            name='RecipeModel',
+            name="StateModel",
             fields=[
-                ('uuid', models.UUIDField(primary_key=True, serialize=False, unique=True)),
-                ('json', jsonfield.fields.JSONField()),
-                ('name', models.TextField()),
-                ('version', models.TextField()),
+                ("id", models.IntegerField(primary_key=True, serialize=False)),
+                ("device", jsonfield.fields.JSONField()),
+                ("recipe", jsonfield.fields.JSONField()),
+                ("environment", jsonfield.fields.JSONField()),
+                ("peripherals", jsonfield.fields.JSONField()),
+                ("controllers", jsonfield.fields.JSONField()),
+                ("iot", jsonfield.fields.JSONField()),
+                ("resource", jsonfield.fields.JSONField()),
+                ("connect", jsonfield.fields.JSONField()),
+                ("upgrade", jsonfield.fields.JSONField()),
             ],
-            options={
-                'verbose_name': 'Recipe',
-                'verbose_name_plural': 'Recipes',
-            },
-        ),
-        migrations.CreateModel(
-            name='RecipeTransitionModel',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('minute', models.IntegerField()),
-                ('phase', models.TextField()),
-                ('cycle', models.TextField()),
-                ('environment_name', models.TextField()),
-                ('environment_state', jsonfield.fields.JSONField()),
-            ],
-            options={
-                'verbose_name': 'Recipe Transition',
-                'verbose_name_plural': 'Recipe Transitions',
-            },
-        ),
-        migrations.CreateModel(
-            name='SensorVariableModel',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('key', models.TextField(unique=True)),
-                ('json', jsonfield.fields.JSONField()),
-            ],
-            options={
-                'verbose_name': 'Sensor Variable',
-                'verbose_name_plural': 'Sensor Variables',
-            },
-        ),
-        migrations.CreateModel(
-            name='StateModel',
-            fields=[
-                ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('device', jsonfield.fields.JSONField()),
-                ('recipe', jsonfield.fields.JSONField()),
-                ('environment', jsonfield.fields.JSONField()),
-                ('peripherals', jsonfield.fields.JSONField()),
-                ('controllers', jsonfield.fields.JSONField()),
-                ('iot', jsonfield.fields.JSONField()),
-                ('resource', jsonfield.fields.JSONField()),
-                ('connect', jsonfield.fields.JSONField()),
-                ('upgrade', jsonfield.fields.JSONField()),
-            ],
-            options={
-                'verbose_name': 'State',
-                'verbose_name_plural': 'States',
-            },
+            options={"verbose_name": "State", "verbose_name_plural": "States"},
         ),
     ]

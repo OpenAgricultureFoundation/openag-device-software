@@ -85,23 +85,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "app.wsgi.application"
 
 ### Where should stuff get stored. Defaults to the data directory under the project roots
-DATA_PATH = os.getenv("STORAGE_LOCATION", os.path.join(os.path.dirname(BASE_DIR), "data"))
+DATA_PATH = os.getenv(
+    "STORAGE_LOCATION", os.path.join(os.path.dirname(BASE_DIR), "data")
+)
 
 DATABASES = {
     "default": {
         # "ENGINE": "django.db.backends.postgresql",
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": DATA_PATH + "/db/openag_brain",
+        "NAME": DATA_PATH + "/db/openag_brain.sqlite",
         "USER": "openag",
         "PASSWORD": "openag",
-        #"HOST": "localhost",
-        #"PORT": "",
+        # "HOST": "localhost",
+        # "PORT": "",
         "TEST": {
             # "ENGINE": "django.db.backends.postgresql",
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": DATA_PATH + "/db/test_openag_brain",
+            "NAME": DATA_PATH + "/db/test_openag_brain.sqlite",
             "USER": "openag",
-            #"PASSWORD": "openag",
+            # "PASSWORD": "openag",
         },
     }
 }

@@ -24,6 +24,8 @@ from device.upgrade.manager import UpgradeManager
 # Import manager elements
 from device.coordinator import modes, events
 
+from django.conf import settings
+
 # Initialize file paths
 RECIPES_PATH = "data/recipes/*.json"
 PERIPHERAL_SETUP_FILES_PATH = "device/peripherals/modules/*/setups/*.json"
@@ -32,7 +34,7 @@ CONTROLLER_SETUP_FILES_PATH = "device/controllers/modules/*/setups/*.json"
 CONTROLLER_SETUP_SCHEMA_PATH = "data/schemas/controller_setup.json"
 
 # DEVICE_CONFIG_PATH = "data/config/device.txt"
-DATA_PATH = os.getenv("STORAGE_LOCATION", "data")
+DATA_PATH = settings.DATA_PATH  # os.getenv("STORAGE_LOCATION", "data")
 DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
 
 DEVICE_CONFIG_SCHEMA_PATH = "data/schemas/device_config.json"
