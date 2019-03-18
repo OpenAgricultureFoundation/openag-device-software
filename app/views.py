@@ -11,6 +11,8 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.db.models.query import QuerySet
 
+from django.conf import settings
+
 # Import django rest modules
 from rest_framework import views, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -30,10 +32,15 @@ PROJECT_ROOT = str(os.getenv("PROJECT_ROOT", ""))
 
 # Initialize file paths
 APP_NAME = "app"
-LOG_DIR = "data/logs/"
+# LOG_DIR = "data/logs/"
+LOG_DIR = settings.LOG_DIR
+
 IMAGE_PATH = PROJECT_ROOT + "/data/images/*.png"
-STORED_IMAGE_PATH = PROJECT_ROOT + "/data/images/stored/*.png"
-DEVICE_CONFIG_PATH = "data/config/device.txt"
+# STORED_IMAGE_PATH = PROJECT_ROOT + "/data/images/stored/*.png"
+STORED_IMAGE_PATH = settings.DATA_PATH + "/images/stored/*.png"
+
+# DEVICE_CONFIG_PATH = "data/config/device.txt"
+DEVICE_CONFIG_PATH = os.path.join(settings.DATA_PATH, "config", "device.txt")
 
 
 ##### API Views ########################################################################
