@@ -286,6 +286,10 @@ class ResourceManager(manager.StateMachineManager):
         return free_memory
 
     def get_database_size(self) -> str:
+        self.logger.debug("Unable to get database size when using SQLite")
+        return "Unknown"
+
+    def postgres_get_database_size(self) -> str:
         """Gets database size as a string."""
         self.logger.debug("Getting database size")
 
