@@ -26,6 +26,46 @@
                     "address": "0x40"
                 }
             }
+        },
+        {
+            "name": "LCD",
+            "type": "ActuatorGroveRGBLCD",
+            "uuid": "9ba7c9b8-c9ed-4f26-ba05-4814b849e957",
+            "parameters": {
+                "setup": {
+                    "name": "Grove RGB LCD",
+                    "file_name": "actuator_grove_rgb_lcd/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celsius": "air_temperature_celsius",
+                        "humidity_percent": "air_humidity_percent"  
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "default", 
+                    "mux": "default", 
+                    "channel": 0
+                }
+            }
+        },
+        {
+            "name": "Camera-Top",
+            "type": "USBCamera",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera ",
+                    "file_name": "usb_camera/setups/elp_usb500w02ml21"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "communication": null,
+                "num_cameras": 1
+            }
         }
     ],
     "controllers": null

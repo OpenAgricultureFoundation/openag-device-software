@@ -1,0 +1,29 @@
+{
+	"name":  "Temperature Controller +/- 0C",
+	"version": "1",
+	"uuid": "f7621396-0007-425d-8eec-e1e3c69097a8",
+	"module_name": "hysteretic.manager",
+	"class_name": "HystereticControllerManager",
+	"parameters": {
+		"variables": {
+			"sensor_name": {
+				"type": "string", 
+				"default": "air_temperature_celsius"
+			},
+			"positive_actuator_name": {
+				"type": "string",
+				"default": "air_heater_percent"
+			},
+			"negative_actuator_name": {
+				"type": "string",
+				"default": "air_chiller_percent"
+			}
+
+		}
+	},
+	"properties": {
+		"accuracy_value": 0.0
+	},
+	"events": null,
+	"info": {}
+}

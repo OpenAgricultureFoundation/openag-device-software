@@ -4,6 +4,12 @@
 # This is the data sheet for the water temp sensor:
 # https://www.atlas-scientific.com/_files/_datasheets/_circuit/EZO_RTD_Datasheet.pdf
 
+# Hook up the atlas chip on a breadboard and wire up a USB-I2C cable to a PC.
+# - GND is the left top pin on the chip (diamond end).  Wire to cable.
+# - TX / SDA is the center top pin on the chip (diamond end).
+# - RX / SCL is the right top pin on the chip (diamond end).
+# - VCC is the lower left pin, wire to the 3.3V of the USB-I2C cable.
+
 # Import standard python modules
 import os, sys, time
 

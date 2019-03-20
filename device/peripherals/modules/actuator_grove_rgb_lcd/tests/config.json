@@ -1,0 +1,24 @@
+{
+    "peripherals": [
+        {
+            "name": "LCD",
+            "type": "ActuatorGroveRGBLCD",
+            "uuid": "9ba7c9b8-c9ed-4f26-ba05-4814b849e957",
+            "parameters": {
+                "setup": {
+                    "name": "Grove RGB LCD",
+                    "file_name": "actuator_grove_rgb_lcd/setups/default"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celsius": "air_temperature_celsius",
+                        "humidity_percent": "air_humidity_percent"  
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                }
+            }
+        }
+    ]
+}

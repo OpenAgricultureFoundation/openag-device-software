@@ -1,0 +1,76 @@
+{
+    "name":  "LCD",
+    "version": "1",
+    "uuid": "9ba7c9b8-c9ed-4f26-ba05-4814b849e957",
+    "module_name": "actuator_grove_rgb_lcd.manager",
+    "class_name": "ActuatorGroveRGBLCDManager",
+    "parameters": {
+        "variables": {
+            "temperature_sensor": {
+                "type": "string", 
+                "default": "air_temperature_celsius"
+            },
+            "humidity_sensor": {
+                "type": "string", 
+                "default": "air_humidity_percent"
+            },
+            "sensor": null,
+            "actuator": null
+        },    
+        "communication": {
+            "bus": {
+                "type": "integer",
+                "default": 0
+            },
+            "mux": {
+                "type": "string",
+                "default": "0x77"
+            },
+            "channel": {
+                "type": "integer",
+                "default": 0
+            },
+            "rgb_address": {
+                "type": "string",
+                "default": "0x62"
+            },
+            "lcd_address": {
+                "type": "string",
+                "default": "0x3E"
+            }
+        }
+    },
+    "events": [
+        {
+            "name": "Reset",
+            "description": "Reset actuator.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Shutdown",
+            "description": "Shutdown actuator.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Enable Manual Mode",
+            "description": "Allows actuator to be controlled by manual events.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Display Time",
+            "description": "Display Time.",
+            "value": null,
+            "sequence": null,
+            "is_manual": true
+        }
+    ],
+    "info": {
+        "variables": {
+            "sensor": null,
+            "actuator": null
+        }
+    }
+}
