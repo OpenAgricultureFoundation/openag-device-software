@@ -1,14 +1,14 @@
 # Import standard python modules
-import sys, os, subprocess, copy, glob, json, shutil, time, datetime
+import os, copy, glob, json, shutil, time, datetime
 import paho.mqtt.client as mqtt
 
 # Import python types
-from typing import Dict, Any, Optional, List, Tuple
+from typing import Dict, Any, List, Tuple
 
 # Import device utilities
 from device.utilities.statemachine import manager
 from device.utilities.state.main import State
-from device.utilities import logger, accessors, system, network
+from device.utilities import logger, accessors, system
 from device.utilities.iot import registration
 
 # Import device managers
