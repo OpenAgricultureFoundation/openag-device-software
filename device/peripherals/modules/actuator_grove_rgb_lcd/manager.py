@@ -154,7 +154,9 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             return
 
         tempF = float(tempC) * 1.8 + 32.0
-        output = "{}C / {}F\n{} %RH".format(tempC, tempF, hum)
+        lt = time.localtime()
+        lt = time.strftime( '%H:%M:%S', lt )
+        output = "{}C / {}F\n{} %RH {}".format(tempC, tempF, hum, lt)
         self.logger.debug("Output: {}".format(output))
 
         # backlight color based on temp
