@@ -7,7 +7,6 @@ sys.path.append(ROOT_DIR)
 os.chdir(ROOT_DIR)
 
 # Import connect utility
-from device.utilities import network
 
 
 def test_init() -> None:

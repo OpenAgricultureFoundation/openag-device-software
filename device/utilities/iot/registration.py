@@ -3,7 +3,7 @@ import os, subprocess, shutil
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities import network
+from device.utilities.network import network
 
 from django.conf import settings
 

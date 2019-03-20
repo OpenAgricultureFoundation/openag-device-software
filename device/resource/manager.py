@@ -1,5 +1,5 @@
 # Import python modules
-import os, sys, glob, logging, subprocess, threading, time, urllib.request
+import os, sys, glob, subprocess, time
 
 # Import python types
 from typing import Dict, List
@@ -17,7 +17,6 @@ from device.utilities.state.main import State
 
 # Import device managers
 from device.iot.manager import IotManager
-from device.utilities import network as network_utilities
 
 from django.conf import settings
 
