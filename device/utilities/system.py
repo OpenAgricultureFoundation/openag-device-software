@@ -4,8 +4,12 @@ import subprocess, os, re
 # Import device utilities
 from device.utilities.logger import Logger
 
+from django.conf import settings
+
 # Initialize file paths
-DEVICE_CONFIG_PATH = "data/config/device.txt"
+# DEVICE_CONFIG_PATH = "data/config/device.txt"
+# DATA_PATH = os.getenv("STORAGE_LOCATION", "data")
+DEVICE_CONFIG_PATH = settings.DATA_PATH + "/config/device.txt"
 
 # Initialize logger
 logger = Logger("SystemUtility", "system")

@@ -24,13 +24,19 @@ from device.upgrade.manager import UpgradeManager
 # Import manager elements
 from device.coordinator import modes, events
 
+from django.conf import settings
+
 # Initialize file paths
 RECIPES_PATH = "data/recipes/*.json"
 PERIPHERAL_SETUP_FILES_PATH = "device/peripherals/modules/*/setups/*.json"
 PERIPHERAL_SETUP_SCHEMA_PATH = "data/schemas/peripheral_setup.json"
 CONTROLLER_SETUP_FILES_PATH = "device/controllers/modules/*/setups/*.json"
 CONTROLLER_SETUP_SCHEMA_PATH = "data/schemas/controller_setup.json"
-DEVICE_CONFIG_PATH = "data/config/device.txt"
+
+# DEVICE_CONFIG_PATH = "data/config/device.txt"
+DATA_PATH = settings.DATA_PATH  # os.getenv("STORAGE_LOCATION", "data")
+DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
+
 DEVICE_CONFIG_SCHEMA_PATH = "data/schemas/device_config.json"
 DEVICE_CONFIG_FILES_PATH = "data/devices/*.json"
 SENSOR_VARIABLES_PATH = "data/variables/sensor_variables.json"
@@ -249,6 +255,9 @@ class CoordinatorManager(StateMachineManager):
             )
             self.logger.warning(message)
             config_name = "unspecified"
+
+            # Create the directories if needed
+            os.makedirs(os.path.dirname(DEVICE_CONFIG_PATH), exist_ok=True)
 
             # Write `unspecified` to device.txt
             with open(DEVICE_CONFIG_PATH, "w") as f:

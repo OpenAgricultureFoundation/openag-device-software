@@ -19,13 +19,19 @@ from device.recipe import modes as recipe_modes
 from device.iot import modes, commands
 from device.iot.pubsub import PubSub
 
+from django.conf import settings
+
 # TODO Notes:
 # Write tests
 # Catch specific exceptions
 
 # Initialize file paths
 IMAGES_DIR = "data/images/"
-STORED_IMAGES_DIR = "data/images/stored/"
+
+# DATA_DIR = os.getenv("STORAGE_LOCATION", "data")
+
+DATA_DIR = settings.DATA_PATH
+STORED_IMAGES_DIR = DATA_DIR + "/images/stored/"
 
 
 class IotManager(manager.StateMachineManager):
