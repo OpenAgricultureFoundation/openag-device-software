@@ -10,8 +10,8 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
 # Create database on darwin operating system 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    psql postgres -c "CREATE USER openag WITH PASSWORD 'openag';"
-    psql postgres -c "ALTER USER openag SUPERUSER;"
+    psql --dbname=postgres --username=openag -c "CREATE USER openag WITH PASSWORD 'openag';"
+    psql --dbname=postgres --username=openag -c "ALTER USER openag SUPERUSER;"
 
 # Unsupported operating system
 else

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-psql --username=openag openag_brain -c '\l'
+psql --dbname=openag_brain --username=openag -c '\l'
