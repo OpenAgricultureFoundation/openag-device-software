@@ -1,8 +1,9 @@
 #/bin/bash
 
-# curl -X POST -H "Authorization: JWT YourToken" -d "field=value&field=value" 'http://127.0.0.1:80/dashboard/' 
+HOST=localhost
+HOST=192.168.1.11
 
-LOGIN_URL=http://localhost/accounts/login/?next=/
+LOGIN_URL=http://$HOST/accounts/login/?next=/
 YOUR_USER='openag'
 YOUR_PASS='openag'
 COOKIES=cookies.txt
@@ -25,51 +26,54 @@ $CURL_BIN \
     -X POST $LOGIN_URL
 
 # put LED peripheral in manual mode
-REST_URL=http://localhost/api/led/manual/
+REST_URL=http://$HOST/api/led/manual/
+REST_METHOD=POST
+POST_DATA='{}'
+echo "CALLING REST API: $REST_URL"
+RET=`$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"`
+echo $RET
+sleep 2
+echo ''
+
+# turn LED off
+REST_URL=http://$HOST/api/led/turn_off/
 REST_METHOD=POST
 POST_DATA=''
 echo "CALLING REST API: $REST_URL"
-$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"
+RET=`$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"`
+echo $RET
+sleep 2
 echo ''
-echo 'sleeping 1 sec'
-sleep 1
 
 # set LED peripheral channel to blue
-REST_URL=http://localhost/api/led/set_channel/
+REST_URL=http://$HOST/api/led/set_channel/
 REST_METHOD=POST
 POST_DATA='{"channel":"B","percent":"50"}'
 echo "CALLING REST API: $REST_URL"
-$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"
+RET=`$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"`
+echo $RET
+sleep 2
 echo ''
-echo 'sleeping 1 sec'
-sleep 1
-
-# turn LED off
-REST_URL=http://localhost/api/led/turn_off/
-REST_METHOD=POST
-POST_DATA=''
-echo "CALLING REST API: $REST_URL"
-$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"
-echo ''
-echo 'sleeping 1 sec'
-sleep 1
 
 # fade LED 
-REST_URL=http://localhost/api/led/fade/
+REST_URL=http://$HOST/api/led/fade/
 REST_METHOD=POST
 POST_DATA=''
 echo "CALLING REST API: $REST_URL"
-$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"
+RET=`$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"`
+echo $RET
+echo 'sleeping for 30 secs while fading'
+sleep 30
 echo ''
-echo 'sleeping 5 secs'
-sleep 5
 
 # reset LED peripheral 
-REST_URL=http://localhost/api/led/reset/
+REST_URL=http://$HOST/api/led/reset/
 REST_METHOD=POST
 POST_DATA=''
 echo "CALLING REST API: $REST_URL"
-$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"
+RET=`$CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: application/json" -d "$POST_DATA"`
+echo $RET
+echo ''
 
 # logout
 #rm $COOKIES
@@ -77,7 +81,7 @@ $CURL_BIN -X $REST_METHOD $REST_URL -H "X-CSRFToken: $CSRF" -H "Content-Type: ap
 
 # use with GET
 #REST_METHOD=GET
-#REST_URL=http://localhost/api/iot/info/
-#REST_URL=http://localhost/api/state/
-#REST_URL=http://localhost/api/
+#REST_URL=http://$HOST/api/iot/info/
+#REST_URL=http://$HOST/api/state/
+#REST_URL=http://$HOST/api/
 
