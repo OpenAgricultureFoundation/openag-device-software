@@ -27,9 +27,11 @@ if os.getenv("IS_USB_I2C_ENABLED") != "true":
 # http://eblot.github.io/pyftdi/api/i2c.html
 
 
+
 # Legit addresses for ADC128D818
 ADC_ADDRESS = [0x1D, 0x1E, 0x1F, 0x2D, 0x2E, 0x2F, 0x35, 0x36, 0x37]
-ADC_ADDRESS = 0x4A  # should be at 0x35, but I see 4A on the scan
+ADC_ADDRESS = 0x4A  # should be at 0x1D, but I see 0x4A on the scan
+#debugrob: above is wrong, should be 0x1D, maybe chip is not wired correctly?
 
 # Limits
 ADC_LIMIT_HIGH = 0x00
@@ -104,19 +106,31 @@ adc = i2c_controller.get_port(ADC_ADDRESS)
 adc.write([ADC_STATUS])
 bytes_ = adc.read(1)  # read one byte
 # bytes_ = adc.read_from(ADC_STATUS, 1)
-print("debugrob ADC_STATUS bytes={})".format(bytes_))
+print("ADC_STATUS bytes={})".format(bytes_))
 status = bytes_[0]
 if (status & Busy_Status_Register_Not_Ready) == 1:
     print("ADC is busy, exiting.")
     sys.exit(0)
 print("ADC is ready. (status={})".format(status))
 
-# Read the IDs from the chip
+# Default = 0000_0010 = 0x02
+# bit 0 = 1: ADC128D818 is converting
+# bit 1 = 1: Waiting for the power-up sequence to end (not ready)
+# want 0x00 as status for OK.
+
+
+#debugrob: get status correctly, before continuing
+sys.exit(0)
+
+
+# Read the IDs from the chip:
+# Manufacturer's ID always defaults to 0000_0001 = 0x01
 adc.write([ADC_MANU_ID])
 manID_ = adc.read(2)
 # manID_ = adc.read_from(ADC_MANU_ID, 1)
 # debugrob: need to use read_from to read a register everywhere?
 
+# Revision's ID always defaults to 0000_1001 = 0x09
 adc.write([ADC_REV_ID])
 revID_ = adc.read(2)
 # revID_ = adc.read_from(ADC_REV_ID, 1)
