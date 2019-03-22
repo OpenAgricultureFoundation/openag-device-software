@@ -955,6 +955,83 @@ class IotViewSet(viewsets.ModelViewSet):
         return Response(response, status)
 
 
+# just for MW demo
+#------------------------------------------------------------------------------
+class LEDViewSet(viewsets.ModelViewSet):
+    # Initialize logger
+    logger = logger.Logger("LEDViewSet", "app")
+
+    #--------------------------------------------------------------------------
+    def send_event(self, etype: str, value: str = None) -> Response:
+        v = ''
+        if value is not None and value is not '':
+            v = ',"value":"' + value + '"'
+
+        edict = {'recipient': '{"type":"Peripheral","name":"LEDPanel-Top"}', 'request': '{"type":"' + etype + '"' + v + '}'}
+               
+        event_viewer = viewers.EventViewer()
+        message, status = event_viewer.create(edict)
+
+        response = {"message": message}
+        return Response(response, status=status)
+
+    #--------------------------------------------------------------------------
+    # Send LED peripheral the manual mode command
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def manual(self, request: Request) -> Response:
+        self.logger.debug("Put LED in manual mode via REST API.")
+        return self.send_event(etype="Enable Manual Mode")
+
+    #--------------------------------------------------------------------------
+    # Send LED peripheral the reset event
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def reset(self, request: Request) -> Response:
+        self.logger.debug("Reset LED.")
+        return self.send_event(etype="Reset")
+
+    #--------------------------------------------------------------------------
+    # Send LED peripheral the set channel event
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def set_channel(self, request: Request) -> Response:
+
+        # Get parameters
+        try:
+            rdict = request.data
+        except Exception as e:
+            message = "Unable to create request dict: {}".format(e)
+            return Response(message, 400)
+        self.logger.debug("debubrob rdict={}".format(rdict))
+
+        channel = rdict.get('channel','B')
+        percent = rdict.get('percent','50')
+        self.logger.debug("Set LED channel via REST API, channel={}, percent={}".format(channel, percent))
+        # set channel event: B,50
+        val = "{},{}".format(channel, percent)
+        return self.send_event(etype="Set Channel", value=val)
+
+    #--------------------------------------------------------------------------
+    # Send LED peripheral the Turn On event
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def turn_on(self, request: Request) -> Response:
+        self.logger.debug("Turn On LED.")
+        return self.send_event(etype="Turn On")
+
+    #--------------------------------------------------------------------------
+    # Send LED peripheral the Turn Off event
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def turn_off(self, request: Request) -> Response:
+        self.logger.debug("Turn Off LED.")
+        return self.send_event(etype="Turn Off")
+
+    #--------------------------------------------------------------------------
+    # Send LED peripheral the fade event
+    @list_route(methods=["POST"], permission_classes=[IsAuthenticated, IsAdminUser])
+    def fade(self, request: Request) -> Response:
+        self.logger.debug("Fade LED.")
+        return self.send_event(etype="Fade")
+
+
+#------------------------------------------------------------------------------
 class UpgradeViewSet(viewsets.ModelViewSet):
     """View set for interactions with device upgrades."""
 
