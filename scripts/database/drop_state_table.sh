@@ -8,8 +8,8 @@ if [[ "$OSTYPE" == "linux"* ]]; then
   sudo -u postgres psql openag_brain -c "DELETE FROM app_statemodel;"
 
 # Drop state table on darwin operating system
-elif [[ "$OSTYPE" == "linux"* ]]; then
-  psql postgres openag_brain -c "DELETE FROM app_statemodel;"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  psql --dbname=postgres --username=openag openag_brain -c "DELETE FROM app_statemodel;"
 
 # Invalid operating system
 else

@@ -14,7 +14,7 @@ from device.peripherals.modules.actuator_grove_rgb_lcd import exceptions, events
 class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
     """Manages an actuator controlled by a Grove RGB LCD."""
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes manager."""
 
@@ -28,9 +28,9 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         # Get setup defaults
         comms = {}
         if self.setup_dict is not None:
-            params = self.setup_dict.get('parameters')
+            params = self.setup_dict.get("parameters")
             if params is not None:
-                comms = params.get('communication')
+                comms = params.get("communication")
 
         # Try to get settings from setup file, if they are not in peripheral
         if self.rgb_address is None:
@@ -55,10 +55,12 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
 
         if self.bus is None:
             self.bus = self.communication.get("bus")
-            self.bus = int(self.bus)
+            if self.bus is not None:
+                self.bus = int(self.bus)
         if self.mux is None:
             self.mux = self.communication.get("mux")
-            self.mux = int(self.mux, 16)
+            if self.mux is not None:
+                self.mux = int(self.mux, 16)
 
         self.logger.info(
             "rgb_address=0x{:02X}, lcd_address=0x{:02X}".format(
@@ -82,7 +84,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         self.heartbeat = 60  # seconds
         self.prev_update = 0  # timestamp
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def initialize_peripheral(self) -> None:
         """Initializes manager."""
         self.logger.info("Initializing")
@@ -108,7 +110,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             self.health = 0.0
             self.mode = modes.ERROR
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
         self.logger.debug("Setting up peripheral")
@@ -119,7 +121,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             self.mode = modes.ERROR
             self.health = 0.0
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def update_peripheral(self) -> None:
         """Updates peripheral by setting output to desired state."""
         try:
@@ -133,29 +135,31 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             self.mode = modes.ERROR
             self.health = 0.0
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def reset_peripheral(self) -> None:
         """Resets sensor."""
         self.logger.info("Resetting")
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def shutdown_peripheral(self) -> None:
         """Shutsdown peripheral."""
         self.logger.info("Shutting down")
 
     ##### HELPER FUNCTIONS ####################################################
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def set_output(self):
         """Gets desired output value from input sensor values."""
-        tempC = self.state.get_environment_reported_sensor_value(self.temperature_sensor)
+        tempC = self.state.get_environment_reported_sensor_value(
+            self.temperature_sensor
+        )
         hum = self.state.get_environment_reported_sensor_value(self.humidity_sensor)
         if tempC is None:
             return
 
         tempF = float(tempC) * 1.8 + 32.0
         lt = time.localtime()
-        lt = time.strftime( '%H:%M:%S', lt )
+        lt = time.strftime("%H:%M:%S", lt)
         output = "{}C / {}F\n{} %RH {}".format(tempC, tempF, hum, lt)
         self.logger.debug("Output: {}".format(output))
 
@@ -173,15 +177,15 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         self.driver.write_string(output)
         self.prev_update = time.time()
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def display_time(self):
         """Shows the current time."""
-        self.logger.debug('display time')
+        self.logger.debug("display time")
         self.driver.display_time()
 
     ##### EVENT FUNCTIONS #####################################################
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def create_peripheral_specific_event(
         self, request: Dict[str, Any]
     ) -> Tuple[str, int]:
@@ -191,7 +195,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         else:
             return "Unknown event request type", 400
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
         """Checks peripheral specific events."""
         if request["type"] == events.DISPLAY_TIME:
@@ -200,7 +204,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             message = "Invalid event request type in queue: {}".format(request["type"])
             self.logger.error(message)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def show_time(self) -> Tuple[str, int]:
         """Pre-processes display time event request."""
         self.logger.debug("Pre-processing display time event request")
@@ -216,7 +220,7 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
         # Successful
         return "Displaying time", 200
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     def _show_time(self) -> None:
         self.logger.debug("Processing display time event request")
 
@@ -234,4 +238,3 @@ class ActuatorGroveRGBLCDManager(manager.PeripheralManager):
             self.mode = modes.ERROR
             message = "Unable to display time, unhandled exception"
             self.logger.exception(message)
-

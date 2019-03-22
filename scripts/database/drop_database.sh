@@ -9,7 +9,7 @@ if [[ "$OSTYPE" == "linux"* ]]; then
 
 # Recreate on darwin operating system
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  psql postgres -c "DROP DATABASE openag_brain;"
+  psql --dbname=postgres --username=openag -c "DROP DATABASE openag_brain;"
 
 # Invalid operating system
 else

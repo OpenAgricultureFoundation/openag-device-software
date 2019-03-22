@@ -1,5 +1,5 @@
 # To run a single test:
-# . ~/openag-device-software/venv/bin/activate
+# source ~/openag-device-software/venv/bin/activate
 # pytest -s -k "test_init" test_lcd_manager.py
 
 
@@ -17,7 +17,9 @@ from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 from device.utilities.state.main import State
 
 # Import peripheral manager
-from device.peripherals.modules.actuator_grove_rgb_lcd.manager import ActuatorGroveRGBLCDManager
+from device.peripherals.modules.actuator_grove_rgb_lcd.manager import (
+    ActuatorGroveRGBLCDManager,
+)
 
 # Load test config
 PERIPHERAL_NAME = "LCD"
@@ -25,7 +27,9 @@ CONFIG_PATH = (
     ROOT_DIR + "/device/peripherals/modules/actuator_grove_rgb_lcd/tests/config.json"
 )
 device_config = json.load(open(CONFIG_PATH))
-peripheral_config = accessors.get_peripheral_config(device_config["peripherals"], PERIPHERAL_NAME)
+peripheral_config = accessors.get_peripheral_config(
+    device_config["peripherals"], PERIPHERAL_NAME
+)
 
 
 def test_init() -> None:
