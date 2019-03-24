@@ -44,9 +44,11 @@ INSTALLED_APPS = [
     "device.resource",
     "device.network",
     "device.upgrade",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -56,6 +58,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+# Allow all cross origin requests.  
+# Required to call our REST API from a browser.
+# https://github.com/ottoyiu/django-cors-headers/#configuration
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Configure static file storage
 STATIC_URL = "/app/static/"
