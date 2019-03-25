@@ -1,7 +1,7 @@
 import os, subprocess
 from typing import List, Dict
 
-from device.utilities.network.network import NetworkUtility
+from device.utilities.network.base_network_utility import NetworkUtility
 
 
 class GenericNetworkUtility(NetworkUtility):

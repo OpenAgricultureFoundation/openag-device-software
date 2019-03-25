@@ -9,8 +9,9 @@ from device.utilities import logger
 from device.utilities.statemachine import manager
 from device.utilities.state.main import State
 
-import device.utilities.network.network as network_utilities
-from device.utilities.network.network import NetworkUtility as network_utilities
+from device.utilities.network.network_utility_factory import NetworkUtilityFactory
+#from device.utilities.network.network_utility_factory as network_utilities
+#from device.utilities.network.base_network_utility import NetworkUtility as network_utilities
 
 # Import manager elements
 from device.network import modes
@@ -47,10 +48,7 @@ class NetworkManager(manager.StateMachineManager):
         #if "raspberry-pi" in str(os.getenv("PLATFORM")):
         #    self._disable_raspi_access_point()
 
-        # TODO: pick different NetworkUtility based on platform.
-        #from device.utilities.network.generic_network_utility import GenericNetworkUtility as NetworkUtility
-        #self.network_utilities = NetworkUtility()
-        self.network_utilities = network_utilities.get_network_utils()
+        self.network_utilities = NetworkUtilityFactory.get_network_utils()
 
         # Initialize state machine mode
         self.mode = modes.DISCONNECTED

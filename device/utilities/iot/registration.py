@@ -3,7 +3,7 @@ import os, subprocess, shutil
 
 # Import device utilities
 from device.utilities.logger import Logger
-from device.utilities.network import network
+from device.utilities.network.network_utility_factory import NetworkUtilityFactory
 
 from django.conf import settings
 
@@ -81,7 +81,7 @@ def register() -> None:
         return
 
     # Check network is connected
-    if not network.is_connected():
+    if not NetworkUtilityFactory.get_network_utils().is_connected():
         logger.warning("Unable to register, network is not connected")
         return
 
