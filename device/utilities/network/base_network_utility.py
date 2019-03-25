@@ -1,23 +1,12 @@
 import socket
 import urllib
-import os
 
 from typing import List, Dict
 
 from device.utilities.logger import Logger
 
-# Import the subclasses here
-from device.utilities.network.generic_network_utility import GenericNetworkUtility
-from device.utilities.network.balena_network_utility import BalenaNetworkUtility
-
 
 class NetworkUtility:
-
-    @staticmethod
-    def get_network_utils():
-        if os.getenv("BALENA"):  # This is true when running on a Balena enabled platform
-            return BalenaNetworkUtility()
-        return GenericNetworkUtility()
 
     def __init__(self):
         self.logger = Logger("NetworkUtility", "network")
