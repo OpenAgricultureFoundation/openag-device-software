@@ -43,9 +43,11 @@ INSTALLED_APPS = [
     "device.resource",
     "device.network",
     "device.upgrade",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -55,6 +57,16 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
+
+# for demo using LED API
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+#CORS_ORIGIN_WHITELIST = (
+#    'localhost:3000',
+#)
+#CORS_ORIGIN_REGEX_WHITELIST = (
+#    'localhost:3000',
+#)
 
 # Configure static file storage
 STATIC_URL = "/app/static/"

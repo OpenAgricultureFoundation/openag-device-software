@@ -3,6 +3,7 @@ pytest-cov==2.5.1
 mypy==0.600
 psycopg2-binary==2.7.4
 djangorestframework==3.7.3
+django-cors-headers==2.5.2
 jsonschema==2.6.0
 numpy==1.14.3
 pytest==3.5.1
