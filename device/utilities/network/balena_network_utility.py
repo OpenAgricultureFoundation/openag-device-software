@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Dict
 from django.conf import settings
 import os
+import NetworkManager
 
 from device.utilities.network.base_network_utility import NetworkUtility
 
@@ -44,9 +45,21 @@ class BalenaNetworkUtility(NetworkUtility):
 
     def _start_wifi_connect(self, disconnect: bool = False) -> None:
         self.logger.info("BalenaNetworkUtility in _start_wifi_connect()")
-        if disconnect:
-            self.logger.debug("Disconnecting from current wifi")
-        # Path(self.NET_CONFIGURED).unlink()
+
+        #if disconnect:
+        #    self.logger.debug("Disconnecting from current wifi")
+        # Get the current connections
+
+        Path(self.NET_CONFIGURED).unlink()
+
+        connections = NetworkManager.Settings.ListConnections()
+
+        # Delete the '802-11-wireless'
+        for connection in connections:
+            if connection.GetSettings()['connection']['type'] == '802-11-wireless':
+                self.logger.info("BalenaNetworkUtility: Deleting connection " + connection.GetSettings()['connection']['id'])
+                connection.Delete()
+
         subprocess.call(["scripts/platform/reset_balena_app.sh"])
         # subprocess.call([self.wifi_connect_commad, "-s", self.AP_NAME, "-o", "8765", "-u", "/usr/src/app/ui"])
         return
