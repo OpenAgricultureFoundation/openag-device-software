@@ -32,7 +32,7 @@
         {
             "name": "Camera-Top",
             "type": "PiCamera",
-            "uuid": "875c109e-a55a-4fb8-9a0a-6cb1d134d6a3",
+            "uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
             "parameters": {
                 "setup": {
                     "name": "Raspberry Pi Camera v1.3 ",
