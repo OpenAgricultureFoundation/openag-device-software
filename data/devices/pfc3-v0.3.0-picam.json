@@ -36,7 +36,7 @@
             "parameters": {
                 "setup": {
                     "name": "Raspberry Pi Camera v1.3 ",
-                    "file_name": "pi_cam/setups/pi_camera_v13"
+                    "file_name": "pi_camera/setups/pi_camera_v13"
                 },
                 "variables": {
                     "sensor": null,
