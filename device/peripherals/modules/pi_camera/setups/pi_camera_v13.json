@@ -1,0 +1,57 @@
+{
+	"name":  "Raspberry Pi Camera v1.3",
+	"version": "1",
+	"uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
+	"module_name": "pi_camera.manager",
+	"class_name": "PiCameraManager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		},	
+		"communication": null,
+		"num_cameras": {
+			"type": "number",
+			"default": 1
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 3600,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    },
+	    {
+	        "name": "Capture",
+	        "description": "Captures an image",
+	        "value": null,
+	        "sequence": null
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	},
+	"properties": {
+		"vendor_id": "0x5069",
+		"product_id": "0x4331",
+		"resolution": "2592x1944"	}
+}
