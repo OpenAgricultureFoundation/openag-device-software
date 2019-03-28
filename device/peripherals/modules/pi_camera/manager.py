@@ -13,7 +13,7 @@ from device.peripherals.modules.pi_camera import driver, exceptions, events
 
 
 class PiCameraManager(manager.PeripheralManager):  # type: ignore
-    """Manages a usb camera."""
+    """Manages a pi camera."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Instantiates manager Instantiates parent class, and initializes 
@@ -45,7 +45,7 @@ class PiCameraManager(manager.PeripheralManager):  # type: ignore
             self.min_sampling_interval = 120 * num_cameras
 
             # Create driver
-            self.driver = driver.PiCamera(
+            self.driver = driver.PiCameraDriver(
                 name=self.name,
                 vendor_id=int(self.properties.get("vendor_id"), 16),
                 product_id=int(self.properties.get("product_id"), 16),
