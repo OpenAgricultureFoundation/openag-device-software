@@ -5,14 +5,16 @@ from device.utilities.network.base_network_utility import NetworkUtility
 
 
 class GenericNetworkUtility(NetworkUtility):
-
-    def __init__(self):
+    def __init__(self) -> None:
         super(GenericNetworkUtility, self).__init__()
         self.GET_WIFI_SSIDS_SCRIPT_PATH = "scripts/network/get_wifi_ssids.sh"
         self.JOIN_WIFI_SCRIPT_PATH = "scripts/network/join_wifi.sh"
         self.JOIN_WIFI_ADVANCED_SCRIPT_PATH = "scripts/network/join_wifi_advanced.sh"
+        self.DELETE_WIFIS_SCRIPT_PATH = "scripts/network/delete_all_wifi_connections.sh"
 
-    def get_wifi_ssids(self, exclude_hidden: bool = True, exclude_beaglebones: bool = True) -> List[Dict[str, str]]:
+    def get_wifi_ssids(
+        self, exclude_hidden: bool = True, exclude_beaglebones: bool = True
+    ) -> List[Dict[str, str]]:
         self.logger.debug("Getting wifi ssids")
 
         if os.getenv("IS_WIFI_ENABLED", "false") != "true":
@@ -23,12 +25,14 @@ class GenericNetworkUtility(NetworkUtility):
 
         try:
             with subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             ) as process1:
                 output = process1.stdout.read().decode("utf-8")
                 output += process1.stderr.read().decode("utf-8")
         except Exception as e:
-            self.logger.exception("Unable to get wifi ssids, unhandled exception: `{}`".format(e))
+            self.logger.exception(
+                "Unable to get wifi ssids, unhandled exception: `{}`".format(e)
+            )
             return []
 
         wifi_ssids = output.splitlines()
@@ -43,6 +47,46 @@ class GenericNetworkUtility(NetworkUtility):
                 del wifi_ssids[index]
 
         return wifi_ssids
+
+    def delete_wifis(self) -> None:
+        """Deletes all wifi connections. Currently only works for wifi beaglebones.
+         Returns true on success, false on failure. TODO: Should probably just catch then
+         re-raise exception."""
+
+        self.logger.debug("Deleting wifis")
+
+        # Check system is a wifi beaglebone
+        if os.getenv("PLATFORM") != "beaglebone-wireless":
+            message = "Unable to delete wifis, system not a wifi beaglebone"
+            self.logger.error(message)
+            raise SystemError(message)
+
+        # Disconnect from active wifi access points
+        # TODO: How important is this? Will this break beaglebones...
+        # try:
+        #     wifi_access_points = get_wifi_access_points(
+        #         exclude_hidden=False, exclude_beaglebones=False
+        #     )
+        #     for wifi_access_point in wifi_access_points:
+        #         if wifi_access_point["connected"]:
+        #             psk = wifi_access_point["psk"]
+        #             command = ["connmanctl", "disconnect", psk]
+        #             subprocess.run(command)
+        # except Exception as e:
+        #     message = "Unable to delete wifis, unable to disconnect from active "
+        #     message += "wifi access points, unhandled exception: {}".format(type(e))
+        #     logger.exception(message)
+        #     raise
+
+        # Remove all wifi configs
+        try:
+            command = [self.DELETE_WIFIS_SCRIPT_PATH]
+            subprocess.run(command)
+        except Exception as e:
+            message = "Unable to delete wifis, "
+            message += "unhandled exception: {}".format(type(e))
+            self.logger.exception(message)
+            raise
 
     def join_wifi(self, ssid: str, password: str) -> None:
         """Joins specified wifi ssid if platform is wifi enabled."""
@@ -64,17 +108,27 @@ class GenericNetworkUtility(NetworkUtility):
         # Execute command
         try:
             with subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             ) as process1:
                 output = process1.stdout.read().decode("utf-8")
                 output += process1.stderr.read().decode("utf-8")
             self.logger.debug(output)
         except Exception as e:
-            self.logger.exception("Unable to join wifi, unhandled exception: {}".format(type(e)))
+            self.logger.exception(
+                "Unable to join wifi, unhandled exception: {}".format(type(e))
+            )
             raise
 
-    def join_wifi_advance(self, ssid_name: str, passphrase: str, hidden_ssid: str, security: str, eap: str,
-                          identity: str, phase2: str) -> None:
+    def join_wifi_advanced(
+        self,
+        ssid_name: str,
+        passphrase: str,
+        hidden_ssid: str,
+        security: str,
+        eap: str,
+        identity: str,
+        phase2: str,
+    ) -> None:
         """Joins specified wifi ssid if platform is wifi enabled."""
         self.logger.debug("Joining wifi: {}".format(ssid_name))
 
@@ -89,24 +143,27 @@ class GenericNetworkUtility(NetworkUtility):
             password = ""
 
         # Build command
-        command = [self.JOIN_WIFI_ADVANCED_SCRIPT_PATH,
-                   ssid_name,
-                   passphrase,
-                   hidden_ssid,
-                   security,
-                   eap,
-                   identity,
-                   phase2
-                   ]
+        command = [
+            self.JOIN_WIFI_ADVANCED_SCRIPT_PATH,
+            ssid_name,
+            passphrase,
+            hidden_ssid,
+            security,
+            eap,
+            identity,
+            phase2,
+        ]
 
         # Execute command
         try:
             with subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             ) as process1:
                 output = process1.stdout.read().decode("utf-8")
                 output += process1.stderr.read().decode("utf-8")
             self.logger.debug(output)
         except Exception as e:
-            self.logger.exception("Unable to join wifi, unhandled exception: {}".format(type(e)))
+            self.logger.exception(
+                "Unable to join wifi, unhandled exception: {}".format(type(e))
+            )
             raise

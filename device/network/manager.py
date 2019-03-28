@@ -10,11 +10,13 @@ from device.utilities.statemachine import manager
 from device.utilities.state.main import State
 
 from device.utilities.network.network_utility_factory import NetworkUtilityFactory
-#from device.utilities.network.network_utility_factory as network_utilities
-#from device.utilities.network.base_network_utility import NetworkUtility as network_utilities
+
+# from device.utilities.network.network_utility_factory as network_utilities
+# from device.utilities.network.base_network_utility import NetworkUtility as network_utilities
 
 # Import manager elements
 from device.network import modes
+
 
 class NetworkManager(manager.StateMachineManager):
     """Manages network connections."""
@@ -45,7 +47,7 @@ class NetworkManager(manager.StateMachineManager):
         }
 
         # Initialize raspberry pi access point mode
-        #if "raspberry-pi" in str(os.getenv("PLATFORM")):
+        # if "raspberry-pi" in str(os.getenv("PLATFORM")):
         #    self._disable_raspi_access_point()
 
         self.network_utilities = NetworkUtilityFactory.get_network_utils()
@@ -346,10 +348,11 @@ class NetworkManager(manager.StateMachineManager):
                 message += "seconds of joining wifi"
                 self.logger.warning(message)
 
+                # TODO: Remove RaspberryPi specific code
                 # Remove failed wifi entry and re-enable raspi access point
-                if "raspberry-pi" in str(os.getenv("PLATFORM")):
-                    self.network_utilities.remove_raspi_prev_wifi_entry()
-                    self._enable_raspi_access_point()
+                # if "raspberry-pi" in str(os.getenv("PLATFORM")):
+                #    self.network_utilities.remove_raspi_prev_wifi_entry()
+                #    self._enable_raspi_access_point()
 
                 return message, 202
 

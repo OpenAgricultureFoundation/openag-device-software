@@ -59,7 +59,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-# Allow all cross origin requests.  
+# Allow all cross origin requests.
 # Required to call our REST API from a browser.
 # https://github.com/ottoyiu/django-cors-headers/#configuration
 CORS_ORIGIN_ALLOW_ALL = True
