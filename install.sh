@@ -72,7 +72,6 @@ bash $PROJECT_ROOT/scripts/install/initialize_device_config.sh $PROJECT_ROOT
 bash $PROJECT_ROOT/scripts/install/initialize_directory_structure.sh $PROJECT_ROOT
 bash $PROJECT_ROOT/scripts/install/update_operating_system.sh
 bash $PROJECT_ROOT/scripts/install/install_python36.sh
-# bash $PROJECT_ROOT/scripts/install/install_postgres.sh
 bash $PROJECT_ROOT/scripts/install/initialize_port80_forwarding.sh
 bash $PROJECT_ROOT/scripts/install/install_misc_dependencies.sh
 bash $PROJECT_ROOT/scripts/install/create_virtual_environment.sh $PROJECT_ROOT
@@ -82,8 +81,6 @@ bash $PROJECT_ROOT/scripts/install/install_pygame.sh
 bash $PROJECT_ROOT/scripts/install/install_python_requirements.sh
 bash $PROJECT_ROOT/scripts/install/set_file_ownership.sh
 bash $PROJECT_ROOT/scripts/install/install_network_utilities.sh
-# bash $PROJECT_ROOT/scripts/database/create_postgres_user.sh
-# bash $PROJECT_ROOT/scripts/database/create_database.sh
 bash $PROJECT_ROOT/scripts/database/migrate_database.sh
 bash $PROJECT_ROOT/scripts/database/create_project_users.sh
 bash $PROJECT_ROOT/scripts/install/collect_static_files.sh

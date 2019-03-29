@@ -63,7 +63,7 @@ def test_recipe_manager_state_machine() -> None:
     # enable simulation mode, since our CI test systems won't have I2C
     os.environ["SIMULATE"] = "true"
 
-    # load the test recipe file into the postgres openag_brain DB.
+    # load the test recipe file into the DB.
     cm = CoordinatorManager()
     cm.load_recipe_files()
 

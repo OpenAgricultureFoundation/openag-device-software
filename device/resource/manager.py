@@ -4,9 +4,6 @@ import os, sys, glob, subprocess, time
 # Import python types
 from typing import Dict, List
 
-# Import django modules
-from django.db import connection  # so we can do raw sql queries
-
 # Import app models
 from app.models import EnvironmentModel, EventModel
 
@@ -287,27 +284,6 @@ class ResourceManager(manager.StateMachineManager):
     def get_database_size(self) -> str:
         self.logger.debug("Unable to get database size when using SQLite")
         return "Unknown"
-
-    def postgres_get_database_size(self) -> str:
-        """Gets database size as a string."""
-        self.logger.debug("Getting database size")
-
-        # Build query
-        query = "select pg_size_pretty(pg_database_size('openag_brain'));"
-
-        # Execute query
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(query)
-                result = cursor.fetchone()
-                database_size = result[0]
-        except Exception:
-            self.logger.exception("Unable to get database size, unhandled exception")
-            return "Unknown"
-
-        # Successfully got database size
-        self.logger.debug("Database size: {}".format(database_size))
-        return database_size
 
     def clean_up_disk(self) -> None:
         """Cleans up disk by deleting all logs and old images."""
