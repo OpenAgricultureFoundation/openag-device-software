@@ -99,19 +99,14 @@ WSGI_APPLICATION = "app.wsgi.application"
 
 DATABASES = {
     "default": {
-        # "ENGINE": "django.db.backends.postgresql",
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": DATA_PATH + "/db/openag_brain.sqlite",
         "USER": "openag",
         "PASSWORD": "openag",
-        # "HOST": "localhost",
-        # "PORT": "",
         "TEST": {
-            # "ENGINE": "django.db.backends.postgresql",
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": DATA_PATH + "/db/test_openag_brain.sqlite",
             "USER": "openag",
-            # "PASSWORD": "openag",
         },
     }
 }

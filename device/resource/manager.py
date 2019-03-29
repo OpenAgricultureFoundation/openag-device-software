@@ -4,9 +4,6 @@ import os, sys, glob, subprocess, time
 # Import python types
 from typing import Dict, List
 
-# Import django modules
-from django.db import connection  # so we can do raw sql queries
-
 # Import app models
 from app.models import EnvironmentModel, EventModel
 
@@ -50,7 +47,7 @@ SYSTEM_LOGS_PATH = "/var/log/"
 
 
 class ResourceManager(manager.StateMachineManager):
-    """Manages critical resources: disk space and database capacity."""
+    """Manages critical resources: disk space."""
 
     def __init__(self, state: State, iot: IotManager) -> None:
         """Initializes manager."""
@@ -109,17 +106,6 @@ class ResourceManager(manager.StateMachineManager):
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.resource["free_memory"] = value
-
-    @property
-    def database_size(self) -> str:
-        """Gets value from shared state."""
-        return self.state.resource.get("database_size")  # type: ignore
-
-    @database_size.setter
-    def database_size(self, value: str) -> None:
-        """Safely updates value in shared state."""
-        with self.state.lock:
-            self.state.resource["database_size"] = value
 
     ##### STATE MACHINE FUNCTIONS ######################################################
 
@@ -181,7 +167,6 @@ class ResourceManager(manager.StateMachineManager):
         # Get storage information and update in shared state
         self.free_disk = self.get_free_disk()
         self.free_memory = self.get_free_memory()
-        self.database_size = self.get_database_size()
 
         # Convert num strings to float
         free_disk = accessors.floatify_string(self.free_disk)
@@ -283,31 +268,6 @@ class ResourceManager(manager.StateMachineManager):
         # Successfully got free memory
         self.logger.debug("Free memory: {}".format(free_memory))
         return free_memory
-
-    def get_database_size(self) -> str:
-        self.logger.debug("Unable to get database size when using SQLite")
-        return "Unknown"
-
-    def postgres_get_database_size(self) -> str:
-        """Gets database size as a string."""
-        self.logger.debug("Getting database size")
-
-        # Build query
-        query = "select pg_size_pretty(pg_database_size('openag_brain'));"
-
-        # Execute query
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(query)
-                result = cursor.fetchone()
-                database_size = result[0]
-        except Exception:
-            self.logger.exception("Unable to get database size, unhandled exception")
-            return "Unknown"
-
-        # Successfully got database size
-        self.logger.debug("Database size: {}".format(database_size))
-        return database_size
 
     def clean_up_disk(self) -> None:
         """Cleans up disk by deleting all logs and old images."""

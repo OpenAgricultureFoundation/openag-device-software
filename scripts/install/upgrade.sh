@@ -24,12 +24,8 @@ fi
 # Install new python requirements
 pip3.6 install -f $PROJECT_ROOT/venv/pip_download -r $PROJECT_ROOT/requirements.txt 
 
-# Drop the state table
-bash $PROJECT_ROOT/scripts/database/drop_state_table.sh
-
 # Migrate the database
 bash $PROJECT_ROOT/scripts/database/migrate_database.sh
-
 
 if [[ "$OSTYPE" == "linux"* ]]; then
 
