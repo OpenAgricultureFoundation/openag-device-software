@@ -59,15 +59,20 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-# Allow all cross origin requests.  
+# Allow all cross origin requests.
 # Required to call our REST API from a browser.
 # https://github.com/ottoyiu/django-cors-headers/#configuration
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
+### Where should stuff get stored. Defaults to the data directory under the project roots
+DATA_PATH = os.getenv(
+    "STORAGE_LOCATION", os.path.join(os.path.dirname(BASE_DIR), "data")
+)
+
 # Configure static file storage
 STATIC_URL = "/app/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(DATA_PATH, "staticfiles")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 TEMPUS_DOMINUS_LOCALIZE = True
@@ -91,11 +96,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "app.wsgi.application"
-
-### Where should stuff get stored. Defaults to the data directory under the project roots
-DATA_PATH = os.getenv(
-    "STORAGE_LOCATION", os.path.join(os.path.dirname(BASE_DIR), "data")
-)
 
 DATABASES = {
     "default": {

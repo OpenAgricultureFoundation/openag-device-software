@@ -58,11 +58,13 @@ echo PROJECT_ROOT: $PROJECT_ROOT
 echo "Using sudo to update your system, please provide your password now:"
 sudo date
 
-# Clean up before doing a full install
-sudo rm -fr $PROJECT_ROOT/venv
-sudo apt-get purge -y python3.6 
-sudo apt-get purge -y python3.5
-sudo apt-get purge -y python3 
+# Clean up before doing a full install, only if on linux
+if [[ "$OSTYPE" == "linux"* ]]; then
+    sudo rm -fr $PROJECT_ROOT/venv
+    sudo apt-get purge -y python3.6 
+    sudo apt-get purge -y python3.5
+    sudo apt-get purge -y python3 
+fi
 
 # Install software
 echo "Installing software..."

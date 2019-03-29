@@ -22,3 +22,5 @@ django-jquery==3.1.0
 jsonfield==2.0.2
 pyftdi==0.29.3
 pygame==1.9.4
+python-networkmanager
+picamera

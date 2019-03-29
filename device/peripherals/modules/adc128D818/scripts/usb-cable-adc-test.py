@@ -27,11 +27,10 @@ if os.getenv("IS_USB_I2C_ENABLED") != "true":
 # http://eblot.github.io/pyftdi/api/i2c.html
 
 
-
 # Legit addresses for ADC128D818
 ADC_ADDRESS = [0x1D, 0x1E, 0x1F, 0x2D, 0x2E, 0x2F, 0x35, 0x36, 0x37]
 ADC_ADDRESS = 0x4A  # should be at 0x1D, but I see 0x4A on the scan
-#debugrob: above is wrong, should be 0x1D, maybe chip is not wired correctly?
+# debugrob: above is wrong, should be 0x1D, maybe chip is not wired correctly?
 
 # Limits
 ADC_LIMIT_HIGH = 0x00
@@ -119,7 +118,7 @@ print("ADC is ready. (status={})".format(status))
 # want 0x00 as status for OK.
 
 
-#debugrob: get status correctly, before continuing
+# debugrob: get status correctly, before continuing
 sys.exit(0)
 
 
