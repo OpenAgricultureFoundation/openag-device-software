@@ -401,7 +401,6 @@ class Resource(views.APIView):
             "status": resource_manager.status,
             "free_disk": resource_manager.free_disk,
             "free_memory": resource_manager.free_memory,
-            "database_size": resource_manager.database_size,
         }
 
         # Return response

@@ -8,6 +8,6 @@ from device.utilities.network.generic_network_utility import GenericNetworkUtili
 #   then test getting a BalenaNetworkUtility
 
 
-def test_get_generic_network_utility():
+def test_get_generic_network_utility() -> None:
     gnu = Factory.get_network_utils()
     assert isinstance(gnu, GenericNetworkUtility)

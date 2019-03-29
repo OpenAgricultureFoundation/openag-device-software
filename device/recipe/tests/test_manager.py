@@ -13,15 +13,17 @@ from device.utilities.state.main import State
 def make_a_state() -> State:
     state = State()
     state.environment = {
-     "sensor": {"desired": {}, "reported": {}},
-     "actuator": {"desired": {}, "reported": {}},
-     "reported_sensor_stats": {
-         "individual": {"instantaneous": {}, "average": {}},
-         "group": {"instantaneous": {}, "average": {}},
-     },
+        "sensor": {"desired": {}, "reported": {}},
+        "actuator": {"desired": {}, "reported": {}},
+        "reported_sensor_stats": {
+            "individual": {"instantaneous": {}, "average": {}},
+            "group": {"instantaneous": {}, "average": {}},
+        },
     }
     state.recipe = {
-     "recipe_uuid": None, "start_timestamp_minutes": None, "last_update_minute": None
+        "recipe_uuid": None,
+        "start_timestamp_minutes": None,
+        "last_update_minute": None,
     }
     return state
 
@@ -123,34 +125,34 @@ def test_recipe_parser_minimum_recipe() -> None:
 
     transitions = rm.parse(minimum_dict)
     hours_transitions = [
-     {
-         "minute": 0,
-         "phase": "2",
-         "cycle": "4",
-         "environment_name": "1",
-         "environment_state": {},
-     },
-     {
-         "minute": 300,
-         "phase": "2",
-         "cycle": "4",
-         "environment_name": "1",
-         "environment_state": {},
-     },
-     {
-         "minute": 600,
-         "phase": "2",
-         "cycle": "4",
-         "environment_name": "1",
-         "environment_state": {},
-     },
-     {
-         "minute": 900,
-         "phase": "End",
-         "cycle": "End",
-         "environment_name": "End",
-         "environment_state": {},
-     },
+        {
+            "minute": 0,
+            "phase": "2",
+            "cycle": "4",
+            "environment_name": "1",
+            "environment_state": {},
+        },
+        {
+            "minute": 300,
+            "phase": "2",
+            "cycle": "4",
+            "environment_name": "1",
+            "environment_state": {},
+        },
+        {
+            "minute": 600,
+            "phase": "2",
+            "cycle": "4",
+            "environment_name": "1",
+            "environment_state": {},
+        },
+        {
+            "minute": 900,
+            "phase": "End",
+            "cycle": "End",
+            "environment_name": "End",
+            "environment_state": {},
+        },
     ]
     assert transitions == hours_transitions, "Transitions do not match"
 
@@ -158,33 +160,33 @@ def test_recipe_parser_minimum_recipe() -> None:
     minimum_dict["phases"][0]["cycles"][0] = cycle_mins  # replace hours
     transitions = rm.parse(minimum_dict)
     mins_transitions = [
-     {
-         "minute": 0,
-         "phase": "2",
-         "cycle": "4",
-         "environment_name": "1",
-         "environment_state": {},
-     },
-     {
-         "minute": 6,
-         "phase": "2",
-         "cycle": "4",
-         "environment_name": "1",
-         "environment_state": {},
-     },
-     {
-         "minute": 12,
-         "phase": "2",
-         "cycle": "4",
-         "environment_name": "1",
-         "environment_state": {},
-     },
-     {
-         "minute": 18,
-         "phase": "End",
-         "cycle": "End",
-         "environment_name": "End",
-         "environment_state": {},
-     },
+        {
+            "minute": 0,
+            "phase": "2",
+            "cycle": "4",
+            "environment_name": "1",
+            "environment_state": {},
+        },
+        {
+            "minute": 6,
+            "phase": "2",
+            "cycle": "4",
+            "environment_name": "1",
+            "environment_state": {},
+        },
+        {
+            "minute": 12,
+            "phase": "2",
+            "cycle": "4",
+            "environment_name": "1",
+            "environment_state": {},
+        },
+        {
+            "minute": 18,
+            "phase": "End",
+            "cycle": "End",
+            "environment_name": "End",
+            "environment_state": {},
+        },
     ]
     assert transitions == mins_transitions, "Transitions do not match"

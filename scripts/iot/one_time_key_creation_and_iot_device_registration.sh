@@ -35,7 +35,12 @@ mac = '-'.join( mac_addr[i : i + 2] for i in range( 0, 11, 2))
 print( '{}'.format( mac ))"`
 
 # Current UTC timestamp
-TIMESTAMP=`date --utc +%FT%TZ`
+TIMESTAMP="oops"
+if [[ "$OSTYPE" == "linux"* ]]; then
+  TIMESTAMP=`date --utc +%FT%TZ`
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  TIMESTAMP=`date -u +%FT%TZ`
+fi
 
 # Must use " in JSON, hence the funny bash string concatenation for the data
 DATA='{"key": "'$KEY'", "cksum": "'$CKSUM'", "MAC": "'$MAC'", "timestamp": "'$TIMESTAMP'"}'
