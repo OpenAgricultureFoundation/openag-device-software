@@ -50,13 +50,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 # Allow all cross origin requests.
@@ -65,14 +65,17 @@ MIDDLEWARE = [
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
-### Where should stuff get stored. Defaults to the data directory under the project roots
+# Where should stuff get stored. Defaults to the data directory under the project roots
 DATA_PATH = os.getenv(
     "STORAGE_LOCATION", os.path.join(os.path.dirname(BASE_DIR), "data")
 )
 
+# Static files are handled differently, since they don't change.
+STATIC_PATH = os.path.join(BASE_DIR, "data", "staticfiles")
+
 # Configure static file storage
 STATIC_URL = "/app/static/"
-STATIC_ROOT = os.path.join(DATA_PATH, "staticfiles")
+STATIC_ROOT = STATIC_PATH  # os.path.join(DATA_PATH, "staticfiles")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 TEMPUS_DOMINUS_LOCALIZE = True
