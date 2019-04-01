@@ -76,12 +76,14 @@ class PiCameraDriver:
     def capture(self, retry: bool = True) -> None:
         """Captures an image from a camera or set of non-unique cameras."""
         self.logger.debug("Capturing")
+        timestring = datetime.datetime.utcnow().strftime("%Y-%m-%d_T%H-%M-%SZ")
+        filename = "{}_{}.png".format(self.directory, self.name)
 
         # Check if simulated
         if self.simulate:
-            message = "Simulating capture, saving image to: {}".format(image_path)
+            message = "Simulating capture, saving image to: {}".format(filename)
             self.logger.info(message)
-            command = "cp {} {}".format(SIMULATION_IMAGE_PATH, image_path)
+            command = "cp {} {}".format(SIMULATION_IMAGE_PATH, filename)
             os.system(command)
             return
 
@@ -92,7 +94,6 @@ class PiCameraDriver:
         # Camera warm-up time
         time.sleep(2)
         # Get timestring in ISO8601 format
-        timestring = datetime.datetime.utcnow().strftime("%Y-%m-%d-T%H:%M:%SZ")
-        filename = "{}_{}.png".format(timestring, self.name)
-        self.camera.capture(filename)
+
+        self.camera.capture(IMAGE_DIR + filename)
         self.camera.stop_preview()
