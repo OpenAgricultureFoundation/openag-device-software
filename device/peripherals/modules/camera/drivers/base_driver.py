@@ -8,6 +8,8 @@ from device.utilities import logger
 from device.utilities.communication.i2c.exceptions import I2CError
 from device.utilities.communication.i2c.mux_simulator import MuxSimulator
 
+from django.conf import settings
+
 
 class CameraDriver(ABC):
 
@@ -28,7 +30,7 @@ class CameraDriver(ABC):
         """Initializes USB camera camera."""
 
         # universal paths
-        self.IMAGE_DIR = "data/images/"
+        self.IMAGE_DIR = settings.DATA_PATH + "/images/"
         self.MODULE_DIR = "device/peripherals/modules/usb_camera/"
         self.SIMULATE_IMAGE_DIR = self.MODULE_DIR + "tests/images/"
         self.DUMMY_IMAGE_PATH = self.MODULE_DIR + "dummy.png"
