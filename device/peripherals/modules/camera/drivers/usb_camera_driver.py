@@ -67,8 +67,7 @@ class USBCameraDriver(CameraDriver):
             )
 
         # Using usb mux, initialize driver
-        print("Simulating: " + str(self.simulate))
-        if not self.simulate:
+        if not self.simulate and self.usb_mux_enabled:
             try:
                 self.dac5578 = DAC5578Driver(
                     name=name,

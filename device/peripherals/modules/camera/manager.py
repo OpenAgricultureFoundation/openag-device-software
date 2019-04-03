@@ -50,9 +50,10 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
             # Initialize min sampling interval
             num_cameras = self.parameters.get("num_cameras", 1)
             self.min_sampling_interval = 120 * num_cameras
+            self.logger.info(str(self.parameters.values()))
 
             # Create driver
-            driver_module = "device.modules.camera.drivers." + self.parameters.get("driver_module")
+            driver_module = "device.peripherals.modules.camera.drivers." + self.parameters.get("driver_module")
             driver_class = self.parameters.get("driver_class")
             self.driver = self.get_driver(driver_module, driver_class)(
                 name=self.name,
@@ -122,7 +123,7 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
             self.logger.exception(message)
 
     @staticmethod
-    def get_driver(self, module_name: str, class_name: str) -> abc.ABCMeta:
+    def get_driver(module_name: str, class_name: str) -> abc.ABCMeta:
         module_instance = __import__(module_name, fromlist=[class_name])
         class_instance = getattr(module_instance, class_name)
         return class_instance

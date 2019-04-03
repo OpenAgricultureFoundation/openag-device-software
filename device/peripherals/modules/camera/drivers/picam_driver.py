@@ -14,15 +14,25 @@ PLATFORM = os.getenv("PLATFORM")
 
 
 class PiCameraDriver(CameraDriver):
-    def __init__(self, name: str, vendor_id: int, product_id: int, resolution: str, num_cameras: int = 1,
-                 simulate: bool = False, usb_mux_comms: Optional[Dict[str, Any]] = None,
-                 usb_mux_channel: Optional[int] = None, i2c_lock: Optional[threading.RLock] = None,
-                 mux_simulator: Optional[MuxSimulator] = None) -> None:
+    def __init__(
+            self,
+            name: str,
+            vendor_id: int,
+            product_id: int,
+            resolution: str,
+            num_cameras: int = 1,
+            simulate: bool = False,
+            usb_mux_comms: Optional[Dict[str, Any]] = None,
+            usb_mux_channel: Optional[int] = None,
+            i2c_lock: Optional[threading.RLock] = None,
+            mux_simulator: Optional[MuxSimulator] = None
+    ) -> None:
 
         # pi camera is only for Raspberry Pi.
         if PLATFORM is not None and PLATFORM == "raspberry-pi":
             self.camera = PiCamera()
             picam_loaded = True
+            self.simulate = simulate
         else:
             self.simulate = True
             picam_loaded = False

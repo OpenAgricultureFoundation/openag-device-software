@@ -34,9 +34,11 @@
             "type": "PiCamera",
             "uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
             "parameters": {
+                "driver_module": "picam_driver",
+		        "driver_class": "PiCameraDriver",
                 "setup": {
                     "name": "Raspberry Pi Camera v1.3 ",
-                    "file_name": "pi_camera/setups/pi_camera_v13"
+                    "file_name": "camera/setups/pi_camera_v13"
                 },
                 "variables": {
                     "sensor": null,
