@@ -26,11 +26,9 @@ from django.conf import settings
 # Catch specific exceptions
 
 # Initialize file paths
-IMAGES_DIR = "data/images/"
-
-# DATA_DIR = os.getenv("STORAGE_LOCATION", "data")
-
 DATA_DIR = settings.DATA_PATH
+
+IMAGES_DIR = DATA_DIR + "/images/"
 STORED_IMAGES_DIR = DATA_DIR + "/images/stored/"
 
 
