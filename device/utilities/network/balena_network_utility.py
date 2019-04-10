@@ -23,7 +23,7 @@ class BalenaNetworkUtility(NetworkUtility):
         # check for network_configured flag.
         if not base_connected and not Path(self.NET_CONFIGURED).exists():
             self._start_wifi_connect(True)  # Clear out old config anyway
-            Path(self.NET_CONFIGURED).touch()
+            ## Never reached: Path(self.NET_CONFIGURED).touch()
         return base_connected
 
     def get_wifi_ssids(

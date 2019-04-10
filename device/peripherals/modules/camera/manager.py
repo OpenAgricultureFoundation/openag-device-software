@@ -1,4 +1,5 @@
 # Import standard python modules
+import abc
 import json
 
 # Import python types
@@ -9,11 +10,13 @@ from device.utilities import logger, accessors
 
 # Import manager elements
 from device.peripherals.classes.peripheral import manager, modes
-from device.peripherals.modules.pi_camera import driver, exceptions, events
+from device.peripherals.modules.camera import exceptions, events
+
+from device.peripherals.modules.camera.drivers.base_driver import CameraDriver
 
 
-class PiCameraManager(manager.PeripheralManager):  # type: ignore
-    """Manages a pi camera."""
+class CameraManager(manager.PeripheralManager):  # type: ignore
+    """Manages a usb camera."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Instantiates manager Instantiates parent class, and initializes 
@@ -21,6 +24,10 @@ class PiCameraManager(manager.PeripheralManager):  # type: ignore
 
         # Instantiate parent class
         super().__init__(*args, **kwargs)
+
+        # Get usb mux parameters
+        self.usb_mux_comms = self.communication.get("usb_mux_comms", None)
+        self.usb_mux_channel = self.communication.get("usb_mux_channel", None)
 
         # Initialize sampling parameters
         self.min_sampling_interval = 120  # seconds
@@ -43,14 +50,19 @@ class PiCameraManager(manager.PeripheralManager):  # type: ignore
             # Initialize min sampling interval
             num_cameras = self.parameters.get("num_cameras", 1)
             self.min_sampling_interval = 120 * num_cameras
+            self.logger.info(str(self.parameters.values()))
 
             # Create driver
-            self.driver = driver.PiCameraDriver(
+            driver_module = "device.peripherals.modules.camera.drivers." + self.parameters.get("driver_module")
+            driver_class = self.parameters.get("driver_class")
+            self.driver = self.get_driver(driver_module, driver_class)(
                 name=self.name,
                 vendor_id=int(self.properties.get("vendor_id"), 16),
                 product_id=int(self.properties.get("product_id"), 16),
                 resolution=self.properties.get("resolution"),
                 num_cameras=num_cameras,
+                usb_mux_comms=self.usb_mux_comms,
+                usb_mux_channel=self.usb_mux_channel,
                 i2c_lock=self.i2c_lock,
                 simulate=self.simulate,
                 mux_simulator=self.mux_simulator,
@@ -109,3 +121,9 @@ class PiCameraManager(manager.PeripheralManager):  # type: ignore
             self.mode = modes.ERROR
             message = "Unable to turn on, unhandled exception"
             self.logger.exception(message)
+
+    @staticmethod
+    def get_driver(module_name: str, class_name: str) -> abc.ABCMeta:
+        module_instance = __import__(module_name, fromlist=[class_name])
+        class_instance = getattr(module_instance, class_name)
+        return class_instance

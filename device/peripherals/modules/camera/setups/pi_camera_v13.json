@@ -1,10 +1,12 @@
 {
-	"name":  "ELP USB500W02M-L21 Camera",
+	"name":  "Raspberry Pi Camera v1.3",
 	"version": "1",
-	"uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
-	"module_name": "usb_camera.manager",
-	"class_name": "USBCameraManager",
+	"uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
+	"module_name": "camera.manager",
+	"class_name": "CameraManager",
 	"parameters": {
+		"driver_module": "picam_driver",
+		"driver_class": "PiCameraDriver",
 		"variables": {
 			"sensor": null,
 			"actuator": null
@@ -51,7 +53,7 @@
 		}
 	},
 	"properties": {
-		"vendor_id": "0x05A3",
-		"product_id": "0x9520",
-		"resolution": "1280x1024"	}
+		"vendor_id": "0x5069",
+		"product_id": "0x4331",
+		"resolution": "2592x1944"	}
 }
