@@ -80,7 +80,6 @@ class USBCameraDriver(CameraDriver):
                     mux_simulator=mux_simulator,
                 )
                 self.usb_mux_channel = usb_mux_channel
-                self.usb_mux_enabled = True
             except I2CError as e:
                 raise exceptions.InitError(logger=self.logger) from e
 

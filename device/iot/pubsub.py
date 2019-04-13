@@ -1,5 +1,5 @@
 # Import standard python modules
-import base64, datetime, json, logging, math, os, ssl, sys, time, traceback
+import json, os, ssl, sys, time, subprocess
 import paho.mqtt.client as mqtt
 
 # Import python types
@@ -20,7 +20,7 @@ MQTT_BRIDGE_PORT = 443
 # Initialize message types
 COMMAND_REPLY_MESSAGE = "CommandReply"
 ENVIRONMENT_VARIABLE_MESSAGE = "EnvVar"
-IMAGE_MESSAGE = "Image"
+IMAGE_MESSAGE = "ImageUpload" # new message type for new upload logic.
 BOOT_MESSAGE = "boot"
 STATUS_MESSAGE = "status"
 
@@ -35,6 +35,7 @@ class PubSub:
     # Initialize state
     is_initialized = False
 
+    # --------------------------------------------------------------------------
     def __init__(
         self,
         ref_self: Any,
@@ -59,8 +60,9 @@ class PubSub:
         # Initialize logger
         self.logger = logger.Logger("PubSub", "iot")
 
-    ##### HELPER FUNCTIONS #############################################################
+    ##### HELPER FUNCTIONS ####################################################
 
+    # --------------------------------------------------------------------------
     def initialize(self) -> None:
         """Initializes pubsub client."""
         self.logger.debug("Initializing")
@@ -73,6 +75,7 @@ class PubSub:
             self.logger.exception(message)
             self.is_initialized = False
 
+    # --------------------------------------------------------------------------
     def load_mqtt_config(self) -> None:
         """Loads mqtt config."""
         self.logger.debug("Loading mqtt config")
@@ -102,9 +105,11 @@ class PubSub:
         test_event_topic = os.environ.get("IOT_TEST_TOPIC")
         if test_event_topic is not None:
             self.event_topic = "/devices/{}/{}".format(self.device_id, test_event_topic)
+            self.logger.debug("Publishing to test topic: {}".format(self.event_topic))
         else:
             self.event_topic = "/devices/{}/events".format(self.device_id)
 
+    # --------------------------------------------------------------------------
     def create_mqtt_client(self) -> None:
         """Creates an mqtt client. Returns client and assocaited json web token."""
         self.logger.debug("Creating mqtt client")
@@ -143,6 +148,7 @@ class PubSub:
         # Subscribe to the config topic
         self.client.subscribe(self.config_topic, qos=1)
 
+    # --------------------------------------------------------------------------
     def update(self) -> None:
         """Updates pubsub client."""
 
@@ -165,8 +171,9 @@ class PubSub:
             message = "Unable to update, unhandled exception: {}".format(type(e))
             self.logger.exception(message)
 
-    ##### PUBLISH FUNCTIONS ############################################################
+    ##### PUBLISH FUNCTIONS ###################################################
 
+    # --------------------------------------------------------------------------
     def publish_boot_message(self, message: Dict) -> None:
         """Publishes boot message."""
         self.logger.debug("Publishing boot message")
@@ -180,6 +187,7 @@ class PubSub:
         message_json = json.dumps(message)
         self.publish_command_reply(BOOT_MESSAGE, message_json)
 
+    # --------------------------------------------------------------------------
     def publish_status_message(self, message: Dict) -> None:
         """Publishes status message."""
         self.logger.debug("Publishing status message")
@@ -193,8 +201,9 @@ class PubSub:
         message_json = json.dumps(message)
         self.publish_command_reply(STATUS_MESSAGE, message_json)
 
-    ##### PRIVATE PUBLISH FUNCTIONS? ###################################################
+    ##### PRIVATE PUBLISH FUNCTIONS? #########################################
 
+    # --------------------------------------------------------------------------
     def publish_command_reply(self, command: str, values: str) -> None:
         """Publish a reply to a previously received command. Don't we need the 
         message id then?"""
@@ -221,6 +230,7 @@ class PubSub:
             "unhandled exception: {}".format(type(e))
             self.logger.exception(error_message)
 
+    # --------------------------------------------------------------------------
     def publish_environment_variable(
         self, variable_name: str, values_dict: Dict
     ) -> None:
@@ -290,13 +300,73 @@ class PubSub:
             "unhandled exception: {}".format(type(e))
             self.logger.exception(error_message)
 
+    # --------------------------------------------------------------------------
+    def upload_image(self, file_name: str) -> None:
+        self.logger.debug("Uploading binary image")
+
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
+        if file_name == None or len(file_name) == 0:
+            error_message = "Unable to publish image, file name "
+            "`{}` is invalid".format(file_name)
+            self.logger.error(error_message)
+            raise ValueError(error_message)
+
+        # Get the camera name and image type from the file_name:
+        # /Users/rob/yada/yada/2018-06-15-T18:34:45Z_Camera-Top.png
+        base = os.path.basename(file_name) # get just the file from path
+        fn1 = base.split("_")      # delimiter between datetime and camera name
+        fn2 = fn1[1]               # 'Camera-Top.png'
+        fn3 = fn2.split(".")       # delimiter between file and extension
+        camera_name = fn3[0]       # 'Camera-Top'
+
+        device_id = registration.device_id()
+        upload_file_name = '{}_{}'.format(device_id, base)
+
+#debugrob: change comment
+        # commented URL below is for running the firebase cloud function 
+        # service locally for testing
+        URL = 'http://localhost:5000/fb-func-test/us-central1/saveImage'
+        #URL = 'https://us-central1-fb-func-test.cloudfunctions.net/saveImage'
+        DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
+
+        try:
+            # Use curl to do a multi part form post of the binary data (fast) to
+            # our firebase cloud function that puts the image in the GCP 
+            # storage bucket.
+            res = subprocess.run(['curl', '--silent', URL, '-F', DATA])
+            self.logger.debug("Uploaded file: {}".format(upload_file_name))
+
+            # Publish a message indicating that we uploaded the image to the
+            # public bucket written by the firebase cloud function, and we need
+            # to move the image to the usual images bucket we have been using.
+            message = {
+                "messageType": IMAGE_MESSAGE,
+                "varName": camera_name,
+                "fileName": upload_file_name,
+            }
+
+            message_json = json.dumps(message)
+            self.client.publish(self.event_topic, message_json, qos=1)
+
+        except Exception as e:
+            error_message = "Unable to publish binary image, unhandled "
+            "exception: {}".format(type(e))
+            self.logger.exception(error_message)
+
+
+    # --------------------------------------------------------------------------
+    """ DEPRECATED.  Delete in the summer of 2019 if all is well with above logic.
+    This is the old way of sending a message.  It was not reliable.
+    Publish a blob as (multiple < 256K) base64 messages. Maximum message size 
+    is 256KB, so we may have to send multiple messages,This size is enforced by 
+    the Google hosted MQTT server we connect to. See 'Telemetry event payload' 
+    https://cloud.google.com/iot/quotas
     def publish_binary_image(
         self, variable_name: str, image_type: str, image_bytes: bytes
     ) -> None:
-        """Publish a blob as (multiple < 256K) base64 messages. Maximum message size 
-        is 256KB, so we may have to send multiple messages,This size is enforced by 
-        the Google hosted MQTT server we connect to. See 'Telemetry event payload' 
-        https://cloud.google.com/iot/quotas"""
         self.logger.debug("Publishing binary image")
 
         # Check if client is initialized
@@ -312,7 +382,7 @@ class PubSub:
             raise ValueError(error_message)
 
         # Check image type is valid
-        if image_type == None or image_type == 0:
+        if image_type == None or len(image_type) == 0:
             error_message = "Unable to publish binary image, image type  "
             "`{}` is invalid".format(image_type)
             self.logger.error(error_message)
@@ -381,3 +451,4 @@ class PubSub:
             error_message = "Unable to publish binary image, unhandled "
             "exception: {}".format(type(e))
             self.logger.exception(error_message)
+    """

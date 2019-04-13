@@ -22,8 +22,9 @@ fi
 
 # Command line POST of test image to local server:
 # Can only send one extra field in the multi-part form upload,
-# so we override the filename with the device id.
-DATA='data=@'$FILE';filename='$DEVICE_ID
+# so we override the filename field with the device id + file name.
+FILE_NAME=$DEVICE_ID'_'$FILE
+DATA='data=@'$FILE';filename='$FILE_NAME
 RET=`curl http://localhost:5000/fb-func-test/us-central1/saveImage -F "$DATA" `
 
 #debugrob: test this with the curl available in the balena docker image on a ras pi zero

@@ -44,6 +44,7 @@ class CameraDriver(ABC):
         self.resolution = resolution
         self.num_cameras = num_cameras
         self.simulate = simulate
+        self.usb_mux_enabled = True
 
         # Initialize logger
         logname = "Driver({})".format(name)
@@ -52,7 +53,10 @@ class CameraDriver(ABC):
         # Check if simulating
         if self.simulate:
             self.logger.info("Simulating driver")
-            self.directory = self.SIMULATE_IMAGE_DIR
+            #debugrob, to test image upload to backend, I need to put the simulated images in the usual spot, just like a real one.
+            #self.directory = self.SIMULATE_IMAGE_DIR
+            self.directory = self.IMAGE_DIR
+            self.usb_mux_enabled = False
         else:
             self.directory = self.IMAGE_DIR
 
