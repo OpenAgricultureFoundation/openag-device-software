@@ -2,25 +2,21 @@
 
 - Develop this application on OSX/Linux, instead of a beaglebone or raspi for speed and convenience.
 
-- Run (and understand) the firebase cloud function service locally: 
-  - `openag-cloud-v1/backend-iot-firebase-function-service/run_locally.sh`
+- Run (and understand) the firebase cloud function service locally. 
 
-- Run (and understand) the MQTT pub-sub message service locally (subscribing to a test pub-sub topic):
-  - `openag-cloud-v1/MqttToBigQuery-AppEngineFlexVM/run_locally_on_test_topic.sh`
+- Run (and understand) the MQTT pub-sub message service locally (subscribing to a test pub-sub topic).
 
-- Run this device application in simulation mode with a minimal device config (perhaps just a camera peripheral configured if you are testing images / uploads).  This script runs has the device publish to a special pub-sub topic that is only read by the local server (above) for testing.
+- Run this device application in simulation mode with a minimal device config (perhaps just a camera peripheral configured if you are testing images / uploads).  The publish to a test topic script runs has the device publish to a special pub-sub topic that is only read by the local server (above) for testing.
   - Modify line 331 to use the local firebase service URL in: `openag-device-software/device/iot/pubsub.py`
-  - `openag-device-software/scripts/iot/publish_to_test_topic.sh`
 
 - If you are testing images, you can use the device UI with a camera peripheral to 'capture' a fake image in simulation mode.  Just go to the Peripherals page and click capture on the camera.
 
 
 debugrob, current debug state:
-1. need to finish MQTT/utils.py  /debugrob
-2. need to change URL comment in openag-device-software/device/iot/pubsub.py line 331 before checkin
+1. need to change URL comment in openag-device-software/device/iot/pubsub.py line 331 before checkin
 
 
-debugrob, how to run this setup:
+# How to run locally to test image uploads:
 1. Run firebase cloud function service in a terminal: 
 `~/openag-cloud-v1/backend-iot-firebase-function-service (img_post)> ./run_locally.sh`
 
@@ -36,4 +32,6 @@ debugrob, how to run this setup:
 `cp ~/openag-device-software/device/peripherals/modules/usb_camera/tests/simulation_image.png ~/openag-device-software/data/images/2019-04-10-T00-00-00Z_Camera-Top.png`
 
 6. Watch the debug output of MQTT, then go check the two storage buckets and firestore doc db.
+
+
 
