@@ -12,10 +12,6 @@
 - If you are testing images, you can use the device UI with a camera peripheral to 'capture' a fake image in simulation mode.  Just go to the Peripherals page and click capture on the camera.
 
 
-debugrob, current debug state:
-1. need to change URL comment in openag-device-software/device/iot/pubsub.py line 331 before checkin
-
-
 # How to run locally to test image uploads:
 1. Run firebase cloud function service in a terminal: 
 `~/openag-cloud-v1/backend-iot-firebase-function-service (img_post)> ./run_locally.sh`

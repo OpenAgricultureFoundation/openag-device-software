@@ -427,17 +427,14 @@ class IotManager(manager.StateMachineManager):
         # Check for images to publish
         try:
             image_file_list = glob.glob(IMAGES_DIR + "*.png")
-            self.logger.debug("debugrob image_file_list={}".format(image_file_list))
             for image_file in image_file_list:
 
-                self.logger.debug("debugrob image_file={}".format(image_file))
                 # Is this file open by a process? (fswebcam)
                 if os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file)) == 0:
                     continue  # Yes, so skip it and try the next one.
 
                 # Check the file size
                 fsize = os.path.getsize(image_file)
-                self.logger.debug("debugrob fsize={}".format(fsize))
                 # If the size is < 200KB, then it is garbage we delete
                 # (based on the 1280x1024 average file size)
                 if fsize < 500: # in KB
@@ -445,9 +442,7 @@ class IotManager(manager.StateMachineManager):
                     continue
 
                 # Upload the image and publish a message it was done
-                self.logger.debug("debugrob before upload")
                 self.pubsub.upload_image(image_file)
-                self.logger.debug("debugrob after upload")
 
                 # Check if stored directory exists, if not create it
                 if not os.path.isdir(STORED_IMAGES_DIR):
@@ -455,9 +450,7 @@ class IotManager(manager.StateMachineManager):
 
                 # Move image from image directory once processed
                 stored_image_file = image_file.replace(IMAGES_DIR, STORED_IMAGES_DIR)
-                self.logger.debug("debugrob stored_image_file={}".format(stored_image_file))
                 shutil.move(image_file, stored_image_file)
-                self.logger.debug("debugrob done")
 
         except Exception as e:
             message = "Unable to publish images, unhandled exception: {}".format(e)

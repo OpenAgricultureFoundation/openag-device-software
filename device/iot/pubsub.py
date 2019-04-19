@@ -325,11 +325,11 @@ class PubSub:
         device_id = registration.device_id()
         upload_file_name = '{}_{}'.format(device_id, base)
 
-#debugrob: change comment
         # commented URL below is for running the firebase cloud function 
         # service locally for testing
-        URL = 'http://localhost:5000/fb-func-test/us-central1/saveImage'
-        #URL = 'https://us-central1-fb-func-test.cloudfunctions.net/saveImage'
+        #URL = 'http://localhost:5000/fb-func-test/us-central1/saveImage'
+
+        URL = 'https://us-central1-fb-func-test.cloudfunctions.net/saveImage'
         DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
 
         try:
