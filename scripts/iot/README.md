@@ -21,13 +21,15 @@
 
 3. Make sure the brain is set to call the LOCAL URL for the firebase cloud function, check pubsub.py.
 
-4. Run the brain in test topic publish mode:
+4. Make sure you brain is REGISTERED with a cloud user account.
+
+5. Run the brain in test topic publish mode:
 `~/openag-device-software (img_post)> ./scripts/iot/publish_to_test_topic.sh`
 
-5. Copy an image into `~/openag-device-software/data/images` and wait 5 min for the brain to pick it up.
+6. Copy an image into `~/openag-device-software/data/images` and wait 5 min for the brain to pick it up.
 `cp ~/openag-device-software/device/peripherals/modules/usb_camera/tests/simulation_image.png ~/openag-device-software/data/images/2019-04-10-T00-00-00Z_Camera-Top.png`
 
-6. Watch the debug output of MQTT, then go check the two storage buckets and firestore doc db.
+7. Watch the debug output of MQTT, then go check the two storage buckets and firestore doc db.
 
 
 
