@@ -410,13 +410,13 @@ class IotManager(manager.StateMachineManager):
             environment_variables = {}
 
         # Keep a copy of the first set of values (usually None). Why?
-        if self.prev_environment_variables == {}:
-            self.environment_variables = copy.deepcopy(environment_variables)
+        #if self.prev_environment_variables == {}:
+        #    self.environment_variables = copy.deepcopy(environment_variables)
 
         # For each value, only publish the ones that have changed.
         for name, value in environment_variables.items():
             if self.prev_environment_variables.get(name) != value:
-                self.environment_variables[name] = copy.deepcopy(value)
+                self.prev_environment_variables[name] = copy.deepcopy(value)
                 self.pubsub.publish_environment_variable(name, value)
 
     def publish_images(self) -> None:
