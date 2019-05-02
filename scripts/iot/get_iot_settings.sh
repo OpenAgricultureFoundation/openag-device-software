@@ -21,6 +21,10 @@ export GCLOUD_PROJECT=openag-v1
 export GCLOUD_REGION=us-central1
 export GCLOUD_DEV_REG=device-registry
 
+# Only for local testing/development.  You must have the MQTT service running
+# on a test topic.  If so, manually set this environment var and run the brain.
+# export IOT_TEST_TOPIC=events/test
+
 # Load the device id file if it exists
 DEVICE_ID_FILE=$PROJECT_ROOT/data/registration/device_id.bash
 if [[ -f $DEVICE_ID_FILE ]]; then

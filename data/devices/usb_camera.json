@@ -1,0 +1,27 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "usb_camera",
+    "uuid": "abcabcde-298c-408c-8b5d-f3ed14b01710",
+    "peripherals": [
+        {
+            "name": "Camera-Top",
+            "type": "USBCamera",
+            "uuid": "228b8944-b2e5-4442-93b1-e1386089dd9d",
+            "parameters": {
+                "driver_module": "usb_camera_driver",
+		        "driver_class": "USBCameraDriver",
+                "setup": {
+                    "name": "ELP USB500W02M-L21 Camera ",
+                    "file_name": "camera/setups/elp_usb500w02ml21"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "communication": null,
+                "num_cameras": 1
+            }
+        }
+    ],
+    "controllers": null
+}

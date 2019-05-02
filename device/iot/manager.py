@@ -339,7 +339,7 @@ class IotManager(manager.StateMachineManager):
             # Update every 100ms
             time.sleep(0.1)
 
-    ##### IOT PUBLISH FUNCTIONS ########################################################
+    ##### IOT PUBLISH FUNCTIONS ###############################################
 
     def publish_message(self, name: str, message: str) -> None:
         """Send a command reply. TODO: Fix this."""
@@ -433,24 +433,16 @@ class IotManager(manager.StateMachineManager):
                 if os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file)) == 0:
                     continue  # Yes, so skip it and try the next one.
 
-                # 2018-06-15-T18:34:45Z_Camera-Top.png
-                fn1 = image_file.split("_")
-                fn2 = fn1[1]  # Camera-Top.png
-                fn3 = fn2.split(".")
-                camera_name = fn3[0]  # Camera-Top
-
-                # Get the file contents
-                f = open(image_file, "rb")
-                file_bytes = f.read()
-                f.close()
-
+                # Check the file size
+                fsize = os.path.getsize(image_file)
                 # If the size is < 200KB, then it is garbage we delete
                 # (based on the 1280x1024 average file size)
-                if len(file_bytes) < 200000:
+                if fsize < 500: # in KB
                     os.remove(image_file)
                     continue
 
-                self.pubsub.publish_binary_image(camera_name, "png", file_bytes)
+                # Upload the image and publish a message it was done
+                self.pubsub.upload_image(image_file)
 
                 # Check if stored directory exists, if not create it
                 if not os.path.isdir(STORED_IMAGES_DIR):
@@ -464,7 +456,7 @@ class IotManager(manager.StateMachineManager):
             message = "Unable to publish images, unhandled exception: {}".format(e)
             self.logger.exception(message)
 
-    ##### DEVICE EVENT FUNCTIONS #######################################################
+    ##### DEVICE EVENT FUNCTIONS ##############################################
 
     def reregister(self) -> Tuple[str, int]:
         """Unregisters device by deleting iot registration data. TODO: This needs to go 
