@@ -315,10 +315,10 @@ class PubSub:
             raise ValueError(error_message)
 
         # Get the camera name and image type from the file_name:
-        # /Users/rob/yada/yada/2018-06-15-T18:34:45Z_Camera-Top.png
+        # /Users/rob/yada/yada/2019-05-08_T23-18-31Z_Camera-Top.png
         base = os.path.basename(file_name) # get just the file from path
-        fn1 = base.split("_")      # delimiter between datetime and camera name
-        fn2 = fn1[1]               # 'Camera-Top.png'
+        fn1 = base.split("_")      # delimiter between date, time, camera name
+        fn2 = fn1[2]               # 'Camera-Top.png'
         fn3 = fn2.split(".")       # delimiter between file and extension
         camera_name = fn3[0]       # 'Camera-Top'
 
