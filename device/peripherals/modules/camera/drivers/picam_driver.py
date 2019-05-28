@@ -29,7 +29,7 @@ class PiCameraDriver(CameraDriver):
     ) -> None:
 
         # pi camera is only for Raspberry Pi.
-        if PLATFORM is not None and PLATFORM == "raspberry-pi":
+        if PLATFORM is not None and (PLATFORM == "raspberry-pi" or PLATFORM == "fincm3"):
             self.camera = PiCamera()
             picam_loaded = True
             self.simulate = simulate
@@ -76,7 +76,7 @@ class PiCameraDriver(CameraDriver):
             # Camera warm-up time
             time.sleep(2)
             # Get timestring in ISO8601 format
-
+            self.logger.debug("Captureing " + filename)
             self.camera.capture(filename)
             self.camera.stop_preview()
 
