@@ -250,11 +250,20 @@ class CoordinatorManager(StateMachineManager):
             with open(DEVICE_CONFIG_PATH) as f:
                 config_name = f.readline().strip()
         except:
-            message = "Unable to read {}, using unspecified config".format(
-                DEVICE_CONFIG_PATH
-            )
+
+            env_dev_type = os.getenv("OPEN_AG_DEVICE_TYPE")
+            if env_dev_type is None:
+                config_name = "unspecified"
+                message = "Unable to read {}, using unspecified config".format(
+                    DEVICE_CONFIG_PATH
+                )
+            else:
+                config_name = env_dev_type
+                message = "Unable to read {}, using {} config from env".format(
+                    DEVICE_CONFIG_PATH, config_name
+                )
+
             self.logger.warning(message)
-            config_name = "unspecified"
 
             # Create the directories if needed
             os.makedirs(os.path.dirname(DEVICE_CONFIG_PATH), exist_ok=True)
