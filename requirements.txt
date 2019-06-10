@@ -20,3 +20,4 @@ pyftdi==0.29.3
 pygame==1.9.4
 python-networkmanager
 picamera
+RPi.GPIO
