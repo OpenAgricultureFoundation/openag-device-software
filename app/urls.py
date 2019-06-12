@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
 
 # Import rest framework modules
 from rest_framework import routers
@@ -59,6 +60,7 @@ connect_advanced_view = views.ConnectAdvanced.as_view()
 
 # Setup url patterns
 urlpatterns = [
+    url(r"^robots\.txt", TemplateView.as_view(template_name="robots.txt", content_type='text/plain')), 
     url(r"^admin/", admin.site.urls),
     url(r"^api/", include(router.urls, namespace="api")),
     url(r"^accounts/login/$", auth_views.login, login_settings, name="login"),
