@@ -43,7 +43,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # Must use " in JSON, hence the funny bash string concatenation for the data
-DATA='{"key": "'$KEY'", "cksum": "'$CKSUM'", "MAC": "'$MAC'", "timestamp": "'$TIMESTAMP'"}'
+DATA='{"key": "'$KEY'", "cksum": "'$CKSUM'", "MAC": "'$MAC'", "timestamp": "'$TIMESTAMP'", "version": "5.0.0"}'
 
 # POST the data to the firebase cloud function
 RET=`curl --silent https://us-central1-fb-func-test.cloudfunctions.net/saveKey  -H "Content-Type: application/json" -X POST --data "$DATA"`

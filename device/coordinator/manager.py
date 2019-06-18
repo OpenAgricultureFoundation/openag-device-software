@@ -93,6 +93,7 @@ class CoordinatorManager(StateMachineManager):
         # Initialize managers
         self.recipe = RecipeManager(self.state)
         self.iot = IotManager(self.state, self.recipe)  # type: ignore
+        self.recipe.set_iot(self.iot)
         self.resource = ResourceManager(self.state, self.iot)  # type: ignore
         self.network = NetworkManager(self.state)  # type: ignore
         self.upgrade = UpgradeManager(self.state)  # type: ignore

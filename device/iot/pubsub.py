@@ -23,6 +23,7 @@ ENVIRONMENT_VARIABLE_MESSAGE = "EnvVar"
 IMAGE_MESSAGE = "ImageUpload" # new message type for new upload logic.
 BOOT_MESSAGE = "boot"
 STATUS_MESSAGE = "status"
+RECIPE_EVENT_MESSAGE = 'RecipeEvent'
 
 # TODO: Write tests
 # TODO: Catch specific exceptions
@@ -201,6 +202,33 @@ class PubSub:
         message_json = json.dumps(message)
         self.publish_command_reply(STATUS_MESSAGE, message_json)
 
+    # --------------------------------------------------------------------------
+    def publish_recipe_event(self, device_id: str, action: str, name: str) -> None:
+        self.logger.debug(f"Publishing recipe event {action} {name} message from {device_id}.")
+
+        # Check if client is initialized
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
+        # Build message
+        message = {
+            "messageType": RECIPE_EVENT_MESSAGE,
+            "device_id": device_id,
+            "action": action,
+            "name": name,
+        }
+        message_json = json.dumps(message)
+
+        # Publish message
+        try:
+            self.client.publish(self.event_topic, message_json, qos=1)
+        except Exception as e:
+            error_message = "Unable to publish recipe event message, "
+            "unhandled exception: {}".format(type(e))
+            self.logger.exception(error_message)
+
+
     ##### PRIVATE PUBLISH FUNCTIONS? #########################################
 
     # --------------------------------------------------------------------------
@@ -315,12 +343,16 @@ class PubSub:
             raise ValueError(error_message)
 
         # Get the camera name and image type from the file_name:
-        # /Users/rob/yada/yada/2019-05-08_T23-18-31Z_Camera-Top.png
-        base = os.path.basename(file_name) # get just the file from path
-        fn1 = base.split("_")      # delimiter between date, time, camera name
-        fn2 = fn1[2]               # 'Camera-Top.png'
-        fn3 = fn2.split(".")       # delimiter between file and extension
-        camera_name = fn3[0]       # 'Camera-Top'
+        # /Users/rob/yada/yada/2019-05-08-T23-18-31Z_Camera-Top.png
+        base = ''
+        try:
+            base = os.path.basename(file_name) # get just the file from path
+            fn1 = base.split("_")  # delimiter between datetime & camera name
+            fn2 = fn1[1]           # 'Camera-Top.png'
+            fn3 = fn2.split(".")   # delimiter between file and extension
+            camera_name = fn3[0]   # 'Camera-Top'
+        except:
+            camera_name = base
 
         device_id = registration.device_id()
         upload_file_name = '{}_{}'.format(device_id, base)

@@ -345,6 +345,10 @@ class IotManager(manager.StateMachineManager):
         """Send a command reply. TODO: Fix this."""
         self.pubsub.publish_command_reply(name, message)
 
+    def publish_recipe_event(self, action: str, name: str) -> None:
+        """Send a recipe event message."""
+        self.pubsub.publish_recipe_event(self.device_id, action, name)
+
     def publish_boot_message(self) -> None:
         """Publishes boot message."""
         self.logger.debug("Publishing boot message")
@@ -486,7 +490,7 @@ class IotManager(manager.StateMachineManager):
         # Successfully deleted registration data
         return "Successfully re-registered device", 200
 
-    #### IOT MESSAGE FUNCTIONS #########################################################
+    #### IOT MESSAGE FUNCTIONS ################################################
 
     def process_message(self, message: mqtt.MQTTMessage) -> None:
         """Processes messages from iot cloud."""
@@ -551,7 +555,7 @@ class IotManager(manager.StateMachineManager):
         else:
             self.unknown_command(command)
 
-    ##### IOT COMMAND FUNCTIONS ########################################################
+    ##### IOT COMMAND FUNCTIONS ###############################################
 
     def forcibly_create_and_start_recipe(self, command: str, recipe_json: str) -> None:
         """Forcible starts and creates recipe. TODO: This method should be depricated
@@ -631,9 +635,8 @@ class IotManager(manager.StateMachineManager):
         if status != 202:
             error_message = "Unable to start recipe, error: {}".format(message)
             self.logger.warning(error_message)
+            self.pubsub.publish_command_reply('error', error_message)
 
-        # Publish command reply
-        self.pubsub.publish_command_reply(command, message)
 
     def stop_recipe(self, command: str) -> None:
         """Processes stop recipe command."""
@@ -646,18 +649,17 @@ class IotManager(manager.StateMachineManager):
         if status != 200:
             error_message = "Unable to stop recipe, error: {}".format(message)
             self.logger.warning(error_message)
-
-        # Publish command reply
-        self.pubsub.publish_command_reply(command, message)
+            self.pubsub.publish_command_reply('error', error_message)
+        
 
     def unknown_command(self, command: str) -> None:
         """Processes unknown command."""
         message = "Received unknown command"
         self.logger.warning(message)
-        self.pubsub.publish_command_reply(command, message)
+        self.pubsub.publish_command_reply('error', message)
 
 
-##### PUBSUB CALLBACK FUNCTIONS ########################################################
+##### PUBSUB CALLBACK FUNCTIONS ###############################################
 
 
 def on_connect(

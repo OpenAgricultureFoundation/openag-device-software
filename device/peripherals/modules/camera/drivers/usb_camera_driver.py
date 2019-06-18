@@ -131,7 +131,7 @@ class USBCameraDriver(CameraDriver):
             if self.num_cameras == 1:
                 filename = "{}_{}.png".format(timestring, self.name)
             else:
-                filename = "{}_{}-{}.png".format(timestring, self.name, index + 1)
+                filename = "{}_{}.{}.png".format(timestring, self.name, index + 1)
 
             # Create image path
             image_path = self.directory + filename
