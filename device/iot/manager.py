@@ -635,9 +635,8 @@ class IotManager(manager.StateMachineManager):
         if status != 202:
             error_message = "Unable to start recipe, error: {}".format(message)
             self.logger.warning(error_message)
+            self.pubsub.publish_command_reply('error', error_message)
 
-        # Publish command reply
-        self.pubsub.publish_command_reply(command, message)
 
     def stop_recipe(self, command: str) -> None:
         """Processes stop recipe command."""
@@ -650,15 +649,14 @@ class IotManager(manager.StateMachineManager):
         if status != 200:
             error_message = "Unable to stop recipe, error: {}".format(message)
             self.logger.warning(error_message)
-
-        # Publish command reply
-        self.pubsub.publish_command_reply(command, message)
+            self.pubsub.publish_command_reply('error', error_message)
+        
 
     def unknown_command(self, command: str) -> None:
         """Processes unknown command."""
         message = "Received unknown command"
         self.logger.warning(message)
-        self.pubsub.publish_command_reply(command, message)
+        self.pubsub.publish_command_reply('error', message)
 
 
 ##### PUBSUB CALLBACK FUNCTIONS ###############################################
