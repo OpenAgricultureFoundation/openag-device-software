@@ -1,0 +1,29 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "PFC4 v0.1.0",
+    "uuid": "PCA9633Driver",
+    "peripherals": [
+        {
+            "name": "IndicatorLEDs",
+            "type": "IndicatorPCA9633",
+            "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
+            "parameters": {
+                "setup": {
+                    "name": "Triple RGB",
+                    "file_name": "indicator_pca9633/setups/triple_rgb"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": null
+                },
+                "communication": {
+                    "bus": "1", 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x62"
+                }
+            }
+        }
+    ],
+    "controllers": null
+}

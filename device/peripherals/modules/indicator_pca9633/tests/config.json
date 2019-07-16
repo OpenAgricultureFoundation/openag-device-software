@@ -1,0 +1,29 @@
+{
+    "peripherals": [
+        {
+            "name": "HeaterPTC300",
+            "type": "ActuatorPCF8574",
+            "uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
+            "parameters": {
+                "setup": {
+                    "name": "Heater PTC 300W",
+                    "file_name": "actuator_pcf8574/setups/heater_ptc300"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "air_heater"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77", 
+                    "channel": 2, 
+                    "address": "0x20",
+                    "port": 2,
+                    "is_active_high": true
+                }
+            }
+        }
+    ]
+}
