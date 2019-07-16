@@ -58,8 +58,15 @@ echo PROJECT_ROOT: $PROJECT_ROOT
 echo "Using sudo to update your system, please provide your password now:"
 sudo date
 
-# Clean up before doing a full install, only if on linux
-if [[ "$OSTYPE" == "linux"* ]]; then
+# Check if platform is ubuntu
+PLATFORM_IS_UBUNTU="FALSE"
+if [[ `lsb_release -d` == *"Ubuntu"* ]]; then
+  PLATFORM_IS_UBUNTU="TRUE"
+fi
+
+# Clean up before doing a full install, only if on linux (not ubuntu)
+if [[ ("$OSTYPE" == "linux"*) && ("$PLATFORM_IS_UBUNTU" == "FALSE") ]]; then
+	echo "Cleaning up python versions..."
     sudo rm -fr $PROJECT_ROOT/venv
     sudo apt-get purge -y python3.6 
     sudo apt-get purge -y python3.5
@@ -84,7 +91,11 @@ bash $PROJECT_ROOT/scripts/install/install_network_utilities.sh
 bash $PROJECT_ROOT/scripts/database/migrate_database.sh
 bash $PROJECT_ROOT/scripts/database/create_project_users.sh
 bash $PROJECT_ROOT/scripts/install/collect_static_files.sh
-bash $PROJECT_ROOT/scripts/install/initialize_rc_local.sh $PROJECT_ROOT $RUNTIME_MODE $REMOTE_DEVICE_UI_URL $PLATFORM
+
+# Don't automatically start software on ubuntu dev machines
+if [[ ("$DEVELOPMENT" == "FALSE") || ("$PLATFORM_IS_UBUNTU" == "FALSE") ]]; then
+	bash $PROJECT_ROOT/scripts/install/initialize_rc_local.sh $PROJECT_ROOT $RUNTIME_MODE $REMOTE_DEVICE_UI_URL $PLATFORM
+fi
 
 # Installation complete
 echo ""
