@@ -1,0 +1,73 @@
+{
+	"name":  "Triple RGB",
+	"version": "1",
+	"uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
+	"module_name": "indicator_pca9633.manager",
+	"class_name": "IndicatorPCA9633Manager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": {
+				"output_variable": {
+					"name": {
+						"type": "string", 
+						"default": "air_humidifier_percent"
+					}
+				}
+			}
+		},	
+		"communication": {
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "string",
+				"default": "0x62"
+			}
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    },
+	    {
+	        "name": "Enable Manual Mode",
+	        "description": "Allows actuator to be controlled by manual events.",
+	        "value": null,
+	        "sequence": null
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	}
+}
