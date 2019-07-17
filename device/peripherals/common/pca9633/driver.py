@@ -45,6 +45,9 @@ class PCA9633Driver:
         else:
             Simulator = None
 
+        # Initialize driver parameters
+        self.name = name
+
         # Initialize data bytes
         self.data_bytes = [0x80, 0x80, 0x21, 0x00, 0x00, 0x00, 0x40, 0x80, 0x02, 0xEA]
 
