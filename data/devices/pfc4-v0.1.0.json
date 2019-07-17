@@ -1,7 +1,7 @@
 {   
     "format": "openag-standard-v1",
     "name": "PFC4 v0.1.0",
-    "uuid": "PCA9633Driver",
+    "uuid": "8546ed97-857a-4a89-8593-1ee0b46149ac",
     "peripherals": [
         {
             "name": "IndicatorLEDs",
@@ -17,10 +17,13 @@
                     "actuator": null
                 },
                 "communication": {
-                    "bus": "1", 
-                    "mux": "0x77", 
-                    "channel": 2, 
-                    "address": "0x62"
+                    "devices": [
+                        {
+                            "name": "IoT",
+                            "bus":  2,
+                            "address": "0x62"
+                        }
+                    ]
                 }
             }
         }

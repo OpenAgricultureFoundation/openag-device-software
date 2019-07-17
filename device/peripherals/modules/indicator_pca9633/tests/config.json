@@ -1,27 +1,26 @@
 {
     "peripherals": [
         {
-            "name": "HeaterPTC300",
-            "type": "ActuatorPCF8574",
-            "uuid": "4aae056b-1dfe-41e7-ab52-c9dc252885c6",
+            "name": "IndicatorLEDs",
+            "type": "ActuatorPCA9633",
+            "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
             "parameters": {
                 "setup": {
-                    "name": "Heater PTC 300W",
-                    "file_name": "actuator_pcf8574/setups/heater_ptc300"
+                    "name": "Triple RGB",
+                    "file_name": "indicator_pca9633/setups/triple_rgb"
                 },
                 "variables": {
                     "sensor": null,
-                    "actuator": {
-                        "output_variable": "air_heater"
-                    }
+                    "actuator": null,
                 },
                 "communication": {
-                    "bus": 2, 
-                    "mux": "0x77", 
-                    "channel": 2, 
-                    "address": "0x20",
-                    "port": 2,
-                    "is_active_high": true
+                    "devices": [
+                        {
+                            "name": "IoT",
+                            "bus": 2, 
+                            "address": "0x62"
+                        }
+                    ]
                 }
             }
         }

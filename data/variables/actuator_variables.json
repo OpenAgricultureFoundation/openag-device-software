@@ -14,6 +14,48 @@
         }
     },
     {
+        "key": "iot_indicator_led_status",
+        "info": {
+            "name": {
+                "brief": "IoT Indicator LED",
+                "verbose": "IoT Indicator LED"
+            },
+            "unit": {
+                "brief": "Status",
+                "verbose": "Status",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "peripheral_indicator_led_status",
+        "info": {
+            "name": {
+                "brief": "Peripheral Indicator LED",
+                "verbose": "Peripheral Indicator LED"
+            },
+            "unit": {
+                "brief": "Status",
+                "verbose": "Status",
+                "type": "object"
+            }
+        }
+    },
+    {
+        "key": "user_indicator_led_status",
+        "info": {
+            "name": {
+                "brief": "User Indicator LED",
+                "verbose": "User Indicator LED"
+            },
+            "unit": {
+                "brief": "Status",
+                "verbose": "Status",
+                "type": "object"
+            }
+        }
+    },
+    {
         "key": "air_heater_percent",
         "info": {
             "name": {
