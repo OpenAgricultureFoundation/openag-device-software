@@ -19,7 +19,7 @@
                 "communication": {
                     "devices": [
                         {
-                            "name": "IoT",
+                            "name": "Peripheral",
                             "bus":  2,
                             "address": "0x62"
                         }

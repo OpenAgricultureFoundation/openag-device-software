@@ -1,5 +1,5 @@
 # Import standard python modules
-import time
+import time, json
 
 # Import python types
 from typing import Optional, Tuple, Dict, Any
@@ -58,6 +58,52 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
             "iot_indicator_led_status", value
         )
 
+    @property
+    def peripheral_indicator_led_status(self) -> Optional[str]:
+        """Gets reported output value."""
+        value = self.state.get_peripheral_reported_actuator_value(
+            self.name, "iot_indicator_led_status"
+        )
+        if value != None:
+            return value
+        return None
+
+    @peripheral_indicator_led_status.setter
+    def peripheral_indicator_led_status(self, value: bool) -> None:
+        """Sets reported output value in shared state."""
+        self.state.set_peripheral_reported_actuator_value(
+            self.name, "peripheral_indicator_led_status", value
+        )
+        self.state.set_environment_reported_actuator_value(
+            "peripheral_indicator_led_status", value
+        )
+        self.state.set_environment_desired_actuator_value(
+            "peripheral_indicator_led_status", value
+        )
+
+    @property
+    def user_indicator_led_status(self) -> Optional[str]:
+        """Gets reported output value."""
+        value = self.state.get_peripheral_reported_actuator_value(
+            self.name, "user_indicator_led_status"
+        )
+        if value != None:
+            return value
+        return None
+
+    @user_indicator_led_status.setter
+    def user_indicator_led_status(self, value: bool) -> None:
+        """Sets reported output value in shared state."""
+        self.state.set_peripheral_reported_actuator_value(
+            self.name, "user_indicator_led_status", value
+        )
+        self.state.set_environment_reported_actuator_value(
+            "user_indicator_led_status", value
+        )
+        self.state.set_environment_desired_actuator_value(
+            "user_indicator_led_status", value
+        )
+
     def initialize_peripheral(self) -> None:
         """Initializes manager."""
         self.logger.info("Initializing")
@@ -98,15 +144,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
-        self.logger.debug("Setting up peripheral")
-        try:
-            for driver in self.drivers:
-                driver.set_rgb([0, 0, 0])  # off
-                self.iot_indicator_led_status = "Off"
-        except exceptions.DriverError as e:
-            self.logger.exception("Unable to setup: {}".format(e))
-            self.mode = modes.ERROR
-            self.health = 0.0
+        self.logger.debug("No setup required for peripheral")
 
     def update_peripheral(self) -> None:
         """Updates peripheral by setting output to desired state."""
@@ -150,25 +188,41 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
     def clear_reported_values(self) -> None:
         """Clears reported values."""
         self.iot_indicator_led_status = None
+        self.peripheral_indicator_led_status = None
+        self.user_indicator_led_status = None
 
-    ##### HELPER METHODS ###################################################################
+    ##### HELPER METHODS ###############################################################
 
     def update_iot_led(self, driver):
         """Updates iot led indicator and status."""
-        if self.iot_is_connected:
+        if self.iot_is_connected and self.iot_indicator_led_status != "Green":
             driver.set_rgb([0, 255, 0])
             self.iot_indicator_led_status = "Green"
-        elif self.network_is_connected:
-            driver.set_rgb([0, 0, 255])  # TODO: Fix this back to yellow (255, 255, 0)
+        elif self.network_is_connected and self.iot_indicator_led_status != "Blue":
+            driver.set_rgb([0, 0, 255])
             self.iot_indicator_led_status = "Blue"
-        else:
+        elif self.iot_indicator_led_status != "Red":
             driver.set_rgb([255, 0, 0])
             self.iot_indicator_led_status = "Red"
 
     def update_peripheral_led(self, driver):
         """Updates peripheral led indicator and status."""
-        return None
+
+        # Check if all peripherals are healthy
+        healthy = True
+        for _, peripheral in self.state.peripherals.items():
+            if peripheral["health"] < 100:
+                healthy = False
+
+        # Update indicator led output
+        if healthy and self.iot_indicator_led_status != "Green":
+            driver.set_rgb([0, 255, 0])
+            self.iot_indicator_led_status = "Green"
+        elif not healthy and self.iot_indicator_led_status != "Red":
+            driver.set_rgb([255, 0, 0])
+            self.iot_indicator_led_status = "Red"
 
     def update_user_led(self, driver):
         """Updates user led indicator and status."""
-        return None
+        driver.set_rgb([0, 255, 0])
+        self.iot_indicator_led_status = "Green"
