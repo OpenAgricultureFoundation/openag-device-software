@@ -26,6 +26,30 @@
                     ]
                 }
             }
+        },
+        {
+            "name": "Water Aeration Pump",
+            "type": "ActuatorDAC5578",
+            "uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
+            "parameters": {
+                "setup": {
+                    "name": "Fan",
+                    "file_name": "actuator_dac5578/setups/water_aeration_pump"
+                },
+                "variables": {
+                    "sensor": null,
+                    "actuator": {
+                        "output_variable": "water_aeration_pump_percent"
+                    }
+                },
+                "communication": {
+                    "bus": "none", 
+                    "mux": "none", 
+                    "is_active_high": true,
+                    "address": "0x47",
+                    "port": 0
+                }
+            }
         }
     ],
     "controllers": null

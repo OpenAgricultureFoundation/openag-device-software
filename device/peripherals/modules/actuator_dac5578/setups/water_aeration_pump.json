@@ -1,7 +1,7 @@
 {
-	"name":  "Humidifier",
+	"name":  "Water Aeration Pump",
 	"version": "1",
-	"uuid": "0bd2a67b-6720-484c-b041-fa78179b2400",
+	"uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
 	"module_name": "actuator_dac5578.manager",
 	"class_name": "ActuatorDAC5578Manager",
 	"parameters": {
@@ -11,7 +11,7 @@
 				"output_variable": {
 					"name": {
 						"type": "string", 
-						"default": "air_humidifier_percent"
+						"default": "water_aeration_pump_percent"
 					}
 				}
 			}

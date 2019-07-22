@@ -180,6 +180,19 @@
                 "type": "object"
             }
         }
+    },
+    {
+        "key": "water_aeration_pump_percent",
+        "info": {
+            "name": {
+                "brief": "Water Aeration Pump",
+                "verbose": "Water Aeration Pump Output"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
     }
-
 ]
