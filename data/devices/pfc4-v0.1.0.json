@@ -28,12 +28,12 @@
             }
         },
         {
-            "name": "Water Aeration Pump",
+            "name": "WaterAerationPump",
             "type": "ActuatorDAC5578",
             "uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
             "parameters": {
                 "setup": {
-                    "name": "Fan",
+                    "name": "Water Aeration Pump",
                     "file_name": "actuator_dac5578/setups/water_aeration_pump"
                 },
                 "variables": {
@@ -48,6 +48,31 @@
                     "is_active_high": true,
                     "address": "0x47",
                     "port": 0
+                }
+            }
+        },
+        {
+            "name": "HeatSinkFanController",
+            "type": "ControllerADT7470",
+            "uuid": "b199a625-0df3-4883-ad6f-c46a5b6f9ba1",
+            "parameters": {
+                "setup": {
+                    "name": "Single Sensor Single Fan",
+                    "file_name": "controller_adt7470/setups/single_sensor_single_fan"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature": "heat_sink_temperature_celsius"
+                    },
+                    "actuator": {
+                        "fan": "heat_sink_cooling_fan_percent"
+                    }
+                },
+                "communication": {
+                    "bus": 2, 
+                    "mux": "0x77",
+                    "channel": 1,
+                    "address": "0x2E"
                 }
             }
         }
