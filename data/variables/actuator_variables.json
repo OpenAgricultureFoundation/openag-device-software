@@ -194,5 +194,19 @@
                 "type": "object"
             }
         }
+    },
+    {
+        "key": "heat_sink_fan_percent",
+        "info": {
+            "name": {
+                "brief": "Heat Sink Fan",
+                "verbose": "Heat Sink Fan"
+            },
+            "unit": {
+                "brief": "%",
+                "verbose": "Percent",
+                "type": "object"
+            }
+        }
     }
 ]

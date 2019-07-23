@@ -250,5 +250,19 @@
 				"type": "number"
 			}
 		}
+	},
+	{
+		"key": "heat_sink_temperature_celsius",
+		"info": {
+			"name": {
+				"brief": "Heat Sink Temp",
+				"verbose": "Heat Sink Temperature"
+			},
+			"unit": {
+				"brief": "C",
+				"verbose": "Celsius",
+				"type": "number"
+			}
+		}
 	}
 ]
