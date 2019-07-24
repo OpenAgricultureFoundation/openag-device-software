@@ -5,6 +5,10 @@
 	"module_name": "controller_adt7470.manager",
 	"class_name": "ControllerADT7470Manager",
 	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": null,
+		},
 		"sensors": [
 			{
 				"variable_name": "heat_sink_fan_temperature_celsius",
