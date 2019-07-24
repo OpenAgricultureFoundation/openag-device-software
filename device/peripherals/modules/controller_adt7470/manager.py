@@ -21,19 +21,16 @@ class ControllerADT7470Manager(manager.PeripheralManager):
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
-        # Initialize variable names
-        self.temperature_names = self.variables["sensor"]["temperatures"]
-        self.fan_names = self.variables["actuator"]["fans"]
-
-        # Initialize temperature limits
-        self.temperature_limits = self.parameters["temperature_limits_celsius"]
+        # Initialize sensors and actuators
+        self.sensors = self.parameters["sensors"]
+        self.actuators = self.parameters["actuators"]
 
         # Initialize setpoints
-        for sensor_id, temperature_limit in enumerate(self.temperature_limits):
-            name = self.temperature_names[sensor_id]
-            value = "<{}".format(temperature_limit)
-            self.state.set_peripheral_desired_sensor_value(self.name, name, value)
-            self.state.set_environment_desired_sensor_value(name, value)
+        # for sensor_id, temperature_limit in enumerate(self.temperature_limits):
+        #     name = self.temperature_names[sensor_id]
+        #     value = "<{}".format(temperature_limit)
+        #     self.state.set_peripheral_desired_sensor_value(self.name, name, value)
+        #     self.state.set_environment_desired_sensor_value(name, value)
 
         # Set default sampling interval
         self.default_sampling_interval = 3  # seconds
@@ -81,13 +78,16 @@ class ControllerADT7470Manager(manager.PeripheralManager):
         """Sets up peripheral."""
         self.logger.debug("Setting up peripheral")
         try:
-            # Set temperature zones
-            for sensor_id, temperature_limit in enumerate(temperature_limits):
-                low_temperature = temperature_limit["low"]
-                high_temperature = temperature_limit["high"]
-                self.driver.write_temperature_limit(
-                    sensor_id, low_temperature, high_temperature
-                )
+            # Set fan modes and limits
+            for actuator in self.actuators:
+                # Setup manual fans
+                if actuator["control_sensor_id"] == None:
+                    self.driver.enable_manual_fan_control(actuator["fan_id"])
+
+                # Setup automatic fans
+                else:
+                    self.driver.enable_automatic_fan_control(actuator["fan_id"])
+                    self.driver.write_thermal_zone_config(actuator["sensor_id"])
 
         except exceptions.DriverError as e:
             self.logger.exception("Unable to setup")
