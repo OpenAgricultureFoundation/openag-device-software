@@ -18,6 +18,14 @@ class ReadVersionError(DriverError):
     message_base = "Unable to read version"
 
 
+class EnableManualFanControlError(DriverError):
+    message_base = "Unable to enable manual fan control"
+
+
+class EnableAutomaticFanControlError(DriverError):
+    message_base = "Unable to enable automatic fan control"
+
+
 class EnableMonitoringError(DriverError):
     message_base = "Unable to enable monitoring"
 

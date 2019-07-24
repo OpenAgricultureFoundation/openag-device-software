@@ -34,6 +34,26 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Initialize parser
         self.parser.add_argument("--version", action="store_true", help="read version")
         self.parser.add_argument(
+            "--enable-manual-fan-control", type=int, help="enable manual fan control"
+        )
+        self.parser.add_argument(
+            "--enable-automatic-fan-control",
+            type=int,
+            help="enable automatic fan control",
+        )
+        self.parser.add_argument(
+            "--write-thermal-zone-config",
+            type=int,
+            help="write thermal zone config",
+            nargs="+",
+        )
+        self.parser.add_argument(
+            "--write-thermal-zone-minimum-temperature",
+            type=int,
+            help="write thermal zone minimum temperature",
+            nargs="+",
+        )
+        self.parser.add_argument(
             "--enable-monitoring",
             action="store_true",
             help="enable temperature monitoring",
@@ -76,6 +96,31 @@ class DriverRunner(RunnerBase):  # type: ignore
         if self.args.version:
             self.driver.read_version()
 
+        # Check if enabling manual fan control
+        elif self.args.enable_manual_fan_control != None:
+            self.driver.enable_manual_fan_control(self.args.enable_manual_fan_control)
+
+        # Check if enabling automatic fan control
+        elif self.args.enable_automatic_fan_control != None:
+            self.driver.enable_automatic_fan_control(
+                self.args.enable_automatic_fan_control
+            )
+
+        # Check if writing thermal zone config
+        elif self.args.write_thermal_zone_config != None:
+            fan_id = self.args.write_thermal_zone_config[0]
+            if self.args.write_thermal_zone_config[1] == -1:
+                sensor_id = "max"
+            else:
+                sensor_id = self.args.write_thermal_zone_config[1]
+            self.driver.write_thermal_zone_config(fan_id, sensor_id)
+
+        # Check if writing thermal zone minimum temperature
+        elif self.args.write_thermal_zone_minimum_temperature != None:
+            fan_id = self.args.write_thermal_zone_minimum_temperature[0]
+            temperature = self.args.write_thermal_zone_minimum_temperature[1]
+            self.driver.write_thermal_zone_minimum_temperature(fan_id, temperature)
+
         # Check if enabling monitoring
         elif self.args.enable_monitoring:
             self.driver.enable_monitoring()
@@ -90,7 +135,7 @@ class DriverRunner(RunnerBase):  # type: ignore
 
         # Check if reading max temperature
         elif self.args.max_temperature:
-            self.driver.read_max_temperature()
+            self.driver.read_maximium_temperature()
 
         # Check if writing temperature limits
         elif self.args.write_temperature_limits:
