@@ -1,4 +1,4 @@
-Django==1.11.21
+Django==1.11.22
 pytest-cov==2.6.1
 mypy==0.600
 django-cors-headers==2.5.2

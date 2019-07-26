@@ -63,8 +63,14 @@ urlpatterns = [
     url(r"^robots\.txt", TemplateView.as_view(template_name="robots.txt", content_type='text/plain')), 
     url(r"^admin/", admin.site.urls),
     url(r"^api/", include(router.urls, namespace="api")),
+    #for Django 2.2.3
+    #url(r"^api/", include((router.urls, 'api'), namespace="api")),
     url(r"^accounts/login/$", auth_views.login, login_settings, name="login"),
+    #for Django 2.2.3
+    #url(r"^accounts/login/$", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
     url(r"^accounts/logout/$", auth_views.logout, {"next_page": "/"}, name="logout"),
+    #for Django 2.2.3
+    #url(r"^accounts/logout/$", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
     url(r"^password/$", views.change_password, name="change_password"),
     url(r"^dashboard/$", views.Dashboard.as_view(), name="dashboard"),
     url(r"^config/$", views.DeviceConfig.as_view(), name="device-config"),
