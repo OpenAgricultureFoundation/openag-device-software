@@ -61,13 +61,26 @@
                     "file_name": "controller_adt7470/setups/single_sensor_single_fan"
                 },
                 "variables": {
-                    "sensor": {
-                        "temperature": "heat_sink_temperature_celsius"
-                    },
-                    "actuator": {
-                        "fan": "heat_sink_cooling_fan_percent"
-                    }
+                  "sensor": null,
+                  "actuator": null
                 },
+                "sensors": [
+                  {
+                    "variable_name": "heat_sink_temperature_celsius",
+                    "sensor_id": 0
+                  }
+                ],
+                "actuators": [
+                  {
+                    "duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
+                    "fan_speed_name": "heat_sink_fan_speed_rpm",
+                    "fan_id": 0,
+                    "control_sensor_id": 0,
+                    "minimum_temperature": 0.0,
+                    "minimum_duty_cycle": 30.0,
+                    "maximum_duty_cycle": 100.0
+                  }
+                ],
                 "communication": {
                     "bus": 2, 
                     "mux": "0x77",

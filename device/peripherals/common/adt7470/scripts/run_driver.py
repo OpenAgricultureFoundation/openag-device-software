@@ -42,6 +42,13 @@ class DriverRunner(RunnerBase):  # type: ignore
             help="enable automatic fan control",
         )
         self.parser.add_argument(
+            "--write-current-duty-cycle",
+            type=int,
+            help="write current duty cycle for a fan",
+            nargs="+",
+        )
+        self.parser.add_argument("--read-fan-speed", type=int, help="read fan speed")
+        self.parser.add_argument(
             "--write-thermal-zone-config",
             type=int,
             help="write thermal zone config",
@@ -63,9 +70,9 @@ class DriverRunner(RunnerBase):  # type: ignore
             action="store_true",
             help="disable temperature monitoring",
         )
-        self.parser.add_argument("--temperature", type=int, help="read temperature")
+        self.parser.add_argument("--read-temperature", type=int, help="read temperature")
         self.parser.add_argument(
-            "--max-temperature", action="store_true", help="read max temperature"
+            "--read-maximum-temperature", action="store_true", help="read maximum temperature"
         )
         self.parser.add_argument(
             "--write-temperature-limits",
@@ -106,6 +113,16 @@ class DriverRunner(RunnerBase):  # type: ignore
                 self.args.enable_automatic_fan_control
             )
 
+        # Check if writing current duty cycle
+        elif self.args.write_current_duty_cycle != None:
+            fan_id = self.args.write_current_duty_cycle[0]
+            duty_cycle = self.args.write_current_duty_cycle[1]
+            self.driver.write_current_duty_cycle(fan_id, duty_cycle)
+
+        # Check if reading fan speed
+        elif self.args.read_fan_speed != None:
+            self.driver.read_fan_speed(self.args.read_fan_speed)
+
         # Check if writing thermal zone config
         elif self.args.write_thermal_zone_config != None:
             fan_id = self.args.write_thermal_zone_config[0]
@@ -130,12 +147,12 @@ class DriverRunner(RunnerBase):  # type: ignore
             self.driver.disable_monitoring()
 
         # Check if reading temperature
-        elif self.args.temperature != None:
-            self.driver.read_temperature(self.args.temperature)
+        elif self.args.read_temperature != None:
+            self.driver.read_temperature(self.args.read_temperature)
 
         # Check if reading max temperature
-        elif self.args.max_temperature:
-            self.driver.read_maximium_temperature()
+        elif self.args.read_maximum_temperature:
+            self.driver.read_maximum_temperature()
 
         # Check if writing temperature limits
         elif self.args.write_temperature_limits:
@@ -150,3 +167,11 @@ class DriverRunner(RunnerBase):  # type: ignore
 if __name__ == "__main__":
     driver_runner = DriverRunner()
     driver_runner.run()
+
+"""
+Fan Verification & Calibration
+1. enable-manual-fan-control <fan_id>
+2. write-current-duty-cycle <fan_id> 100
+3. read-fan-speed <fan_id>
+4. Repeat step 2 to find min & max duty cycles
+"""

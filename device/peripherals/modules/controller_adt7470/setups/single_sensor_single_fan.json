@@ -17,7 +17,8 @@
 		],
 		"actuators": [
 			{
-				"variable_name": "heat_sink_fan_percent",
+				"duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
+        "fan_speed_name": "heat_sink_fan_speed_rpm",
 				"fan_id": 0,
 				"control_sensor_id": 0,
 				"minimum_temperature": 40,
