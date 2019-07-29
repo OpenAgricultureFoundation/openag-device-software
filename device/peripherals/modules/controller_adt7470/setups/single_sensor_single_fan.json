@@ -7,7 +7,7 @@
 	"parameters": {
 		"variables": {
 			"sensor": null,
-			"actuator": null,
+			"actuator": null
 		},
 		"sensors": [
 			{
