@@ -1,226 +1,240 @@
- [
-    {
-        "key": "light_channel_output_percents",
-        "info": {
-            "name": {
-                "brief": "Light Outputs",
-                "verbose": "Light Channel Outputs"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "iot_indicator_led_status",
-        "info": {
-            "name": {
-                "brief": "IoT Indicator LED",
-                "verbose": "IoT Indicator LED"
-            },
-            "unit": {
-                "brief": "Status",
-                "verbose": "Status",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "peripheral_indicator_led_status",
-        "info": {
-            "name": {
-                "brief": "Peripheral Indicator LED",
-                "verbose": "Peripheral Indicator LED"
-            },
-            "unit": {
-                "brief": "Status",
-                "verbose": "Status",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "user_indicator_led_status",
-        "info": {
-            "name": {
-                "brief": "User Indicator LED",
-                "verbose": "User Indicator LED"
-            },
-            "unit": {
-                "brief": "Status",
-                "verbose": "Status",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_heater_percent",
-        "info": {
-            "name": {
-                "brief": "Air Heater",
-                "verbose": "Air Heater Output"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_heater_relay",
-        "info": {
-            "name": {
-                "brief": "Air Heater",
-                "verbose": "Air Heater Relay"
-            },
-            "unit": {
-                "brief": "On?",
-                "verbose": "On?",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "fan_relay",
-        "info": {
-            "name": {
-                "brief": "Fan",
-                "verbose": "Fan Relay"
-            },
-            "unit": {
-                "brief": "On?",
-                "verbose": "On?",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_chiller_percent",
-        "info": {
-            "name": {
-                "brief": "Air Chiller",
-                "verbose": "Air Chiller Output"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_chiller_relay",
-        "info": {
-            "name": {
-                "brief": "Air Chiller",
-                "verbose": "Air Chiller Relay"
-            },
-            "unit": {
-                "brief": "On?",
-                "verbose": "On?",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_humidifier_percent",
-        "info": {
-            "name": {
-                "brief": "Air Humidifier",
-                "verbose": "Air Humidifier Output"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_humidifier1_relay",
-        "info": {
-            "name": {
-                "brief": "Air Humidifier 1",
-                "verbose": "Air Humidifier 1 Relay"
-            },
-            "unit": {
-                "brief": "On?",
-                "verbose": "On?",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_humidifier2_relay",
-        "info": {
-            "name": {
-                "brief": "Air Humidifier 2",
-                "verbose": "Air Humidifier 2 Relay"
-            },
-            "unit": {
-                "brief": "On?",
-                "verbose": "On?",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "air_dehumidifier_percent",
-        "info": {
-            "name": {
-                "brief": "Air Dehumidifier",
-                "verbose": "Air Dehumidifier Output"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "water_aeration_pump_percent",
-        "info": {
-            "name": {
-                "brief": "Water Aeration Pump",
-                "verbose": "Water Aeration Pump Output"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-        "key": "heat_sink_fan_duty_cycle_percent",
-        "info": {
-            "name": {
-                "brief": "Heat Sink Fan Duty Cycle",
-                "verbose": "Heat Sink Fan Duty Cycle"
-            },
-            "unit": {
-                "brief": "%",
-                "verbose": "Percent",
-                "type": "object"
-            }
-        }
-    },
-    {
-      "key": "heat_sink_fan_speed_rpm",
-      "info": {
-          "name": {
-              "brief": "Heat Sink Fan Speed",
-              "verbose": "Heat Sink Fan Speed"
-          },
-          "unit": {
-              "brief": "RPM",
-              "verbose": "Revolutions per Minute",
-              "type": "object"
-          }
+[
+  {
+    "key": "light_channel_output_percents",
+    "info": {
+      "name": {
+        "brief": "Light Outputs",
+        "verbose": "Light Channel Outputs"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
       }
+    }
+  },
+  {
+    "key": "network_indicator_led_status",
+    "info": {
+      "name": {
+        "brief": "Network Indicator LED",
+        "verbose": "Network Indicator LED"
+      },
+      "unit": {
+        "brief": "Status",
+        "verbose": "Status",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "iot_indicator_led_status",
+    "info": {
+      "name": {
+        "brief": "IoT Indicator LED",
+        "verbose": "IoT Indicator LED"
+      },
+      "unit": {
+        "brief": "Status",
+        "verbose": "Status",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "peripheral_indicator_led_status",
+    "info": {
+      "name": {
+        "brief": "Peripheral Indicator LED",
+        "verbose": "Peripheral Indicator LED"
+      },
+      "unit": {
+        "brief": "Status",
+        "verbose": "Status",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "user_indicator_led_status",
+    "info": {
+      "name": {
+        "brief": "User Indicator LED",
+        "verbose": "User Indicator LED"
+      },
+      "unit": {
+        "brief": "Status",
+        "verbose": "Status",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_heater_percent",
+    "info": {
+      "name": {
+        "brief": "Air Heater",
+        "verbose": "Air Heater Output"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_heater_relay",
+    "info": {
+      "name": {
+        "brief": "Air Heater",
+        "verbose": "Air Heater Relay"
+      },
+      "unit": {
+        "brief": "On?",
+        "verbose": "On?",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "fan_relay",
+    "info": {
+      "name": {
+        "brief": "Fan",
+        "verbose": "Fan Relay"
+      },
+      "unit": {
+        "brief": "On?",
+        "verbose": "On?",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_chiller_percent",
+    "info": {
+      "name": {
+        "brief": "Air Chiller",
+        "verbose": "Air Chiller Output"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_chiller_relay",
+    "info": {
+      "name": {
+        "brief": "Air Chiller",
+        "verbose": "Air Chiller Relay"
+      },
+      "unit": {
+        "brief": "On?",
+        "verbose": "On?",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_humidifier_percent",
+    "info": {
+      "name": {
+        "brief": "Air Humidifier",
+        "verbose": "Air Humidifier Output"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_humidifier1_relay",
+    "info": {
+      "name": {
+        "brief": "Air Humidifier 1",
+        "verbose": "Air Humidifier 1 Relay"
+      },
+      "unit": {
+        "brief": "On?",
+        "verbose": "On?",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_humidifier2_relay",
+    "info": {
+      "name": {
+        "brief": "Air Humidifier 2",
+        "verbose": "Air Humidifier 2 Relay"
+      },
+      "unit": {
+        "brief": "On?",
+        "verbose": "On?",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "air_dehumidifier_percent",
+    "info": {
+      "name": {
+        "brief": "Air Dehumidifier",
+        "verbose": "Air Dehumidifier Output"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "water_aeration_pump_percent",
+    "info": {
+      "name": {
+        "brief": "Water Aeration Pump",
+        "verbose": "Water Aeration Pump Output"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "heat_sink_fan_duty_cycle_percent",
+    "info": {
+      "name": {
+        "brief": "Heat Sink Fan Duty Cycle",
+        "verbose": "Heat Sink Fan Duty Cycle"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "heat_sink_fan_speed_rpm",
+    "info": {
+      "name": {
+        "brief": "Heat Sink Fan Speed",
+        "verbose": "Heat Sink Fan Speed"
+      },
+      "unit": {
+        "brief": "RPM",
+        "verbose": "Revolutions per Minute",
+        "type": "object"
+      }
+    }
   }
 ]

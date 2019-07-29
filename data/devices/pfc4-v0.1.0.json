@@ -1,94 +1,117 @@
-{   
-    "format": "openag-standard-v1",
-    "name": "PFC4 v0.1.0",
-    "uuid": "8546ed97-857a-4a89-8593-1ee0b46149ac",
-    "peripherals": [
-        {
-            "name": "IndicatorLEDs",
-            "type": "IndicatorPCA9633",
-            "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
-            "parameters": {
-                "setup": {
-                    "name": "Triple RGB",
-                    "file_name": "indicator_pca9633/setups/triple_rgb"
-                },
-                "variables": {
-                    "sensor": null,
-                    "actuator": null
-                },
-                "communication": {
-                    "devices": [
-                        {
-                            "name": "Peripheral",
-                            "bus":  2,
-                            "address": "0x62"
-                        }
-                    ]
-                }
-            }
+{
+  "format": "openag-standard-v1",
+  "name": "PFC4 v0.1.0",
+  "uuid": "8546ed97-857a-4a89-8593-1ee0b46149ac",
+  "peripherals": [
+    {
+      "name": "IndicatorLEDs",
+      "type": "IndicatorPCA9633",
+      "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
+      "parameters": {
+        "setup": {
+          "name": "Triple RGB",
+          "file_name": "indicator_pca9633/setups/triple_rgb"
         },
-        {
-            "name": "WaterAerationPump",
-            "type": "ActuatorDAC5578",
-            "uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
-            "parameters": {
-                "setup": {
-                    "name": "Water Aeration Pump",
-                    "file_name": "actuator_dac5578/setups/water_aeration_pump"
-                },
-                "variables": {
-                    "sensor": null,
-                    "actuator": {
-                        "output_variable": "water_aeration_pump_percent"
-                    }
-                },
-                "communication": {
-                    "bus": "none", 
-                    "mux": "none", 
-                    "is_active_high": true,
-                    "address": "0x47",
-                    "port": 0
-                }
-            }
+        "variables": {
+          "sensor": null,
+          "actuator": null
         },
-        {
-            "name": "HeatSinkFanController",
-            "type": "ControllerADT7470",
-            "uuid": "b199a625-0df3-4883-ad6f-c46a5b6f9ba1",
-            "parameters": {
-                "setup": {
-                    "name": "Single Sensor Single Fan",
-                    "file_name": "controller_adt7470/setups/single_sensor_single_fan"
-                },
-                "variables": {
-                  "sensor": null,
-                  "actuator": null
-                },
-                "sensors": [
-                  {
-                    "variable_name": "heat_sink_temperature_celsius",
-                    "sensor_id": 0
-                  }
-                ],
-                "actuators": [
-                  {
-                    "duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
-                    "fan_speed_name": "heat_sink_fan_speed_rpm",
-                    "fan_id": 0,
-                    "control_sensor_id": 0,
-                    "minimum_temperature": 0.0,
-                    "minimum_duty_cycle": 30.0,
-                    "maximum_duty_cycle": 100.0
-                  }
-                ],
-                "communication": {
-                    "bus": 2, 
-                    "mux": "0x77",
-                    "channel": 1,
-                    "address": "0x2E"
-                }
+        "communication": {
+          "devices": [
+            {
+              "name": "NetworkLED",
+              "bus": 2,
+              "mux": "0x77",
+              "channel": 1,
+              "address": "0x62"
+            },
+            {
+              "name": "IoTLED",
+              "bus": 2,
+              "mux": "0x77",
+              "channel": 4,
+              "address": "0x62"
+            },
+            {
+              "name": "PeripheralLED",
+              "bus": 2,
+              "mux": "0x77",
+              "channel": 3,
+              "address": "0x62"
+            },
+            {
+              "name": "UserLED",
+              "bus": 2,
+              "mux": "0x77",
+              "channel": 2,
+              "address": "0x62"
             }
+          ]
         }
-    ],
-    "controllers": null
+      }
+    },
+    {
+      "name": "WaterAerationPump",
+      "type": "ActuatorDAC5578",
+      "uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
+      "parameters": {
+        "setup": {
+          "name": "Water Aeration Pump",
+          "file_name": "actuator_dac5578/setups/water_aeration_pump"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": {
+            "output_variable": "water_aeration_pump_percent"
+          }
+        },
+        "communication": {
+          "bus": "none",
+          "mux": "none",
+          "is_active_high": true,
+          "address": "0x47",
+          "port": 0
+        }
+      }
+    },
+    {
+      "name": "HeatSinkFanController",
+      "type": "ControllerADT7470",
+      "uuid": "b199a625-0df3-4883-ad6f-c46a5b6f9ba1",
+      "parameters": {
+        "setup": {
+          "name": "Single Sensor Single Fan",
+          "file_name": "controller_adt7470/setups/single_sensor_single_fan"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": null
+        },
+        "sensors": [
+          {
+            "variable_name": "heat_sink_temperature_celsius",
+            "sensor_id": 0
+          }
+        ],
+        "actuators": [
+          {
+            "duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
+            "fan_speed_name": "heat_sink_fan_speed_rpm",
+            "fan_id": 0,
+            "control_sensor_id": 0,
+            "minimum_temperature": 0.0,
+            "minimum_duty_cycle": 30.0,
+            "maximum_duty_cycle": 100.0
+          }
+        ],
+        "communication": {
+          "bus": 2,
+          "mux": "0x77",
+          "channel": 1,
+          "address": "0x2E"
+        }
+      }
+    }
+  ],
+  "controllers": null
 }
