@@ -21,3 +21,4 @@ pygame==1.9.4
 python-networkmanager
 picamera
 RPi.GPIO
+black==19.3b0
