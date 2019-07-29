@@ -81,7 +81,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
             # Set fan modes and limits
             for actuator in self.actuators:
                 # Setup manual fans
-                if actuator["control_sensor_id"] == None:
+                if actuator["control_sensor_id"] is None:
                     self.driver.enable_manual_fan_control(actuator["fan_id"])
 
                 # Setup automatic fans
