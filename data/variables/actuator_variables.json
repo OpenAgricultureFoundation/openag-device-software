@@ -196,11 +196,11 @@
         }
     },
     {
-        "key": "heat_sink_fan_percent",
+        "key": "heat_sink_fan_duty_cycle_percent",
         "info": {
             "name": {
-                "brief": "Heat Sink Fan",
-                "verbose": "Heat Sink Fan"
+                "brief": "Heat Sink Fan Duty Cycle",
+                "verbose": "Heat Sink Fan Duty Cycle"
             },
             "unit": {
                 "brief": "%",
@@ -208,5 +208,19 @@
                 "type": "object"
             }
         }
-    }
+    },
+    {
+      "key": "heat_sink_fan_speed_rpm",
+      "info": {
+          "name": {
+              "brief": "Heat Sink Fan Speed",
+              "verbose": "Heat Sink Fan Speed"
+          },
+          "unit": {
+              "brief": "RPM",
+              "verbose": "Revolutions per Minute",
+              "type": "object"
+          }
+      }
+  }
 ]
