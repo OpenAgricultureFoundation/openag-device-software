@@ -19,21 +19,21 @@
         "communication": {
           "devices": [
             {
-              "name": "NetworkLED",
+              "name": "PeripheralLED",
               "bus": 2,
               "mux": "0x77",
               "channel": 1,
               "address": "0x62"
             },
             {
-              "name": "IoTLED",
+              "name": "NetworkLED",
               "bus": 2,
               "mux": "0x77",
               "channel": 4,
               "address": "0x62"
             },
             {
-              "name": "PeripheralLED",
+              "name": "IoTLED",
               "bus": 2,
               "mux": "0x77",
               "channel": 3,

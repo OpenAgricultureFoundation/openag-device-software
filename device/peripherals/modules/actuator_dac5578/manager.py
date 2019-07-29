@@ -8,8 +8,8 @@ from typing import Optional, Tuple, Dict, Any
 from device.peripherals.classes.peripheral import manager, modes
 
 # Import manager elements
-from device.peripherals.common.dac5578 import driver
-from device.peripherals.modules.actuator_dac5578 import exceptions, events
+from device.peripherals.common.dac5578 import driver, exceptions
+from device.peripherals.modules.actuator_dac5578 import events
 
 
 class ActuatorDAC5578Manager(manager.PeripheralManager):
@@ -64,21 +64,21 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
         self.prev_update = 0  # timestamp
 
     @property
-    def desired_output(self) -> Optional[bool]:
+    def desired_output(self) -> Optional[float]:
         """Gets desired output value."""
         value = self.state.get_environment_desired_actuator_value(self.output_name)
         if value != None:
-            return bool(value)
+            return float(value)
         return None
 
     @property
-    def output(self) -> Optional[bool]:
+    def output(self) -> Optional[float]:
         """Gets reported output value."""
         value = self.state.get_peripheral_reported_actuator_value(
             self.name, self.output_name
         )
         if value != None:
-            return bool(value)
+            return float(value)
         return None
 
     @output.setter
@@ -100,6 +100,7 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
         self.health = 100.0
 
         # Initialize driver
+        self.logger.warning("Initializing driver")
         try:
             self.driver = driver.DAC5578Driver(
                 name=self.name,
@@ -112,13 +113,13 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
                 mux_simulator=self.mux_simulator,
             )
         except exceptions.DriverError as e:
-            self.logger.exception("Unable to initialize: {}".format(e))
+            self.logger.exception("Unable to ~~~initialize: {}".format(e))
             self.health = 0.0
             self.mode = modes.ERROR
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
-        self.logger.debug("Setting up peripheral")
+        self.logger.warning("Setting up peripheral")
         try:
             self.set_off()
         except exceptions.DriverError as e:
@@ -135,12 +136,12 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
 
             # Check if output is set to desired value
             elif self.desired_output != None and self.output != self.desired_output:
-                self.set_output(self.desired_output)
+                self.set_output(self.desired_output) # type: ignore
 
             # Check for heartbeat
             if time.time() - self.prev_update > self.heartbeat:
                 self.logger.debug("Sending heartbeat")
-                self.set_output(self.output)
+                self.set_output(self.output) # type: ignore
 
         except exceptions.DriverError as e:
             self.logger.exception("Unable to update peripheral: {}".format(e))
@@ -170,34 +171,34 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
 
     ##### HELPER FUNCTIONS ####################################################
 
-    def set_output(self, value: bool):
+    def set_output(self, value: float) -> None:
         """Sets output."""
-        if value:
+        if value > 50:
             self.set_on()
         else:
             self.set_off()
 
-    def set_on(self):
+    def set_on(self) -> None:
         """Sets driver on."""
         self.logger.debug("Setting on")
         if self.is_active_high:
             self.driver.set_high(self.port)
         else:
             self.driver.set_low(self.port)
-        self.output = True
+        self.output = 100.0
         self.health = 100.0
-        self.prev_update = time.time()
+        self.prev_update = int(time.time())
 
-    def set_off(self):
+    def set_off(self) -> None:
         """Sets driver off."""
         self.logger.debug("Setting off")
         if self.is_active_high:
             self.driver.set_low(self.port)
         else:
             self.driver.set_high(self.port)
-        self.output = False
+        self.output = 0
         self.health = 100.0
-        self.prev_update = time.time()
+        self.prev_update = int(time.time())
 
     ##### EVENT FUNCTIONS #####################################################
 
