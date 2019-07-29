@@ -85,7 +85,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
     def peripheral_indicator_led_status(self) -> Optional[str]:
         """Gets reported output value."""
         value = self.state.get_peripheral_reported_actuator_value(
-            self.name, "iot_indicator_led_status"
+            self.name, "peripheral_indicator_led_status"
         )
         if value != None:
             return value
@@ -273,15 +273,17 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
 
         # Update indicator led output
         if healthy:
-            if self.iot_indicator_led_status != "Green":
+            if self.peripheral_indicator_led_status != "Green":
                 driver.set_rgb([0, 32, 0])
-                self.iot_indicator_led_status = "Green"
+                self.peripheral_indicator_led_status = "Green"
         else:
-            if self.iot_indicator_led_status != "Red":
+            if self.peripheral_indicator_led_status != "Red":
                 driver.set_rgb([32, 0, 0])
-                self.iot_indicator_led_status = "Red"
+                self.peripheral_indicator_led_status = "Red"
 
     def update_user_led(self, driver: driver.PCA9633Driver) -> None:
         """Updates user led indicator and status."""
-        driver.set_rgb([0, 32, 0])
-        self.iot_indicator_led_status = "Green"
+        if self.user_indicator_led_status != "Green":
+          driver.set_rgb([0, 32, 0])
+          self.user_indicator_led_status = "Green"
+
