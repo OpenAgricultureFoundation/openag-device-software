@@ -102,7 +102,7 @@ class AtlasDODriver(driver.AtlasDriver):
         """Enables DO mg/L output."""
         self.logger.info("Enabling DO mg/L output")
         try:
-            self.process_command("O,mg,1", process_seconds=0.3, retry=retry)
+            self.process_command("O,mg,1", process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.EnableMgLOutputError(logger=self.logger) from e
 
@@ -110,7 +110,7 @@ class AtlasDODriver(driver.AtlasDriver):
         """Disables DO mg/L output."""
         self.logger.info("Disabling DO mg/L output")
         try:
-            self.process_command("O,mg,0", process_seconds=0.3, retry=retry)
+            self.process_command("O,mg,0", process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.DisableMgLOutputError(logger=self.logger) from e
 
@@ -118,7 +118,7 @@ class AtlasDODriver(driver.AtlasDriver):
         """Enables precent saturation output."""
         self.logger.info("Enabling percent saturation output")
         try:
-            self.process_command("O,%,1", process_seconds=0.3, retry=retry)
+            self.process_command("O,%,1", process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.EnablePercentSaturationOutputError(
                 logger=self.logger
@@ -128,7 +128,7 @@ class AtlasDODriver(driver.AtlasDriver):
         """Disables percent saturation output."""
         self.logger.info("Disabling percent saturation output")
         try:
-            self.process_command("O,%,0", process_seconds=0.3, retry=retry)
+            self.process_command("O,%,0", process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.DisablePercentSaturationOutputError(
                 logger=self.logger
@@ -144,7 +144,7 @@ class AtlasDODriver(driver.AtlasDriver):
 
         # Send command
         try:
-            self.process_command(command, process_seconds=0.3, retry=retry)
+            self.process_command(command, process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.SetCompensationECError(logger=self.logger) from e
 
@@ -153,6 +153,6 @@ class AtlasDODriver(driver.AtlasDriver):
         self.logger.info("Setting compensation pressure")
         try:
             command = "P,{}".format(value)
-            self.process_command(command, process_seconds=0.3, retry=retry)
+            self.process_command(command, process_seconds=0.6, retry=retry)
         except Exception as e:
             raise exceptions.SetCompensationPressureError(logger=self.logger) from e
