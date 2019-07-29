@@ -39,7 +39,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 						self.state.set_environment_desired_sensor_value(variable_name, value)
 
 		# Set default sampling interval
-		self.default_sampling_interval = 3  # seconds
+		self.default_sampling_interval = 60  # seconds
 		self.prev_update = 0  # timestamp
 
 	def set_sensor(self, name: str, value: Any) -> None:
