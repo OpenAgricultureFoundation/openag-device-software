@@ -11,7 +11,6 @@ from device.peripherals.classes.peripheral import manager, modes
 from device.peripherals.common.pca9633 import driver
 from device.peripherals.modules.indicator_pca9633 import exceptions, events
 
-
 class IndicatorPCA9633Manager(manager.PeripheralManager):
     """Manages a set of indicator leds controlled by a pca9633 led driver."""
 
@@ -265,14 +264,27 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
     def update_peripheral_led(self, driver: driver.PCA9633Driver) -> None:
         """Updates peripheral led indicator and status."""
 
-        # Check if all peripherals are healthy
+        # Check if all peripherals are setup and healthy
         healthy = True
+        setup = True
         for _, peripheral in self.state.peripherals.items():
-            if peripheral["health"] < 100:
+
+            # Check mode
+            mode = peripheral.get("mode")
+            if mode == modes.INIT or mode == modes.SETUP:
+              setup = False
+
+            # Check health
+            health = peripheral.get("health")
+            if health < 100:
                 healthy = False
 
         # Update indicator led output
-        if healthy:
+        if not setup:
+          if self.peripheral_indicator_led_status != "Yellow":
+                driver.set_rgb([32, 32, 0])
+                self.peripheral_indicator_led_status = "Yellow"
+        elif healthy:
             if self.peripheral_indicator_led_status != "Green":
                 driver.set_rgb([0, 32, 0])
                 self.peripheral_indicator_led_status = "Green"

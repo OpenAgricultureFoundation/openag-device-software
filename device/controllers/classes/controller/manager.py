@@ -5,7 +5,7 @@ import json, time
 from typing import Optional, Tuple, Dict, Any
 
 # Import state machine parent class
-from device.utilities.statemachine import manager, modes
+from device.utilities.statemachine import manager
 
 # Import device utilities
 from device.utilities import logger
