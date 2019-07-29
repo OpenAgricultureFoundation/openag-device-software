@@ -139,30 +139,31 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
         # Initialize drivers
         self.drivers : List[driver.PCA9633Driver] = []
         devices = self.communication.get("devices", [])
-        for device in devices:
-            try:
-                # Initialize driver optional mux parameter
-                mux = device.get("mux", None)
-                if mux != None:
-                    mux = int(mux, 16)
+        with self.i2c_lock:
+          for device in devices:
+              try:
+                  # Initialize driver optional mux parameter
+                  mux = device.get("mux", None)
+                  if mux != None:
+                      mux = int(mux, 16)
 
-                # Initialize driver
-                self.drivers.append(
-                    driver.PCA9633Driver(
-                        name=device.get("name", "Default"),
-                        i2c_lock=self.i2c_lock,
-                        bus=device["bus"],
-                        mux=mux,
-                        channel=device.get("channel", None),
-                        address=int(device["address"], 16),
-                        simulate=self.simulate,
-                        mux_simulator=self.mux_simulator,
-                    )
-                )
-            except exceptions.DriverError as e:
-                self.logger.exception("Unable to initialize: {}".format(e))
-                self.health = 0.0
-                self.mode = modes.ERROR
+                  # Initialize driver
+                  self.drivers.append(
+                      driver.PCA9633Driver(
+                          name=device.get("name", "Default"),
+                          i2c_lock=self.i2c_lock,
+                          bus=device["bus"],
+                          mux=mux,
+                          channel=device.get("channel", None),
+                          address=int(device["address"], 16),
+                          simulate=self.simulate,
+                          mux_simulator=self.mux_simulator,
+                      )
+                  )
+              except exceptions.DriverError as e:
+                  self.logger.exception("Unable to initialize: {}".format(e))
+                  self.health = 0.0
+                  self.mode = modes.ERROR
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
@@ -273,6 +274,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
             mode = peripheral.get("mode")
             if mode == modes.INIT or mode == modes.SETUP:
               setup = False
+              break
 
             # Check health
             health = peripheral.get("health")

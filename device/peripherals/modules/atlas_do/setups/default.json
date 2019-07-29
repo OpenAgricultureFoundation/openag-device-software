@@ -1,120 +1,128 @@
 {
-	"name":  "Atlas Dissolved Oxygen Sensor Default",
-	"version": "1",
-	"uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
-	"module_name": "atlas_do.manager",
-	"class_name": "AtlasDO",
-	"parameters": {
-		"variables": {
-			"sensor": {
-				"dissolved_oxygen_mg_l": {
-					"name": {
-                        "type": "string",
-                        "default": "water_electrical_conductivity_ms_cm"
-                    }
-				}
-			},
-			"actuator": null
-		},	
-		"communication": {
-            "bus": {
-                "type": "integer",
-                "default": 2
-            },
-            "mux": {
-                "type": "string",
-                "default": "0x77"
-            },
-            "channel": {
-                "type": "integer",
-                "default": 1
-            },
-            "address": {
-                "type": "string",
-                "default": "0x61"
-            }
+  "name": "Atlas Dissolved Oxygen Sensor Default",
+  "version": "1",
+  "uuid": "10361e2a-2639-406d-bd2a-59cebd7b067e",
+  "module_name": "atlas_do.manager",
+  "class_name": "AtlasDOManager",
+  "parameters": {
+    "variables": {
+      "sensor": {
+        "dissolved_oxygen_mg_l": {
+          "name": {
+            "type": "string",
+            "default": "water_electrical_conductivity_ms_cm"
+          }
         }
-	},
-	"events": [
-	    {
-	        "name": "Reset",
-	        "description": "Reset sensor mode.",
-	        "value": null,
-	        "sequence": null
-	    },
-	    {
-	        "name": "Shutdown",
-	        "description": "Shutdown sensor.",
-	        "value": null,
-	        "sequence": null
-	    },
-	    {
-	        "name": "Set Sampling Interval",
-	        "description": "Sets sampling interval.",
-	        "value": {
-	            "default": 10,
-	            "unit": "Seconds"
-	        },
-	        "sequence": null
-	    }
-	],
-	"info": {
-		"variables": {
-			"sensor":{
-				"dissolved_oxygen_mg_l": {
-					"units": "mg/l",
-					"range": [0.01, 100],
-			        "accuracy": {
-			            "value": 0.05
-			        },
-			        "response_time_seconds": 1
-				}
-			},
-			"actuator": null
-		},
-		"communication": [
-		    {
-		        "type": "I2C",
-		        "default_address_hex": "0x61",
-		        "clock_speed_range_hertz": [100, 400] 
-		    },
-		    {
-		        "type": "UART"
-		    }
-		],
-		"power": [
-		    {
-		        "voltage_volts": 3.3,
-		        "current_consumption_milliamps": {
-		            "max": 12.1,
-		            "standby": 12,
-		            "sleep": 0.3
-		        }
-		    },
-		    {
-		        "voltage_volts": 5,
-		        "current_consumption_milliamps": {
-		            "max": 13.5,
-		            "standby": 13.1,
-		            "sleep": 0.66
-		        }
-		    }
-		],
-		"operating_conditions": {
-		    "max_pressure_psi": 500,
-		    "max_depth_meters": 1125,
-		    "temperature_range_celsius": [1, 50],
-		    "recalibration_interval_years": 1,
-		    "life_expectancy_years": 5
-		},
-		"purchase_links": [
-			"https://www.atlas-scientific.com/product_pages/circuits/ezo_do.html",
-			"https://www.atlas-scientific.com/product_pages/probes/do_probe.html"
-		],
-		"datasheet_links": [
-			"https://www.atlas-scientific.com/_files/_datasheets/_circuit/DO_EZO_Datasheet.pdf",
-			"https://www.atlas-scientific.com/_files/_datasheets/_probe/DO_probe.pdf"
-		]
-
-	}
+      },
+      "actuator": null
+    },
+    "communication": {
+      "bus": {
+        "type": "integer",
+        "default": 2
+      },
+      "mux": {
+        "type": "string",
+        "default": "0x77"
+      },
+      "channel": {
+        "type": "integer",
+        "default": 1
+      },
+      "address": {
+        "type": "string",
+        "default": "0x61"
+      }
+    }
+  },
+  "events": [
+    {
+      "name": "Reset",
+      "description": "Reset sensor mode.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Shutdown",
+      "description": "Shutdown sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Set Sampling Interval",
+      "description": "Sets sampling interval.",
+      "value": {
+        "default": 10,
+        "unit": "Seconds"
+      },
+      "sequence": null
+    }
+  ],
+  "info": {
+    "variables": {
+      "sensor": {
+        "dissolved_oxygen_mg_l": {
+          "units": "mg/l",
+          "range": [
+            0.01,
+            100
+          ],
+          "accuracy": {
+            "value": 0.05
+          },
+          "response_time_seconds": 1
+        }
+      },
+      "actuator": null
+    },
+    "communication": [
+      {
+        "type": "I2C",
+        "default_address_hex": "0x61",
+        "clock_speed_range_hertz": [
+          100,
+          400
+        ]
+      },
+      {
+        "type": "UART"
+      }
+    ],
+    "power": [
+      {
+        "voltage_volts": 3.3,
+        "current_consumption_milliamps": {
+          "max": 12.1,
+          "standby": 12,
+          "sleep": 0.3
+        }
+      },
+      {
+        "voltage_volts": 5,
+        "current_consumption_milliamps": {
+          "max": 13.5,
+          "standby": 13.1,
+          "sleep": 0.66
+        }
+      }
+    ],
+    "operating_conditions": {
+      "max_pressure_psi": 500,
+      "max_depth_meters": 1125,
+      "temperature_range_celsius": [
+        1,
+        50
+      ],
+      "recalibration_interval_years": 1,
+      "life_expectancy_years": 5
+    },
+    "purchase_links": [
+      "https://www.atlas-scientific.com/product_pages/circuits/ezo_do.html",
+      "https://www.atlas-scientific.com/product_pages/probes/do_probe.html"
+    ],
+    "datasheet_links": [
+      "https://www.atlas-scientific.com/_files/_datasheets/_circuit/DO_EZO_Datasheet.pdf",
+      "https://www.atlas-scientific.com/_files/_datasheets/_probe/DO_probe.pdf"
+    ]
+  }
 }

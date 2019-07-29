@@ -3,7 +3,8 @@ from typing import Optional, Tuple, Dict, Any
 
 # Import manager elements
 from device.peripherals.classes.peripheral import manager, modes
-from device.peripherals.modules.atlas_do import driver, exceptions
+from device.peripherals.classes.atlas import exceptions
+from device.peripherals.modules.atlas_do import driver
 
 
 class AtlasDOManager(manager.PeripheralManager):
