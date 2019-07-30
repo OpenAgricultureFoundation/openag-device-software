@@ -16,7 +16,7 @@ from device.peripherals.modules.actuator_pcf8574.manager import IndicatorPCA9633
 
 # Load test config
 CONFIG_PATH = (
-    ROOT_DIR + "/device/peripherals/modules/indicator_pca9633/tests/config.json"
+    ROOT_DIR + "/device/peripherals/modules/actuator_pca9633/tests/config.json"
 )
 device_config = json.load(open(CONFIG_PATH))
 peripheral_config = accessors.get_peripheral_config(

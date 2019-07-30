@@ -10,7 +10,7 @@
       "parameters": {
         "setup": {
           "name": "Triple RGB",
-          "file_name": "indicator_pca9633/setups/triple_rgb"
+          "file_name": "actuator_pca9633/setups/triple_rgb"
         },
         "variables": {
           "sensor": null,
@@ -132,6 +132,29 @@
           "mux": "default",
           "channel": 6,
           "address": "0x63"
+        }
+      }
+    },
+    {
+      "name": "AtlasTemp-Reservoir",
+      "type": "AtlasTemp",
+      "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+      "parameters": {
+        "setup": {
+          "name": "Atlas Temperature Sensor Default",
+          "file_name": "atlas_temp/setups/default"
+        },
+        "variables": {
+          "sensor": {
+            "temperature": "water_temperature_celsius"
+          },
+          "actuator": null
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 6,
+          "address": "0x66"
         }
       }
     },
