@@ -93,7 +93,7 @@ class DriverRunner(RunnerBase):  # type: ignore
 
         # Check if setting up sensor
         elif self.args.setup:
-            print(self.driver.setup())
+            self.driver.setup()
 
         # Check if enabling protocol lock
         elif self.args.enable_plock:

@@ -7,7 +7,7 @@
             "parameters": {
                 "setup": {
                     "name": "Triple RGB",
-                    "file_name": "indicator_pca9633/setups/triple_rgb"
+                    "file_name": "actuator_pca9633/setups/triple_rgb"
                 },
                 "variables": {
                     "sensor": null,

@@ -24,10 +24,10 @@ class DriverRunner(AtlasDriverRunner):
     Driver = AtlasDODriver
 
     # Initialize defaults
-    default_device = "unspecified"  # TODO: build a config that uses a DO sensor
+    default_device = "pfc4-v0.1.0"
     default_name = "AtlasDO-Reservoir"
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
 
         # Initialize parent class
@@ -36,7 +36,7 @@ class DriverRunner(AtlasDriverRunner):
         # Initialize parser
         self.parser.add_argument("--do", action="store_true", help="read DO")
 
-    def run(self, *args: Any, **kwargs: Any):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
 
         # Run parent class

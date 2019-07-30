@@ -9,7 +9,7 @@ from device.peripherals.classes.peripheral import manager, modes
 
 # Import manager elements
 from device.peripherals.common.adt7470 import driver
-from device.peripherals.modules.indicator_pca9633 import exceptions, events
+from device.peripherals.modules.actuator_pca9633 import exceptions, events
 
 
 class ControllerADT7470Manager(manager.PeripheralManager):
