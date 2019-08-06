@@ -208,8 +208,8 @@
             "fan_speed_name": "heat_sink_fan_speed_rpm",
             "fan_id": 0,
             "control_sensor_id": 0,
-            "minimum_temperature": 0.0,
-            "minimum_duty_cycle": 5.0,
+            "minimum_temperature": 50.0,
+            "minimum_duty_cycle": 10.0,
             "maximum_duty_cycle": 100.0,
             "drive_frequency_mode": "low"
           }

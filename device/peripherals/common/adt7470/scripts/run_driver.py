@@ -42,6 +42,18 @@ class DriverRunner(RunnerBase):  # type: ignore
             help="enable automatic fan control",
         )
         self.parser.add_argument(
+            "--write-minimum-duty-cycle",
+            type=int,
+            help="write minimum duty cycle for a fan",
+            nargs="+",
+        )
+        self.parser.add_argument(
+            "--write-maximum-duty-cycle",
+            type=int,
+            help="write maximum duty cycle for a fan",
+            nargs="+",
+        )
+        self.parser.add_argument(
             "--write-current-duty-cycle",
             type=int,
             help="write current duty cycle for a fan",
@@ -54,6 +66,7 @@ class DriverRunner(RunnerBase):  # type: ignore
             nargs="+",
         )
         self.parser.add_argument("--read-fan-speed", type=int, help="read fan speed")
+        self.parser.add_argument("--read-current-duty-cycle", type=int, help="read current duty cycle")
         self.parser.add_argument(
             "--write-thermal-zone-config",
             type=int,
@@ -132,7 +145,19 @@ class DriverRunner(RunnerBase):  # type: ignore
             self.driver.enable_automatic_fan_control(
                 self.args.enable_automatic_fan_control
             )
-
+        
+        # Check if writing minimum duty cycle
+        elif self.args.write_minimum_duty_cycle != None:
+            fan_id = self.args.write_minimum_duty_cycle[0]
+            duty_cycle = self.args.write_minimum_duty_cycle[1]
+            self.driver.write_minimum_duty_cycle(fan_id, duty_cycle)
+        
+        # Check if writing maximum duty cycle
+        elif self.args.write_maximum_duty_cycle != None:
+            fan_id = self.args.write_maximum_duty_cycle[0]
+            duty_cycle = self.args.write_maximum_duty_cycle[1]
+            self.driver.write_maximum_duty_cycle(fan_id, duty_cycle)
+        
         # Check if writing current duty cycle
         elif self.args.write_current_duty_cycle != None:
             fan_id = self.args.write_current_duty_cycle[0]
@@ -148,6 +173,10 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Check if reading fan speed
         elif self.args.read_fan_speed != None:
             self.driver.read_fan_speed(self.args.read_fan_speed)
+        
+        # Check if reading duty cycle
+        elif self.args.read_current_duty_cycle != None:
+            self.driver.read_current_duty_cycle(self.args.read_current_duty_cycle)
 
         # Check if writing thermal zone config
         elif self.args.write_thermal_zone_config != None:
