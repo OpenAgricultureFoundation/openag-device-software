@@ -392,13 +392,16 @@ class ADT7470Driver:
             try:
                 low_address = TACHOMETER_BASE_REGISTER + 2 * fan_id
                 high_address = low_address + 1
-                tachometer_low_byte = self.i2c.read_register(low_address) # low byte must be read first
-                tachometer_high_byte = self.i2c.read_register(high_address) # high byte freezes when low byte read
+                low_byte = self.i2c.read_register(low_address) # low byte must be read first
+                high_byte = self.i2c.read_register(high_address) # high byte freezes when low byte read
+                tachometer_word = (high_byte << 8) + low_byte
+                self.logger.debug("{}: {}".format(hex(low_address), hex(low_byte)))
+                self.logger.debug("{}: {}".format(hex(high_address), hex(high_byte)))
+                self.logger.debug("Word: {}".format(hex(tachometer_word)))
             except I2CError as e:
                 raise exceptions.ReadTachometerError(logger=self.logger) from e
 
         # Convert bytes to float
-        tachometer_word = (tachometer_high_byte << 8) + tachometer_low_byte
         fan_speed_rpm = round(90000 * 60 / tachometer_word, 1)
         self.logger.debug('Fan Speed: {} RPM'.format(fan_speed_rpm))
         return fan_speed_rpm

@@ -178,7 +178,7 @@
           "mux": "0x77",
           "channel": 3,
           "address": "0x47",
-          "port": 0,
+          "port": 1,
           "is_active_high": true
         }
       }
