@@ -47,6 +47,12 @@ class DriverRunner(RunnerBase):  # type: ignore
             help="write current duty cycle for a fan",
             nargs="+",
         )
+        self.parser.add_argument(
+            "--write-fan-pulses-per-revolution",
+            type=int,
+            help="write the number of fan pulses per revolution",
+            nargs="+",
+        )
         self.parser.add_argument("--read-fan-speed", type=int, help="read fan speed")
         self.parser.add_argument(
             "--write-thermal-zone-config",
@@ -70,9 +76,23 @@ class DriverRunner(RunnerBase):  # type: ignore
             action="store_true",
             help="disable temperature monitoring",
         )
-        self.parser.add_argument("--read-temperature", type=int, help="read temperature")
         self.parser.add_argument(
-            "--read-maximum-temperature", action="store_true", help="read maximum temperature"
+            "--enable-high-frequency-fan-drive",
+            action="store_true",
+            help="enable high frequency fan drive",
+        )
+        self.parser.add_argument(
+            "--enable-low-frequency-fan-drive",
+            action="store_true",
+            help="enable low frequency fan drive",
+        )
+        self.parser.add_argument(
+            "--read-temperature", type=int, help="read temperature"
+        )
+        self.parser.add_argument(
+            "--read-maximum-temperature",
+            action="store_true",
+            help="read maximum temperature",
         )
         self.parser.add_argument(
             "--write-temperature-limits",
@@ -119,6 +139,12 @@ class DriverRunner(RunnerBase):  # type: ignore
             duty_cycle = self.args.write_current_duty_cycle[1]
             self.driver.write_current_duty_cycle(fan_id, duty_cycle)
 
+        # Check if writing fan pulses per revolution
+        elif self.args.write_fan_pulses_per_revolution != None:
+            fan_id = self.args.write_fan_pulses_per_revolution[0]
+            pulses_per_revolution = self.args.write_fan_pulses_per_revolution[1]
+            self.driver.write_fan_pulses_per_revolution(fan_id, pulses_per_revolution)
+
         # Check if reading fan speed
         elif self.args.read_fan_speed != None:
             self.driver.read_fan_speed(self.args.read_fan_speed)
@@ -157,6 +183,14 @@ class DriverRunner(RunnerBase):  # type: ignore
         # Check if writing temperature limits
         elif self.args.write_temperature_limits:
             self.driver.write_temperature_limits(0, 0, 40)
+
+        # Check if enabling high frequency fan drive
+        elif self.args.enable_high_frequency_fan_drive:
+            self.driver.enable_high_frequency_fan_drive()
+
+        # Check if enabling low frequency fan drive
+        elif self.args.enable_low_frequency_fan_drive:
+            self.driver.enable_low_frequency_fan_drive()
 
         # Check if shutting down
         elif self.args.shutdown:

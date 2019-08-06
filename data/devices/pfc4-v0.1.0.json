@@ -209,8 +209,9 @@
             "fan_id": 0,
             "control_sensor_id": 0,
             "minimum_temperature": 0.0,
-            "minimum_duty_cycle": 30.0,
-            "maximum_duty_cycle": 100.0
+            "minimum_duty_cycle": 5.0,
+            "maximum_duty_cycle": 100.0,
+            "drive_frequency_mode": "low"
           }
         ],
         "communication": {

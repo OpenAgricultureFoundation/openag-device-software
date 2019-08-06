@@ -33,6 +33,7 @@ PWM_CURRENT_DUTY_CYCLE_BASE_REGISTER = 0x32
 THERMAL_ZONE_CONFIG_BASE_REGISTER = 0x7C
 THERMAL_ZONE_MINIMUM_TEMPERATURE_BASE_REGISTER = 0x6E
 TACHOMETER_BASE_REGISTER = 0x2A
+FAN_PULSES_PER_REVOLUTION_REGISTER = 0x43
 
 
 class ADT7470Driver:
@@ -301,6 +302,36 @@ class ADT7470Driver:
             except I2CError as e:
                 raise exceptions.WriteCurrentDutyCycleError(logger=self.logger) from e
 
+    def write_fan_pulses_per_revolution(
+        self, fan_id: int, pulses_per_revolution: int
+    ) -> None:
+        """Writes the number of fan pulses per revolution for a fan."""
+
+        # Validate fan id
+        if fan_id < 0 or fan_id > 3:
+            raise ValueError("Fan id must be a value between 0-3")
+
+        # Validate duty cycle
+        if pulses_per_revolution < 1 or pulses_per_revolution > 4:
+            raise ValueError("Pulses per revolution must be a value between 1-4")
+
+        # Read then write fan pulses register
+        with self.i2c_lock:
+            try:
+                register_address = FAN_PULSES_PER_REVOLUTION_REGISTER
+                register_byte = self.i2c.read_register(register_address)
+                mask = 0xFF - (0x3 << (fan_id * 2))
+                register_byte &= mask  # clear old value
+                print("ppr: {}".format(pulses_per_revolution))
+                register_byte |= (pulses_per_revolution - 1) << (
+                    fan_id * 2
+                )  # set new value
+                self.i2c.write_register(register_address, register_byte)
+            except I2CError as e:
+                raise exceptions.WriteFanPulsesPerRevolutionError(
+                    logger=self.logger
+                ) from e
+
     def enable_monitoring(self, retry: bool = True) -> None:
         """Enables temperature monitoring."""
         self.logger.debug("Enabling monitoring")
@@ -326,6 +357,33 @@ class ADT7470Driver:
                 self.i2c.write_register(CONFIG_REGISTER_1, register_byte)
             except I2CError as e:
                 raise exceptions.DisableMonitoringError(logger=self.logger) from e
+
+    def enable_high_frequency_fan_drive(self, retry: bool = True) -> None:
+        """Enables high frequency fan drive."""
+        self.logger.debug("Enabling high frequency fan drive")
+
+        # Enable monitoring
+        with self.i2c_lock:
+            try:
+                register_byte = self.i2c.read_register(CONFIG_REGISTER_1)
+                register_byte &= 0xBF
+                self.i2c.write_register(CONFIG_REGISTER_1, register_byte)
+            except I2CError as e:
+                raise exceptions.EnableHighFrequencyFanDriveError(logger=self.logger) from e
+
+    def enable_low_frequency_fan_drive(self, retry: bool = True) -> None:
+        """Enables low frequency fan drive."""
+        self.logger.debug("Enabling low frequency fan drive")
+
+        # Enable monitoring
+        with self.i2c_lock:
+            try:
+                register_byte = self.i2c.read_register(CONFIG_REGISTER_1)
+                register_byte |= 0x40
+                self.logger.debug('reg_byte: {}'.format(hex(register_byte)))
+                self.i2c.write_register(CONFIG_REGISTER_1, register_byte)
+            except I2CError as e:
+                raise exceptions.EnableLowFrequencyFanDriveError(logger=self.logger) from e
 
     def read_temperature(self, sensor_id: int, retry: bool = True) -> float:
         """Reads a temperature sensor."""
@@ -367,11 +425,13 @@ class ADT7470Driver:
         self.logger.debug("Reading maximum temperature")
 
         with self.i2c_lock:
-          try:
-            # Read max temperature
-            max_temperature_byte = self.i2c.read_register(MAXIMUM_TEMPERATURE_REGISTER)
-          except I2CError as e:
-              raise exceptions.ReadMaximumTemperatureError(logger=self.logger) from e
+            try:
+                # Read max temperature
+                max_temperature_byte = self.i2c.read_register(
+                    MAXIMUM_TEMPERATURE_REGISTER
+                )
+            except I2CError as e:
+                raise exceptions.ReadMaximumTemperatureError(logger=self.logger) from e
 
         # Convert temperature byte to float
         if max_temperature_byte > 127:
@@ -392,8 +452,12 @@ class ADT7470Driver:
             try:
                 low_address = TACHOMETER_BASE_REGISTER + 2 * fan_id
                 high_address = low_address + 1
-                low_byte = self.i2c.read_register(low_address) # low byte must be read first
-                high_byte = self.i2c.read_register(high_address) # high byte freezes when low byte read
+                low_byte = self.i2c.read_register(
+                    low_address
+                )  # low byte must be read first
+                high_byte = self.i2c.read_register(
+                    high_address
+                )  # high byte freezes when low byte read
                 tachometer_word = (high_byte << 8) + low_byte
                 self.logger.debug("{}: {}".format(hex(low_address), hex(low_byte)))
                 self.logger.debug("{}: {}".format(hex(high_address), hex(high_byte)))
@@ -402,8 +466,11 @@ class ADT7470Driver:
                 raise exceptions.ReadTachometerError(logger=self.logger) from e
 
         # Convert bytes to float
-        fan_speed_rpm = round(90000 * 60 / tachometer_word, 1)
-        self.logger.debug('Fan Speed: {} RPM'.format(fan_speed_rpm))
+        if tachometer_word == 0xFFFF:
+            fan_speed_rpm = 0.0
+        else:
+            fan_speed_rpm = round(90000 * 60 / tachometer_word, 1)
+        self.logger.debug("Fan Speed: {} RPM".format(fan_speed_rpm))
         return fan_speed_rpm
 
     def shutdown(self, retry: bool = True) -> None:
