@@ -89,6 +89,45 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
         self.logger.debug("Setting up peripheral")
         try:
+            # Set drive mode
+            if len(self.actuators) > 0:
+                actuator = self.actuators[0]
+                drive_frequency_mode = actuator.get("drive_frequency_mode")
+                if drive_frequency_mode == "low":
+                    self.driver.enable_low_frequency_fan_drive()
+                else:
+                    self.driver.enable_high_frequency_fan_drive()
+
+            # Turn on tach enabled fans
+            for actuator in self.actuators:
+                fan_id = actuator.get("fan_id")
+                tachometer_enabled = actuator.get("tachometer_enabled")
+                if tachometer_enabled:
+                    self.driver.enable_manual_fan_control(fan_id)
+                    self.driver.write_current_duty_cycle(fan_id, 100)
+
+            # Enable monitoring
+            self.driver.enable_monitoring()
+
+            # Wait 5 seconds for fans to turn on
+            time.sleep(5)
+
+            # Verify fans with tachs work
+            for actuator in self.actuators:
+                fan_id = actuator.get("fan_id")
+                tachometer_enabled = actuator.get("tachometer_enabled")
+                if tachometer_enabled:
+                    fan_speed = self.driver.read_fan_speed(fan_id)
+                    self.logger.debug("Fan {}: Speed: {} RPM".format(fan_id, fan_speed))
+                    if fan_speed == 0:
+                        self.logger.error("Unable to verify fan {} is functional".format(fan_id))
+                        if len(self.actuators) > 1:
+                          self.health = 60.0
+                        else:
+                          self.health = 0.0
+                          self.mode = modes.ERROR
+                          return
+
             # Set fan modes and limits
             for actuator in self.actuators:
 
@@ -106,11 +145,6 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                     minimum_temperature = actuator.get("minimum_temperature")
                     minimum_duty_cycle = actuator.get("minimum_duty_cycle")
                     maximum_duty_cycle = actuator.get("maximum_duty_cycle")
-                    drive_frequency_mode = actuator.get("drive_frequency_mode")
-                    if drive_frequency_mode == "low":
-                        self.driver.enable_low_frequency_fan_drive()
-                    else:
-                        self.driver.enable_high_frequency_fan_drive()
                     self.driver.write_thermal_zone_config(fan_id, control_sensor_id)
                     self.driver.write_thermal_zone_minimum_temperature(
                         fan_id, minimum_temperature
@@ -122,6 +156,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
         except exceptions.DriverError as e:
             self.logger.exception("Unable to setup")
             self.mode = modes.ERROR
+            self.health = 0.0
             return
 
     def update_peripheral(self) -> None:
@@ -139,11 +174,19 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                 fan_id = actuator.get("fan_id")
                 duty_cycle_name = actuator.get("duty_cycle_name")
                 fan_speed_name = actuator.get("fan_speed_name")
+                tachometer_enabled = actuator.get("tachometer_enabled")
                 duty_cycle = self.driver.read_current_duty_cycle(fan_id)
                 fan_speed = self.driver.read_fan_speed(fan_id)
                 self.set_actuator(duty_cycle_name, duty_cycle)
                 self.set_actuator(fan_speed_name, fan_speed)
-
+                if tachometer_enabled and duty_cycle > 0 and fan_speed == 0:
+                  self.logger.error("Unable to verify fan {} is functional".format(fan_id))
+                  if len(self.actuators) > 1:
+                    self.health = 60.0
+                  else:
+                    self.health = 0.0
+                    self.mode = modes.ERROR
+                    return
         except exceptions.DriverError as e:
             self.logger.exception("Unable to update peripheral: {}".format(e))
             self.mode = modes.ERROR
@@ -165,6 +208,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
             )
             self.logger.warning(message)
         self.clear_reported_values()
+
     def clear_reported_values(self) -> None:
         """Clears reported values."""
         for sensor in self.sensors:
