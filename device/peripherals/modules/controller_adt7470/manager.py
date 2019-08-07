@@ -121,12 +121,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                     self.logger.debug("Fan {}: Speed: {} RPM".format(fan_id, fan_speed))
                     if fan_speed == 0:
                         self.logger.error("Unable to verify fan {} is functional".format(fan_id))
-                        if len(self.actuators) > 1:
-                          self.health = 60.0
-                        else:
-                          self.health = 0.0
-                          self.mode = modes.ERROR
-                          return
+                        self.health = 60.0
 
             # Set fan modes and limits
             for actuator in self.actuators:
@@ -166,10 +161,11 @@ class ControllerADT7470Manager(manager.PeripheralManager):
             for sensor in self.sensors:
                 sensor_id = sensor.get("sensor_id")
                 variable_name = sensor.get("variable_name")
-                temperature = self.driver.read_temperature(sensor_id)
+                temperature = self.driver.read_temperature(sensor_id, reset_monitor=False)
                 self.set_sensor(variable_name, temperature)
 
             # Update actuators
+            health = 100.0
             for actuator in self.actuators:
                 fan_id = actuator.get("fan_id")
                 duty_cycle_name = actuator.get("duty_cycle_name")
@@ -180,13 +176,9 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                 self.set_actuator(duty_cycle_name, duty_cycle)
                 self.set_actuator(fan_speed_name, fan_speed)
                 if tachometer_enabled and duty_cycle > 0 and fan_speed == 0:
-                  self.logger.error("Unable to verify fan {} is functional".format(fan_id))
-                  if len(self.actuators) > 1:
-                    self.health = 60.0
-                  else:
-                    self.health = 0.0
-                    self.mode = modes.ERROR
-                    return
+                  self.logger.error("~~~Unable to verify fan {} is functional. Duty Cycle: {}, Fan Speed: {}".format(fan_id, duty_cycle, fan_speed))
+                  health = 60.0
+            self.health = health
         except exceptions.DriverError as e:
             self.logger.exception("Unable to update peripheral: {}".format(e))
             self.mode = modes.ERROR

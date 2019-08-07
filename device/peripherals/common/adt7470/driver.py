@@ -385,7 +385,7 @@ class ADT7470Driver:
             except I2CError as e:
                 raise exceptions.EnableLowFrequencyFanDriveError(logger=self.logger) from e
 
-    def read_temperature(self, sensor_id: int, retry: bool = True) -> float:
+    def read_temperature(self, sensor_id: int, retry: bool = True, reset_monitor: bool = True) -> float:
         """Reads a temperature sensor."""
         self.logger.debug("Reading temperature from sensor {}".format(sensor_id))
 
@@ -397,16 +397,18 @@ class ADT7470Driver:
         with self.i2c_lock:
             try:
                 # Take temperature reading
-                self.enable_monitoring()
-                time.sleep(0.2)  # Wait 200 ms
-                self.disable_monitoring()
+                if reset_monitor:
+                  self.enable_monitoring()
+                  time.sleep(0.2)  # Wait 200 ms
+                  self.disable_monitoring()
 
                 # Get temperature value
                 register_address = TEMPERATURE_BASE_REGISTER + sensor_id
                 temperature_byte = self.i2c.read_register(register_address)
 
                 # Re-enable temperature monitoring
-                self.enable_monitoring()
+                if reset_monitor:
+                  self.enable_monitoring()
             except I2CError as e:
                 raise exceptions.ReadTemperatureError(logger=self.logger) from e
 
