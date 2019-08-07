@@ -20,15 +20,15 @@
           "devices": [
             {
               "name": "PeripheralLED",
-              "bus": 2,
-              "mux": "0x77",
+              "bus": "default",
+              "mux": "default",
               "channel": 1,
               "address": "0x62"
             },
             {
               "name": "NetworkLED",
-              "bus": 2,
-              "mux": "0x77",
+              "bus": "default",
+              "mux": "default",
               "channel": 4,
               "address": "0x62"
             },
@@ -41,8 +41,8 @@
             },
             {
               "name": "UserLED",
-              "bus": 2,
-              "mux": "0x77",
+              "bus": "default",
+              "mux": "default",
               "channel": 2,
               "address": "0x62"
             }
@@ -174,8 +174,8 @@
           }
         },
         "communication": {
-          "bus": 2,
-          "mux": "0x77",
+          "bus": "default",
+          "mux": "default",
           "channel": 3,
           "address": "0x47",
           "port": 1,
@@ -216,8 +216,8 @@
           }
         ],
         "communication": {
-          "bus": 2,
-          "mux": "0x77",
+          "bus": "default",
+          "mux": "default",
           "channel": 1,
           "address": "0x2E"
         }

@@ -1,5 +1,5 @@
 # Import standard python modules
-import time, json
+import time, json, os
 
 # Import python types
 from typing import Optional, Tuple, Dict, Any, List
@@ -10,6 +10,7 @@ from device.peripherals.classes.peripheral import manager, modes
 # Import manager elements
 from device.peripherals.common.pca9633 import driver
 from device.peripherals.modules.actuator_pca9633 import exceptions, events
+
 
 class IndicatorPCA9633Manager(manager.PeripheralManager):
     """Manages a set of indicator leds controlled by a pca9633 led driver."""
@@ -137,33 +138,56 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
         self.health = 100.0
 
         # Initialize drivers
-        self.drivers : List[driver.PCA9633Driver] = []
+        self.drivers: List[driver.PCA9633Driver] = []
         devices = self.communication.get("devices", [])
         with self.i2c_lock:
-          for device in devices:
-              try:
-                  # Initialize driver optional mux parameter
-                  mux = device.get("mux", None)
-                  if mux != None:
-                      mux = int(mux, 16)
+            for device in devices:
+                try:
+                    # Initialize bus
+                    bus = device.get("bus")
+                    if bus == "default":
+                        self.logger.debug("Using default i2c bus")
+                        bus = os.getenv("DEFAULT_I2C_BUS")
+                    if bus == "none":
+                      bus = None
+                    if bus != None:
+                        bus = int(bus)
 
-                  # Initialize driver
-                  self.drivers.append(
-                      driver.PCA9633Driver(
-                          name=device.get("name", "Default"),
-                          i2c_lock=self.i2c_lock,
-                          bus=device["bus"],
-                          mux=mux,
-                          channel=device.get("channel", None),
-                          address=int(device["address"], 16),
-                          simulate=self.simulate,
-                          mux_simulator=self.mux_simulator,
-                      )
-                  )
-              except exceptions.DriverError as e:
-                  self.logger.exception("Unable to initialize: {}".format(e))
-                  self.health = 0.0
-                  self.mode = modes.ERROR
+                    # Initialize mux
+                    mux = device.get("mux")
+                    if mux == "default":
+                        self.logger.debug("Using default i2c mux")
+                        mux = os.getenv("DEFAULT_MUX_ADDRESS")
+                    if mux == "none":
+                      mux = None
+                    if mux != None:
+                        mux = int(mux, 16)
+
+                    # Initialize i2c channel
+                    channel = device.get("channel")
+
+                    # Initialize i2c address
+                    address = device.get("address")
+                    if address != None:
+                        address = int(address, 16)
+
+                    # Initialize driver
+                    self.drivers.append(
+                        driver.PCA9633Driver(
+                            name=device.get("name", "Default"),
+                            i2c_lock=self.i2c_lock,
+                            bus=bus,
+                            mux=mux,
+                            channel=channel,
+                            address=address,
+                            simulate=self.simulate,
+                            mux_simulator=self.mux_simulator,
+                        )
+                    )
+                except exceptions.DriverError as e:
+                    self.logger.exception("Unable to initialize: {}".format(e))
+                    self.health = 0.0
+                    self.mode = modes.ERROR
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
@@ -171,7 +195,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
 
         # Turn off all indicator leds
         for driver in self.drivers:
-          driver.set_rgb([0,0,0])
+            driver.set_rgb([0, 0, 0])
 
     def update_peripheral(self) -> None:
         """Updates peripheral by setting output to desired state."""
@@ -195,7 +219,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
         self.logger.info("Resetting")
         try:
             for driver in self.drivers:
-              driver.set_rgb([0, 0, 0])  # off
+                driver.set_rgb([0, 0, 0])  # off
         except exceptions.DriverError as e:
             message = "Unable to turn off indicator before shutting down: {}".format(
                 type(e)
@@ -208,7 +232,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
         self.logger.info("Shutting down")
         try:
             for driver in self.drivers:
-              driver.set_rgb([0, 0, 0])  # off
+                driver.set_rgb([0, 0, 0])  # off
         except exceptions.DriverError as e:
             message = "Unable to turn off indicator before shutting down: {}".format(
                 type(e)
@@ -246,7 +270,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
             if self.iot_indicator_led_status != "Red":
                 driver.set_rgb([32, 0, 0])
                 self.iot_indicator_led_status = "Red"
-    
+
     def update_iot_and_network_led(self, driver: driver.PCA9633Driver) -> None:
         """Updates iot/network indicator and status."""
         if self.iot_is_connected:
@@ -273,8 +297,8 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
             # Check mode
             mode = peripheral.get("mode")
             if mode == modes.INIT or mode == modes.SETUP:
-              setup = False
-              break
+                setup = False
+                break
 
             # Check health
             health = peripheral.get("health")
@@ -283,7 +307,7 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
 
         # Update indicator led output
         if not setup:
-          if self.peripheral_indicator_led_status != "Yellow":
+            if self.peripheral_indicator_led_status != "Yellow":
                 driver.set_rgb([32, 32, 0])
                 self.peripheral_indicator_led_status = "Yellow"
         elif healthy:
@@ -298,6 +322,6 @@ class IndicatorPCA9633Manager(manager.PeripheralManager):
     def update_user_led(self, driver: driver.PCA9633Driver) -> None:
         """Updates user led indicator and status."""
         if self.user_indicator_led_status != "Green":
-          driver.set_rgb([0, 32, 0])
-          self.user_indicator_led_status = "Green"
+            driver.set_rgb([0, 32, 0])
+            self.user_indicator_led_status = "Green"
 

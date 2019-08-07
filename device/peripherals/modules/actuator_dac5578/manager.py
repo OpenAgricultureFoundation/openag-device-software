@@ -20,43 +20,27 @@ class ActuatorDAC5578Manager(manager.PeripheralManager):
 
         # Initialize parent class
         super().__init__(*args, **kwargs)
-
-        # Initialize communication variables
-        self.bus = self.communication.get("bus")
-        self.mux = self.communication.get("mux")
-        self.is_active_high = self.communication.get("is_active_high")
-        self.address = self.communication.get("address")
+        
+        # Initialize dac5578 port
         self.port = self.communication.get("port")
-        if self.bus == "none":
-            self.bus = None
-        if self.mux == "none":
-            self.mux = None
-        if self.is_active_high is None:
-            self.is_active_high = True
-        if self.address is None:
-            self.logger.critical("Missing I2C address")
-            return
         if self.port is None:
             self.logger.critical("Missing DAC port")
             return
-
-        # Convert i2c config params from hex to int if they exist
-        self.address = int(self.address, 16)
-        self.port = int(self.port)
-        if self.bus is not None:
-            self.bus = int(self.bus)
-        if self.mux is not None:
-            self.mux = int(self.mux, 16)
-        if self.is_active_high is not None:
+        else:
+          self.port = int(self.port)
+        
+        # Initialize dac5578 active high state
+        self.is_active_high = self.communication.get("is_active_high")
+        if self.is_active_high is None:
+            self.is_active_high = True
+        elif self.is_active_high is not None:
             self.is_active_high = bool(self.is_active_high)
-
-        self.logger.info("address=0x{:02X} port={}".format(self.address, self.port))
 
         # Initialize variable names
         self.output_name = "actuator output"
-        act = self.variables.get("actuator")
-        if act is not None:
-            self.output_name = act.get("output_variable")
+        actuator = self.variables.get("actuator")
+        if actuator is not None:
+            self.output_name = actuator.get("output_variable")
 
         # Set default sampling interval and heartbeat
         self.default_sampling_interval = 1  # second
