@@ -29,7 +29,7 @@ class PiCameraDriver(CameraDriver):
     ) -> None:
 
         # pi camera is only for Raspberry Pi.
-        if PLATFORM is not None and (PLATFORM == "raspberry-pi" or PLATFORM == "fincm3"):
+        if PLATFORM is not None and (PLATFORM.startswith("raspberry") or PLATFORM == "fincm3"):
             self.camera = PiCamera()
             picam_loaded = True
             self.simulate = simulate
