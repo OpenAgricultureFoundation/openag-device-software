@@ -146,7 +146,7 @@ class ADT7470Driver:
 
         # Check if control sensor is enabled
         if control_sensor_id is None:
-            return
+            raise ValueError("Control sensor id must be 'max' or 0-9")
 
         # Get register nibble
         if type(control_sensor_id) is str and control_sensor_id == "max":
@@ -158,7 +158,7 @@ class ADT7470Driver:
         ):
             register_nibble = control_sensor_id + 1
         else:
-            raise ValueError("Control sensor id must be 'max', 0-9, or null")
+            raise ValueError("Control sensor id must be 'max' or 0-9")
 
         # Write thermal zone
         with self.i2c_lock:
