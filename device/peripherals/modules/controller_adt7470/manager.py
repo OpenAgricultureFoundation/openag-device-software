@@ -43,7 +43,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                         )
 
         # Set default sampling interval
-        self.default_sampling_interval = 10  # seconds
+        self.default_sampling_interval = 3  # seconds
         self.prev_update = 0  # timestamp
 
     def set_sensor(self, name: str, value: Any) -> None:
@@ -102,7 +102,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
                 # Setup automatic fans
                 else:
-                    sensor_id = actuator.get("sensor_id")
+                    control_sensor_id = actuator.get("control_sensor_id")
                     minimum_temperature = actuator.get("minimum_temperature")
                     minimum_duty_cycle = actuator.get("minimum_duty_cycle")
                     maximum_duty_cycle = actuator.get("maximum_duty_cycle")
@@ -111,7 +111,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                         self.driver.enable_low_frequency_fan_drive()
                     else:
                         self.driver.enable_high_frequency_fan_drive()
-                    self.driver.write_thermal_zone_config(fan_id, sensor_id)
+                    self.driver.write_thermal_zone_config(fan_id, control_sensor_id)
                     self.driver.write_thermal_zone_minimum_temperature(
                         fan_id, minimum_temperature
                     )
