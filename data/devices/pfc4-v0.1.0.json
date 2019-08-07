@@ -230,7 +230,8 @@
             "minimum_temperature": 60.0,
             "minimum_duty_cycle": 10.0,
             "maximum_duty_cycle": 100.0,
-            "drive_frequency_mode": "low"
+            "drive_frequency_mode": "low",
+            "tachometer_enabled": true
           }
         ],
         "communication": {
