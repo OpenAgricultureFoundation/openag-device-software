@@ -1,7 +1,7 @@
 {
   "format": "openag-standard-v1",
-  "name": "PFC4 v0.1.0",
-  "uuid": "8546ed97-857a-4a89-8593-1ee0b46149ac",
+  "name": "PFC4 v0.1.0 No Camera",
+  "uuid": "65f32ae0-8d2a-45d0-bde8-be32ab9d3fbb",
   "peripherals": [
     {
       "name": "IndicatorLEDs",
@@ -81,25 +81,6 @@
             }
           ]
         }
-      }
-    },
-    {
-      "name": "Camera-Top",
-      "type": "PiCamera",
-      "uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
-      "parameters": {
-        "driver_module": "picam_driver",
-        "driver_class": "PiCameraDriver",
-        "setup": {
-          "name": "Raspberry Pi Camera v1.3 ",
-          "file_name": "camera/setups/pi_camera_v13"
-        },
-        "variables": {
-          "sensor": null,
-          "actuator": null
-        },
-        "communication": null,
-        "num_cameras": 1
       }
     },
     {
