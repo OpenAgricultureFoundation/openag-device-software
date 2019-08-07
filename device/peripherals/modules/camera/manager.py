@@ -53,8 +53,12 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
             self.logger.info(str(self.parameters.values()))
 
             # Create driver
-            driver_module = "device.peripherals.modules.camera.drivers." + self.parameters.get("driver_module")
+            driver_module = (
+                "device.peripherals.modules.camera.drivers."
+                + self.parameters.get("driver_module")
+            )
             driver_class = self.parameters.get("driver_class")
+            self.logger.debug("Getting driver")
             self.driver = self.get_driver(driver_module, driver_class)(
                 name=self.name,
                 vendor_id=int(self.properties.get("vendor_id"), 16),
@@ -68,7 +72,13 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
                 mux_simulator=self.mux_simulator,
             )
         except exceptions.DriverError as e:
-            self.logger.debug("Unable to initialize: {}".format(e))
+            self.logger.exception("Unable to initialize")
+            self.health = 0.0
+            self.mode = modes.ERROR
+        except ModuleNotFoundError as e:
+            self.logger.exception(
+                "Unable to import module, assuming can't import picamera b/c not running on a raspberry pi"
+            )
             self.health = 0.0
             self.mode = modes.ERROR
 
