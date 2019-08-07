@@ -176,7 +176,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                 self.set_actuator(duty_cycle_name, duty_cycle)
                 self.set_actuator(fan_speed_name, fan_speed)
                 if tachometer_enabled and duty_cycle > 0 and fan_speed == 0:
-                  self.logger.error("~~~Unable to verify fan {} is functional. Duty Cycle: {}, Fan Speed: {}".format(fan_id, duty_cycle, fan_speed))
+                  self.logger.error("Unable to verify fan {} is functional. Duty Cycle: {}, Fan Speed: {}".format(fan_id, duty_cycle, fan_speed))
                   health = 60.0
             self.health = health
         except exceptions.DriverError as e:
