@@ -58,39 +58,33 @@ class PeripheralManager(StateMachineManager):
         if self.communication == None:
             self.communication = {}
 
-        # Get standard i2c config parameters if they exist
+        # Initalize i2c bus
         self.bus = self.communication.get("bus")
-        self.address = self.communication.get("address")
-        self.mux = self.communication.get("mux")
-        self.channel = self.communication.get("channel")
-
-        # Check if using default bus
         if self.bus == "default":
             self.logger.debug("Using default i2c bus")
             self.bus = os.getenv("DEFAULT_I2C_BUS")
-
-        # Convert exported value from non-pythonic none to pythonic None
         if self.bus == "none":
             self.bus = None
-
         if self.bus != None:
-            self.bus = int(self.bus)  # type: ignore
+            self.bus = int(self.bus)
 
-        # Check if using default mux
+        # Initialize i2c mux
+        self.mux = self.communication.get("mux")
         if self.mux == "default":
-            self.logger.debug("mux is default")
+            self.logger.debug("Using default i2c mux")
             self.mux = os.getenv("DEFAULT_MUX_ADDRESS")
-
-        # Convert exported value from non-pythonic none to pythonic None
         if self.mux == "none":
             self.mux = None
-        self.logger.debug("mux = {}".format(self.mux))
-
-        # Convert i2c config params from hex to int if they exist
-        if self.address != None:
-            self.address = int(self.address, 16)
         if self.mux != None:
             self.mux = int(self.mux, 16)
+          
+        # Initialize i2c channel
+        self.channel = self.communication.get("channel")
+
+        # Initialize i2c address
+        self.address = self.communication.get("address")
+        if self.address != None:
+            self.address = int(self.address, 16)
 
         # Load setup dict and uuid
         self.setup_dict = self.load_setup_dict_from_file()
