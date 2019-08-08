@@ -34,7 +34,7 @@
             },
             {
               "name": "IoTLED",
-              "bus": 2,
+              "bus": "default",
               "mux": "0x77",
               "channel": 3,
               "address": "0x62"
