@@ -5,12 +5,12 @@
   "peripherals": [
     {
       "name": "IndicatorLEDs",
-      "type": "IndicatorPCA9633",
+      "type": "ActuatorPCA9633",
       "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
       "parameters": {
         "setup": {
-          "name": "Triple RGB",
-          "file_name": "actuator_pca9633/setups/triple_rgb"
+          "name": "Quadruple RGB",
+          "file_name": "actuator_pca9633/setups/quadruple_rgb"
         },
         "variables": {
           "sensor": null,

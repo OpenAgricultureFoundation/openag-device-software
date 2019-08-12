@@ -12,7 +12,7 @@ from device.peripherals.common.pca9633 import driver
 from device.peripherals.modules.actuator_pca9633 import exceptions, events
 
 
-class IndicatorPCA9633Manager(manager.PeripheralManager):
+class ActuatorPCA9633Manager(manager.PeripheralManager):
     """Manages a set of indicator leds controlled by a pca9633 led driver."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

@@ -1,0 +1,122 @@
+{
+  "name": "Quadruple RGB",
+  "version": "1",
+  "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
+  "module_name": "actuator_pca9633.manager",
+  "class_name": "ActuatorPCA9633Manager",
+  "parameters": {
+    "variables": {
+      "sensor": null,
+      "actuator": null
+    },
+    "communication": {
+      "devices": [
+        {
+          "name": "PeripheralLED",
+          "bus": {
+            "type": "string",
+            "default": "default"
+          },
+          "mux": {
+            "type": "string",
+            "default": "default"
+          },
+          "channel": {
+            "type": "integer",
+            "default": 1
+          },
+          "address": {
+            "type": "string",
+            "default": "0x62"
+          }
+        },
+        {
+          "name": "NetworkLED",
+          "bus": {
+            "type": "string",
+            "default": "default"
+          },
+          "mux": {
+            "type": "string",
+            "default": "default"
+          },
+          "channel": {
+            "type": "integer",
+            "default": 4
+          },
+          "address": {
+            "type": "string",
+            "default": "0x62"
+          }
+        },
+        {
+          "name": "IoTLED",
+          "bus": {
+            "type": "string",
+            "default": "default"
+          },
+          "mux": {
+            "type": "string",
+            "default": "default"
+          },
+          "channel": {
+            "type": "integer",
+            "default": 3
+          },
+          "address": {
+            "type": "string",
+            "default": "0x62"
+          }
+        },
+        {
+          "name": "UserLED",
+          "bus": {
+            "type": "string",
+            "default": "default"
+          },
+          "mux": {
+            "type": "string",
+            "default": "default"
+          },
+          "channel": {
+            "type": "integer",
+            "default": 2
+          },
+          "address": {
+            "type": "string",
+            "default": "0x62"
+          }
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "name": "Reset",
+      "description": "Reset sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Shutdown",
+      "description": "Shutdown sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Set Sampling Interval",
+      "description": "Sets sampling interval.",
+      "value": {
+        "default": 10,
+        "unit": "Seconds"
+      },
+      "sequence": null
+    }
+  ],
+  "info": {
+    "variables": {
+      "sensor": null,
+      "actuator": null
+    }
+  }
+}
