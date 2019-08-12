@@ -16,7 +16,7 @@ from device.peripherals.common.pca9633 import exceptions
 
 
 class PCA9633Driver:
-    """Driver for PCA9633 digital to analog converter."""
+    """Driver for PCA9633 LED driver."""
 
     def __init__(
         self,
