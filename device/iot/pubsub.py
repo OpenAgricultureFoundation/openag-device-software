@@ -15,7 +15,7 @@ from device.iot import commands
 
 # Initialize constants
 MQTT_BRIDGE_HOSTNAME = "mqtt.googleapis.com"
-MQTT_BRIDGE_PORT = 443
+MQTT_BRIDGE_PORT = 8883 
 
 # Initialize message types
 COMMAND_REPLY_MESSAGE = "CommandReply"

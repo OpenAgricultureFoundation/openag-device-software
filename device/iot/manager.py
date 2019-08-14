@@ -702,4 +702,6 @@ def on_subscribe(
     client: mqtt.Client, ref_self: IotManager, message_id: str, granted_qos: int
 ) -> None:
     """Paho callback when mqtt broker receives subscribe."""
-    ref_self.logger.debug("Received broker subscribe")
+
+
+
