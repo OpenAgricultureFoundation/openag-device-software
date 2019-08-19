@@ -15,7 +15,7 @@ from device.iot import commands
 
 # Initialize constants
 MQTT_BRIDGE_HOSTNAME = "mqtt.googleapis.com"
-MQTT_BRIDGE_PORT = 8883 
+MQTT_BRIDGE_PORTS =  [443, 8883]
 
 # Initialize message types
 COMMAND_REPLY_MESSAGE = "CommandReply"
@@ -57,6 +57,8 @@ class PubSub:
         self.on_message = on_message
         self.on_subscribe = on_subscribe
         self.on_log = on_log
+        # Used to swich ports on failure to communicate to MQTT
+        self.mqtt_port_choice = 0
 
         # Initialize logger
         self.logger = logger.Logger("PubSub", "iot")
@@ -144,10 +146,16 @@ class PubSub:
         self.client.on_publish = self.on_publish
 
         # Connect to the Google MQTT bridge
-        self.client.connect(MQTT_BRIDGE_HOSTNAME, MQTT_BRIDGE_PORT)
+        self.client.connect(MQTT_BRIDGE_HOSTNAME, MQTT_BRIDGE_PORTS[self.mqtt_port_choice])
 
         # Subscribe to the config topic
         self.client.subscribe(self.config_topic, qos=1)
+
+    # --------------------------------------------------------------------------
+    def next_port(self):
+        if len(MQTT_BRIDGE_PORTS) > 1:
+            self.mqtt_port_choice = (self.mqtt_port_choice + 1) % len(MQTT_BRIDGE_PORTS)
+        return self.mqtt_port_choice
 
     # --------------------------------------------------------------------------
     def update(self) -> None:
