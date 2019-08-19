@@ -672,6 +672,8 @@ def on_connect(
 def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -> None:
     """Callback for when a device disconnects from mqtt broker."""
     error = "{}: {}".format(return_code, mqtt.error_string(return_code))
+    ref_self.logger.error(error)
+    ref_self.logger.debug("Trying mqtt port: {}".format(str(ref_self.pubsub.next_port())))
     ref_self.is_connected = False
 
 
