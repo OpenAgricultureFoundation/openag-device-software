@@ -1,0 +1,65 @@
+{
+  "name": "Single RGB",
+  "version": "1",
+  "uuid": "af6c3876-2fb9-47e4-ad88-0f0be4977e33",
+  "module_name": "actuator_pca9633.manager",
+  "class_name": "ActuatorPCA9633Manager",
+  "parameters": {
+    "variables": {
+      "sensor": null,
+      "actuator": null
+    },
+    "communication": {
+      "devices": [
+        {
+          "name": "PeripheralLED",
+          "bus": {
+            "type": "string",
+            "default": "default"
+          },
+          "mux": {
+            "type": "string",
+            "default": "default"
+          },
+          "channel": {
+            "type": "integer",
+            "default": 1
+          },
+          "address": {
+            "type": "string",
+            "default": "0x62"
+          }
+        }
+      ]
+    }
+  },
+  "events": [
+    {
+      "name": "Reset",
+      "description": "Reset sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Shutdown",
+      "description": "Shutdown sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Set Sampling Interval",
+      "description": "Sets sampling interval.",
+      "value": {
+        "default": 10,
+        "unit": "Seconds"
+      },
+      "sequence": null
+    }
+  ],
+  "info": {
+    "variables": {
+      "sensor": null,
+      "actuator": null
+    }
+  }
+}

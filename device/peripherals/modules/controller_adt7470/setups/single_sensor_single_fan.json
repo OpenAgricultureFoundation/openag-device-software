@@ -1,0 +1,98 @@
+{
+	"name":  "Single Sensor Single Fan",
+	"version": "1",
+	"uuid": "b199a625-0df3-4883-ad6f-c46a5b6f9ba1",
+	"module_name": "controller_adt7470.manager",
+	"class_name": "ControllerADT7470Manager",
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		},
+		"sensors": [
+			{
+				"variable_name": "heat_sink_fan_temperature_celsius",
+				"sensor_id": 0
+			}
+		],
+		"actuators": [
+			{
+				"duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
+        "fan_speed_name": "heat_sink_fan_speed_rpm",
+				"fan_id": 0,
+				"control_sensor_id": 0,
+				"minimum_temperature": 40,
+				"minimum_duty_cycle": 5,
+        "maximum_duty_cycle": 100,
+        "drive_frequency_mode": "low"
+			}
+		],
+		"communication": {
+			"bus": {
+				"type": "integer",
+				"default": 2
+			},
+			"mux": {
+				"type": "string",
+				"default": "0x77"
+			},
+			"channel": {
+				"type": "integer",
+				"default": 1
+			},
+			"address": {
+				"type": "string",
+				"default": "0x2E"
+			}
+		}
+	},
+	"events": [
+	    {
+	        "name": "Reset",
+	        "description": "Reset sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Shutdown",
+	        "description": "Shutdown sensor.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Set Sampling Interval",
+	        "description": "Sets sampling interval.",
+	        "value": {
+	            "default": 10,
+	            "unit": "Seconds"
+	        },
+	        "sequence": null
+	    },
+	    {
+	        "name": "Enable Manual Mode",
+	        "description": "Allows actuator to be controlled by manual events.",
+	        "value": null,
+	        "sequence": null
+	    },
+	    {
+	        "name": "Turn On",
+	        "description": "Turns on heater.",
+	        "value": null,
+	        "sequence": null,
+	        "is_manual": true
+	    },
+	    {
+	        "name": "Turn Off",
+	        "description": "Turns off heater.",
+	        "value": null,
+	        "sequence": null,
+	        "is_manual": true
+	    }
+	],
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	}
+}

@@ -128,7 +128,9 @@ class I2C(object):
         with self.i2c_lock:
             self.manage_mux("read register", disable_mux)
             self.logger.debug("Reading register: 0x{:02X}".format(register))
-            return int(self.io.read_register(self.address, register))
+            register_byte = int(self.io.read_register(self.address, register))
+            self.logger.debug("Register byte: {}".format(hex(register_byte)))
+            return register_byte
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3)
     def write_register(

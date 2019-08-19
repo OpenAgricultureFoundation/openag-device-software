@@ -1,4 +1,4 @@
-Django==1.11.22
+Django==1.11.23
 pytest-cov==2.6.1
 mypy==0.600
 django-cors-headers==2.5.2
@@ -21,3 +21,4 @@ pygame==1.9.4
 python-networkmanager
 picamera
 RPi.GPIO
+black==19.3b0

@@ -27,7 +27,7 @@ class DriverRunner(AtlasDriverRunner):
     default_device = "edu-v0.1.0"
     default_name = "AtlasPH-Reservoir"
 
-    def __init__(self, *args: Any, **kwargs: Any):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initializes run driver."""
 
         # Initialize parent class
@@ -36,7 +36,7 @@ class DriverRunner(AtlasDriverRunner):
         # Initialize parser
         self.parser.add_argument("--ph", action="store_true", help="read pH")
 
-    def run(self, *args: Any, **kwargs: Any):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Runs driver."""
 
         # Run parent class
