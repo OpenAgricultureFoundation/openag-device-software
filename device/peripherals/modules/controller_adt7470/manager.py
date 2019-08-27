@@ -67,6 +67,10 @@ class ControllerADT7470Manager(manager.PeripheralManager):
         # Initialize health
         self.health = 100.0
 
+        # TODO: Add simulated bytes
+        if self.simulate:
+          return
+
         # Initialize driver
         try:
             self.driver = driver.ADT7470Driver(
@@ -86,8 +90,12 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
     def setup_peripheral(self) -> None:
         """Sets up peripheral."""
-
         self.logger.debug("Setting up peripheral")
+
+        # TODO: Add simulated bytes
+        if self.simulate:
+          return
+
         try:
             # Set drive mode
             if len(self.actuators) > 0:
@@ -156,6 +164,11 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
     def update_peripheral(self) -> None:
         """Updates peripheral by getting temperatures and fan speeds."""
+        
+        # TODO: Add simulated bytes
+        if self.simulate:
+          return
+        
         try:
             # Update sensors
             for sensor in self.sensors:

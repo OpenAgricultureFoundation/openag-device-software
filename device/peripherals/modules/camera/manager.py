@@ -11,7 +11,6 @@ from device.utilities import logger, accessors
 # Import manager elements
 from device.peripherals.classes.peripheral import manager, modes
 from device.peripherals.modules.camera import exceptions, events
-
 from device.peripherals.modules.camera.drivers.base_driver import CameraDriver
 
 
