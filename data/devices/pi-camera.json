@@ -1,0 +1,27 @@
+{
+  "format": "openag-standard-v1",
+  "name": "Pi Camera",
+  "uuid": "ac4b613f-8414-4d09-ae9c-58baed752233",
+  "peripherals": [
+    {
+      "name": "Camera-Top",
+      "type": "PiCamera",
+      "uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
+      "parameters": {
+        "driver_module": "picam_driver",
+        "driver_class": "PiCameraDriver",
+        "setup": {
+          "name": "Raspberry Pi Camera v1.3 ",
+          "file_name": "camera/setups/pi_camera_v13"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": null
+        },
+        "communication": null,
+        "num_cameras": 1
+      }
+    }
+  ],
+  "controllers": null
+}

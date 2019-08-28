@@ -1,6 +1,7 @@
 # Import standard python modules
 import abc
 import json
+import time
 
 # Import python types
 from typing import Optional, Tuple, Dict, Any
@@ -11,12 +12,12 @@ from device.utilities import logger, accessors
 # Import manager elements
 from device.peripherals.classes.peripheral import manager, modes
 from device.peripherals.modules.camera import exceptions, events
-
 from device.peripherals.modules.camera.drivers.base_driver import CameraDriver
+from device.recipe import modes as recipe_modes
 
 
 class CameraManager(manager.PeripheralManager):  # type: ignore
-    """Manages a usb camera."""
+    """Manages a camera peripheral."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Instantiates manager Instantiates parent class, and initializes 
@@ -33,8 +34,16 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         self.min_sampling_interval = 120  # seconds
         self.default_sampling_interval = 3600  # every hour
 
-        self.logger.debug("Instantiating")
+        # Initialize recipe modes
+        self.previous_recipe_mode = recipe_modes.NORECIPE
 
+        self.logger.debug("Instantiating")
+    
+    @property
+    def recipe_mode(self) -> str:
+        """Gets recipe mode."""
+        return self.state.recipe.get("mode", recipe_modes.NORECIPE)
+  
     def initialize_peripheral(self) -> None:
         """ Initializes peripheral."""
         self.logger.debug("Initializing")
@@ -51,6 +60,11 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
             num_cameras = self.parameters.get("num_cameras", 1)
             self.min_sampling_interval = 120 * num_cameras
             self.logger.info(str(self.parameters.values()))
+
+            # TODO: Add simulation code
+            if self.simulate:
+              self.logger.debug("Simulating initialization")
+              return
 
             # Create driver
             driver_module = (
@@ -85,12 +99,68 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
     def update_peripheral(self) -> None:
         """Updates peripheral, captures an image."""
         try:
+            # TODO: Add simulation code
+            if self.simulate:
+              self.logger.debug("Simulating capture")
+              return
+            
             self.driver.capture()
             self.health = 100.0
         except exceptions.DriverError as e:
             self.logger.debug("Unable to update: {}".format(e))
             self.mode = modes.ERROR
             self.health = 0
+    
+    
+    ##### OVERRIDE PARENT METHODS ######################################################
+    
+    def run_normal_mode(self) -> None:
+        """Runs normal mode. Executes child class update function every sampling
+        interval. Checks for events and transitions after each update."""
+        self.logger.info("Entered NORMAL")
+
+        # Initialize vars
+        self._update_complete = True
+        self.last_update = time.time()
+
+        # Loop forever
+        while True:
+
+            # Update every sampling interval
+            self.last_update_interval = time.time() - self.last_update
+            if self.sampling_interval < self.last_update_interval or self.new_recipe():                
+                message = "Updating peripheral, delta: {:.3f}".format(
+                    self.last_update_interval
+                )
+                self.logger.debug(message)
+                self.last_update = time.time()
+                self.update_peripheral()
+
+            # Check for transitions
+            if self.new_transition(modes.NORMAL):
+                break
+
+            # Check for events
+            self.check_events()
+
+            # Check for transitions
+            if self.new_transition(modes.NORMAL):
+                break
+
+            # Update every 100ms
+            time.sleep(0.100)
+    
+
+    ##### HELPER FUNCTIONS #############################################################
+
+    def new_recipe(self) -> bool:
+      """Checks if a new recipe has been started."""
+      if self.recipe_mode != self.previous_recipe_mode:
+        self.previous_recipe_mode = self.recipe_mode
+        if self.recipe_mode == recipe_modes.NORMAL:
+          self.logger.debug("Started new recipe")
+          return True
+      return False
 
     ##### EVENT FUNCTIONS ##############################################################
 
