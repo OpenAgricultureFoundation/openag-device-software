@@ -215,7 +215,11 @@ class PeripheralManager(StateMachineManager):
         self.logger.info("Entered INIT")
 
         # Initialize peripheral
-        self.initialize_peripheral()
+        try:
+            self.initialize_peripheral()
+        except Exception as e:
+            self.logger.error(f'Could not initialize peripheral: {e}')
+            self.mode = modes.ERROR
 
         # Check for transitions
         if self.new_transition(modes.INIT):
@@ -231,7 +235,11 @@ class PeripheralManager(StateMachineManager):
         self.logger.info("Entered SETUP")
 
         # Setup peripheral
-        self.setup_peripheral()
+        try:
+            self.setup_peripheral()
+        except Exception as e:
+            self.logger.error(f'Could not setup peripheral: {e}')
+            self.mode = modes.ERROR
 
         # Check for transitions
         if self.new_transition(modes.SETUP):
