@@ -21,6 +21,7 @@
     <style type="text/css">
         body {
          background-color: #f1f1f1;
+         margin-bottom: 30px; 
         }
        .dashboard, .recipes, .environments, .peripherals, .images, .config, .password, .logs, .iot, .resources, .connect, .upgrade, .login {
         padding: 20px;
@@ -29,6 +30,18 @@
         background-color: #fff; 
         padding: 20px;
         margin-bottom: 20px;
+       }
+       .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 30px; 
+        line-height: 30px; 
+        color: #bbbbbb;
+        background-color: #343a40; /* bootstrap bg-dark */
+       }
+       .footerrow {
+        margin-left: 20px;
        }
     </style>
     {% endblock %}
@@ -110,7 +123,10 @@
       {% block content %}
       {% endblock %}
     </main>
-    <footer>
+    <footer class="footer">
+      <div class="footerrow">
+        <span>Device Name: {{ serial_number }}</span>
+      </div>
     </footer>
 
     {% block javascript %}{% endblock %}

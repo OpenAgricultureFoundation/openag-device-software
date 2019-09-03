@@ -7,8 +7,8 @@ from typing import Optional, Callable
 import time
 from device.utilities.network.network_utility_factory import NetworkUtilityFactory
 
-BUTTON_GPIO_LINE = 17  # 0 on our board, I'm using 17 on the Fin
-
+BUTTON_GPIO_LINE = 5
+FIN_BOARD = False
 
 class ButtonHandler:
     button_line: int
@@ -89,29 +89,30 @@ class ButtonHandler:
             # Button was just released.
             self.button_pressed = False
             now = time.time()
-            if now - self.button_down_time >= self.cancel_time:
-                print("Canceling button push")
-                return
-            elif now - self.button_down_time >= self.data_wipe_time:
-                print("WIPING DATA")
-                command = ["scripts/platform/reset_balena_app.sh"]
-
+            #if now - self.button_down_time >= self.cancel_time:
+            #    print("Canceling button push")
+            #    return
+            # elif now - self.button_down_time >= self.data_wipe_time:
+            #    print("WIPING DATA")
+            #    command = ["scripts/platform/reset_balena_app.sh"]
+            #
                 # Execute command
-                try:
-                    with subprocess.Popen(
-                            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                    ) as process1:
-                        output = process1.stdout.read().decode("utf-8")
-                        output += process1.stderr.read().decode("utf-8")
-                    #self.logger.debug(output)
-                except Exception as e:
-                    pass
+            #    try:
+            #        with subprocess.Popen(
+            #                command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            #        ) as process1:
+            #            output = process1.stdout.read().decode("utf-8")
+            #            output += process1.stderr.read().decode("utf-8")
+            #        #self.logger.debug(output)
+            #    except Exception as e:
+            #        pass
                     #self.logger.exception(
                     #    "Unable to join wifi, unhandled exception: {}".format(type(e))
                     #)
                     #raise
-                return
-            elif now - self.button_down_time >= self.network_reset_time:
+            #    return
+            #elif   - need to check for this one last if we're doing the cancel and/or wipe
+            if now - self.button_down_time >= self.network_reset_time:
                 print("RESETTING NETWORK")
                 self.reset_network()
                 return
@@ -120,14 +121,15 @@ class ButtonHandler:
     def register_callback(self):
         GPIO.add_event_detect(self.button_line, GPIO.BOTH, self.callback_handler)
 
-
+# only works with LEDs that are connected to the OS (i.e. the LED on the Fin Board)
 def set_led_color(r: int,g: int,b: int):
-    with open("/sys/class/leds/pca963x:red/brightness", 'w') as f:
-        f.write(str(r))
-    with open("/sys/class/leds/pca963x:green/brightness", 'w') as f:
-        f.write(str(g))
-    with open("/sys/class/leds/pca963x:blue/brightness", 'w') as f:
-        f.write(str(b))
+    if FIN_BOARD:
+        with open("/sys/class/leds/pca963x:red/brightness", 'w') as f:
+            f.write(str(r))
+        with open("/sys/class/leds/pca963x:green/brightness", 'w') as f:
+            f.write(str(g))
+        with open("/sys/class/leds/pca963x:blue/brightness", 'w') as f:
+            f.write(str(b))
 
 
 def run():
@@ -139,23 +141,24 @@ def run():
     is_wipe_lit = False
     was_canceled = False
     while True:
-        if buttonHandler.is_pressed():
-            if not is_reset_lit and buttonHandler.is_network_reset():
-                set_led_color(255,0,255)
-                is_reset_lit = True
-            elif not is_wipe_lit and buttonHandler.is_data_wipe():
-                set_led_color(255,255,255)
-                is_wipe_lit = True
-            elif not was_canceled and buttonHandler.is_canceled():
-                set_led_color(0,0,0)
-                was_canceled = True
-        elif was_canceled:
-            set_led_color(0,25,0)
-            was_canceled = False
-            is_wipe_lit = False
-            is_reset_lit = False
-
-
+        # TODO: Once we can call into the Django system to set the user LED, fix this to light the USER LED correctly
+        if FIN_BOARD: # if we're on the finboard we can do this
+            if buttonHandler.is_pressed():
+                if not is_reset_lit and buttonHandler.is_network_reset():
+                    set_led_color(255,0,255)
+                    is_reset_lit = True
+                elif not is_wipe_lit and buttonHandler.is_data_wipe():
+                    set_led_color(255,255,255)
+                    is_wipe_lit = True
+                elif not was_canceled and buttonHandler.is_canceled():
+                    set_led_color(0,0,0)
+                    was_canceled = True
+            elif was_canceled:
+                set_led_color(0,25,0)
+                was_canceled = False
+                is_wipe_lit = False
+                is_reset_lit = False
+        # We don't do anything other than let the button callback work, so sleep
         time.sleep(1)
 
 

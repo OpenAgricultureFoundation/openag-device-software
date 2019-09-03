@@ -81,6 +81,7 @@ class Dashboard(views.APIView):
 
         # Build and return response
         response = {
+            "serial_number": os.getenv("SERIAL_NUMBER"),
             "manager_modes": coordinator.manager_modes,
             "manager_healths": coordinator.manager_healths,
             "current_environment": current_environment,
@@ -146,7 +147,10 @@ class DeviceConfig(views.APIView):
             current_config_name = "unspecified"
 
         # Build and return response
-        response = {"configs": configs, "current_config_name": current_config_name}
+        response = {
+            "serial_number": os.getenv("SERIAL_NUMBER"),
+            "configs": configs, 
+            "current_config_name": current_config_name}
         return Response(response)
 
 
@@ -267,7 +271,9 @@ class Logs(views.APIView):
             logs.append({"name": name.capitalize(), "entries": entries})
 
         # Return response
-        return Response({"logs": logs, "logs_json": json.dumps(logs)})
+        return Response({"serial_number": os.getenv("SERIAL_NUMBER"),
+                         "logs": logs, 
+                         "logs_json": json.dumps(logs)})
 
 
 class Peripherals(views.APIView):
@@ -292,7 +298,8 @@ class Peripherals(views.APIView):
             peripheral_setups.append(json.loads(peripheral_setups.json))
 
         # Build response
-        response = {"peripheral_setups": peripheral_setups}
+        response = {"serial_number": os.getenv("SERIAL_NUMBER"),
+                    "peripheral_setups": peripheral_setups}
 
         # Return response
         self.logger.debug("Returning response: {}".format(response))
@@ -317,7 +324,8 @@ class Recipes(views.APIView):
         recipes = []
         for recipe_object in recipe_objects:
             recipes.append(viewers.RecipeViewer(recipe_object))
-        return Response({"recipes": recipes}, 200)
+        return Response({"serial_number": os.getenv("SERIAL_NUMBER"),
+                         "recipes": recipes}, 200)
 
 
 class Environments(views.APIView):
@@ -334,7 +342,8 @@ class Environments(views.APIView):
     def get(self, request: Request) -> Response:
         """Gets environments view."""
         environments = models.EnvironmentModel.objects.all().order_by("-timestamp")
-        return Response({"environments": environments}, 200)
+        return Response({"serial_number": os.getenv("SERIAL_NUMBER"),
+                         "environments": environments}, 200)
 
 
 class Images(views.APIView):
@@ -370,7 +379,8 @@ class Images(views.APIView):
         # Build response
         self.logger.debug("relative_image_paths = {}".format(relative_image_paths))
         filepaths_json = json.dumps(relative_image_paths)
-        response = {"filepaths_json": filepaths_json}
+        response = {"serial_number": os.getenv("SERIAL_NUMBER"),
+                    "filepaths_json": filepaths_json}
 
         # Return response
         self.logger.debug("Returning response: {}".format(response))
@@ -398,6 +408,7 @@ class Resource(views.APIView):
 
         # Build response
         response = {
+            "serial_number": os.getenv("SERIAL_NUMBER"),
             "status": resource_manager.status,
             "free_disk": resource_manager.free_disk,
             "free_memory": resource_manager.free_memory,
@@ -422,7 +433,7 @@ class Connect(views.APIView):
     def get(self, request: Request) -> Response:
         """Gets connect view."""
         self.logger.debug("Getting connect view")
-        return Response({})
+        return Response({"serial_number": os.getenv("SERIAL_NUMBER")})
 
 
 class ConnectAdvanced(views.APIView):
@@ -439,7 +450,7 @@ class ConnectAdvanced(views.APIView):
     def get(self, request: Request) -> Response:
         """Gets connect advanced view."""
         self.logger.debug("Getting connect advanced view")
-        return Response({})
+        return Response({"serial_number": os.getenv("SERIAL_NUMBER")})
 
 
 class IoT(views.APIView):
@@ -463,6 +474,7 @@ class IoT(views.APIView):
 
         # Build response
         response = {
+            "serial_number": os.getenv("SERIAL_NUMBER"),
             "is_connected": iot_manager.is_connected,
             "is_registered": iot_manager.is_registered,
             "device_id": iot_manager.device_id,
@@ -497,6 +509,7 @@ class Upgrade(views.APIView):
 
         # Build and return response
         response = {
+            "serial_number": os.getenv("SERIAL_NUMBER"),
             "status": upgrade.status,
             "current_version": upgrade.current_version,
             "upgrade_version": upgrade.upgrade_version,

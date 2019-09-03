@@ -84,10 +84,13 @@ fi
 if [[ $PLATFORM == "unknown" && $OSTYPE == "darwin"* ]]; then
   PLATFORM=osx-machine
   IS_WIFI_ENABLED=true
-  SERIAL_NUMBER=`system_profiler SPHardwareDataType | grep "Serial Number (system)" | awk '{print $4}'`
+  # match the kind of name you would get if running on balena
+  SERIAL_NUMBER=foul-wind
+  #SERIAL_NUMBER=`system_profiler SPHardwareDataType | grep "Serial Number (system)" | awk '{print $4}'`
   IS_I2C_ENABLED=false
 
   # Check if platform has a usb-to-i2c adapter cable
+  # Will show an error on the terminal if no cable plugged in.  Ignore it.
   if [[ `system_profiler SPUSBDataType` == *"FTDI"* ]]; then
     IS_USB_I2C_ENABLED=true
   else
