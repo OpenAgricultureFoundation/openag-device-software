@@ -22,3 +22,4 @@ python-networkmanager
 picamera
 RPi.GPIO
 black==19.3b0
+bacpypes==0.17.6

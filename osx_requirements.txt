@@ -17,6 +17,7 @@ django-tempus-dominus==5.0.1.2
 django-jquery==3.1.0
 jsonfield==2.0.2
 pyftdi==0.29.3
+bacpypes==0.17.6
 #pygame==1.9.4
 #python-networkmanager
 #picamera
