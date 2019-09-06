@@ -5,9 +5,10 @@
 	"module_name": "bacnet.manager",
 	"class_name": "BacnetManager",
     "properties": {
-		"bacpypes_ini_file": "bacnet/setups/bacpypes.ini",
+		"bacpypes_ini_file": "setups/bacpypes.ini",
         "air_temp_sensor": "air_temperature_celsius",
-        "air_RH_sensor": "air_humidity_percent"
+        "air_RH_sensor": "air_humidity_percent",
+        "debug": true
     },
 	"parameters": {
 		"variables": {

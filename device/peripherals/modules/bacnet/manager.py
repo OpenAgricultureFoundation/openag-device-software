@@ -25,6 +25,7 @@ class BacnetManager(manager.PeripheralManager):
         self.bacpypes_ini_file = self.properties.get("bacpypes_ini_file")
         self.air_temp_sensor = self.properties.get("air_temp_sensor")
         self.air_RH_sensor = self.properties.get("air_RH_sensor")
+        self.debug = self.properties.get("debug")
 
         # Verify props
         if self.setup_dict is None or self.bacpypes_ini_file is None:
@@ -49,7 +50,8 @@ class BacnetManager(manager.PeripheralManager):
             self.driver = driver.BacnetDriver(
                 name=self.name,
                 simulate=self.simulate,
-                ini_file=self.bacpypes_ini_file)
+                ini_file=self.bacpypes_ini_file,
+                debug=self.debug)
         except exceptions.DriverError as e:
             self.logger.exception(f"Unable to initialize: {e}")
             self.health = 0.0
@@ -97,10 +99,6 @@ class BacnetManager(manager.PeripheralManager):
     def shutdown_peripheral(self) -> None:
         self.logger.info("Shutting down")
         self.driver.shutdown()
-
-    # --------------------------------------------------------------------------
-    def enable_manual_mode(self) -> Tuple[str, int]:
-        return "Manual mode not used in this peripheral", 200
 
     # --------------------------------------------------------------------------
     def enable_calibration_mode(self) -> Tuple[str, int]:
