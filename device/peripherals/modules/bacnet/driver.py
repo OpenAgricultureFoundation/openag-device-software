@@ -8,11 +8,11 @@ from device.peripherals.modules.bacnet import exceptions
 # The brain that runs on PFCs doesn't have or need BACnet communications,
 # only the LGHC (running on linux) does.
 try:
-    from device.peripherals.modules.bacnet import bnet_wrapper as bnet
+    from device.peripherals.modules.bacnet import bnet_wrapper as BACNET
 except Exception as e:
     l = Logger("\n\nBACNet.driver", __name__)
     l.critical(e)
-    from device.peripherals.modules.bacnet import bnet_simulator as bnet
+    from device.peripherals.modules.bacnet import bnet_simulator as BACNET
 
 
 class BacnetDriver:
@@ -34,15 +34,9 @@ class BacnetDriver:
             raise exceptions.InitError(message="Missing ini file", 
                     logger=self.logger) 
 
-#debugrob: develop with real one, remove the comments later.
-        """
-        if simulate:
-            from device.peripherals.modules.bacnet import bnet_simulator as bnet
-        """
-
         try:
             self.logger.info("driver init")
-            self.bnet = bnet.Bnet(self.logger, ini_file, debug)
+            self.bnet = BACNET.Bnet(self.logger, ini_file, debug)
 
         except Exception as e:
             raise exceptions.InitError(logger=self.logger) from e

@@ -91,25 +91,31 @@ class Bnet(bnet_base.BnetBase):
     def set_test_voltage(self, voltage: float) -> None:
         try:
             self.logger.info(f"set_test_voltage {voltage} for port {self.args.ini.test_voltage_port}")
-#debugrob: TBD, guessing at prop id (it's in the ini file)
+
             # write <addr> <objid> <prop> <value> 
             addr = self.args.ini.send_commands_to_object_id
             obj_id = self.args.ini.test_voltage_port
             prop_id = self.args.ini.test_voltage_prop_id
             self.logger.debug(f"debugrob from ini obj_id {obj_id}")
 
-            obj_id = ('analogOutput', 1001) # debugrob
+#debugrob: TBD, guessing at prop id (it's in the ini file)
+# 'analogOutput' is an OBJECT TYPE
+# in basetypes.py PropertyIdentifier: setpoint, valueSet, volts,  ?
+
+            obj_id = ('analogOutput', 1001) # debugrob, obj_type, device id?
             obj_id = ObjectIdentifier(obj_id).value
-            self.logger.debug(f"debugrob value obj_id {obj_id}")
+            self.logger.debug(f"debugrob value obj_id={str(obj_id)}")
+
+            prop_id = 'valueSet' #debugrob, can also try setpoint and volts
 
             cls = get_object_class(obj_id)
             if cls:
-                self.logger.debug(f"debugrob properties for {obj_id} {cls._properties}")
+                self.logger.debug(f"debugrob properties for obj_id={cls._properties}")
             datatype = get_datatype(obj_id, prop_id)
-            self.logger.debug(f"debugrob datatype {datatype}")
+            self.logger.debug(f"debugrob datatype={datatype}")
 
             value = float(voltage)
-            self.logger.debug(f"debugrob value {value}")
+            self.logger.debug(f"debugrob value={value}")
 
             request = WritePropertyRequest(
                 objectIdentifier=obj_id,
