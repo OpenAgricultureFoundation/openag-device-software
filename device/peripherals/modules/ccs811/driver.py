@@ -34,7 +34,7 @@ class CCS811Driver:
     """Driver for atlas ccs811 co2 and tvoc."""
 
     # Initialize variable properties
-    min_co2 = 400.0  # ppm
+    min_co2 = 300.0  # ppm
     max_co2 = 8192.0  # ppm
     min_tvoc = 0.0  # ppb
     max_tvoc = 1187.0  # ppb
@@ -263,7 +263,7 @@ class CCS811Driver:
 
     def read_algorithm_data(
         self, retry: bool = True, reread: int = 5
-    ) -> Tuple[float, float]:
+    ) -> Tuple[Optional[float], Optional[float]]:
         """Reads algorighm data from sensor hardware."""
         self.logger.debug("Reading co2/tvoc algorithm data")
 
@@ -292,19 +292,23 @@ class CCS811Driver:
         except I2CError:
             raise exceptions.ReadAlgorithmDataError(logger=self.logger) from e
 
+        # Initialize variable types
+        co2: Optional[float]
+        tvoc: Optional[float]
+
         # Parse data bytes
         co2 = float(bytes_[0] * 255 + bytes_[1])
         tvoc = float(bytes_[2] * 255 + bytes_[3])
 
         # Verify co2 value within valid range
-        if co2 > self.min_co2 and co2 < self.min_co2:
-            message = "CO2 reading outside of valid range"
-            raise exceptions.ReadAlgorithmDataError(message=message, logger=self.logger)
+        if co2 < self.min_co2 or co2 > self.max_co2:
+            self.logger.error("CO2 reading outside of valid range, read value: {} ppm".format(co2))
+            co2 = None
 
-        # Verify tvos within valid range
-        if tvoc > self.min_tvoc and tvoc < self.min_tvoc:
-            message = "TVOC reading outside of valid range"
-            raise exceptions.ReadAlgorithmDataError(message=message, logger=self.logger)
+        # Verify tvoc within valid range
+        if tvoc < self.min_tvoc or tvoc > self.max_tvoc:
+            self.logger.error("TVOC reading outside of valid range, read value: {} ppb".format(tvoc))
+            tvoc = None
 
         # Successfully read sensor data!
         self.logger.debug("CO2: {} ppm".format(co2))
@@ -316,7 +320,7 @@ class CCS811Driver:
         ...
 
     def read_ntc(self) -> None:
-        """ Read value of NTC. Can be used to calculate temperature. """
+        """Reads value of NTC. Can be used to calculate temperature. """
         ...
 
     def reset(self, retry: bool = True) -> None:
