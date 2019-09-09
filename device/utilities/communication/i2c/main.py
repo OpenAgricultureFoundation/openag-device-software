@@ -155,7 +155,9 @@ class I2C(object):
                 )
             )
             try:
+                time.sleep(0.05) # Wait 50 ms, TODO: Reduce / remove this after debug
                 self.io.write(mux, bytes([channel_byte]))
+                time.sleep(0.05) # Wait 50 ms, TODO: Reduce / remove this after debug
             except WriteError as e:
                 raise MuxError("Unable to set mux", logger=self.logger) from e
 
