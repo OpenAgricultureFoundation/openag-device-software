@@ -44,7 +44,7 @@ class RecipeManager(StateMachineManager):
             modes.QUEUED: [modes.NORMAL, modes.STOP, modes.ERROR],
             modes.NORMAL: [modes.PAUSE, modes.STOP, modes.ERROR],
             modes.PAUSE: [modes.START, modes.ERROR],
-            modes.STOP: [modes.NORECIPE, modes.ERROR],
+            modes.STOP: [modes.NORECIPE, modes.START, modes.ERROR],
             modes.ERROR: [modes.RESET],
             modes.RESET: [modes.INIT],
         }
