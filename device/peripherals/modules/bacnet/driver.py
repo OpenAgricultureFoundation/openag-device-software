@@ -61,9 +61,9 @@ class BacnetDriver:
 
     # --------------------------------------------------------------------------
     def set_test_voltage(self, voltage: float) -> None:
-        if voltage < 0.0 or voltage > 10.0:
+        if voltage < 0.0 or voltage > 100.0:
             raise exceptions.DriverError(
-                message=f"Test voltage {voltage} out of range (0-10)", 
+                message=f"Test voltage {voltage} out of range (0-100)", 
                 logger=self.logger)
         self.bnet.set_test_voltage(voltage)
 

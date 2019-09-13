@@ -126,14 +126,14 @@ class BacnetManager(manager.PeripheralManager):
             return "Pinging bacnet devices", 200
         elif request["type"] == events.SET_TEST_V:
             try:
-                voltage = float(request.get('value', '-1.0'))
+                volts_percent = float(request.get('value', '-1.0'))
             except:
-                voltage = -1.0
-            if voltage < 0.0 or voltage > 10.0:
-                return f"Please enter a value between 0 and 10 volts.", 400
-            request["value"] = voltage
+                volts_percent = -1.0
+            if volts_percent < 0.0 or volts_percent > 100.0:
+                return f"Please enter a value between 0 and 100 percent.", 400
+            request["value"] = volts_percent
             self.event_queue.put(request)
-            return f"Setting test voltage to {request.get('value')} V", 200
+            return f"Setting test volts_percent to {request.get('value')} %", 200
         elif request["type"] == events.SET_AIR_TEMP:
             try:
                 tempC = float(request.get('value', '-200.0'))

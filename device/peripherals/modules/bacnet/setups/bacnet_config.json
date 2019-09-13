@@ -16,8 +16,8 @@
         {
             "id": "test_v",
             "name": "Test Port",
-            "units": "volts",
-            "object_id": "analogValue:999",
+            "units": "%",
+            "object_id": "analogValue:101",
             "binary": false
         },
         {
@@ -184,7 +184,7 @@
     ],
 	"version": "1",
 	"uuid": "BC2E2521-15A4-47B6-BE5F-8C927ADA5FF0",
-	"module_name": ".manager",
+	"module_name": "",
 	"class_name": "",
     "properties": {},
 	"parameters": {
