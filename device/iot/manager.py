@@ -1,6 +1,7 @@
 # Import standard python modules
 import os, copy, glob, json, shutil, time, datetime
 import paho.mqtt.client as mqtt
+import urllib.request
 
 # Import python types
 from typing import Dict, Any, List, Tuple
@@ -533,8 +534,9 @@ class IotManager(manager.StateMachineManager):
             self.process_command_message(command_message)
 
     def process_command_message(self, message: Dict[str, Any]) -> None:
-        """Process commands received from the backend (UI). This is a callback that is 
-        called by the IoTPubSub class when this device receives commands from the UI."""
+        """Process commands received from the backend (UI). This is a callback
+        that is called by the IoTPubSub class when this device receives
+        commands from the UI."""
         self.logger.debug("Processing command message")
 
         # Get command parameters
@@ -550,6 +552,8 @@ class IotManager(manager.StateMachineManager):
         # Process command
         if command == commands.START_RECIPE:
             self.forcibly_create_and_start_recipe(command, arg0)
+        elif command == commands.DOWNLOAD_AND_START_RECIPE:
+            self.download_and_start_recipe(command, arg0)
         elif command == commands.STOP_RECIPE:
             self.stop_recipe(command)
         else:
@@ -557,11 +561,23 @@ class IotManager(manager.StateMachineManager):
 
     ##### IOT COMMAND FUNCTIONS ###############################################
 
+    def download_and_start_recipe(self, command: str, URL: str) -> None:
+        """ Download the recipe from storage and forcibly start it.
+            Initially used with the recipe generator service for the LGHC.
+            But generally useful because there is a 64K limit to the message
+            size we can send to a device over IoT.
+        """
+        recipe = urllib.request.urlopen(URL)
+        recipe_json = recipe.read().decode('utf-8')
+        self.logger.debug(f"Downloaded recipe {URL}")
+        self.forcibly_create_and_start_recipe(command, recipe_json)
+
     def forcibly_create_and_start_recipe(self, command: str, recipe_json: str) -> None:
-        """Forcible starts and creates recipe. TODO: This method should be depricated
-        by a cadence of iot commands between iot cloud and this device. Cloud backend
-        should look at device state and check if a recipe is already running as well as
-        have insight onto what recipes alread exist on the device, etc."""
+        """ Forcibly starts and creates recipe. TODO: This method should be
+            depricated by a cadence of iot commands between iot cloud and this
+            device. Cloud backend should look at device state and check if a
+            recipe is already running as well as have insight onto what recipes
+            alread exist on the device, etc."""
         self.logger.warning("Forcibly creating and starting recipe")
 
         # Validate recipe

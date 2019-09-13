@@ -106,6 +106,9 @@ DATABASES = {
         "NAME": DATA_PATH + "/db/openag_brain.sqlite",
         "USER": "openag",
         "PASSWORD": "openag",
+        "OPTIONS": {
+            "timeout": 15,
+        },
         "TEST": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": DATA_PATH + "/db/test_openag_brain.sqlite",
