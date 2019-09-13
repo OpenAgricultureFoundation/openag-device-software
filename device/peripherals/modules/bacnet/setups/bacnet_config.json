@@ -1,0 +1,203 @@
+{
+    "name":  "BACNet configuration for LGHC reliable controllers 2019-09-13",
+    "config": {
+        "device_master": "1000:1",
+        "device_slave": "1000:2",
+        "device_status_prop": "systemStatus",
+        "device_objects_prop": "objectList",
+        "object_value_prop": "presentValue",
+        "analog_object_units_prop": "units",
+        "analog_object_hi_limit_prop": "highLimit",
+        "analog_object_lo_limit_prop": "lowLimit",
+        "binary_object_on_value": "active",
+        "binary_object_off_value": "inactive"
+    },
+    "objects": [
+        {
+            "id": "test_v",
+            "name": "Test Port",
+            "units": "volts",
+            "object_id": "analogValue:999",
+            "binary": false
+        },
+        {
+            "id": "air_temp",
+            "name": "Space Temp",
+            "units": "°F",
+            "object_id": "analogValue:1",
+            "binary": false
+        },
+        {
+            "id": "air_rh",
+            "name": "Space Humidity",
+            "units": "%RH",
+            "object_id": "analogValue:2",
+            "binary": false
+        },
+        {
+            "id": "local_air_temp",
+            "name": "Local Space Temp",
+            "units": "°F",
+            "object_id": "analogValue:3",
+            "binary": false
+        },
+        {
+            "id": "local_air_rh",
+            "name": "Local Space Humidity",
+            "units": "%RH",
+            "object_id": "analogValue:4",
+            "binary": false
+        },
+        {
+            "id": "temp_sel",
+            "name": "Space Temp Selection",
+            "units": "",
+            "object_id": "binaryValue:5",
+            "binary": true
+        },
+        {
+            "id": "rh_sel",
+            "name": "Space Humidity Selection",
+            "units": "",
+            "object_id": "binaryValue:6",
+            "binary": true
+        },
+        {
+            "id": "remote_temp_avg",
+            "name": "Remote Space Temp Avg",
+            "units": "°F",
+            "object_id": "analogValue:7",
+            "binary": false
+        },
+        {
+            "id": "remote_rh_avg",
+            "name": "Remote Space Humidity Avg",
+            "units": "%RH",
+            "object_id": "analogValue:8",
+            "binary": false
+        },
+        {
+            "id": "temp_1_in",
+            "name": "Space Temp 1 Input",
+            "units": "°F",
+            "object_id": "analogValue:10",
+            "binary": false
+        },
+        {
+            "id": "temp_2_in",
+            "name": "Space Temp 2 Input",
+            "units": "°F",
+            "object_id": "analogValue:11",
+            "binary": false
+        },
+        {
+            "id": "temp_3_in",
+            "name": "Space Temp 3 Input",
+            "units": "°F",
+            "object_id": "analogValue:12",
+            "binary": false
+        },
+        {
+            "id": "temp_4_in",
+            "name": "Space Temp 4 Input",
+            "units": "°F",
+            "object_id": "analogValue:13",
+            "binary": false
+        },
+        {
+            "id": "temp_5_in",
+            "name": "Space Temp 5 Input",
+            "units": "°F",
+            "object_id": "analogValue:14",
+            "binary": false
+        },
+        {
+            "id": "temp_1_val",
+            "name": "Space Temp 1 Value",
+            "units": "°F",
+            "object_id": "analogValue:15",
+            "binary": false
+        },
+        {
+            "id": "temp_2_val",
+            "name": "Space Temp 2 Value",
+            "units": "°F",
+            "object_id": "analogValue:16",
+            "binary": false
+        },
+        {
+            "id": "temp_3_val",
+            "name": "Space Temp 3 Value",
+            "units": "°F",
+            "object_id": "analogValue:17",
+            "binary": false
+        },
+        {
+            "id": "temp_4_val",
+            "name": "Space Temp 4 Value",
+            "units": "°F",
+            "object_id": "analogValue:18",
+            "binary": false
+        },
+        {
+            "id": "temp_5_val",
+            "name": "Space Temp 5 Value",
+            "units": "°F",
+            "object_id": "analogValue:19",
+            "binary": false
+        },
+        {
+            "id": "use_temp_1",
+            "name": "Use Space Temp 1",
+            "units": "",
+            "object_id": "binaryValue:20",
+            "binary": true
+        },
+        {
+            "id": "use_temp_2",
+            "name": "Use Space Temp 2",
+            "units": "",
+            "object_id": "binaryValue:21",
+            "binary": true
+        },
+        {
+            "id": "use_temp_3",
+            "name": "Use Space Temp 3",
+            "units": "",
+            "object_id": "binaryValue:22",
+            "binary": true
+        },
+        {
+            "id": "use_temp_4",
+            "name": "Use Space Temp 4",
+            "units": "",
+            "object_id": "binaryValue:23",
+            "binary": true
+        },
+        {
+            "id": "use_temp_5",
+            "name": "Use Space Temp 5",
+            "units": "",
+            "object_id": "binaryValue:24",
+            "binary": true
+        }
+    ],
+	"version": "1",
+	"uuid": "BC2E2521-15A4-47B6-BE5F-8C927ADA5FF0",
+	"module_name": ".manager",
+	"class_name": "",
+    "properties": {},
+	"parameters": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		},
+		"communication": null
+	},
+	"info": {
+		"variables": {
+			"sensor": null,
+			"actuator": null
+		}
+	}
+}

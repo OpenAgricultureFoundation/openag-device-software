@@ -48,7 +48,7 @@ class I2C(object):
         # Initialize logger
         logname = "I2C({})".format(self.name)
         self.logger = Logger(logname, "i2c")
-        self.logger.debug("Initializing communication")
+        #self.logger.debug("Initializing communication")
 
         # Verify mux config
         if self.mux != None and self.channel == None:
@@ -56,12 +56,12 @@ class I2C(object):
 
         # Initialize io
         if PeripheralSimulator != None:
-            self.logger.debug("Using simulated io stream")
+            #self.logger.debug("Using simulated io stream")
             self.io = PeripheralSimulator(  # type: ignore
                 name, bus, address, mux, channel, mux_simulator
             )
         else:
-            self.logger.debug("Using device io stream")
+            #self.logger.debug("Using device io stream")
             with self.i2c_lock:
                 self.io = DeviceIO(name, bus)
 
@@ -74,12 +74,12 @@ class I2C(object):
             self.verify_device()
 
         # Successfully initialized!
-        self.logger.debug("Initialization successful")
+        #self.logger.debug("Initialization successful")
 
     def verify_mux(self) -> None:
         """Verifies mux exists by trying to set it to a channel."""
         try:
-            self.logger.debug("Verifying mux exists")
+            #self.logger.debug("Verifying mux exists")
             byte = self.set_mux(self.mux, self.channel, retry=True)
         except MuxError as e:
             message = "Unable to verify mux exists"
@@ -88,7 +88,7 @@ class I2C(object):
     def verify_device(self) -> None:
         """Verifies device exists by trying to read a byte from it."""
         try:
-            self.logger.debug("Verifying device exists")
+            #self.logger.debug("Verifying device exists")
             byte = self.read(1, retry=True)
         except ReadError as e:
             message = "Unable to verify device exists, read error"
@@ -105,7 +105,7 @@ class I2C(object):
         sends bytes. Returns error message."""
         with self.i2c_lock:
             self.manage_mux("write bytes", disable_mux)
-            self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
+            #self.logger.debug("Writing bytes: {}".format(byte_str(bytes_)))
             self.io.write(self.address, bytes_)
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3)
@@ -115,9 +115,9 @@ class I2C(object):
         """Reads num bytes from device. Returns byte array."""
         with self.i2c_lock:
             self.manage_mux("read bytes", disable_mux)
-            self.logger.debug("Reading {} bytes".format(num_bytes))
+            #self.logger.debug("Reading {} bytes".format(num_bytes))
             bytes_ = bytes(self.io.read(self.address, num_bytes))
-            self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
+            #self.logger.debug("Read bytes: {}".format(byte_str(bytes_)))
             return bytes_
 
     @retry((ReadError, MuxError), tries=5, delay=0.2, backoff=3)
@@ -127,9 +127,9 @@ class I2C(object):
         """Reads byte stored in register at address."""
         with self.i2c_lock:
             self.manage_mux("read register", disable_mux)
-            self.logger.debug("Reading register: 0x{:02X}".format(register))
+            #self.logger.debug("Reading register: 0x{:02X}".format(register))
             register_byte = int(self.io.read_register(self.address, register))
-            self.logger.debug("Register byte: {}".format(hex(register_byte)))
+            #self.logger.debug("Register byte: {}".format(hex(register_byte)))
             return register_byte
 
     @retry((WriteError, MuxError), tries=5, delay=0.2, backoff=3)
@@ -138,10 +138,10 @@ class I2C(object):
     ) -> None:
         with self.i2c_lock:
             self.manage_mux("write register", disable_mux)
-            message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(
-                register, value
-            )
-            self.logger.debug(message)
+            #message = "Writing register: 0x{:02X}, value: 0x{:02X}".format(
+            #    register, value
+            #)
+            #self.logger.debug(message)
             self.io.write_register(self.address, register, value)
 
     @retry(MuxError, tries=5, delay=0.2, backoff=3)
@@ -149,11 +149,11 @@ class I2C(object):
         """Sets mux to channel"""
         with self.i2c_lock:
             channel_byte = 0x01 << channel
-            self.logger.debug(
-                "Setting mux 0x{:02X} to channel {}, writing: [0x{:02X}]".format(
-                    mux, channel, channel_byte
-                )
-            )
+            #self.logger.debug(
+            #    "Setting mux 0x{:02X} to channel {}, writing: [0x{:02X}]".format(
+            #        mux, channel, channel_byte
+            #    )
+            #)
             try:
                 self.io.write(mux, bytes([channel_byte]))
             except WriteError as e:
@@ -164,5 +164,5 @@ class I2C(object):
         if disable_mux:
             return
         elif self.mux != None:
-            self.logger.debug("Managing mux to {}".format(message))
+            #self.logger.debug("Managing mux to {}".format(message))
             self.set_mux(self.mux, self.channel, retry=False)

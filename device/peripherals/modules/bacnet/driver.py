@@ -24,19 +24,20 @@ class BacnetDriver:
         name: str,
         simulate: bool = False,
         ini_file: str = None,
+        config_file: str = None,
         debug: bool = False
     ) -> None:
         """Initializes bacpypes."""
 
         self.logger = Logger(name + ".BACNet", __name__)
 
-        if ini_file is None:
-            raise exceptions.InitError(message="Missing ini file", 
+        if ini_file is None or config_file is None:
+            raise exceptions.InitError(message="Missing file args", 
                     logger=self.logger) 
 
         try:
             self.logger.info("driver init")
-            self.bnet = BACNET.Bnet(self.logger, ini_file, debug)
+            self.bnet = BACNET.Bnet(self.logger, ini_file, config_file, debug)
 
         except Exception as e:
             raise exceptions.InitError(logger=self.logger) from e

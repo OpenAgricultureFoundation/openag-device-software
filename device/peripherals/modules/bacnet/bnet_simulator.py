@@ -8,9 +8,11 @@ class Bnet(bnet_base.BnetBase):
     def __init__(self, 
                  logger: Logger, 
                  ini_file: str = None, 
+                 config_file: str = None,
                  debug: bool = False
                  ) -> None:
         self.ini_file = ini_file
+        self.config_file = config_file
         self.debug = debug
         self.logger = logger
         self.logger.info("simulator init")

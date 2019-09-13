@@ -1,7 +1,9 @@
 # Communicate over BACnet by wrapping the bacpypes module to do the real work.
 # https://bacpypes.readthedocs.io/en/latest
 
-import os, socket    
+import os, socket, json
+
+from typing import Dict
 
 from bacpypes.apdu import WhoIsRequest
 from bacpypes.app import BIPSimpleApplication
@@ -11,9 +13,6 @@ from bacpypes.debugging import bacpypes_debugging
 from bacpypes.iocb import IOCB
 from bacpypes.local.device import LocalDeviceObject
 from bacpypes.pdu import Address, GlobalBroadcast
-
-#debugrob: add code from samples/ReadWriteProperty.py 
-# (after getting property names from ReadAllProperties.py)
 from bacpypes.object import get_datatype, get_object_class
 from bacpypes.apdu import SimpleAckPDU, \
     ReadPropertyRequest, ReadPropertyACK, WritePropertyRequest
@@ -25,7 +24,7 @@ from bacpypes.constructeddata import Array, Any, AnyAtomic
 from device.utilities.logger import Logger
 from device.peripherals.modules.bacnet import bnet_base
 
-# bacpypes debugging
+# bacpypes debugging, set this to 0 to turn off
 _debug = 1
 
 
@@ -36,23 +35,18 @@ class Bnet(bnet_base.BnetBase):
     def __init__(self, 
                  logger: Logger, 
                  ini_file: str = None, 
+                 config_file: str = None,
                  debug: bool = False
                  ) -> None:
         path = os.path.dirname(bnet_base.__file__)
         self.ini_file = path + '/' + ini_file
+        self.config_file = path + '/' + config_file
         self.debug = debug
         self.logger = logger
         self.logger.debug(f"init: bacpypes with {self.ini_file}")
-        self.reset() # read config, set up the app
+
         enable_sleeping() # for bacpypes threading
 
-
-    def setup(self) -> None:
-        self.logger.debug("setup")
-
-
-    def reset(self) -> None:
-        self.logger.debug("resetting...")
         cmd_line_args_simulated = []
         if self.debug:
             cmd_line_args_simulated.append("--debug")
@@ -61,6 +55,10 @@ class Bnet(bnet_base.BnetBase):
         cmd_line_args_simulated.append(self.ini_file)
         self.args = ConfigArgumentParser().parse_args(cmd_line_args_simulated)
 
+        # load our reliable config file that has ports, names, types, etc.
+        self.bacnet_config = json.load(open(self.config_file, 'r'))
+        self.logger.debug(f"loaded {self.bacnet_config.get('name')}")
+        
         # make a device object
         self.device = LocalDeviceObject(ini=self.args.ini) 
 
@@ -75,6 +73,28 @@ class Bnet(bnet_base.BnetBase):
         self.app = App(self.logger, self.device, self.args.ini.address)
 
 
+    def setup(self) -> None:
+        self.logger.debug("setup")
+
+
+    def reset(self) -> None:
+        self.logger.debug("resetting...")
+
+
+    # Get one of our bacnet config objs from out config dict
+    def __get_object(self, obj_id: str) -> Dict:
+        for obj in self.bacnet_config.get('objects'):
+            if obj.get('id') == obj_id:
+                return obj
+        return {}
+
+    def __get_device(self) -> str:
+        return self.bacnet_config.get('config').get('device_master')
+
+    def __get_prop(self) -> str:
+        return self.bacnet_config.get('config').get('object_value_prop')
+
+    # Ping all bacnet devices and write them to stdout
     def ping(self) -> None:
         try:
             # build a request
@@ -88,34 +108,22 @@ class Bnet(bnet_base.BnetBase):
         except Exception as err:
             self.logger.critical(err)
 
-    def set_test_voltage(self, voltage: float) -> None:
+
+    # Helper to set a value
+    def __set_value(self, config_obj_id: str, _value: float) -> None:
         try:
-            self.logger.info(f"set_test_voltage {voltage} for port {self.args.ini.test_voltage_port}")
+            # get config obj
+            obj = self.__get_object(config_obj_id)
+            obj_id = obj.get('object_id')
+            obj_id = ObjectIdentifier(obj_id).value # make a bacpypes obj id
+            addr = self.__get_device()
+            prop_id = self.__get_prop()
+            self.logger.debug(f"__set_value {config_obj_id} {_value} for port \'{obj.get('name')}\'")
 
             # write <addr> <objid> <prop> <value> 
-            addr = self.args.ini.send_commands_to_object_id
-            obj_id = self.args.ini.test_voltage_port
-            prop_id = self.args.ini.test_voltage_prop_id
-            self.logger.debug(f"debugrob from ini obj_id {obj_id}")
-
-#debugrob: TBD, guessing at prop id (it's in the ini file)
-# 'analogOutput' is an OBJECT TYPE
-# in basetypes.py PropertyIdentifier: setpoint, valueSet, volts,  ?
-
-            obj_id = ('analogOutput', 1001) # debugrob, obj_type, device id?
-            obj_id = ObjectIdentifier(obj_id).value
-            self.logger.debug(f"debugrob value obj_id={str(obj_id)}")
-
-            prop_id = 'valueSet' #debugrob, can also try setpoint and volts
-
-            cls = get_object_class(obj_id)
-            if cls:
-                self.logger.debug(f"debugrob properties for obj_id={cls._properties}")
-            datatype = get_datatype(obj_id, prop_id)
-            self.logger.debug(f"debugrob datatype={datatype}")
-
-            value = float(voltage)
-            self.logger.debug(f"debugrob value={value}")
+            value = float(_value)
+            self.logger.debug(f"obj_id={str(obj_id)}")
+            self.logger.debug(f"value={value}")
 
             request = WritePropertyRequest(
                 objectIdentifier=obj_id,
@@ -123,6 +131,9 @@ class Bnet(bnet_base.BnetBase):
                 )
             request.pduDestination = Address(addr)
 
+            # the value to write 
+            datatype = get_datatype(obj_id[0], prop_id)
+            value = datatype(value)
             request.propertyValue = Any()
             try:
                 request.propertyValue.cast_in(value)
@@ -132,14 +143,21 @@ class Bnet(bnet_base.BnetBase):
             iocb = IOCB(request)
 
             # give it to the application
-            deferred(this_application.request_io, iocb)
+            self.app.request_io(iocb)
+
+# Don't wait here and hang the thread if there is no device!
+# The code below will be used if we ever need to read a value from a device.
+            """
+            deferred(self.app.request_io, iocb)
 
             # wait for it to complete
-            self.logger.debug(f"debugrob waiting for iocb...")
+            self.logger.debug(f"waiting for iocb...")
             iocb.wait()
 
             # do something for success
             if iocb.ioResponse:
+                self.logger.debug(f"iocb response success!")
+
                 apdu = iocb.ioResponse
 
                 # should be an ack
@@ -165,17 +183,25 @@ class Bnet(bnet_base.BnetBase):
             # do something for error/reject/abort
             if iocb.ioError:
                 self.logger.error(f"response: {str(iocb.ioError)}")
+            """
 
         except Exception as err:
             self.logger.critical(err)
 
+
+    def set_test_voltage(self, voltage: float) -> None:
+        self.logger.info(f"set_test_voltage {voltage}")
+        self.__set_value('test_v', voltage)
+
+
     def set_air_temp(self, tempC: float) -> None:
         self.logger.info(f"set_air_temp {tempC}")
-#debugrob: TBD after figuring out property names using interactive sample
+        self.__set_value('air_temp', tempC)
+
 
     def set_air_RH(self, RH: float) -> None:
         self.logger.info(f"set_air_RH {RH}")
-#debugrob: TBD after figuring out property names using interactive sample
+        self.__set_value('air_rh', RH)
 
 
 #------------------------------------------------------------------------------

@@ -61,7 +61,7 @@ class PeripheralSimulator:
         # Initialize logger
         logname = "Simulator({})".format(name)
         self.logger = Logger(logname, __name__)
-        self.logger.debug("Initializing simulator")
+        #self.logger.debug("Initializing simulator")
 
         # Initialize buffer
         self.buffer: bytearray = bytearray([])  # mutable bytes
@@ -81,8 +81,8 @@ class PeripheralSimulator:
     @verify_mux
     def read(self, device_addr: int, num_bytes: int) -> bytes:
         """Reads bytes from buffer. Returns 0x00 if buffer is empty."""
-        msg = "Reading {} bytes, buffer: {}".format(num_bytes, byte_str(self.buffer))
-        self.logger.debug(msg)
+        #msg = "Reading {} bytes, buffer: {}".format(num_bytes, byte_str(self.buffer))
+        #self.logger.debug(msg)
 
         # Check device address matches
         if device_addr != self.device_addr:
@@ -122,10 +122,10 @@ class PeripheralSimulator:
 
             # Write response bytes to buffer
             response_byte_string = byte_str(response_bytes)  # type: ignore
-            self.logger.debug("Response bytes: {}".format(response_byte_string))
+            #self.logger.debug("Response bytes: {}".format(response_byte_string))
             for byte in response_bytes:  # type: ignore
                 self.buffer.insert(0, byte)
-            self.logger.debug("Buffer: {}".format(byte_str(self.buffer)))
+            #self.logger.debug("Buffer: {}".format(byte_str(self.buffer)))
 
         # Check for invalid address
         else:

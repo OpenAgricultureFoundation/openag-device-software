@@ -20,19 +20,23 @@ class BacnetManager(manager.PeripheralManager):
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
+        self.driver = None
+
         # Read our own set up files here, since we don't use I2C like the 
         # base peripheral class does
         self.bacpypes_ini_file = self.properties.get("bacpypes_ini_file")
+        self.bacnet_config_file = self.properties.get("bacnet_config")
         self.air_temp_sensor = self.properties.get("air_temp_sensor")
         self.air_RH_sensor = self.properties.get("air_RH_sensor")
         self.debug = self.properties.get("debug")
 
         # Verify props
-        if self.setup_dict is None or self.bacpypes_ini_file is None:
-            self.logger.critical(
-                    "Missing bacpypes_ini_file in setup properties.")
+        if self.setup_dict is None or self.bacpypes_ini_file is None or \
+                self.bacnet_config_file is None:
+            self.logger.critical("Missing mandatory properties.")
             return
         self.logger.info(f"bacpypes_ini_file={self.bacpypes_ini_file}")
+        self.logger.info(f"bacnet_config_file={self.bacnet_config_file}")
 
         # Set default sampling interval 
         self.default_sampling_interval = 60  # seconds
@@ -47,11 +51,13 @@ class BacnetManager(manager.PeripheralManager):
 
         # Initialize driver
         try:
-            self.driver = driver.BacnetDriver(
-                name=self.name,
-                simulate=self.simulate,
-                ini_file=self.bacpypes_ini_file,
-                debug=self.debug)
+            if self.driver is None:
+                self.driver = driver.BacnetDriver(
+                    name=self.name,
+                    simulate=self.simulate,
+                    ini_file=self.bacpypes_ini_file,
+                    config_file=self.bacnet_config_file,
+                    debug=self.debug)
         except exceptions.DriverError as e:
             self.logger.exception(f"Unable to initialize: {e}")
             self.health = 0.0
