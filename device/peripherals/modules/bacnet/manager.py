@@ -26,8 +26,6 @@ class BacnetManager(manager.PeripheralManager):
         # base peripheral class does
         self.bacpypes_ini_file = self.properties.get("bacpypes_ini_file")
         self.bacnet_config_file = self.properties.get("bacnet_config")
-        self.air_temp_sensor = self.properties.get("air_temp_sensor")
-        self.air_RH_sensor = self.properties.get("air_RH_sensor")
         self.debug = self.properties.get("debug")
 
         # Verify props
@@ -37,6 +35,10 @@ class BacnetManager(manager.PeripheralManager):
             return
         self.logger.info(f"bacpypes_ini_file={self.bacpypes_ini_file}")
         self.logger.info(f"bacnet_config_file={self.bacnet_config_file}")
+
+        # Initialize variable names
+        self.temperature_name = self.variables["sensor"]["temperature_celsius"]
+        self.humidity_name = self.variables["sensor"]["humidity_percent"]
 
         # Set default sampling interval 
         self.default_sampling_interval = 60  # seconds
@@ -79,17 +81,29 @@ class BacnetManager(manager.PeripheralManager):
     def update_peripheral(self) -> None:
         """Updates peripheral by setting output to desired state."""
         try:
-            temp = self.state.get_environment_reported_sensor_value(
-                    self.air_temp_sensor)
-            if temp is not None:
-                self.logger.info(f"Setting temp={temp}")
-                self.driver.set_air_temp(temp)
+            # Get the DESIRED values (set by recipe) and send them to the 
+            # bacnet device that sets the setpoint for the HVAC.
+            tempC = self.state.get_environment_desired_sensor_value(
+                self.temperature_name)
+            self.logger.info(f"Set point tempC={tempC}")
+            self.driver.set_air_temp(tempC)
 
-            RH = self.state.get_environment_reported_sensor_value(
-                    self.air_RH_sensor)
-            if RH is not None:
-                self.logger.info(f"Setting RH={RH}")
-                self.driver.set_air_RH(RH)
+            RH = self.state.get_environment_desired_sensor_value(
+                self.humidity_name)
+            self.logger.info(f"Set point RH={RH}")
+            self.driver.set_air_RH(RH)
+
+            # Set temp & RH environment variables that will be published
+            tempC = self.driver.get_air_temp()
+            self.logger.info(f"Sensed tempC={tempC}")
+            self.state.set_peripheral_reported_sensor_value(
+                self.name, self.temperature_name, tempC)
+ 
+            RH = self.driver.get_air_temp()
+            self.logger.info(f"Sensed RH={RH}")
+            self.state.set_peripheral_reported_sensor_value(
+                self.name, self.humidity_name, RH)
+ 
 
         except exceptions.DriverError as e:
             self.logger.exception(f"Unable to update peripheral: {e}")

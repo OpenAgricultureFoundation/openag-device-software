@@ -1,84 +1,95 @@
 {
-	"name":  "Reliable HVAC",
-	"version": "1",
-	"uuid": "5e827b66-afb1-4f43-a4f0-2fb495f87ce4",
-	"module_name": "bacnet.manager",
-	"class_name": "BacnetManager",
+    "name":  "Reliable HVAC",
+    "version": "1",
+    "uuid": "5e827b66-afb1-4f43-a4f0-2fb495f87ce4",
+    "module_name": "bacnet.manager",
+    "class_name": "BacnetManager",
     "properties": {
-		"bacpypes_ini_file": "setups/bacpypes.ini",
-		"bacnet_config": "setups/bacnet_config.json",
-        "air_temp_sensor": "air_temperature_celsius",
-        "air_RH_sensor": "air_humidity_percent",
+        "bacpypes_ini_file": "setups/bacpypes.ini",
+        "bacnet_config": "setups/bacnet_config.json",
         "debug": true
     },
-	"parameters": {
-		"variables": {
-			"sensor": null,
-			"actuator": null
-		},
-		"communication": null
-	},
-	"events": [
-	    {
-	        "name": "Reset",
-	        "description": "Reset peripheral.",
-	        "value": null,
-	        "sequence": null
-	    },
-	    {
-	        "name": "Shutdown",
-	        "description": "Shutdown peripheral.",
-	        "value": null,
-	        "sequence": null
-	    },
-		{
-		    "name": "Enable Manual Mode",
-		    "description": "Allows actuator to be controlled by manual events.",
-		    "value": null,
-		    "sequence": null
-		},
-	    {
-	        "name": "Ping",
-	        "description": "Ping all BACNet devices",
-	        "value": null,
-	        "sequence": null,
-	        "is_manual": true
-	    },
-	    {
-	        "name": "Test",
-	        "description": "Set test voltage",
-	        "value": {
+    "parameters": {
+        "variables": {
+            "sensor": {
+                "temperature_celsius": {
+                    "name": {
+                        "type": "string", 
+                        "default": "air_temperature_celsius"
+                    }
+                },
+                "humidity_percent": {
+                    "name": {
+                        "type": "string",
+                        "default": "air_humidity_percent"
+                    }
+                }
+            },
+            "actuator": null
+        },
+        "communication": null
+    },
+    "events": [
+        {
+            "name": "Reset",
+            "description": "Reset peripheral.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Shutdown",
+            "description": "Shutdown peripheral.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Enable Manual Mode",
+            "description": "Allows actuator to be controlled by manual events.",
+            "value": null,
+            "sequence": null
+        },
+        {
+            "name": "Ping",
+            "description": "Ping all BACNet devices",
+            "value": null,
+            "sequence": null,
+            "is_manual": true
+        },
+        {
+            "name": "Test",
+            "description": "Set test voltage",
+            "value": {
                 "default": "0.0 to 10.0",
                 "unit": "Volts"
             },
-	        "sequence": null,
-	        "is_manual": true
-	    },
-	    {
-	        "name": "Air Temp",
-	        "description": "Set air temperature",
-	        "value": {
+            "sequence": null,
+            "is_manual": true
+        },
+        {
+            "name": "Air Temp",
+            "description": "Set air temperature",
+            "value": {
                 "default": "-100.0 to 200.0",
                 "unit": "Celsius"
             },
-	        "sequence": null,
-	        "is_manual": true
-	    },
-	    {
-	        "name": "Air RH",
-	        "description": "Set air relative humidity",
-	        "value": {
+            "sequence": null,
+            "is_manual": true
+        },
+        {
+            "name": "Air RH",
+            "description": "Set air relative humidity",
+            "value": {
                 "default": "0.0 to 100.0",
                 "unit": "%"
             },
-	        "sequence": null,
-	        "is_manual": true
-	    }
-	],
-	"info": {
-		"variables": {
-			"sensor": null,
-			"actuator": null
-		}
-	}
+            "sequence": null,
+            "is_manual": true
+        }
+    ],
+    "info": {
+        "variables": {
+            "sensor": null,
+            "actuator": null
+        }
+    }
 }

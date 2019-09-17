@@ -9,13 +9,16 @@
             "uuid": "5e827b66-afb1-4f43-a4f0-2fb495f87ce4",
             "parameters": {
                 "driver_module": "bacnet.driver",
-		        "driver_class": "BacnetDriver",
+                "driver_class": "BacnetDriver",
                 "setup": {
                     "name": "Reliable BACNet HVAC",
                     "file_name": "bacnet/setups/reliable_HVAC"
                 },
                 "variables": {
-                    "sensor": null,
+                    "sensor": {
+                        "temperature_celsius": "air_temperature_celsius",
+                        "humidity_percent": "air_humidity_percent"
+                    },
                     "actuator": null
                 },
                 "communication": {
@@ -24,30 +27,6 @@
                     "mux": null,
                     "channel": null,
                     "address": null
-                }
-            }
-        },
-        {
-            "name": "SHT25-Top",
-            "type": "SHT25",
-            "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
-            "parameters": {
-                "setup": {
-                    "name": "SHT25 Temperature / Humidity Sensor Default",
-                    "file_name": "sht25/setups/default"
-                },
-                "variables": {
-                    "sensor": {
-                        "temperature_celsius": "air_temperature_celsius",
-                        "humidity_percent": "air_humidity_percent"                    
-                    },
-                    "actuator": null
-                },
-                "communication": {
-                    "bus": "default", 
-                    "mux": "default", 
-                    "channel": 2, 
-                    "address": "0x40"
                 }
             }
         }

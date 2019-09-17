@@ -28,3 +28,11 @@ class BnetBase(ABC):
     @abstractmethod
     def set_air_RH(self, RH: float) -> None:
         pass
+
+    @abstractmethod
+    def get_air_temp(self) -> float:
+        pass
+
+    @abstractmethod
+    def get_air_RH(self) -> float:
+        pass

@@ -34,3 +34,13 @@ class Bnet(bnet_base.BnetBase):
 
     def set_air_RH(self, RH: float) -> None:
         self.logger.info(f"simulator set_air_RH {RH}")
+
+    def get_air_temp(self) -> float:
+        self.logger.info(f"simulator get_air_temp")
+        return 0
+
+    def get_air_RH(self) -> float:
+        self.logger.info(f"simulator get_air_RH")
+        return 0
+
+

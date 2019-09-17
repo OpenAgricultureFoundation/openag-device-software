@@ -63,7 +63,7 @@ class BacnetDriver:
     def set_test_voltage(self, voltage: float) -> None:
         if voltage < 0.0 or voltage > 100.0:
             raise exceptions.DriverError(
-                message=f"Test voltage {voltage} out of range (0-100)", 
+                message=f"Test voltage {voltage} out of range (0-100%)", 
                 logger=self.logger)
         self.bnet.set_test_voltage(voltage)
 
@@ -83,6 +83,13 @@ class BacnetDriver:
                 logger=self.logger)
         self.bnet.set_air_RH(RH)
 
+    # --------------------------------------------------------------------------
+    def get_air_temp(self) -> float:
+        return self.bnet.get_air_temp()
+
+    # --------------------------------------------------------------------------
+    def get_air_RH(self) -> float:
+        return self.bnet.get_air_RH()
 
 
 
