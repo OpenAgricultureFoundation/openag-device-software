@@ -65,9 +65,12 @@ class Bnet(bnet_base.BnetBase):
         # Overwrite the IP address in the .ini file to match what this machine
         # is configured for (to work, it must be a static IP on the same
         # subnet as the reliable / bacnet devices: 192.168.1.XXX/24
-        self.IP = socket.gethostbyname(socket.gethostname()) + "/24"
-        self.args.ini.address = self.IP
-        self.logger.debug(f"init: IP {self.IP}")
+
+        # WRONG: this returns 127.0.1.1/24 on Nuvo
+        #self.IP = socket.gethostbyname(socket.gethostname()) + "/24"
+        #self.args.ini.address = self.IP
+        #self.logger.debug(f"init: IP {self.IP}")
+        self.logger.debug(f"init: IP {self.args.ini.address}")
 
         # make an application to get callbacks from bacpypes
         self.app = BIPSimpleApplication(self.device, self.args.ini.address)
