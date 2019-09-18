@@ -165,7 +165,7 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.debug(f"read: loopy {loopCount}")
             self.logger.debug("read: done waiting")
             stop()
-#debugrob: not working, why?  it works in the reliable main tests
+#debugrob: above not working, why?  it works in the reliable main tests
 
             # do something for success
             if iocb.ioResponse:
@@ -298,7 +298,7 @@ class Bnet(bnet_base.BnetBase):
 
 
     def get_air_RH(self) -> float:
-        RH = self.__read_value('air_RH')
+        RH = self.__read_value('air_rh')
         self.logger.info(f"get_air_RH {RH}%")
         return RH
 
