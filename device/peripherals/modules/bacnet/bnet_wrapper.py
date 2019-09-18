@@ -1,11 +1,12 @@
 # Communicate over BACnet by wrapping the bacpypes module to do the real work.
 # https://bacpypes.readthedocs.io/en/latest
 
-import os, socket, json, time
+import os, socket, json, time, asyncore    
 
 from typing import Dict
 
-from bacpypes.apdu import WhoIsRequest
+from bacpypes.apdu import WhoIsRequest, SimpleAckPDU, \
+    ReadPropertyRequest, ReadPropertyACK, WritePropertyRequest
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.consolelogging import ConfigArgumentParser
 from bacpypes.core import run, stop, deferred, enable_sleeping
@@ -14,12 +15,8 @@ from bacpypes.iocb import IOCB
 from bacpypes.local.device import LocalDeviceObject
 from bacpypes.pdu import Address, GlobalBroadcast
 from bacpypes.object import get_datatype, get_object_class
-from bacpypes.apdu import SimpleAckPDU, \
-    ReadPropertyRequest, ReadPropertyACK, WritePropertyRequest
-from bacpypes.primitivedata import Null, Atomic, Boolean, Unsigned, Integer, \
-    Real, Double, OctetString, CharacterString, BitString, Date, Time, \
-    ObjectIdentifier
-from bacpypes.constructeddata import Array, Any, AnyAtomic
+from bacpypes.primitivedata import ObjectIdentifier
+from bacpypes.constructeddata import Any
 
 from device.utilities.logger import Logger
 from device.peripherals.modules.bacnet import bnet_base
@@ -65,11 +62,6 @@ class Bnet(bnet_base.BnetBase):
         # Overwrite the IP address in the .ini file to match what this machine
         # is configured for (to work, it must be a static IP on the same
         # subnet as the reliable / bacnet devices: 192.168.1.XXX/24
-
-        # WRONG: this returns 127.0.1.1/24 on Nuvo
-        #self.IP = socket.gethostbyname(socket.gethostname()) + "/24"
-        #self.args.ini.address = self.IP
-        #self.logger.debug(f"init: IP {self.IP}")
         self.logger.debug(f"init: IP {self.args.ini.address}")
 
         # make an application to get callbacks from bacpypes
@@ -106,28 +98,28 @@ class Bnet(bnet_base.BnetBase):
             request.pduDestination = GlobalBroadcast() 
             # make an IOCB (input output callback)
             iocb = IOCB(request)
-
-#debugrob: do a run() then sleep(15) then stop() ??
-            # wait for it to complete (or timeout)
-            deferred(self.app.request_io, iocb)
-            self.logger.debug(f"ping: waiting for iocb...")
-            iocb.wait(timeout=15) # seconds?
+            self.app.request_io(iocb)
+            self.logger.debug("ping: waiting for responses...")
+            loopCount = 0
+            while loopCount < 10:
+                loopCount += 1
+                run_once()
+                asyncore.loop(timeout=0.2, count=1)
+                time.sleep(0.2)
+                self.logger.debug(f"ping: loopy {loopCount}")
+            self.logger.debug("ping: done with whois")
+#debugrob: use the code above in read and write
 
             # handle responses
             if iocb.ioResponse:
                 self.logger.debug(f"ping: iocb response success!")
-
                 apdu = iocb.ioResponse
-
-                # should be iam request messages as response
                 if not isinstance(apdu, IAmRequest):
                     self.logger.error(f"ping: Not an IAmRequest")
                     return
-
                 device_type, device_instance = apdu.iAmDeviceIdentifier
                 if device_type != 'device':
                     raise DecodingError("ping: invalid object type")
-
                 self.logger.info(f"ping: pduSource={repr(apdu.pduSource)}")
                 self.logger.info(f"ping: deviceId={str(apdu.iAmDeviceIdentifier)}")
 
@@ -160,17 +152,17 @@ class Bnet(bnet_base.BnetBase):
             request.pduDestination = Address(addr)
 
             iocb = IOCB(request)
-
-            # wait for it to complete (or timeout)
-            self.logger.debug(f"read: waiting for iocb...")
-            #deferred(self.app.request_io, iocb)
-            #iocb.wait(timeout=15) # seconds?
-#debugrob: do a run() then sleep(15) then stop() ??
             self.app.request_io(iocb)
-            run() # bacpypes core threading does IO
-            time.sleep(15)
-            stop() # stop bacpypes threads
-            self.logger.debug(f"read: done waiting")
+            self.logger.debug("read: waiting for response...")
+            loopCount = 0
+            while loopCount < 5:
+                loopCount += 1
+                run_once()
+                asyncore.loop(timeout=0.2, count=1)
+                time.sleep(0.2)
+                self.logger.debug(f"read: loopy {loopCount}")
+            self.logger.debug("read: done waiting")
+#debugrob: copy above to write
 
             # do something for success
             if iocb.ioResponse:
@@ -239,11 +231,17 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.critical(err)
 
             iocb = IOCB(request)
-
-            # wait for it to complete (or timeout)
-            self.logger.debug(f"write: waiting for iocb...")
-            deferred(self.app.request_io, iocb)
-            iocb.wait(timeout=15) # seconds?
+            self.app.request_io(iocb)
+            self.logger.debug("write: waiting for response...")
+            loopCount = 0
+            while loopCount < 5:
+                loopCount += 1
+                run_once()
+                asyncore.loop(timeout=0.2, count=1)
+                time.sleep(0.2)
+                self.logger.debug(f"write: loopy {loopCount}")
+            self.logger.debug("write: done waiting")
+#debugrob: 
 
             # do something for success
             if iocb.ioResponse:
@@ -281,6 +279,7 @@ class Bnet(bnet_base.BnetBase):
         self.logger.info(f"set_air_RH {RH}")
         self.__write_value('set_air_rh', RH)
 
+
     def get_air_temp(self) -> float:
         tempF = self.__read_value('air_temp')
         if tempF is None:
@@ -289,6 +288,7 @@ class Bnet(bnet_base.BnetBase):
         tempC = (tempF - 32) * (5/9)
         self.logger.info(f"get_air_temp {tempC}C")
         return tempC
+
 
     def get_air_RH(self) -> float:
         if RH is None:
