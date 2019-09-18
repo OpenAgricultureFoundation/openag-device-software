@@ -1,14 +1,14 @@
 # Communicate over BACnet by wrapping the bacpypes module to do the real work.
 # https://bacpypes.readthedocs.io/en/latest
 
-import os, socket, json
+import os, socket, json, time
 
 from typing import Dict
 
 from bacpypes.apdu import WhoIsRequest
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.consolelogging import ConfigArgumentParser
-from bacpypes.core import deferred, enable_sleeping
+from bacpypes.core import run, stop, deferred, enable_sleeping
 from bacpypes.debugging import bacpypes_debugging
 from bacpypes.iocb import IOCB
 from bacpypes.local.device import LocalDeviceObject
@@ -107,6 +107,7 @@ class Bnet(bnet_base.BnetBase):
             # make an IOCB (input output callback)
             iocb = IOCB(request)
 
+#debugrob: do a run() then sleep(15) then stop() ??
             # wait for it to complete (or timeout)
             deferred(self.app.request_io, iocb)
             self.logger.debug(f"ping: waiting for iocb...")
@@ -160,10 +161,16 @@ class Bnet(bnet_base.BnetBase):
 
             iocb = IOCB(request)
 
-            # wait for it to complete (or timeout
-            deferred(self.app.request_io, iocb)
+            # wait for it to complete (or timeout)
             self.logger.debug(f"read: waiting for iocb...")
-            iocb.wait(timeout=15) # seconds?
+            #deferred(self.app.request_io, iocb)
+            #iocb.wait(timeout=15) # seconds?
+#debugrob: do a run() then sleep(15) then stop() ??
+            self.app.request_io(iocb)
+            run() # bacpypes core threading does IO
+            time.sleep(15)
+            stop() # stop bacpypes threads
+            self.logger.debug(f"read: done waiting")
 
             # do something for success
             if iocb.ioResponse:
@@ -233,9 +240,9 @@ class Bnet(bnet_base.BnetBase):
 
             iocb = IOCB(request)
 
-            # wait for it to complete (or timeout
-            deferred(self.app.request_io, iocb)
+            # wait for it to complete (or timeout)
             self.logger.debug(f"write: waiting for iocb...")
+            deferred(self.app.request_io, iocb)
             iocb.wait(timeout=15) # seconds?
 
             # do something for success
