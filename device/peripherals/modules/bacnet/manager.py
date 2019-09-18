@@ -99,7 +99,7 @@ class BacnetManager(manager.PeripheralManager):
             self.state.set_peripheral_reported_sensor_value(
                 self.name, self.temperature_name, tempC)
  
-            RH = self.driver.get_air_temp()
+            RH = self.driver.get_air_RH()
             self.logger.info(f"Sensed RH={RH}")
             self.state.set_peripheral_reported_sensor_value(
                 self.name, self.humidity_name, RH)

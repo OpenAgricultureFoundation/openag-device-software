@@ -108,7 +108,7 @@ class Bnet(bnet_base.BnetBase):
                 time.sleep(0.2)
                 self.logger.debug(f"ping: loopy {loopCount}")
             self.logger.debug("ping: done with whois")
-#debugrob: use the code above in read and write
+#debugrob: 
 
             # handle responses
             if iocb.ioResponse:
@@ -140,10 +140,9 @@ class Bnet(bnet_base.BnetBase):
             obj_id = ObjectIdentifier(obj_id).value # make a bacpypes obj id
             addr = self.__get_device()
             prop_id = self.__get_prop()
-            self.logger.debug(f"read: {config_obj_id} for port \'{obj.get('name')}\'")
 
             # read <addr> <objid> <prop> 
-            self.logger.debug(f"read: obj_id={str(obj_id)} prop_id={prop_id}")
+            self.logger.debug(f"read: {config_obj_id} for port \'{obj.get('name')}\' {addr} {str(obj_id)} {prop_id}")
 
             request = ReadPropertyRequest(
                 objectIdentifier=obj_id,
@@ -155,14 +154,14 @@ class Bnet(bnet_base.BnetBase):
             self.app.request_io(iocb)
             self.logger.debug("read: waiting for response...")
             loopCount = 0
-            while loopCount < 5:
+            while loopCount < 15:
                 loopCount += 1
                 run_once()
                 asyncore.loop(timeout=0.2, count=1)
                 time.sleep(0.2)
                 self.logger.debug(f"read: loopy {loopCount}")
             self.logger.debug("read: done waiting")
-#debugrob: copy above to write
+#debugrob: not working, why?  it works in the reliable main tests
 
             # do something for success
             if iocb.ioResponse:
@@ -208,11 +207,10 @@ class Bnet(bnet_base.BnetBase):
             obj_id = ObjectIdentifier(obj_id).value # make a bacpypes obj id
             addr = self.__get_device()
             prop_id = self.__get_prop()
-            self.logger.debug(f"write: {config_obj_id} {_value} for port \'{obj.get('name')}\'")
 
             # write <addr> <objid> <prop> <value> 
             value = float(_value)
-            self.logger.debug(f"write: obj_id={str(obj_id)} prop_id={prop_id} value={value}")
+            self.logger.debug(f"write: {config_obj_id} {_value} for port \'{obj.get('name')}\' {str(obj_id)} {prop_id} {value}")
 
             request = WritePropertyRequest(
                 objectIdentifier=obj_id,
