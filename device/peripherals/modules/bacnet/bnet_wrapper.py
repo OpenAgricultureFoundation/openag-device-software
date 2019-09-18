@@ -9,7 +9,7 @@ from bacpypes.apdu import WhoIsRequest, SimpleAckPDU, \
     ReadPropertyRequest, ReadPropertyACK, WritePropertyRequest
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.consolelogging import ConfigArgumentParser
-from bacpypes.core import run_once 
+from bacpypes.core import run_once, stop
 from bacpypes.debugging import bacpypes_debugging
 from bacpypes.iocb import IOCB
 from bacpypes.local.device import LocalDeviceObject
@@ -108,6 +108,7 @@ class Bnet(bnet_base.BnetBase):
                 time.sleep(0.2)
                 self.logger.debug(f"ping: loopy {loopCount}")
             self.logger.debug("ping: done with whois")
+            stop()
 #debugrob: 
 
             # handle responses
@@ -161,6 +162,7 @@ class Bnet(bnet_base.BnetBase):
                 time.sleep(0.2)
                 self.logger.debug(f"read: loopy {loopCount}")
             self.logger.debug("read: done waiting")
+            stop()
 #debugrob: not working, why?  it works in the reliable main tests
 
             # do something for success
@@ -238,6 +240,7 @@ class Bnet(bnet_base.BnetBase):
                 time.sleep(0.2)
                 self.logger.debug(f"write: loopy {loopCount}")
             self.logger.debug("write: done waiting")
+            stop()
 #debugrob: 
 
             # do something for success
