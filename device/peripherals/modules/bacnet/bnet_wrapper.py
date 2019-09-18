@@ -1,7 +1,7 @@
 # Communicate over BACnet by wrapping the bacpypes module to do the real work.
 # https://bacpypes.readthedocs.io/en/latest
 
-import os, socket, json, time, asyncore    
+import sys, traceback, os, socket, json, time, asyncore    
 
 from typing import Dict
 
@@ -129,7 +129,9 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.error(f"ping: {str(iocb.ioError)}")
 
         except Exception as err:
-            self.logger.critical(err)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback, file=sys.stdout)
+            self.logger.critical(f"ping: {err}")
 
 
     # Helper to read a value
@@ -197,7 +199,10 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.error(f"read: ioError {str(iocb.ioError)}")
 
         except Exception as err:
-            self.logger.critical(err)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback, file=sys.stdout)
+            self.logger.critical(f"read: {err}")
+        return None
 
 
     # Helper to write a value
@@ -227,7 +232,7 @@ class Bnet(bnet_base.BnetBase):
             try:
                 request.propertyValue.cast_in(value)
             except Exception as err:
-                self.logger.critical(err)
+                self.logger.critical(f"write: {err}")
 
             iocb = IOCB(request)
             self.app.request_io(iocb)
@@ -260,7 +265,9 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.error(f"write: ioError {str(iocb.ioError)}")
 
         except Exception as err:
-            self.logger.critical(err)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback, file=sys.stdout)
+            self.logger.critical(f"write: {err}")
 
 
     def set_test_voltage(self, voltage: float) -> None:
