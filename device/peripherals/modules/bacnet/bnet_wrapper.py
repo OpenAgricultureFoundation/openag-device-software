@@ -17,6 +17,7 @@ from bacpypes.pdu import Address, GlobalBroadcast
 from bacpypes.object import get_datatype, get_object_class
 from bacpypes.primitivedata import ObjectIdentifier
 from bacpypes.constructeddata import Any
+from bacpypes.task import TaskManager
 
 from device.utilities.logger import Logger
 from device.peripherals.modules.bacnet import bnet_base
@@ -64,6 +65,7 @@ class Bnet(bnet_base.BnetBase):
 
         # make an application to get callbacks from bacpypes
         self.app = BIPSimpleApplication(self.device, self.args.ini.address)
+        self.taskman = TaskManager()
 
 
     def setup(self) -> None:
@@ -141,7 +143,7 @@ class Bnet(bnet_base.BnetBase):
             self.logger.debug(f"read: {config_obj_id} for port \'{obj.get('name')}\'")
 
             # read <addr> <objid> <prop> 
-            self.logger.debug(f"read: obj_id={str(obj_id)}")
+            self.logger.debug(f"read: obj_id={str(obj_id)} prop_id={prop_id}")
 
             request = ReadPropertyRequest(
                 objectIdentifier=obj_id,
@@ -191,7 +193,7 @@ class Bnet(bnet_base.BnetBase):
 
             # do something for error/reject/abort
             if iocb.ioError:
-                self.logger.error(f"read: {str(iocb.ioError)}")
+                self.logger.error(f"read: ioError {str(iocb.ioError)}")
 
         except Exception as err:
             self.logger.critical(err)
@@ -210,8 +212,7 @@ class Bnet(bnet_base.BnetBase):
 
             # write <addr> <objid> <prop> <value> 
             value = float(_value)
-            self.logger.debug(f"write: obj_id={str(obj_id)}")
-            self.logger.debug(f"write: value={value}")
+            self.logger.debug(f"write: obj_id={str(obj_id)} prop_id={prop_id} value={value}")
 
             request = WritePropertyRequest(
                 objectIdentifier=obj_id,
@@ -255,7 +256,7 @@ class Bnet(bnet_base.BnetBase):
 
             # do something for error/reject/abort
             if iocb.ioError:
-                self.logger.error(f"write: {str(iocb.ioError)}")
+                self.logger.error(f"write: ioError {str(iocb.ioError)}")
 
         except Exception as err:
             self.logger.critical(err)
