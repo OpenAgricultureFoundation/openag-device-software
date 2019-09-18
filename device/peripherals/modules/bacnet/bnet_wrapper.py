@@ -9,7 +9,7 @@ from bacpypes.apdu import WhoIsRequest, SimpleAckPDU, \
     ReadPropertyRequest, ReadPropertyACK, WritePropertyRequest
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.consolelogging import ConfigArgumentParser
-from bacpypes.core import run_once, stop
+from bacpypes.core import run_once, stop, enable_sleeping
 from bacpypes.debugging import bacpypes_debugging
 from bacpypes.iocb import IOCB
 from bacpypes.local.device import LocalDeviceObject
@@ -65,6 +65,7 @@ class Bnet(bnet_base.BnetBase):
 
         # make an application to get callbacks from bacpypes
         self.app = BIPSimpleApplication(self.device, self.args.ini.address)
+        enable_sleeping() # backpypes core threads: must do since django is multi threaded
         self.taskman = TaskManager()
 
 
@@ -109,7 +110,6 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.debug(f"ping: loopy {loopCount}")
             self.logger.debug("ping: done with whois")
             stop()
-#debugrob: 
 
             # handle responses
             if iocb.ioResponse:
@@ -165,7 +165,6 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.debug(f"read: loopy {loopCount}")
             self.logger.debug("read: done waiting")
             stop()
-#debugrob: above not working, why?  it works in the reliable main tests
 
             # do something for success
             if iocb.ioResponse:
@@ -246,7 +245,6 @@ class Bnet(bnet_base.BnetBase):
                 self.logger.debug(f"write: loopy {loopCount}")
             self.logger.debug("write: done waiting")
             stop()
-#debugrob: 
 
             # do something for success
             if iocb.ioResponse:
