@@ -69,7 +69,7 @@ class BacnetDriver:
 
     # --------------------------------------------------------------------------
     def set_air_temp(self, tempC: float) -> None:
-        if tempC < -100.0 or tempC > 200.0:
+        if tempC is None or tempC < -100.0 or tempC > 200.0:
             raise exceptions.DriverError(
                 message=f"Air Temperature Celsius {tempC} out of range", 
                 logger=self.logger)
@@ -77,7 +77,7 @@ class BacnetDriver:
 
     # --------------------------------------------------------------------------
     def set_air_RH(self, RH: float) -> None:
-        if RH < 0.0 or RH > 100.0:
+        if RH is None or RH < 0.0 or RH > 100.0:
             raise exceptions.DriverError(
                 message=f"Relative Humidity {RH} out of range", 
                 logger=self.logger)
