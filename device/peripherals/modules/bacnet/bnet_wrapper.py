@@ -155,7 +155,7 @@ class Bnet(bnet_base.BnetBase):
             self.app.request_io(iocb)
             self.logger.debug("read: waiting for response...")
             loopCount = 0
-            while loopCount < 15:
+            while loopCount < 5:
                 loopCount += 1
                 run_once()
                 asyncore.loop(timeout=0.2, count=1)
@@ -291,8 +291,6 @@ class Bnet(bnet_base.BnetBase):
 
 
     def get_air_RH(self) -> float:
-        if RH is None:
-            return None
         RH = self.__read_value('air_RH')
         self.logger.info(f"get_air_RH {RH}%")
         return RH
