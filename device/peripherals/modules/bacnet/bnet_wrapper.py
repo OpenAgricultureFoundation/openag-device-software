@@ -276,12 +276,16 @@ class Bnet(bnet_base.BnetBase):
 
     def get_air_temp(self) -> float:
         tempF = self.__read_value('air_temp')
+        if tempF is None:
+            return None
         # convert F to C
         tempC = (tempF - 32) * (5/9)
         self.logger.info(f"get_air_temp {tempC}C")
         return tempC
 
     def get_air_RH(self) -> float:
+        if RH is None:
+            return None
         RH = self.__read_value('air_RH')
         self.logger.info(f"get_air_RH {RH}%")
         return RH
