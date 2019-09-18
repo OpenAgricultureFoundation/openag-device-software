@@ -61,26 +61,23 @@ class BacnetDriver:
 
     # --------------------------------------------------------------------------
     def set_test_voltage(self, voltage: float) -> None:
-        if voltage < 0.0 or voltage > 100.0:
-            raise exceptions.DriverError(
-                message=f"Test voltage {voltage} out of range (0-100%)", 
-                logger=self.logger)
+        if voltage is None or voltage < 0.0 or voltage > 100.0:
+            self.logger.error(f"Test voltage {voltage} out of range (0-100%)")
+            return
         self.bnet.set_test_voltage(voltage)
 
     # --------------------------------------------------------------------------
     def set_air_temp(self, tempC: float) -> None:
         if tempC is None or tempC < -100.0 or tempC > 200.0:
-            raise exceptions.DriverError(
-                message=f"Air Temperature Celsius {tempC} out of range", 
-                logger=self.logger)
+            self.logger.error(f"Air Temperature Celsius {tempC} out of range")
+            return
         self.bnet.set_air_temp(tempC)
 
     # --------------------------------------------------------------------------
     def set_air_RH(self, RH: float) -> None:
         if RH is None or RH < 0.0 or RH > 100.0:
-            raise exceptions.DriverError(
-                message=f"Relative Humidity {RH} out of range", 
-                logger=self.logger)
+            self.logger.error(f"Relative Humidity {RH} out of range")
+            return
         self.bnet.set_air_RH(RH)
 
     # --------------------------------------------------------------------------
