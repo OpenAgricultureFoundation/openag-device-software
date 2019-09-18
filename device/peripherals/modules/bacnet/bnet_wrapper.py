@@ -9,7 +9,7 @@ from bacpypes.apdu import WhoIsRequest, SimpleAckPDU, \
     ReadPropertyRequest, ReadPropertyACK, WritePropertyRequest
 from bacpypes.app import BIPSimpleApplication
 from bacpypes.consolelogging import ConfigArgumentParser
-from bacpypes.core import run, stop, deferred, enable_sleeping
+from bacpypes.core import run_once 
 from bacpypes.debugging import bacpypes_debugging
 from bacpypes.iocb import IOCB
 from bacpypes.local.device import LocalDeviceObject
@@ -41,8 +41,6 @@ class Bnet(bnet_base.BnetBase):
         self.debug = debug
         self.logger = logger
         self.logger.debug(f"init: bacpypes with {self.ini_file}")
-
-        enable_sleeping() # for bacpypes threading
 
         cmd_line_args_simulated = []
         if self.debug:
