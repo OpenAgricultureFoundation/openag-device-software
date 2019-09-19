@@ -61,7 +61,7 @@ class Bnet(bnet_base.BnetBase):
         # Overwrite the IP address in the .ini file to match what this machine
         # is configured for (to work, it must be a static IP on the same
         # subnet as the reliable / bacnet devices: 192.168.1.XXX/24
-        self.logger.debug(f"init: IP {self.args.ini.address}")
+        self.logger.debug(f"init: this host config IP {self.args.ini.address}")
 
         # make an application to get callbacks from bacpypes
         self.app = BIPSimpleApplication(self.device, self.args.ini.address)
@@ -102,13 +102,12 @@ class Bnet(bnet_base.BnetBase):
             self.app.request_io(iocb)
             self.logger.debug("ping: waiting for responses...")
             loopCount = 0
-            while loopCount < 10:
+            while loopCount < 20 and not iocb.ioResponse:
                 loopCount += 1
                 run_once()
                 asyncore.loop(timeout=0.2, count=1)
                 time.sleep(0.2)
                 self.logger.debug(f"ping: loopy {loopCount}")
-            self.logger.debug("ping: done with whois")
             stop()
 
             # handle responses
@@ -157,13 +156,12 @@ class Bnet(bnet_base.BnetBase):
             self.app.request_io(iocb)
             self.logger.debug("read: waiting for response...")
             loopCount = 0
-            while loopCount < 5:
+            while loopCount < 20 and not iocb.ioResponse:
                 loopCount += 1
                 run_once()
                 asyncore.loop(timeout=0.2, count=1)
                 time.sleep(0.2)
                 self.logger.debug(f"read: loopy {loopCount}")
-            self.logger.debug("read: done waiting")
             stop()
 
             # do something for success
@@ -237,13 +235,12 @@ class Bnet(bnet_base.BnetBase):
             self.app.request_io(iocb)
             self.logger.debug("write: waiting for response...")
             loopCount = 0
-            while loopCount < 5:
+            while loopCount < 20 and not iocb.ioResponse:
                 loopCount += 1
                 run_once()
                 asyncore.loop(timeout=0.2, count=1)
                 time.sleep(0.2)
                 self.logger.debug(f"write: loopy {loopCount}")
-            self.logger.debug("write: done waiting")
             stop()
 
             # do something for success
