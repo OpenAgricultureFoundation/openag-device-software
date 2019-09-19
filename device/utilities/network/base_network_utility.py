@@ -29,7 +29,9 @@ class NetworkUtility(ABC):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("8.8.8.8", 80))
-            return str(s.getsockname()[0])
+            ip = str(s.getsockname()[0])
+            s.close()
+            return ip
         except Exception as e:
             message = "Unable to get ip address, unhandled exception: {}".format(
                 type(e)
