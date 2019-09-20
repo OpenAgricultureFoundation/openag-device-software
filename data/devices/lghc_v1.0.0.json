@@ -1,0 +1,35 @@
+{   
+    "format": "openag-standard-v1",
+    "name": "LGHC",
+    "uuid": "c1bc4b0f-52e3-4b14-94e5-a5b10ca0b130",
+    "peripherals": [
+        {
+            "name": "HVAC",
+            "type": "BACNet",
+            "uuid": "5e827b66-afb1-4f43-a4f0-2fb495f87ce4",
+            "parameters": {
+                "driver_module": "bacnet.driver",
+                "driver_class": "BacnetDriver",
+                "setup": {
+                    "name": "Reliable BACNet HVAC",
+                    "file_name": "bacnet/setups/reliable_HVAC"
+                },
+                "variables": {
+                    "sensor": {
+                        "temperature_celsius": "air_temperature_celsius",
+                        "humidity_percent": "air_humidity_percent"
+                    },
+                    "actuator": null
+                },
+                "communication": {
+                    "this is not an I2C peripheral": null,
+                    "bus": null,
+                    "mux": null,
+                    "channel": null,
+                    "address": null
+                }
+            }
+        }
+    ],
+    "controllers": null
+}

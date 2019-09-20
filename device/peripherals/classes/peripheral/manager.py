@@ -54,10 +54,6 @@ class PeripheralManager(StateMachineManager):
         self.variables = self.parameters.get("variables", {})
         self.communication = self.parameters.get("communication", {})
 
-        # Enfore communication to be empty dict if none
-        if self.communication == None:
-            self.communication = {}
-
         # Initalize i2c bus
         self.bus = self.communication.get("bus")
         if self.bus == "default":

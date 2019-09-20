@@ -21,6 +21,9 @@ class SHT25Manager(manager.PeripheralManager):
         self.temperature_name = self.variables["sensor"]["temperature_celsius"]
         self.humidity_name = self.variables["sensor"]["humidity_percent"]
 
+        # Only need to update once a minute, the default of 5 secs is too often
+        self.default_sampling_interval = 60  # seconds
+
     @property
     def temperature(self) -> Optional[float]:
         """Gets temperature value."""

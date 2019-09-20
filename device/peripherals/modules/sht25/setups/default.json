@@ -58,7 +58,7 @@
 	        "name": "Set Sampling Interval",
 	        "description": "Sets sampling interval.",
 	        "value": {
-	            "default": 10,
+	            "default": 60,
 	            "unit": "Seconds"
 	        },
 	        "sequence": null

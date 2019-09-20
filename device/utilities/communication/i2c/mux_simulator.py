@@ -24,12 +24,12 @@ class MuxSimulator(object):
 
         # Initialize logger
         self.logger = Logger("Simulator(Mux)", __name__)
-        self.logger.debug("Initializing simulator")
+        #self.logger.debug("Initializing simulator")
 
     def set(self, address: int, channel_byte: int) -> None:
         """Sets mux at address to channel."""
-        message = "Setting addr 0x{:02X} to 0x{:02X}".format(address, channel_byte)
-        self.logger.debug(message)
+        #message = "Setting addr 0x{:02X} to 0x{:02X}".format(address, channel_byte)
+        #self.logger.debug(message)
 
         # Verify valid channel byte:
         if channel_byte not in self.valid_channel_bytes:
@@ -43,7 +43,7 @@ class MuxSimulator(object):
 
     def verify(self, address: int, channel: int) -> None:
         """Verifies if mux at address is set to correct channel."""
-        self.logger.debug("Verifying mux connection")
+        #self.logger.debug("Verifying mux connection")
 
         # Check mux exists
         if address not in self.connections:
