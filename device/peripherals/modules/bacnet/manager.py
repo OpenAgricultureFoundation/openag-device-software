@@ -96,11 +96,11 @@ class BacnetManager(manager.PeripheralManager):
             # Set temp & RH environment variables that will be published
             tempC = self.driver.get_air_temp()
             self.logger.info(f"Sensed tempC={tempC}")
-            temperature = tempC # calls setter
+            self.temperature = tempC # calls setter
  
             RH = self.driver.get_air_RH()
             self.logger.info(f"Sensed RH={RH}")
-            humidity = RH # calls setter
+            self.humidity = RH # calls setter
  
 
         except exceptions.DriverError as e:
@@ -137,6 +137,7 @@ class BacnetManager(manager.PeripheralManager):
     @temperature.setter
     def temperature(self, value: float) -> None:
         """Sets temperature value in shared state."""
+        self.logger.debug(f"temp setter={value}")
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.temperature_name, value
         )
@@ -157,6 +158,7 @@ class BacnetManager(manager.PeripheralManager):
     @humidity.setter
     def humidity(self, value: float) -> None:
         """Sets humidity value in shared state."""
+        self.logger.debug(f"RH setter={value}")
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.humidity_name, value
         )
