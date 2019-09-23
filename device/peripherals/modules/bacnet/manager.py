@@ -137,7 +137,6 @@ class BacnetManager(manager.PeripheralManager):
     @temperature.setter
     def temperature(self, value: float) -> None:
         """Sets temperature value in shared state."""
-        self.logger.debug(f"temp setter={value}")
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.temperature_name, value
         )
@@ -158,7 +157,6 @@ class BacnetManager(manager.PeripheralManager):
     @humidity.setter
     def humidity(self, value: float) -> None:
         """Sets humidity value in shared state."""
-        self.logger.debug(f"RH setter={value}")
         self.state.set_peripheral_reported_sensor_value(
             self.name, self.humidity_name, value
         )
