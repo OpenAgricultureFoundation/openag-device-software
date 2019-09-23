@@ -86,10 +86,10 @@
             "is_manual": true
         }
     ],
-	"info": {
-		"variables": {
-			"sensor": null,
-			"actuator": null
-		}
-	}
+    "info": {
+        "variables": {
+            "sensor": null,
+            "actuator": null
+        }
+    }
 }
