@@ -96,13 +96,11 @@ class BacnetManager(manager.PeripheralManager):
             # Set temp & RH environment variables that will be published
             tempC = self.driver.get_air_temp()
             self.logger.info(f"Sensed tempC={tempC}")
-            self.state.set_peripheral_reported_sensor_value(
-                self.name, self.temperature_name, tempC)
+            self.temperature = tempC # calls setter
  
             RH = self.driver.get_air_RH()
             self.logger.info(f"Sensed RH={RH}")
-            self.state.set_peripheral_reported_sensor_value(
-                self.name, self.humidity_name, RH)
+            self.humidity = RH # calls setter
  
 
         except exceptions.DriverError as e:
@@ -123,6 +121,48 @@ class BacnetManager(manager.PeripheralManager):
     # --------------------------------------------------------------------------
     def enable_calibration_mode(self) -> Tuple[str, int]:
         return "Calibration not possible for this peripheral", 200
+
+    # --------------------------------------------------------------------------
+    # Setters and Getters for our env. vars.
+    @property
+    def temperature(self) -> Optional[float]:
+        """Gets temperature value."""
+        value = self.state.get_peripheral_reported_sensor_value(
+            self.name, self.temperature_name
+        )
+        if value != None:
+            return float(value)
+        return None
+
+    @temperature.setter
+    def temperature(self, value: float) -> None:
+        """Sets temperature value in shared state."""
+        self.state.set_peripheral_reported_sensor_value(
+            self.name, self.temperature_name, value
+        )
+        self.state.set_environment_reported_sensor_value(
+            self.name, self.temperature_name, value
+        )
+
+    @property
+    def humidity(self) -> Optional[float]:
+        """Gets humidity value."""
+        value = self.state.get_peripheral_reported_sensor_value(
+            self.name, self.humidity_name
+        )
+        if value != None:
+            return float(value)
+        return None
+
+    @humidity.setter
+    def humidity(self, value: float) -> None:
+        """Sets humidity value in shared state."""
+        self.state.set_peripheral_reported_sensor_value(
+            self.name, self.humidity_name, value
+        )
+        self.state.set_environment_reported_sensor_value(
+            self.name, self.humidity_name, value
+        )
 
 
     ##### EVENT FUNCTIONS #####################################################

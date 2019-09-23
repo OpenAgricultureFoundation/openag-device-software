@@ -169,11 +169,19 @@ class EnvironmentViewer:
             unit = info["unit"]["brief"]
 
             # Get reported and desired values
-            reported = str(environment_dict[peripheral_type]["reported"][variable])
+            val = environment_dict[peripheral_type]["reported"][variable]
+            reported = str(val)
+            if isinstance( val, float ):
+                # limit to 2 decimal places  
+                reported = f'{val:.2f}'
+
+            desired = "None"
+            val = environment_dict[peripheral_type]["desired"][variable]
             if variable in environment_dict[peripheral_type]["desired"]:
-                desired = str(environment_dict[peripheral_type]["desired"][variable])
-            else:
-                desired = "None"
+                desired = str(val)
+                if isinstance( val, float ):
+                    # limit to 2 decimal places  
+                    desired = f'{val:.2f}'
 
             name_string = name + " (" + unit + ")"
             summary[name_string] = reported + " --> " + desired
