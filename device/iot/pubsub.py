@@ -104,13 +104,16 @@ class PubSub:
         # Initialize config topic
         self.config_topic = "/devices/{}/config".format(self.device_id)
 
+        # Initialize commands topic
+        self.command_topic = "/devices/{}/commands/#".format(self.device_id)
+
         # Initialize event topic
-        test_event_topic = os.environ.get("IOT_TEST_TOPIC")
-        if test_event_topic is not None:
-            self.event_topic = "/devices/{}/{}".format(self.device_id, test_event_topic)
-            self.logger.debug("Publishing to test topic: {}".format(self.event_topic))
+        test_telemetry_topic = os.environ.get("IOT_TEST_TOPIC")
+        if test_telemetry_topic is not None:
+            self.telemetry_topic = "/devices/{}/{}".format(self.device_id, test_telemetry_topic)
+            self.logger.debug("Publishing to test topic: {}".format(self.telemetry_topic))
         else:
-            self.event_topic = "/devices/{}/events".format(self.device_id)
+            self.telemetry_topic = "/devices/{}/events".format(self.device_id)
 
     # --------------------------------------------------------------------------
     def create_mqtt_client(self) -> None:
@@ -150,6 +153,9 @@ class PubSub:
 
         # Subscribe to the config topic
         self.client.subscribe(self.config_topic, qos=1)
+
+        # Subscribe to the command topic
+        self.client.subscribe(self.command_topic, qos=1)
 
     # --------------------------------------------------------------------------
     def next_port(self):
@@ -230,7 +236,7 @@ class PubSub:
 
         # Publish message
         try:
-            self.client.publish(self.event_topic, message_json, qos=1)
+            self.client.publish(self.telemetry_topic, message_json, qos=1)
         except Exception as e:
             error_message = "Unable to publish recipe event message, "
             "unhandled exception: {}".format(type(e))
@@ -260,7 +266,7 @@ class PubSub:
 
         # Publish message
         try:
-            self.client.publish(self.event_topic, message_json, qos=1)
+            self.client.publish(self.telemetry_topic, message_json, qos=1)
         except Exception as e:
             error_message = "Unable to publish command reply, "
             "unhandled exception: {}".format(type(e))
@@ -330,7 +336,7 @@ class PubSub:
         # Publish message
         try:
             message_json = json.dumps(message)
-            self.client.publish(self.event_topic, message_json, qos=1)
+            self.client.publish(self.telemetry_topic, message_json, qos=1)
         except Exception as e:
             error_message = "Unable to publish environment variables, "
             "unhandled exception: {}".format(type(e))
@@ -389,7 +395,7 @@ class PubSub:
             }
 
             message_json = json.dumps(message)
-            self.client.publish(self.event_topic, message_json, qos=1)
+            self.client.publish(self.telemetry_topic, message_json, qos=1)
 
         except Exception as e:
             error_message = "Unable to publish binary image, unhandled "
