@@ -54,7 +54,11 @@ class PeripheralManager(StateMachineManager):
         self.variables = self.parameters.get("variables", {})
         self.communication = self.parameters.get("communication", {})
 
-        # Initalize i2c bus
+        # Check if communication is null
+        if self.communication == None:
+          self.communication = {}
+
+        # Initialize i2c bus
         self.bus = self.communication.get("bus")
         if self.bus == "default":
             self.logger.debug("Using default i2c bus")
