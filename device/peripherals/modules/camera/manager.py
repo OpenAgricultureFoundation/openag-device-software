@@ -37,7 +37,7 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         # Initialize light control parameters
         self.lighting_control = self.parameters.get("lighting_control", {})
         self.lighting_control_enabled = self.lighting_control.get("enabled", False)
-        
+
         # Initialize recipe modes
         self.previous_recipe_mode = recipe_modes.NORECIPE
 
@@ -103,16 +103,12 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
     def update_peripheral(self) -> None:
         """Updates peripheral, captures an image."""
         try:
-            # Set lighting conditions before taking a photo
-            # self.set_lighting_conditions()
-
-            # TODO: Add simulation code
+            self.set_lighting_conditions()
             if self.simulate:
                 self.logger.debug("Simulating capture")
-                return
-
-            # Capture image
-            self.driver.capture()
+            else:
+                self.driver.capture()
+            self.reset_lighting_conditions()
             self.health = 100.0
         except exceptions.DriverError as e:
             self.logger.debug("Unable to update: {}".format(e))
@@ -183,7 +179,7 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         distance = self.lighting_control.get("distance")
         intensity = self.lighting_control.get("intensity")
         spectrum = self.lighting_control.get("spectrum")
-        
+
         # Initialize event requests
         manual_mode_request = {"type": "Enable Manual Mode"}
         set_spd_request = {
@@ -205,22 +201,44 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         if manager == None:
             return self.logger.error(f"Invalid recipient name: `{recipient_name}`")
 
-        # Put light manager in manual mode
-        self.coordinator.send_event(recipient_type, recipient_name, manual_mode_request)
-
-        # Wait for coordinator to enter manual mode
-        while manager.mode != "MANUAL":
-            self.logger.debug("Waiting for manager to enter manual mode")
+        # Wait up to a minute for light manager to enter normal mode
+        # i.e. transition out of init/setup mode
+        start_time = time.time()
+        while manager.mode != "NORMAL":
+            self.logger.debug("Waiting for light manager to enter normal mode")
             self.check_events()
             if self.new_transition(modes.NORMAL):
                 return
+            if time.time() - start_time > 60:
+                return self.logger.warning(
+                    "Light manager did not enter normal mode before timeout"
+                )
             time.sleep(0.1)  # Update every 100 ms
-        self.logger.debug("Manager entered manual mode")
+        self.logger.debug("Light manager entered normal mode")
+
+        # Put light manager in manual mode
+        self.logger.debug("Sending light manager into manual mode")
+        self.coordinator.send_event(recipient_type, recipient_name, manual_mode_request)
+
+        # Wait up to a minute for light manager to enter manual mode
+        start_time = time.time()
+        while manager.mode != "MANUAL":
+            self.logger.debug("Waiting for light manager to enter manual mode")
+            self.check_events()
+            if self.new_transition(modes.NORMAL):
+                return
+            if time.time() - start_time > 60:
+                return self.logger.warning(
+                    "Light manager did not enter manual mode before timeout"
+                )
+            time.sleep(0.1)  # Update every 100 ms
+        self.logger.debug("Light manager entered manual mode")
 
         # Set light manager's spectral power distribution
         self.coordinator.send_event(recipient_type, recipient_name, set_spd_request)
 
-        # Wait for light manager's reported spd to update
+        # Wait up to a minute for light manager's reported spd to update
+        start_time = time.time()
         while (
             manager.desired_distance != distance
             and manager.desired_intensity != intensity
@@ -230,8 +248,12 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
             self.check_events()
             if self.new_transition(modes.NORMAL):
                 return
-            time.sleep(0.1) # Update every 100 ms
-        self.logger.debug("Manager updated desired spd")
+            if time.time() - start_time > 60:
+                return self.logger.warning(
+                    "Light manager did update desired spd before timeout"
+                )
+            time.sleep(0.1)  # Update every 100 ms
+        self.logger.debug("Light manager updated desired spd")
 
         # Give light a few more seconds to stabilize
         time.sleep(3)

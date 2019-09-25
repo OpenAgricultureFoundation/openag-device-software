@@ -600,9 +600,12 @@ class LEDDAC5578Manager(manager.PeripheralManager):
         spectrum = request.get("spectrum")
 
         # TODO: Validate paramters
-        self.logger.debug(f"~~~distance: {distance}")
-        self.logger.debug(f"~~~intensity: {intensity}")
-        self.logger.debug(f"~~~spectrum: {spectrum}")
+        if distance is None:
+          return "Distance is required", 400
+        if intensity is None:
+          return "Intensity is required", 400
+        if spectrum is None: 
+          return "Spectrum is required", 400
 
         # Add event request to event queue
         request = {
@@ -618,17 +621,16 @@ class LEDDAC5578Manager(manager.PeripheralManager):
 
     def _set_spd(self, request: Dict[str, Any]) -> None:
         """Processes set channel event request."""
-        self.logger.debug("Processing set channel event")
+        self.logger.debug("Processing set spd event")
 
         # Require mode to be in manual
         if self.mode != modes.MANUAL:
-            self.logger.critical("Tried to set channel from {} mode".format(self.mode))
+            self.logger.critical("Tried to set spd from {} mode".format(self.mode))
 
         # Get request parameters
         distance = request.get("distance")
         intensity = request.get("intensity")
         spectrum = request.get("spectrum")
-
 
         # Set spd and update variables
         try:
