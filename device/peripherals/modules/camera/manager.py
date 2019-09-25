@@ -34,6 +34,10 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         self.min_sampling_interval = 120  # seconds
         self.default_sampling_interval = 3600  # every hour
 
+        # Initialize light control parameters
+        self.lighting_control = self.parameters.get("lighting_control", {})
+        self.lighting_control_enabled = self.lighting_control.get("enabled", False)
+        
         # Initialize recipe modes
         self.previous_recipe_mode = recipe_modes.NORECIPE
 
@@ -168,20 +172,20 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         """Sets light conditions to a flat white spectrum."""
         self.logger.debug("Setting lighting conditions")
 
-        # Get parameters
-        # HACK: Fake them for now
-        recipient_type = "Peripheral"
-        recipient_name = "LEDPanel-Top"
+        # Verify lighting control is enabled
+        if not self.lighting_control_enabled:
+            self.logger.debug("Lighting control is not enabled")
+            return
+
+        # Get lighting control parameters
+        recipient_type = self.lighting_control.get("recipient_type")
+        recipient_name = self.lighting_control.get("recipient_name")
+        distance = self.lighting_control.get("distance")
+        intensity = self.lighting_control.get("intensity")
+        spectrum = self.lighting_control.get("spectrum")
+        
+        # Initialize event requests
         manual_mode_request = {"type": "Enable Manual Mode"}
-        distance = 10
-        intensity = 300
-        spectrum = {
-            "380-399": 2.03,
-            "400-499": 20.30,
-            "500-599": 23.27,
-            "600-700": 31.09,
-            "701-780": 23.31,
-        }
         set_spd_request = {
             "type": "Set SPD",
             "distance": distance,
@@ -236,9 +240,16 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         """Resets light conditions to their previous state."""
         self.logger.debug("Resetting lighting conditions")
 
-        # Fake parameters
-        recipient_type = "Peripheral"
-        recipient_name = "LEDPanel-Top"
+        # Verify lighting control is enabled
+        if not self.lighting_control_enabled:
+            self.logger.debug("Lighting control is not enabled")
+            return
+
+        # Get parameters
+        recipient_type = self.lighting_control.get("recipient_type")
+        recipient_name = self.lighting_control.get("recipient_name")
+
+        # Initialize event request
         reset_mode_request = {"type": "Reset"}
 
         # Reset light manager
