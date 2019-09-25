@@ -13,6 +13,10 @@ from device.utilities.state.main import State
 # Import manager elements
 from device.peripherals.classes.peripheral import modes, events
 
+# Initialize constants
+PERIPHERAL_RECIPIENT_TYPE = "Peripheral"
+CONTROLLER_RECIPIENT_TYPE = "Controller"
+
 
 class PeripheralManager(StateMachineManager):
     """Parent class for peripheral devices e.g. sensors and actuators."""
@@ -31,6 +35,7 @@ class PeripheralManager(StateMachineManager):
         i2c_lock: threading.RLock,
         simulate: bool = False,
         mux_simulator: MuxSimulator = None,
+        coordinator = None
     ) -> None:
         """Initializes manager."""
 
@@ -44,6 +49,7 @@ class PeripheralManager(StateMachineManager):
         self.i2c_lock = i2c_lock
         self.simulate = simulate
         self.mux_simulator = mux_simulator
+        self.coordinator = coordinator
 
         # Initialize logger
         logname = "Manager({})".format(self.name)
@@ -504,6 +510,7 @@ class PeripheralManager(StateMachineManager):
         overwritten in child class."""
         type_ = request.get("type")
         self.logger.error("Invalid event request type in queue: {}".format(type_))
+    
 
     def set_sampling_interval(self, request: Dict[str, Any]) -> Tuple[str, int]:
         """Pre-processes set sampling interval event request."""
@@ -551,7 +558,7 @@ class PeripheralManager(StateMachineManager):
         """Pre-processes enable calibration mode event request."""
         self.logger.debug("Pre-processing enable calibration mode event request")
 
-        # Check if sensor alread in calibration mode
+        # Check if sensor already in calibration mode
         if self.mode == modes.CALIBRATE:
             message = "Already in calibration mode"
             self.logger.debug(message)

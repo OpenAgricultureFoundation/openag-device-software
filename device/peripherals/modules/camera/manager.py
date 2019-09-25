@@ -38,12 +38,12 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         self.previous_recipe_mode = recipe_modes.NORECIPE
 
         self.logger.debug("Instantiating")
-    
+
     @property
     def recipe_mode(self) -> str:
         """Gets recipe mode."""
         return self.state.recipe.get("mode", recipe_modes.NORECIPE)
-  
+
     def initialize_peripheral(self) -> None:
         """ Initializes peripheral."""
         self.logger.debug("Initializing")
@@ -63,8 +63,8 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
 
             # TODO: Add simulation code
             if self.simulate:
-              self.logger.debug("Simulating initialization")
-              return
+                self.logger.debug("Simulating initialization")
+                return
 
             # Create driver
             driver_module = (
@@ -99,21 +99,24 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
     def update_peripheral(self) -> None:
         """Updates peripheral, captures an image."""
         try:
+            # Set lighting conditions before taking a photo
+            # self.set_lighting_conditions()
+
             # TODO: Add simulation code
             if self.simulate:
-              self.logger.debug("Simulating capture")
-              return
-            
+                self.logger.debug("Simulating capture")
+                return
+
+            # Capture image
             self.driver.capture()
             self.health = 100.0
         except exceptions.DriverError as e:
             self.logger.debug("Unable to update: {}".format(e))
             self.mode = modes.ERROR
             self.health = 0
-    
-    
+
     ##### OVERRIDE PARENT METHODS ######################################################
-    
+
     def run_normal_mode(self) -> None:
         """Runs normal mode. Executes child class update function every sampling
         interval. Checks for events and transitions after each update."""
@@ -128,7 +131,7 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
 
             # Update every sampling interval
             self.last_update_interval = time.time() - self.last_update
-            if self.sampling_interval < self.last_update_interval or self.new_recipe():                
+            if self.sampling_interval < self.last_update_interval or self.new_recipe():
                 message = "Updating peripheral, delta: {:.3f}".format(
                     self.last_update_interval
                 )
@@ -149,18 +152,97 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
 
             # Update every 100ms
             time.sleep(0.100)
-    
 
     ##### HELPER FUNCTIONS #############################################################
 
     def new_recipe(self) -> bool:
-      """Checks if a new recipe has been started."""
-      if self.recipe_mode != self.previous_recipe_mode:
-        self.previous_recipe_mode = self.recipe_mode
-        if self.recipe_mode == recipe_modes.NORMAL:
-          self.logger.debug("Started new recipe")
-          return True
-      return False
+        """Checks if a new recipe has been started."""
+        if self.recipe_mode != self.previous_recipe_mode:
+            self.previous_recipe_mode = self.recipe_mode
+            if self.recipe_mode == recipe_modes.NORMAL:
+                self.logger.debug("Started new recipe")
+                return True
+        return False
+
+    def set_lighting_conditions(self) -> None:
+        """Sets light conditions to a flat white spectrum."""
+        self.logger.debug("Setting lighting conditions")
+
+        # Get parameters
+        # HACK: Fake them for now
+        recipient_type = "Peripheral"
+        recipient_name = "LEDPanel-Top"
+        manual_mode_request = {"type": "Enable Manual Mode"}
+        distance = 10
+        intensity = 300
+        spectrum = {
+            "380-399": 2.03,
+            "400-499": 20.30,
+            "500-599": 23.27,
+            "600-700": 31.09,
+            "701-780": 23.31,
+        }
+        set_spd_request = {
+            "type": "Set SPD",
+            "distance": distance,
+            "intensity": intensity,
+            "spectrum": spectrum,
+        }
+
+        # Get manager
+        if recipient_type == "Peripheral":
+            manager = self.coordinator.peripherals.get(recipient_name)
+        elif recipient_type == "Controller":
+            manager = self.coordinator.controllers.get(recipient_name)
+        else:
+            return self.logger.error(f"Invalid recipient type: `{recipient_type}`")
+
+        # Verify manager exists
+        if manager == None:
+            return self.logger.error(f"Invalid recipient name: `{recipient_name}`")
+
+        # Put light manager in manual mode
+        self.coordinator.send_event(recipient_type, recipient_name, manual_mode_request)
+
+        # Wait for coordinator to enter manual mode
+        while manager.mode != "MANUAL":
+            self.logger.debug("Waiting for manager to enter manual mode")
+            self.check_events()
+            if self.new_transition(modes.NORMAL):
+                return
+            time.sleep(0.1)  # Update every 100 ms
+        self.logger.debug("Manager entered manual mode")
+
+        # Set light manager's spectral power distribution
+        self.coordinator.send_event(recipient_type, recipient_name, set_spd_request)
+
+        # Wait for light manager's reported spd to update
+        while (
+            manager.desired_distance != distance
+            and manager.desired_intensity != intensity
+            and manager.desired_spectrum != spectrum
+        ):
+            self.logger.debug("Waiting for manager to update desired spd")
+            self.check_events()
+            if self.new_transition(modes.NORMAL):
+                return
+            time.sleep(0.1) # Update every 100 ms
+        self.logger.debug("Manager updated desired spd")
+
+        # Give light a few more seconds to stabilize
+        time.sleep(3)
+
+    def reset_lighting_conditions(self) -> None:
+        """Resets light conditions to their previous state."""
+        self.logger.debug("Resetting lighting conditions")
+
+        # Fake parameters
+        recipient_type = "Peripheral"
+        recipient_name = "LEDPanel-Top"
+        reset_mode_request = {"type": "Reset"}
+
+        # Reset light manager
+        self.coordinator.send_event(recipient_type, recipient_name, reset_mode_request)
 
     ##### EVENT FUNCTIONS ##############################################################
 
@@ -196,7 +278,13 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         """Processes capture event request."""
         self.logger.debug("Processing capture event request")
         try:
-            self.driver.capture()
+            self.set_lighting_conditions()
+            if self.simulate:
+                self.logger.debug("Simulating capture")
+            else:
+                self.driver.capture()
+            self.reset_lighting_conditions()
+
         except:
             self.mode = modes.ERROR
             message = "Unable to turn on, unhandled exception"

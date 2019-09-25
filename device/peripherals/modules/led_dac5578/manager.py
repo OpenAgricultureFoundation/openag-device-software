@@ -79,6 +79,13 @@ class LEDDAC5578Manager(manager.PeripheralManager):
                 self.name, self.spectrum_name
             )
 
+    @desired_spectrum.setter
+    def desired_spectrum(self, value: Any) -> None:
+        """Sets desired intensity value in shared state."""
+        self.state.set_peripheral_desired_sensor_value(
+            self.name, self.spectrum_name, value
+        )
+
     @property
     def intensity(self) -> Optional[float]:
         """Gets intensity value."""
@@ -109,12 +116,19 @@ class LEDDAC5578Manager(manager.PeripheralManager):
                 return float(value)
             return None
         else:
-            value = self.state.get_peripheral_reported_sensor_value(
+            value = self.state.get_peripheral_desired_sensor_value(
                 self.name, self.intensity_name
             )
             if value != None:
                 return float(value)
             return None
+    
+    @desired_intensity.setter
+    def desired_intensity(self, value: float) -> None:
+        """Sets desired intensity value in shared state."""
+        self.state.set_peripheral_desired_sensor_value(
+            self.name, self.intensity_name, value
+        )
 
     @property
     def distance(self) -> Optional[float]:
@@ -146,12 +160,19 @@ class LEDDAC5578Manager(manager.PeripheralManager):
                 return float(value)
             return None
         else:
-            value = self.state.get_peripheral_reported_sensor_value(
+            value = self.state.get_peripheral_desired_sensor_value(
                 self.name, self.distance_name
             )
             if value != None:
                 return float(value)
             return None
+    
+    @desired_distance.setter
+    def desired_distance(self, value: float) -> None:
+        """Sets desired distance value in shared state."""
+        self.state.set_peripheral_desired_sensor_value(
+            self.name, self.distance_name, value
+        )
 
     @property
     def channel_setpoints(self) -> Any:
@@ -393,6 +414,8 @@ class LEDDAC5578Manager(manager.PeripheralManager):
             return self.turn_off()
         elif request["type"] == events.SET_CHANNEL:
             return self.set_channel(request)
+        elif request["type"] == events.SET_SPD:
+            return self.set_spd(request)
         elif request["type"] == events.FADE:
             return self.fade()
         else:
@@ -406,6 +429,8 @@ class LEDDAC5578Manager(manager.PeripheralManager):
             self._turn_off()
         elif request["type"] == events.SET_CHANNEL:
             self._set_channel(request)
+        elif request["type"] == events.SET_SPD:
+            self._set_spd(request)
         elif request["type"] == events.FADE:
             self._fade()
         else:
@@ -558,6 +583,78 @@ class LEDDAC5578Manager(manager.PeripheralManager):
             self.mode = modes.ERROR
             message = "Unable to set channel, unhandled exception"
             self.logger.exception(message)
+
+    def set_spd(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes set spc event request."""
+        self.logger.debug("Pre-processing set spd event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            message = "Must be in manual mode"
+            self.logger.debug(message)
+            return message, 400
+
+        # Get request parameters
+        distance = request.get("distance")
+        intensity = request.get("intensity")
+        spectrum = request.get("spectrum")
+
+        # TODO: Validate paramters
+        self.logger.debug(f"~~~distance: {distance}")
+        self.logger.debug(f"~~~intensity: {intensity}")
+        self.logger.debug(f"~~~spectrum: {spectrum}")
+
+        # Add event request to event queue
+        request = {
+            "type": events.SET_SPD,
+            "distance": distance,
+            "intensity": intensity,
+            "spectrum": spectrum,
+        }
+        self.event_queue.put(request)
+
+        # Return response
+        return "Setting SPD", 200
+
+    def _set_spd(self, request: Dict[str, Any]) -> None:
+        """Processes set channel event request."""
+        self.logger.debug("Processing set channel event")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            self.logger.critical("Tried to set channel from {} mode".format(self.mode))
+
+        # Get request parameters
+        distance = request.get("distance")
+        intensity = request.get("intensity")
+        spectrum = request.get("spectrum")
+
+
+        # Set spd and update variables
+        try:
+            # Send request
+            result = self.driver.set_spd(distance, intensity, spectrum)
+
+            # Update reported variables
+            self.channel_setpoints = result[0]
+            self.spectrum = result[1]
+            self.intensity = result[2]
+            self.distance = distance
+
+            # Update desired variables
+            self.desired_distance = distance
+            self.desired_intensity = intensity
+            self.desired_spectrum = spectrum
+
+        except exceptions.DriverError as e:
+            self.mode = modes.ERROR
+            message = "Unable to set spd: {}".format(e)
+            self.logger.debug(message)
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to set spd, unhandled exception"
+            self.logger.exception(message)
+
 
     def fade(self) -> Tuple[str, int]:
         """Pre-processes fade event request."""
