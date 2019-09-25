@@ -65,7 +65,6 @@ class PubSub:
 
     ##### HELPER FUNCTIONS ####################################################
 
-    # --------------------------------------------------------------------------
     def initialize(self) -> None:
         """Initializes pubsub client."""
         self.logger.debug("Initializing")
@@ -78,7 +77,6 @@ class PubSub:
             self.logger.exception(message)
             self.is_initialized = False
 
-    # --------------------------------------------------------------------------
     def load_mqtt_config(self) -> None:
         """Loads mqtt config."""
         self.logger.debug("Loading mqtt config")
@@ -115,7 +113,6 @@ class PubSub:
         else:
             self.telemetry_topic = "/devices/{}/events".format(self.device_id)
 
-    # --------------------------------------------------------------------------
     def create_mqtt_client(self) -> None:
         """Creates an mqtt client. Returns client and assocaited json web token."""
         self.logger.debug("Creating mqtt client")
@@ -157,13 +154,11 @@ class PubSub:
         # Subscribe to the command topic
         self.client.subscribe(self.command_topic, qos=1)
 
-    # --------------------------------------------------------------------------
     def next_port(self):
         if len(MQTT_BRIDGE_PORTS) > 1:
             self.mqtt_port_choice = (self.mqtt_port_choice + 1) % len(MQTT_BRIDGE_PORTS)
         return self.mqtt_port_choice
 
-    # --------------------------------------------------------------------------
     def update(self) -> None:
         """Updates pubsub client."""
 
@@ -188,7 +183,6 @@ class PubSub:
 
     ##### PUBLISH FUNCTIONS ###################################################
 
-    # --------------------------------------------------------------------------
     def publish_boot_message(self, message: Dict) -> None:
         """Publishes boot message."""
         self.logger.debug("Publishing boot message")
@@ -202,7 +196,6 @@ class PubSub:
         message_json = json.dumps(message)
         self.publish_command_reply(BOOT_MESSAGE, message_json)
 
-    # --------------------------------------------------------------------------
     def publish_status_message(self, message: Dict) -> None:
         """Publishes status message."""
         self.logger.debug("Publishing status message")
@@ -216,7 +209,6 @@ class PubSub:
         message_json = json.dumps(message)
         self.publish_command_reply(STATUS_MESSAGE, message_json)
 
-    # --------------------------------------------------------------------------
     def publish_recipe_event(self, device_id: str, action: str, name: str) -> None:
         self.logger.debug(f"Publishing recipe event {action} {name} message from {device_id}.")
 
@@ -245,7 +237,6 @@ class PubSub:
 
     ##### PRIVATE PUBLISH FUNCTIONS? #########################################
 
-    # --------------------------------------------------------------------------
     def publish_command_reply(self, command: str, values: str) -> None:
         """Publish a reply to a previously received command. Don't we need the 
         message id then?"""
@@ -272,7 +263,6 @@ class PubSub:
             "unhandled exception: {}".format(type(e))
             self.logger.exception(error_message)
 
-    # --------------------------------------------------------------------------
     def publish_environment_variable(
         self, variable_name: str, values_dict: Dict
     ) -> None:
@@ -342,7 +332,6 @@ class PubSub:
             "unhandled exception: {}".format(type(e))
             self.logger.exception(error_message)
 
-    # --------------------------------------------------------------------------
     def upload_image(self, file_name: str) -> None:
         self.logger.debug("Uploading binary image")
 
