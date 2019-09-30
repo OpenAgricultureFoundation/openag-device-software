@@ -176,7 +176,6 @@ class EnvironmentViewer:
                 reported = f'{val:.2f}'
 
             desired = "None"
-            # val = environment_dict[peripheral_type]["desired"][variable]
             if variable in environment_dict[peripheral_type]["desired"]:
                 val = environment_dict[peripheral_type]["desired"][variable]
                 desired = str(val)
