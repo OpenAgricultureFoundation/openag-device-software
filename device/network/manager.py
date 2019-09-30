@@ -96,6 +96,7 @@ class NetworkManager(manager.StateMachineManager):
     @wifi_ssids.setter
     def wifi_ssids(self, value: List[Dict[str, str]]) -> None:
         """Safely updates value in shared state."""
+        self.logger.debug("Wifi SSIDs: {}".format(value))
         with self.state.lock:
             self.state.network["wifi_ssids"] = value
 
