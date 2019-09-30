@@ -43,4 +43,4 @@ export NO_DEVICE
 export SIMULATE
 
 # Run app
-python3.6 manage.py runserver 0.0.0.0:8000
+sudo python3.6 manage.py runserver 0.0.0.0:8000
