@@ -37,7 +37,8 @@ def dictify_list(list_: List[Any], reference_dict: Dict[str, Any]) -> Dict[str, 
     """Convert a list into a dictionary."""
     dict_ = {}
     for index, key in enumerate(reference_dict):
-        dict_[key] = list_[index]
+        if index < len(list_):
+            dict_[key] = list_[index]
     return dict_
 
 
