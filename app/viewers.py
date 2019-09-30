@@ -132,6 +132,8 @@ class EnvironmentViewer:
         self.sensor_summary = self.get_environment_summary("sensor")
         self.actuator_summary = self.get_environment_summary("actuator")
 
+        self.logger.debug(f"sensor_summary: {self.sensor_summary}")
+
     def get_environment_summary(self, peripheral_type: str) -> Dict[str, str]:
         """Gets environment summary of current reported --> desired value for each 
         variable in shared state."""

@@ -32,11 +32,8 @@ PERIPHERAL_SETUP_FILES_PATH = "device/peripherals/modules/*/setups/*.json"
 PERIPHERAL_SETUP_SCHEMA_PATH = "data/schemas/peripheral_setup.json"
 CONTROLLER_SETUP_FILES_PATH = "device/controllers/modules/*/setups/*.json"
 CONTROLLER_SETUP_SCHEMA_PATH = "data/schemas/controller_setup.json"
-
-# DEVICE_CONFIG_PATH = "data/config/device.txt"
 DATA_PATH = settings.DATA_PATH  # os.getenv("STORAGE_LOCATION", "data")
 DEVICE_CONFIG_PATH = DATA_PATH + "/config/device.txt"
-
 DEVICE_CONFIG_SCHEMA_PATH = "data/schemas/device_config.json"
 DEVICE_CONFIG_FILES_PATH = "data/devices/*.json"
 SENSOR_VARIABLES_PATH = "data/variables/sensor_variables.json"
@@ -47,6 +44,10 @@ CULTIVARS_PATH = "data/cultivations/cultivars.json"
 CULTIVARS_SCHEMA_PATH = "data/schemas/cultivars.json"
 CULTIVATION_METHODS_PATH = "data/cultivations/cultivation_methods.json"
 CULTIVATION_METHODS_SCHEMA_PATH = "data/schemas/cultivation_methods.json"
+
+# Initialize event recipient types
+PERIPHERAL_RECIPIENT_TYPE = "Peripheral"
+CONTROLLER_RECIPIENT_TYPE = "Controller"
 
 
 class CoordinatorManager(StateMachineManager):
@@ -779,6 +780,7 @@ class CoordinatorManager(StateMachineManager):
                 simulate=simulate,
                 i2c_lock=i2c_lock,
                 mux_simulator=mux_simulator,
+                coordinator=self,
             )
             self.peripherals[peripheral_name] = peripheral
 
@@ -912,6 +914,36 @@ class CoordinatorManager(StateMachineManager):
         return True
 
     ##### EVENT FUNCTIONS ##############################################################
+
+    def send_event(self, recipient_type: str, recipient_name: str, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Sends an event to a peripheral or controller on the device. Can be called from within
+        any peripheral or controller for intra-device communication."""
+        self.logger.debug(f"Sending event to {recipient_name}")
+
+        # TODO: Validate parameters
+
+        # Check valid recipient type and get manager
+        if recipient_type == PERIPHERAL_RECIPIENT_TYPE:
+            manager = self.peripherals.get(recipient_name)
+        elif recipient_type == CONTROLLER_RECIPIENT_TYPE:
+            manager = self.controllers.get(recipient_name)
+        else:
+            message = "Invalid recipient type `{}`".format(recipient_type)
+            self.logger.debug(message)
+            return message, 400
+
+        # Check manager exists
+        if manager == None:
+            message = "Invalid recipient name: `{}`".format(recipient_name)
+            self.logger.debug(message)
+            return message, 400
+
+        # Send event to manager
+        message, status = manager.create_event(request)
+
+        # Successfully created event request
+        self.logger.debug("Responding with ({}): {}".format(status, message))
+        return message, status
 
     def check_events(self) -> None:
         """Checks for a new event. Only processes one event per call, even if there are

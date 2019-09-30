@@ -111,6 +111,15 @@
         "unit": "Seconds"
       },
       "sequence": null
+    },
+    {
+      "name": "Set User LED",
+      "description": "Sets the color of the user led.",
+      "value": {
+        "default": "Green",
+        "unit": "(Color)"
+      },
+      "sequence": null
     }
   ],
   "info": {
