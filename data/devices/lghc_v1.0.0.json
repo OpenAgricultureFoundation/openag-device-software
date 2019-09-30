@@ -1,4 +1,4 @@
-{   
+{
     "format": "openag-standard-v1",
     "name": "LGHC",
     "uuid": "c1bc4b0f-52e3-4b14-94e5-a5b10ca0b130",
@@ -27,6 +27,39 @@
                     "mux": null,
                     "channel": null,
                     "address": null
+                }
+            }
+        },
+        {
+            "name": "LEDPanel-Top",
+            "type": "LEDDAC5578",
+            "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+            "parameters": {
+                "setup": {
+                    "name": "LED Panel Taurus Actuator",
+                    "file_name": "led_dac5578/setups/lghc-pfc4-demo"
+                },
+                "variables": {
+                    "sensor": {
+                        "ppfd_umol_m2_s": "light_ppfd_umol_m2_s",
+                        "spectrum_nm_percent": "light_spectrum_nm_percent",
+                        "illumination_distance_cm": "light_illumination_distance_cm"
+                    },
+                    "actuator": {
+                        "channel_output_percents": "light_channel_output_percents"
+                    }
+                },
+                "communication": {
+                    "panels": [
+                        {
+                            "name": "LEDPanel-Top",
+                            "bus": "default",
+                            "mux": "default",
+                            "channel": 3,
+                            "address": "0x47",
+                            "active_low": false
+                        }
+                    ]
                 }
             }
         }
