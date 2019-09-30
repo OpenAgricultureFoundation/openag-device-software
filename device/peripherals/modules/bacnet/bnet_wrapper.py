@@ -272,9 +272,10 @@ class Bnet(bnet_base.BnetBase):
 
     def set_air_temp(self, tempC: float) -> None:
         # convert C to F
-        tempF = (tempC * (9/5)) + 32
-        self.logger.info(f"set_air_temp {tempC}C > {tempF}F")
-        self.__write_value('set_air_temp', tempF)
+        # tempF = (tempC * (9/5)) + 32
+        # self.logger.info(f"set_air_temp {tempC}C > {tempF}F")
+        self.logger.info(f"set_air_temp {tempC}C")
+        self.__write_value('set_air_temp', tempC) #self.__write_value('set_air_temp', tempF)
 
 
     def set_air_RH(self, RH: float) -> None:
@@ -283,11 +284,12 @@ class Bnet(bnet_base.BnetBase):
 
 
     def get_air_temp(self) -> float:
-        tempF = self.__read_value('air_temp')
-        if tempF is None:
-            return None
+        #tempF = self.__read_value('air_temp')
+        tempC = self.__read_value('air_temp')
+        #if tempF is None:
+        #    return None
         # convert F to C
-        tempC = (tempF - 32) * (5/9)
+        #tempC = (tempF - 32) * (5/9)
         self.logger.info(f"get_air_temp {tempC}C")
         return tempC
 
