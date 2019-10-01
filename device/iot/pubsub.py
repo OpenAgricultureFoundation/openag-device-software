@@ -36,7 +36,6 @@ class PubSub:
     # Initialize state
     is_initialized = False
 
-    # --------------------------------------------------------------------------
     def __init__(
         self,
         ref_self: Any,
@@ -148,10 +147,12 @@ class PubSub:
         # Connect to the Google MQTT bridge
         self.client.connect(MQTT_BRIDGE_HOSTNAME, MQTT_BRIDGE_PORTS[self.mqtt_port_choice])
 
-        # Subscribe to the config topic
+        # Subscribe to topics
+        # self.subscribe_to_topics()
+    
+    def subscribe_to_topics(self):
+        self.logger.info("Subscribing to topics")
         self.client.subscribe(self.config_topic, qos=1)
-
-        # Subscribe to the command topic
         self.client.subscribe(self.command_topic, qos=1)
 
     def next_port(self):
