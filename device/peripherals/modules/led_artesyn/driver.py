@@ -12,50 +12,7 @@ from device.peripherals.utilities import light
 
 # Import driver elements
 from device.peripherals.modules.led_artesyn import exceptions
-
-""" Notes from docs/iHP Communications Protocol  Definitions (Rev0.1).pdf
-
-p.65 reading DIRECT data:
-    Module PMBUS Command 8Bh (READ_VOUT)
-    number of bytes = 3 
-    Multiplier = N = 10000
-    Command returns data of 0757B0h Converted to decimal = 481200
-    Y = X * N 
-    481200 = X * 10000
-    X = 48.12 V
-
-UDP packet format:
-
-bytes of a COMMAND message: p.5
-1-4     4 bytes message ID (I generate a sequential one).
-  5     A1h (constant, except for ping which is A0h).
-  6     000 + (low 5 bits internal device address) 00h=COMMS, mod1-8=10h-17h
-  7     READ 01 + (low 6 bits for data length starting at 9th byte)
-        WRITE 00 + (low 6 bits for data length starting at 9th byte)
-  8     1 byte command code:  
-            p.27 for module, p.44 for data sizes.
-            p 47 for isocomm (all modules?), p.60 data sizes.
-  9     Zero to N data bytes.
-
-bytes of a RESPONSE message:  p.7
-1-4     4 bytes message ID (matches what is sent in command)
-  5     -0-- first nibble success
-        -1-- first nibble error
-        ---1 second nibble, message has response
-        ---0 second nibble, message is blank
-  6     0000 ---- normal, or error code in first nibble
-  7     ---X XXXX device address
-  8     --LL LLLL resonse data len
-  9     1 byte command code
-10+     response data bytes
-
-EVERY message sent will be responded to (if valid and to active device).
-
-#debugrob: also put a PING message in the config file.
-
-
-p.20 error codes.
-"""
+from device.peripherals.modules.led_artesyn import artesyn_udp_messaging
 
 
 class ArtesynDriver:
@@ -63,27 +20,27 @@ class ArtesynDriver:
         self,
         name: str,
         config: Dict[str, Any],
-        simulate: bool,
+        simulate: bool = False,
         artesyn_config_file: str = None,
         debug: bool = False,
-        logger: logger.Logger
+        logger: logger.Logger = None
     ) -> None:
         self.name = name
         self.simulate = simulate
         self.config_file = os.path.dirname(__file__) + '/' + artesyn_config_file
         self.debug = debug
         self.logger = logger
-
-        # load our artesyn message config
-        self.config = json.load(open(self.config_file, 'r'))
-        self.logger.debug(f"loaded {self.config.get('name')}")
-#debugrob: above for messages
-# use bytes.fromhex() on the strings in the config file
+        self.udp = artesyn_udp_messaging.Messaging(
+                config_file=self.config_file, 
+                simulate=self.simulate,
+                debug=self.debug)
 
     def write_outputs(outputs: Dict[int, float]) -> None:
+        #TBD 
         pass
 
     def write_output(channel_number: int, par_setpoint: float) -> None:
+        #TBD 
         pass
 
 
@@ -156,9 +113,6 @@ class LEDArtesynDriver:
         # Initialize logger
         logname = "Driver({})".format(name)
         self.logger = logger.Logger(logname, "peripherals")
-
-#debugrob: fix here down
-
 
         # Initialze num expected panels
         self.num_expected_panels = len(panel_configs)

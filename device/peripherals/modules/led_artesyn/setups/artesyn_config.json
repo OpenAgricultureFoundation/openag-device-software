@@ -1,29 +1,30 @@
 {
-    "name":  "Artesyn configuration for LGHC LED panels 2019-09-25",
+    "name":  "Artesyn configuration for LGHC LED panels 2019-10-01",
     "config": {
-        "modules": [
-            "IP": "192.168.1.101",
-            "IP": "192.168.1.102",
-            "IP": "192.168.1.103"
+        "brain_IP": "192.168.1.222",
+        "module_IPs": [
+            "192.168.1.101",
+            "192.168.1.102",
+            "192.168.1.103"
         ],
-        "module_address": [
-            0: "10",
-            1: "11",
-            2: "12",
-            3: "13",
-            4: "14",
-            5: "15",
-            6: "16",
-            7: "17"
+        "slot_addresses": [
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17"
         ],
-        "UDP_port": "8888"
+        "UDP_port": 8888
     },
     "Command Note 1": "Commands to put iHP into Digital Current Source mode.",
     "Command Note 2": "All data are HEX strings, without initial 0x",
-    "commands": [
+    "UDP_messages": {
 
         "WRITE_PING_MODULE": {
-            "Note": "ISOCOMM: Ping modules by IP.",
+            "Note": "ISOCOMM: Ping a module by IP.",
             "5": "A0",
             "6_device_address": "00",
             "7_read_or_write_and_data_length": "00",
@@ -32,8 +33,8 @@
             "delay_secs": 0.02
         },
 
-        "WRITE_ALL_MODULES_ON": {
-            "Note": "ISOCOMM: Turn all modules on.",
+        "WRITE_ALL_SLOTS_ON": {
+            "Note": "ISOCOMM: Turn all slots in a module on.",
             "5": "A1",
             "6_device_address": "00",
             "7_read_or_write_and_data_length": "01",
@@ -42,8 +43,8 @@
             "delay_secs": 0.02
         },
 
-        "WRITE_ALL_MODULES_OFF": {
-            "Note": "ISOCOMM: Turn all modules off.",
+        "WRITE_ALL_SLOTS_OFF": {
+            "Note": "ISOCOMM: Turn all slots in a module off.",
             "5": "A1",
             "6_device_address": "00",
             "7_read_or_write_and_data_length": "01",
@@ -52,8 +53,8 @@
             "delay_secs": 0.02
         },
 
-        "WRITE_ALL_MODULES_WRITE_PROTECT_ON": {
-            "Note": "ISOCOMM: Enables write protect for all modules.",
+        "WRITE_ALL_SLOTS_WRITE_PROTECT_ON": {
+            "Note": "ISOCOMM: Enables write protect for all slots in a module.",
             "5": "A1",
             "6_device_address": "00",
             "7_read_or_write_and_data_length": "01",
@@ -62,8 +63,8 @@
             "delay_secs": 0.02
         },
 
-        "WRITE_ALL_MODULES_WRITE_PROTECT_OFF": {
-            "Note": "ISOCOMM: Disables write protect for all modules.",
+        "WRITE_ALL_SLOTS_WRITE_PROTECT_OFF": {
+            "Note": "ISOCOMM: Disables write protect for all slots in a module.",
             "5": "A1",
             "6_device_address": "00",
             "7_read_or_write_and_data_length": "01",
@@ -72,8 +73,8 @@
             "delay_secs": 0.02
         },
 
-        "WRITE_MODULE_DIGITAL_CURRENT_SOURCE_MODE": {
-            "Note1": "ISOCOMM: Put module in DCS mode.",
+        "WRITE_SLOT_DIGITAL_CURRENT_SOURCE_MODE": {
+            "Note1": "ISOCOMM: Put a slot in a module in DCS mode.",
             "Note2": "First data byte is the module_slot.",
             "Note2": "Second data byte is DCS mode with internal shunt.",
             "Note3": "Takes 1.5 sec for module restart.",
@@ -82,60 +83,87 @@
             "7_read_or_write_and_data_length": "02",
             "8_command_code": "D3",
             "9_module_slots": [
-                0: "00",
-                1: "01",
-                2: "02",
-                3: "03",
-                4: "04",
-                5: "05",
-                6: "06",
-                7: "07"
+                "00",
+                "01",
+                "02",
+                "03",
+                "04",
+                "05",
+                "06",
+                "07"
             ],
             "9_data": "08",
             "delay_secs": 2.0
         },
 
-        "READ_MODULE_VOUT": {
-            "Note1": "Read a Module's output voltage in /10000 Volts.",
-            "Note2": "6_device_address is one of the module_address",
+        "READ_SLOT_VOUT": {
+            "Note1": "Read a Module's output voltage in x10000 Volts.",
+            "Note2": "6_device_address is one of the slot_addresses",
             "5": "A1",
             "6_device_address": "10",
             "7_read_or_write_and_data_length": "40",
             "8_command_code": "8B",
-            "delay_secs": 0.02
+            "9_data": "",
+            "delay_secs": 0.02,
+            "multiplier": 10000
         },
 
-        "READ_MODULE_IOUT": {
-            "Note": "Read a Module's output current in /10000 Amps.",
+        "READ_SLOT_IOUT": {
+            "Note": "Read a Module's output current in x10000 Amps.",
             "5": "A1",
             "6_device_address": "10",
             "7_read_or_write_and_data_length": "40",
             "8_command_code": "8C",
-            "delay_secs": 0.02
+            "9_data": "",
+            "delay_secs": 0.02,
+            "multiplier": 10000
         },
 
-        "WRITE_MODULE_IREF": {
+        "WRITE_SLOT_IREF": {
             "Note1": "Write a Module's output current percentage.",
-            "Note2": "data is 3 bytes of 0 to 100 percent.",
+            "Note2": "data is 3 bytes of 0 to 100 percent x10000.",
             "5": "A1",
             "6_device_address": "10",
             "7_read_or_write_and_data_length": "03",
             "8_command_code": "B2",
-            "9_data": "000000",
+            "9_data": "",
             "delay_secs": 0.02
         }
-    ],
-    "messages": [
-        {
-            "init": {
-                "commands": [
-                    0: "WRITE_ALL_MODULES_ON",
-                    1: "WRITE_ALL_MODULES_WRITE_PROTECT_OFF",
-                    2: "WRITE_MODULE_DIGITAL_CURRENT_SOURCE_MODE"
-                ]
-            }
+    },
+    "commands": {
+        "ping_module": {
+            "Note": "Ping a module by IP and read response.",
+            "UDP_messages": [
+                "WRITE_PING_MODULE"
+            ]
+        },
+        "init_module": {
+            "Note": "Initialize a module by IP.",
+            "UDP_messages": [
+                "WRITE_ALL_SLOTS_ON",
+                "WRITE_ALL_SLOTS_WRITE_PROTECT_ON",
+                "WRITE_SLOT_DIGITAL_CURRENT_SOURCE_MODE"
+            ]
+        },
+        "set_slot_current": {
+            "Note": "Set the % of current in a slot in a module.",
+            "UDP_messages": [
+                "WRITE_SLOT_IREF"
+            ]
+        },
+        "get_slot_current": {
+            "Note": "Get the % of current of a slot in a module.",
+            "UDP_messages": [
+                "READ_SLOT_IOUT"
+            ]
+        },
+        "get_slot_voltage": {
+            "Note": "Read the voltage of a slot in a module.",
+            "UDP_messages": [
+                "READ_SLOT_VOUT"
+            ]
         }
-    ],
+    },
 
 
 	"FYI: the fields below are here because the brain loads this and validates it like it is a peripheral setup file, just because it is a .json file": "FYI",
