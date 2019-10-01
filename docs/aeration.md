@@ -29,18 +29,19 @@ Consider the example:
 
 For the above example, assuming a pump with a dose rate of 2 liters/minute and a water reservoir volume of 1 liter, the air pump would be turning on at full power for 6 minutes then be off for the next 54 minutes, then back on for 6 minutes, then off for 54 minutes, and so on. Each time the pump turned on, it would be emitting bubbles with a 10 mm diameter.
 
-### Non-Required Variables
+### Non-Required Variables*
+
+*NOTE: This abstraction needs to be cleaned up..moisture and dilution need to be considered better.
+
 The above required variables can be used for a rough approximation of aeration systems however, they do not fully capture the physical parameters associated with water aeration. The following variables MAY also be included when describing an environment utilizing aeration and SHOULD be utilized in high-precision cultivators:
   1. Water Aeration Source Temperature (Celsius) - What is the temperature of the air being pumped into the water?
-  2. Water Aeration Source Humidity (%RH) - What is the relative humidity of the air being pumped into the water?
-  3. Water Aeration Source Composition (gas:ppm) - What gasses are in the air that is being pumped into the water? Some systems pump from the air zone in the plant chamber, others pump from ambient air.
+  2. Water Aeration Source Composition (gas:ppm) - What gasses are in the air that is being pumped into the water? Some systems pump from the air zone in the plant chamber, others pump from ambient air.
 
 In practice, especially with lower-cost-lower-function devices, controlling these parameters are quite difficult, but observing them, or at lease making educated guesses about them, can become pragmatic.
 
 Consider the example that sources air from a standard ambient environment:
   1. Water Aeration Source Temperature: 20 C
-  2. Water Aeration Source Humidity: 40 %RH
-  3. Water Aeration Source Composition (gas:ppm): {
+  2. Water Aeration Source Composition (gas:ppm): {
     nitrogen: 780790,
     oxygen: 209445,
     argon: 9339,
