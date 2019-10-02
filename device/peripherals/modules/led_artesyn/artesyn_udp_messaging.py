@@ -89,7 +89,11 @@ class Messaging:
         return self.commands.keys()
 
 
-    def send(self, command: str, IP: str, slot: int = 0, value: int = 0) -> None:
+    def send(self, command: str, 
+                   IP: str, 
+                   slot: int = 0, 
+                   value: int = 0, 
+                   port: int = None) -> None:
         """ Send a command and wait a short time for a response.
         """
         if command not in self.commands:
@@ -104,16 +108,18 @@ class Messaging:
         if value < 0 or value > 100:
             print(f"Error: value {value} out of range: 0 to 100 percent")
             return
+        if port is None:
+            port = self.UDP_port
         cmd = self.commands.get(command, {})
         msgs = cmd.get('UDP_messages', [])
         for msg in msgs:
             print(f"{command} sending message {msg}")
-            msg_id = self.__send(msg, IP, slot, value)
+            msg_id = self.__send(msg, IP, slot, value, port)
             error, value = self.__get_response(msg_id)
-#debugrob: do something with response
+#TBD: do something with response
 
 
-    def __send(self, message: str, IP: str, slot: int, value: int) -> bytes:
+    def __send(self, message: str, IP: str, slot: int, value: int, port: int) -> bytes:
         """ Send the UDP message, return the message ID.
         """
         if message not in self.UDP_messages:
@@ -168,7 +174,8 @@ class Messaging:
                     val_in_hex_str = '0' + val_in_hex_str
             data += bytes.fromhex(val_in_hex_str)
 
-        self.sock.sendto(data, (IP, self.UDP_port))
+        print(f"sending:\n\t{data}")
+        self.sock.sendto(data, (IP, port))
         time.sleep(msg.get('delay_secs', 0.02))
         return msg_id
 
@@ -177,8 +184,8 @@ class Messaging:
         """ return the error string (if any) and value (if any)
         """
         data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
-        print(f"response: {data}")
+        print(f"response:\n\t{data}")
         return "", 0
-#debugrob: parse error code, return data
+#TBD: parse error code, return data
 
 
