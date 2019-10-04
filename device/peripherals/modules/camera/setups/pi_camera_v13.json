@@ -1,59 +1,92 @@
 {
-	"name":  "Raspberry Pi Camera v1.3",
-	"version": "1",
-	"uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
-	"module_name": "camera.manager",
-	"class_name": "CameraManager",
-	"parameters": {
-		"driver_module": "picam_driver",
-		"driver_class": "PiCameraDriver",
-		"variables": {
-			"sensor": null,
-			"actuator": null
-		},	
-		"communication": null,
-		"num_cameras": {
-			"type": "number",
-			"default": 1
-		}
-	},
-	"events": [
-	    {
-	        "name": "Reset",
-	        "description": "Reset sensor.",
-	        "value": null,
-	        "sequence": null
-	    },
-	    {
-	        "name": "Shutdown",
-	        "description": "Shutdown sensor.",
-	        "value": null,
-	        "sequence": null
-	    },
-	    {
-	        "name": "Set Sampling Interval",
-	        "description": "Sets sampling interval.",
-	        "value": {
-	            "default": 3600,
-	            "unit": "Seconds"
-	        },
-	        "sequence": null
-	    },
-	    {
-	        "name": "Capture",
-	        "description": "Captures an image",
-	        "value": null,
-	        "sequence": null
-	    }
-	],
-	"info": {
-		"variables": {
-			"sensor": null,
-			"actuator": null
-		}
-	},
-	"properties": {
-		"vendor_id": "0x5069",
-		"product_id": "0x4331",
-		"resolution": "2592x1944"	}
+  "name": "Raspberry Pi Camera v1.3",
+  "version": "1",
+  "uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
+  "module_name": "camera.manager",
+  "class_name": "CameraManager",
+  "parameters": {
+    "driver_module": "picam_driver",
+    "driver_class": "PiCameraDriver",
+    "variables": {
+      "sensor": null,
+      "actuator": null
+    },
+    "communication": null,
+    "num_cameras": {
+      "type": "number",
+      "default": 1
+    },
+    "lighting_control": {
+      "enabled": {
+        "type": "bool",
+        "default": true
+      },
+      "recipient_type": {
+        "type": "string",
+        "default": "Peripheral"
+      },
+      "recipient_name": {
+        "type": "string",
+        "default": "LEDPanel-Top"
+      },
+      "distance": {
+        "type": "number",
+        "default": 15
+      },
+      "intensity": {
+        "type": "number",
+        "default": 400
+      },
+      "spectrum": {
+        "type": "object",
+        "default": {
+          "380-399": 2.03,
+          "400-499": 20.30,
+          "500-599": 23.27,
+          "600-700": 31.09,
+          "701-780": 23.31
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "name": "Reset",
+      "description": "Reset sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Shutdown",
+      "description": "Shutdown sensor.",
+      "value": null,
+      "sequence": null
+    },
+    {
+      "name": "Set Sampling Interval",
+      "description": "Sets sampling interval.",
+      "value": {
+        "default": 3600,
+        "unit": "Seconds"
+      },
+      "sequence": null
+    },
+    {
+      "name": "Capture",
+      "description": "Captures an image",
+      "value": null,
+      "sequence": null
+    }
+  ],
+  "info": {
+    "variables": {
+      "sensor": null,
+      "actuator": null
+    }
+  },
+  "properties": {
+    "vendor_id": "0x5069",
+    "product_id": "0x4331",
+    "resolution": "2592x1944"
+  }
 }

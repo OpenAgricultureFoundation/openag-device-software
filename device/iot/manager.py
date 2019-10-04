@@ -28,7 +28,6 @@ from django.conf import settings
 
 # Initialize file paths
 DATA_DIR = settings.DATA_PATH
-
 IMAGES_DIR = DATA_DIR + "/images/"
 STORED_IMAGES_DIR = DATA_DIR + "/images/stored/"
 
@@ -58,6 +57,14 @@ class IotManager(manager.StateMachineManager):
         # Initialize our state variables
         self.received_message_count = 0
         self.published_message_count = 0
+
+        # Initialize device info
+        self.device_id = registration.device_id()
+
+        # Initialize topics
+        self.config_topic = "/devices/{}/config".format(self.device_id)
+        self.command_topic = "/devices/{}/commands".format(self.device_id)
+        self.telemetry_topic = "/devices/{}/events".format(self.device_id)
 
         # Initialize pubsub handler
         self.pubsub = PubSub(
@@ -340,7 +347,7 @@ class IotManager(manager.StateMachineManager):
             # Update every 100ms
             time.sleep(0.1)
 
-    ##### IOT PUBLISH FUNCTIONS ###############################################
+    ##### PUBLISHER FUNCTIONS ###############################################
 
     def publish_message(self, name: str, message: str) -> None:
         """Send a command reply. TODO: Fix this."""
@@ -415,7 +422,7 @@ class IotManager(manager.StateMachineManager):
             environment_variables = {}
 
         # Keep a copy of the first set of values (usually None). Why?
-        #if self.prev_environment_variables == {}:
+        # if self.prev_environment_variables == {}:
         #    self.environment_variables = copy.deepcopy(environment_variables)
 
         # For each value, only publish the ones that have changed.
@@ -442,7 +449,7 @@ class IotManager(manager.StateMachineManager):
                 fsize = os.path.getsize(image_file)
                 # If the size is < 200KB, then it is garbage we delete
                 # (based on the 1280x1024 average file size)
-                if fsize < 500: # in KB
+                if fsize < 500:  # in KB
                     os.remove(image_file)
                     continue
 
@@ -491,11 +498,28 @@ class IotManager(manager.StateMachineManager):
         # Successfully deleted registration data
         return "Successfully re-registered device", 200
 
-    #### IOT MESSAGE FUNCTIONS ################################################
+    #### SUBSCRIBER FUNCTIONS ################################################
 
-    def process_message(self, message: mqtt.MQTTMessage) -> None:
-        """Processes messages from iot cloud."""
-        self.logger.debug("Processing message")
+    def on_command_message(self, message: mqtt.MQTTMessage) -> None:
+        """Processes command messages received from iot cloud."""
+        self.logger.debug("Processing command message")
+
+        # Route command type
+        if "recipe/start" in message.topic:
+            self.start_recipe(message)
+        elif "recipe/stop" in message.topic:
+            self.logger.debug("Received stop recipe command")
+        else:
+            self.logger.error("Received unknown command: {}".format(command.topic))
+
+    def on_config_message(self, message: mqtt.MQTTMessage) -> None:
+        """Processes config messages received from iot cloud."""
+
+        # NOTE: This method needs to get deprecated...
+
+        self.logger.debug(
+            "Processing config message, payload: {}".format(message.payload)
+        )
 
         # Decode and parse message
         try:
@@ -531,9 +555,9 @@ class IotManager(manager.StateMachineManager):
 
         # Process all command messages
         for command_message in command_messages:
-            self.process_command_message(command_message)
+            self.process_config_command_message(command_message)
 
-    def process_command_message(self, message: Dict[str, Any]) -> None:
+    def process_config_command_message(self, message: Dict[str, Any]) -> None:
         """Process commands received from the backend (UI). This is a callback
         that is called by the IoTPubSub class when this device receives
         commands from the UI."""
@@ -559,7 +583,38 @@ class IotManager(manager.StateMachineManager):
         else:
             self.unknown_command(command)
 
-    ##### IOT COMMAND FUNCTIONS ###############################################
+    ##### COMMAND FUNCTIONS ###############################################
+
+    def start_recipe(self, message):
+        self.logger.debug("Received start recipe command")
+
+        # Get parameters
+        try:
+            payload = message.payload.decode("utf-8")
+            payload_dict = json.loads(payload)
+            recipe_uuid = payload_dict.get("recipe_uuid")
+            recipe_dict = payload_dict.get("recipe_dict")
+            recipe_url = payload_dict.get("recipe_url")
+        except json.decoder.JSONDecodeError:
+            self.logger.warning("Invalid json in payload: {}".format(payload))
+            return
+        # self.logger.debug("payload_dict = {}".format(payload_dict))
+        # self.logger.debug("recipe_uuid = {}".format(recipe_uuid))
+        # self.logger.debug("recipe_dict = {}".format(recipe_dict))
+
+        # Check if downloading recipe, or forcibly starting recipe
+        # Note: Neither of these options should be used in future architectures...
+        if recipe_dict != None:
+            # Note: Converting recipe dict back to json is a temporary hack
+            recipe_json = json.dumps(recipe_dict)
+            self.forcibly_create_and_start_recipe(commands.START_RECIPE, recipe_json)
+        elif recipe_url != None:
+            self.download_and_start_recipe(
+                commands.DOWNLOAD_AND_START_RECIPE, recipe_url
+            )
+        else:
+            self.logger.error("Received invalid start recipe request")
+            return
 
     def download_and_start_recipe(self, command: str, URL: str) -> None:
         """ Download the recipe from storage and forcibly start it.
@@ -568,7 +623,7 @@ class IotManager(manager.StateMachineManager):
             size we can send to a device over IoT.
         """
         recipe = urllib.request.urlopen(URL)
-        recipe_json = recipe.read().decode('utf-8')
+        recipe_json = recipe.read().decode("utf-8")
         self.logger.debug(f"Downloaded recipe {URL}")
         self.forcibly_create_and_start_recipe(command, recipe_json)
 
@@ -651,8 +706,7 @@ class IotManager(manager.StateMachineManager):
         if status != 202:
             error_message = "Unable to start recipe, error: {}".format(message)
             self.logger.warning(error_message)
-            self.pubsub.publish_command_reply('error', error_message)
-
+            self.pubsub.publish_command_reply("error", error_message)
 
     def stop_recipe(self, command: str) -> None:
         """Processes stop recipe command."""
@@ -665,14 +719,13 @@ class IotManager(manager.StateMachineManager):
         if status != 200:
             error_message = "Unable to stop recipe, error: {}".format(message)
             self.logger.warning(error_message)
-            self.pubsub.publish_command_reply('error', error_message)
-        
+            self.pubsub.publish_command_reply("error", error_message)
 
     def unknown_command(self, command: str) -> None:
         """Processes unknown command."""
         message = "Received unknown command"
         self.logger.warning(message)
-        self.pubsub.publish_command_reply('error', message)
+        self.pubsub.publish_command_reply("error", message)
 
 
 ##### PUBSUB CALLBACK FUNCTIONS ###############################################
@@ -689,7 +742,9 @@ def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -
     """Callback for when a device disconnects from mqtt broker."""
     error = "{}: {}".format(return_code, mqtt.error_string(return_code))
     ref_self.logger.error(error)
-    ref_self.logger.debug("Trying mqtt port: {}".format(str(ref_self.pubsub.next_port())))
+    ref_self.logger.debug(
+        "Trying mqtt port: {}".format(str(ref_self.pubsub.next_port()))
+    )
     ref_self.is_connected = False
 
 
@@ -707,8 +762,15 @@ def on_message(
     # Increment received message count
     ref_self.received_message_count += 1
 
-    # Process message
-    ref_self.process_message(message)
+    # Route message
+    if ref_self.config_topic in message.topic:
+        ref_self.on_config_message(message)
+    elif ref_self.command_topic in message.topic:
+        ref_self.on_command_message(message)
+    else:
+        ref_self.logger.error(
+            "Recevied unknown message topic: {}".format(message.topic)
+        )
 
 
 def on_log(client: mqtt.Client, ref_self: IotManager, level: str, buf: str) -> None:
@@ -720,6 +782,4 @@ def on_subscribe(
     client: mqtt.Client, ref_self: IotManager, message_id: str, granted_qos: int
 ) -> None:
     """Paho callback when mqtt broker receives subscribe."""
-
-
 

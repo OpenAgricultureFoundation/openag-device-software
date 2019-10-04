@@ -21,6 +21,9 @@ class ActuatorPCA9633Manager(manager.PeripheralManager):
         # Initialize parent class
         super().__init__(*args, **kwargs)
 
+        # Initialize colors
+        self.colors = ["Red", "Green", "Yellow", "Blue"]
+
         # Set default sampling interval
         self.default_sampling_interval = 3  # second
         self.prev_update = 0  # timestamp
@@ -117,6 +120,7 @@ class ActuatorPCA9633Manager(manager.PeripheralManager):
     @user_indicator_led_status.setter
     def user_indicator_led_status(self, value: bool) -> None:
         """Sets reported output value in shared state."""
+        self.logger.debug("Setting user indicator: {}".format(value))
         self.state.set_peripheral_reported_actuator_value(
             self.name, "user_indicator_led_status", value
         )
@@ -321,7 +325,79 @@ class ActuatorPCA9633Manager(manager.PeripheralManager):
 
     def update_user_led(self, driver: driver.PCA9633Driver) -> None:
         """Updates user led indicator and status."""
-        if self.user_indicator_led_status != "Green":
-            driver.set_rgb([0, 32, 0])
-            self.user_indicator_led_status = "Green"
+        ...
+        # if self.user_indicator_led_status != "Green":
+        #     driver.set_rgb([0, 32, 0])
+        #     self.user_indicator_led_status = "Green"
 
+ ##### EVENT FUNCTIONS ##############################################################
+
+    def create_peripheral_specific_event(
+        self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event."""
+        if request["type"] == events.SET_USER_LED:
+            return self.set_user_led(request)
+        else:
+            return "Unknown event request type", 400
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        if request["type"] == events.SET_USER_LED:
+            self._set_user_led(request)
+        else:
+            message = "Invalid event request type in queue: {}".format(request["type"])
+            self.logger.error(message)
+
+    def set_user_led(self,request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes set user led event request."""
+        self.logger.debug("Pre-processing set user led request")
+
+        # Get request parameters
+        color = request.get("value")
+
+        # Validate parameters
+        if color not in self.colors:
+          return "Invalid color, must be Red, Green, Blue, or Yellow", 400
+
+        # Add event request to event queue
+        request = {"type": events.SET_USER_LED, "color": color}
+        self.event_queue.put(request)
+
+        # Successfully turned on
+        return f"Setting user LED {color}", 200
+
+    def _set_user_led(self, request: Dict[str, Any]) -> None:
+        """Processes turn on event request."""
+        self.logger.debug("Processing set led event request")
+
+        # Get request parameters
+        color = request.get("color")
+
+        # Set user led and update reported variables
+        try:
+            self.user_indicator_led_status = color
+            for driver in self.drivers:
+                if driver.name == "UserLED":
+                    if color == "Green": 
+                        self.logger.debug("Setting color green")
+                        driver.set_rgb([0, 32, 0])
+                    elif color == "Yellow":
+                        self.logger.debug("Setting color yellow")
+                        driver.set_rgb([32, 32, 0])
+                    elif color == "Red":
+                        self.logger.debug("Setting color red")
+                        driver.set_rgb([32, 0, 0])
+                    elif color == "Blue":
+                        self.logger.debug("Setting color blue")
+                        driver.set_rgb([0, 0, 32])
+                    break
+            
+        except exceptions.DriverError as e:
+            self.mode = modes.ERROR
+            message = "Unable to set user led: {}".format(e)
+            self.logger.debug(message)
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to set user led, unhandled exception"
+            self.logger.exception(message)

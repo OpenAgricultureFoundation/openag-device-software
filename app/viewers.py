@@ -132,6 +132,8 @@ class EnvironmentViewer:
         self.sensor_summary = self.get_environment_summary("sensor")
         self.actuator_summary = self.get_environment_summary("actuator")
 
+        self.logger.debug(f"sensor_summary: {self.sensor_summary}")
+
     def get_environment_summary(self, peripheral_type: str) -> Dict[str, str]:
         """Gets environment summary of current reported --> desired value for each 
         variable in shared state."""
@@ -176,8 +178,8 @@ class EnvironmentViewer:
                 reported = f'{val:.2f}'
 
             desired = "None"
-            val = environment_dict[peripheral_type]["desired"][variable]
             if variable in environment_dict[peripheral_type]["desired"]:
+                val = environment_dict[peripheral_type]["desired"][variable]
                 desired = str(val)
                 if isinstance( val, float ):
                     # limit to 2 decimal places  
