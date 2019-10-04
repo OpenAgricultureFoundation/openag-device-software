@@ -11,12 +11,12 @@ import artesyn_udp_messaging
 path = os.path.dirname(__file__) + "/../setups/artesyn_config.json"
 
 msg = artesyn_udp_messaging.Messaging(config_file=path, 
-        simulate=True, debug=True)
+        simulate=True, debug=True) # default artesyn port of 8888
 
-udp_server.run_server()
+udp_server.run_server() # listens on port 8889, responds to port 8888
 
 while True:
-    print(f'Please enter one of the commands and press Enter:')
+    print(f'\n\n>> Please enter one of the commands and press Enter:')
     for cmd in msg.get_commands():
         print(f'\t{cmd}')
     command = input()
