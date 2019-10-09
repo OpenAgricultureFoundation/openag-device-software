@@ -93,9 +93,6 @@ class CCS811Driver:
             start_time = time.time()
             while time.time() - start_time < 1200:
 
-                # TODO: Remove this
-                break
-
                 # Keep logs active
                 self.logger.info("Warming up, waiting for 20 minutes")
 
