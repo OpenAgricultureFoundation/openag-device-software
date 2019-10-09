@@ -2,6 +2,7 @@
 
 # Log enabling status
 echo "Enabling remote access..."
+echo "URL: $REMOTE_DEVICE_UI_URL"
 
 # Check valid command line arguments
 if [[ $# -eq 0 ]]; then
@@ -29,7 +30,10 @@ fi
 
 # Get remote device ui prefix
 REMOTE_DEVICE_UI_PREFIX=${REMOTE_DEVICE_UI_URL%".serveo.net"}
+REMOTE_DEVICE_UI_PREFIX=${REMOTE_DEVICE_UI_PREFIX#"http://"}
+echo REMOTE_DEVICE_UI_PREFIX: $REMOTE_DEVICE_UI_PREFIX
 
 # Restart autossh forwarding
 sudo killall -s 9 autossh > /dev/null 2>&1
-autossh -M 0 -R $REMOTE_DEVICE_UI_PREFIX:80:localhost:8000 serveo.net -R $REMOTE_DEVICE_UI_PREFIX:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
+# autossh -M 0 -R $REMOTE_DEVICE_UI_PREFIX:80:localhost:8000 serveo.net -R $REMOTE_DEVICE_UI_PREFIX:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
+autossh -R $REMOTE_DEVICE_UI_PREFIX:80:localhost:8000 serveo.net -R $REMOTE_DEVICE_UI_PREFIX:22:localhost:22 serveo.net -oServerAliveInterval=30 -oStrictHostKeyChecking=no -f
