@@ -2,7 +2,6 @@
 
 # Log enabling status
 echo "Enabling remote access..."
-echo "URL: $REMOTE_DEVICE_UI_URL"
 
 # Check valid command line arguments
 if [[ $# -eq 0 ]]; then
