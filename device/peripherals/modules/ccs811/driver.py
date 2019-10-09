@@ -87,7 +87,6 @@ class CCS811Driver:
             self.reset(retry=retry)
             self.check_hardware_id(retry=retry)
             self.start_app(retry=retry)
-            # self.check_for_errors(retry=retry)
             self.write_measurement_mode(1, False, False, retry=retry)
 
             # Wait 20 minutes for sensor to stabilize
@@ -216,9 +215,7 @@ class CCS811Driver:
         sbits = {}
         for key in sorted(bits.keys(), reverse=True):
             sbits[key] = bits[key]
-        self.logger.error("bits = {}".format(sbits))  # TODO: remove
         write_byte = bitwise.get_byte_from_bits(bits)
-        self.logger.error("write_byte = 0x{:02X}".format(write_byte))  # TODO: remove
 
         # Write measurement mode to sensor
         try:

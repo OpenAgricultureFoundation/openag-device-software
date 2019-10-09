@@ -147,17 +147,31 @@ class RunnerBase:
         if self.communication == None:
             self.communication = {}
 
-        # Initialize standard i2c config parameters if they exist
-        self.bus = self.communication.get("bus", None)
-        self.address = self.communication.get("address", None)
-        self.mux = self.communication.get("mux", None)
-        self.channel = self.communication.get("channel", None)
+        # Initialize i2c bus
+        self.bus = self.communication.get("bus")
+        if self.bus == "default":
+            self.bus = os.getenv("DEFAULT_I2C_BUS")
+        if self.bus == "none":
+            self.bus = None
+        if self.bus != None:
+            self.bus = int(self.bus)
 
-        # Convert i2c config params from hex to int if they exist
-        if self.address != None:
-            self.address = int(self.address, 16)
+        # Initialize i2c mux
+        self.mux = self.communication.get("mux")
+        if self.mux == "default":
+            self.mux = os.getenv("DEFAULT_MUX_ADDRESS")
+        if self.mux == "none":
+            self.mux = None
         if self.mux != None:
             self.mux = int(self.mux, 16)
+          
+        # Initialize i2c channel
+        self.channel = self.communication.get("channel")
+
+        # Initialize i2c address
+        self.address = self.communication.get("address")
+        if self.address != None:
+            self.address = int(self.address, 16)
 
 
 if __name__ == "__main__":
