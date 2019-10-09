@@ -59,6 +59,9 @@ class CCS811Driver:
         self.logger = logger.Logger(logname, "peripherals")
         self.logger.info("Initializing driver")
 
+        # Initialize i2c lock
+        self.i2c_lock = i2c_lock
+
         # Check if simulating
         if simulate:
             self.logger.info("Simulating driver")
@@ -282,8 +285,9 @@ class CCS811Driver:
 
         # Get algorithm data
         try:
-            self.i2c.write(bytes([0x02]), retry=retry)
-            bytes_ = self.i2c.read(4)
+            with self.i2c_lock:
+                self.i2c.write(bytes([0x02]), retry=retry)
+                bytes_ = self.i2c.read(4)
             self.logger.debug("CO2 MSB: 0x{:02X}".format(bytes_[0]))
             self.logger.debug("CO2 LSB: 0x{:02X}".format(bytes_[1]))
             self.logger.debug("TVOC MSB: 0x{:02X}".format(bytes_[2]))
@@ -293,15 +297,19 @@ class CCS811Driver:
 
         # Check if the i2c data lines aren't getting pulled low fast enough
         # TODO: Investigate this from the hardware lens
-        # HACK: Always set the first bit of the first byte read to low
+        # HACK: Always set the first co2 bit of the first byte to low
         if bytes_[0] > 0x80:
-            self.logger.warning('Detected i2c data line fault, masking first bit')
+            self.logger.warning('Detected i2c data line fault, masking first co2 bit')
             co2 = float((bytes_[0] - 0x80)* 256 + bytes_[1])
         else:
             co2 = float(bytes_[0] * 256 + bytes_[1])
 
-        # Parse tvoc data bytes
-        tvoc = float(bytes_[2] * 256 + bytes_[3])
+        # HACK: Always set the first tvoc bit of the first byte to low
+        if bytes_[2] > 0x80:
+            self.logger.warning('Detected i2c data line fault, masking first tvoc bit')
+            tvoc = float((bytes_[2] - 0x80)* 256 + bytes_[3])
+        else:
+            tvoc = float(bytes_[2] * 256 + bytes_[3])
 
         # Verify co2 value within valid range
         if co2 < self.min_co2 or co2 > self.max_co2:
