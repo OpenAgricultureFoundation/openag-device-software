@@ -454,6 +454,9 @@
      request = {
          "type": event_name,
          "value": value};
+      console.log('Recipient:', recipient);
+      console.log('Request:', request);
+      console.log('csrfmiddlewaretoken:', "{{ csrf_token }}")
 
      // Send create event request to endpoint
      $.ajax({
