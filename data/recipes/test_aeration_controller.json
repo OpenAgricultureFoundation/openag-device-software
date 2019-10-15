@@ -1,0 +1,53 @@
+{
+	"format": "openag-phased-environment-v1",
+	"version": "1",
+	"creation_timestamp_utc": "2019-10-01T16:45:41Z",
+	"name": "Test Aeration Controller",
+	"uuid": "6d7d1320-d8ee-42a6-8dee-fbfd8bf9b957",
+	"parent_recipe_uuid": null,
+	"support_recipe_uuids": null,
+	"description": {
+		"brief": "Sets aeration pump to dose 1 l/l/m for 6 minutes of every hour.",
+		"verbose": "Sets aeration pump to dose 1 l/l/m for 6 minutes of every hour."
+	},
+	"authors": [
+		{
+			"name": "Jake Rye",
+			"email": "jrye@mit.edu",
+			"uuid": "76b031d5-f02b-4cc2-998f-1f79a8fde33e"
+		}
+	],
+	"cultivars": [
+		{
+			"name": "Scarlet Kale",
+			"uuid": "d6d76ff9-b12e-47bb-8e83-f872c7870856"
+		}
+	],
+	"cultivation_methods": [
+		{
+		"name": "Shallow Water Culture",
+		"uuid": "30cbbded-07a7-4c49-a47b-e34fc99eefd0"
+		}
+	],
+	"environments": {
+		"day": {
+			"name": "Day",
+      "water_aeration_rate_liter_liter_minute": 1,
+      "water_aeration_period_minutes": 60,
+      "water_aeration_duty_cycle_percent": 10
+		}
+	},
+	"phases": [
+		{
+			"name": "Test Day",
+			"repeat": 1,
+			"cycles": [
+				{
+					"name": "Day",
+					"environment": "day",
+					"duration_hours": 12
+				}
+			]
+		}
+	]
+}

@@ -317,6 +317,9 @@ class IotManager(manager.StateMachineManager):
         """Runs connected mode."""
         self.logger.debug("Entered CONNECTED")
 
+        # Subscribe to topics
+        self.pubsub.subscribe_to_topics()
+
         # Publish a boot message
         self.publish_boot_message()
 
@@ -730,13 +733,11 @@ class IotManager(manager.StateMachineManager):
 
 ##### PUBSUB CALLBACK FUNCTIONS ###############################################
 
-
 def on_connect(
     client: mqtt.Client, ref_self: IotManager, flags: int, return_code: int
 ) -> None:
     """Callback for when a device connects to mqtt broker."""
     ref_self.is_connected = True
-
 
 def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -> None:
     """Callback for when a device disconnects from mqtt broker."""

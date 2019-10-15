@@ -22,7 +22,7 @@ class ActuatorPCA9633Manager(manager.PeripheralManager):
         super().__init__(*args, **kwargs)
 
         # Initialize colors
-        self.colors = ["Red", "Green", "Yellow", "Blue"]
+        self.colors = ["Red", "Green", "Yellow", "Blue", "Off"]
 
         # Set default sampling interval
         self.default_sampling_interval = 3  # second
@@ -197,9 +197,14 @@ class ActuatorPCA9633Manager(manager.PeripheralManager):
         """Sets up peripheral."""
         self.logger.debug("No setup required for peripheral")
 
-        # Turn off all indicator leds
+        # Turn off all indicator leds, except for user led (set green)
         for driver in self.drivers:
-            driver.set_rgb([0, 0, 0])
+            if driver.name == "UserLED":
+                self.user_indicator_led_status = "Green"
+                driver.set_rgb([0, 32, 0]) 
+            else:
+                driver.set_rgb([0, 0, 0])
+        
 
     def update_peripheral(self) -> None:
         """Updates peripheral by setting output to desired state."""
@@ -391,6 +396,9 @@ class ActuatorPCA9633Manager(manager.PeripheralManager):
                     elif color == "Blue":
                         self.logger.debug("Setting color blue")
                         driver.set_rgb([0, 0, 32])
+                    elif color == "Off":
+                        self.logger.debug("Setting color blue")
+                        driver.set_rgb([0, 0, 0])
                     break
             
         except exceptions.DriverError as e:

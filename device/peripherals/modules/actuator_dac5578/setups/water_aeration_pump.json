@@ -64,14 +64,14 @@
 	    },
 	    {
 	        "name": "Turn On",
-	        "description": "Turns on humidifier.",
+	        "description": "Turns on pump.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
 	    },
 	    {
 	        "name": "Turn Off",
-	        "description": "Turns off humidifier.",
+	        "description": "Turns off pump.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
