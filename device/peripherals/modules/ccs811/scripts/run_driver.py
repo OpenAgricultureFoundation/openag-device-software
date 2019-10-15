@@ -18,7 +18,7 @@ class DriverRunner(RunnerBase):  # type: ignore
     """Runs driver."""
 
     # Initialize defaults
-    default_device = "edu-v0.2.0"
+    default_device = "pfc4-v0.1.0"
     default_name = "CCS811-Top"
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -68,7 +68,7 @@ class DriverRunner(RunnerBase):  # type: ignore
         elif self.args.co2 or self.args.tvoc:
             co2, tvoc = self.driver.read_algorithm_data()
             print("CO2: {} ppm".format(co2))
-            print("TVOC: {} ppm".format(tvoc))
+            print("TVOC: {} ppb".format(tvoc))
 
         # Check if setting measurement mode
         elif self.args.mode != None:

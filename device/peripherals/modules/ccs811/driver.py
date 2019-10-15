@@ -34,7 +34,7 @@ class CCS811Driver:
     """Driver for atlas ccs811 co2 and tvoc."""
 
     # Initialize variable properties
-    min_co2 = 400.0  # ppm
+    min_co2 = 380.0  # ppm
     max_co2 = 8192.0  # ppm
     min_tvoc = 0.0  # ppb
     max_tvoc = 1187.0  # ppb
@@ -58,6 +58,9 @@ class CCS811Driver:
         logname = "Driver({})".format(name)
         self.logger = logger.Logger(logname, "peripherals")
         self.logger.info("Initializing driver")
+
+        # Initialize i2c lock
+        self.i2c_lock = i2c_lock
 
         # Check if simulating
         if simulate:
@@ -87,7 +90,6 @@ class CCS811Driver:
             self.reset(retry=retry)
             self.check_hardware_id(retry=retry)
             self.start_app(retry=retry)
-            # self.check_for_errors(retry=retry)
             self.write_measurement_mode(1, False, False, retry=retry)
 
             # Wait 20 minutes for sensor to stabilize
@@ -216,9 +218,7 @@ class CCS811Driver:
         sbits = {}
         for key in sorted(bits.keys(), reverse=True):
             sbits[key] = bits[key]
-        self.logger.error("bits = {}".format(sbits))  # TODO: remove
         write_byte = bitwise.get_byte_from_bits(bits)
-        self.logger.error("write_byte = 0x{:02X}".format(write_byte))  # TODO: remove
 
         # Write measurement mode to sensor
         try:
@@ -280,35 +280,52 @@ class CCS811Driver:
                 time.sleep(1)
                 self.read_algorithm_data(retry=retry, reread=reread - 1)
             else:
-                message = "data not ready"
-                raise exceptions.ReadAlgorithmDataError(
-                    message=message, logger=self.logger
-                )
+                self.logger.debug("Data not ready yet, skipping reading")
+                return None, None
 
         # Get algorithm data
         try:
-            self.i2c.write(bytes([0x02]), retry=retry)
-            bytes_ = self.i2c.read(4)
+            with self.i2c_lock:
+                self.i2c.write(bytes([0x02]), retry=retry)
+                bytes_ = self.i2c.read(4)
+            self.logger.debug("CO2 MSB: 0x{:02X}".format(bytes_[0]))
+            self.logger.debug("CO2 LSB: 0x{:02X}".format(bytes_[1]))
+            self.logger.debug("TVOC MSB: 0x{:02X}".format(bytes_[2]))
+            self.logger.debug("TVOC LSB: 0x{:02X}".format(bytes_[3]))
         except I2CError:
             raise exceptions.ReadAlgorithmDataError(logger=self.logger) from e
 
-        # Parse data bytes
-        co2 = float(bytes_[0] * 255 + bytes_[1])
-        tvoc = float(bytes_[2] * 255 + bytes_[3])
+        # Check if the i2c data lines aren't getting pulled low fast enough
+        # TODO: Investigate this from the hardware lens
+        # HACK: Always set the first co2 bit of the first byte to low
+        if bytes_[0] > 0x80:
+            self.logger.warning('Detected i2c data line fault, masking first co2 bit')
+            co2 = float((bytes_[0] - 0x80)* 256 + bytes_[1])
+        else:
+            co2 = float(bytes_[0] * 256 + bytes_[1])
+
+        # HACK: Always set the first tvoc bit of the first byte to low
+        if bytes_[2] > 0x80:
+            self.logger.warning('Detected i2c data line fault, masking first tvoc bit')
+            tvoc = float((bytes_[2] - 0x80)* 256 + bytes_[3])
+        else:
+            tvoc = float(bytes_[2] * 256 + bytes_[3])
 
         # Verify co2 value within valid range
-        if co2 > self.min_co2 and co2 < self.min_co2:
-            message = "CO2 reading outside of valid range"
-            raise exceptions.ReadAlgorithmDataError(message=message, logger=self.logger)
+        if co2 < self.min_co2 or co2 > self.max_co2:
+            self.logger.warning(f"CO2: Outside of valid range: {co2}")
+            co2 = None
+        else:
+            self.logger.debug("CO2: {} ppm".format(co2))
 
-        # Verify tvos within valid range
-        if tvoc > self.min_tvoc and tvoc < self.min_tvoc:
-            message = "TVOC reading outside of valid range"
-            raise exceptions.ReadAlgorithmDataError(message=message, logger=self.logger)
+        # Verify tvoc within valid range
+        if tvoc < self.min_tvoc or tvoc > self.max_tvoc:
+            self.logger.warning(f"TVOC: Outside of valid range: {tvoc}")
+            tvoc = None
+        else:
+            self.logger.debug("TVOC: {} ppb".format(tvoc))
 
-        # Successfully read sensor data!
-        self.logger.debug("CO2: {} ppm".format(co2))
-        self.logger.debug("TVOC: {} ppb".format(tvoc))
+        # Successfully read sensor data
         return co2, tvoc
 
     def read_raw_data(self) -> None:

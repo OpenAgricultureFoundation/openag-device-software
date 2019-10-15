@@ -29,6 +29,9 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         self.temperature_name = self.variables["compensation"]["temperature_celsius"]
         self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 3
+
     @property
     def co2(self) -> Optional[float]:
         """Gets co2 value."""
@@ -145,7 +148,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
 
         # Read co2 and tvoc
         try:
-            co2, tvoc = self.driver.read_algorithm_data()
+            co2, tvoc = self.driver.read_algorithm_data(reread=0)
         except exceptions.DriverError:
             self.logger.exception("Unable to read co2, tvoc")
             self.mode = modes.ERROR
@@ -153,8 +156,10 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
             return
 
         # Update reported values
-        self.co2 = co2
-        self.tvoc = tvoc
+        if co2 != None:
+          self.co2 = co2
+        if tvoc != None:
+          self.tvoc = tvoc
         self.health = 100.0
 
     def clear_reported_values(self) -> None:
