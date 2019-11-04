@@ -280,7 +280,7 @@ class IotManager(manager.StateMachineManager):
 
     def run_disconnected_mode(self) -> None:
         """Runs disconnected mode."""
-        self.logger.debug("Entered DISCONNECTED")
+        self.logger.info("Entered DISCONNECTED")
 
         start_time = time.time()
         update_interval = 1  # seconds
@@ -315,7 +315,7 @@ class IotManager(manager.StateMachineManager):
 
     def run_connected_mode(self) -> None:
         """Runs connected mode."""
-        self.logger.debug("Entered CONNECTED")
+        self.logger.info("Entered CONNECTED")
 
         # Subscribe to topics
         self.pubsub.subscribe_to_topics()
