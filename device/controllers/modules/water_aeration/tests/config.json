@@ -1,0 +1,28 @@
+{
+  "format": "openag-standard-v1",
+  "name": "Test Config",
+  "uuid": "42b82c9d-43fd-4913-bbd3-f7480fb6cd0b",
+  "peripherals": null,
+  "controllers": [
+    {
+      "name": "WaterAerationController",
+      "type": "WaterAerationController",
+      "uuid": "b3d37d51-0326-434b-b905-2b2adcacd5ba",
+      "parameters": {
+        "setup": {
+          "name": "KPM27H Default Water Aeration Controller",
+          "file_name": "water_aeration/setups/kpm27h_default"
+        },
+        "variables": {
+          "actuator_name": "water_aeration_pump_percent",
+          "rate_name": "water_aeration_rate_liter_liter_minute",
+          "period_name": "water_aeration_period_minutes",
+          "duty_cycle_name": "water_aeration_duty_cycle_percent",
+          "bubble_diameter_name": "water_aeration_bubble_diameter_mm",
+          "water_volume_name": "water_volume_liters"
+        },
+        "default_water_volume": 2
+      }
+    }
+  ]
+}

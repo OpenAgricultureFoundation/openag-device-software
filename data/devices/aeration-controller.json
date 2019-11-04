@@ -1,0 +1,54 @@
+{
+  "format": "openag-standard-v1",
+  "name": "Aeration Controller",
+  "uuid": "bb9681dc-92fb-4e56-ac91-48d016f35ab3",
+  "peripherals": [
+    {
+      "name": "WaterAerationPump",
+      "type": "ActuatorDAC5578",
+      "uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
+      "parameters": {
+        "setup": {
+          "name": "Water Aeration Pump",
+          "file_name": "actuator_dac5578/setups/water_aeration_pump"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": {
+            "output_variable": "water_aeration_pump_percent"
+          }
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 3,
+          "address": "0x47",
+          "port": 1,
+          "is_active_high": true
+        }
+      }
+    }
+  ],
+  "controllers": [
+    {
+      "name": "WaterAerationController",
+      "type": "WaterAerationController",
+      "uuid": "b3d37d51-0326-434b-b905-2b2adcacd5ba",
+      "parameters": {
+        "setup": {
+          "name": "KPM27H Default Water Aeration Controller",
+          "file_name": "water_aeration/setups/kpm27h_default"
+        },
+        "variables": {
+          "actuator_name": "water_aeration_pump_percent",
+          "rate_name": "water_aeration_rate_liter_liter_minute",
+          "period_name": "water_aeration_period_minutes",
+          "duty_cycle_name": "water_aeration_duty_cycle_percent",
+          "bubble_diameter_name": "water_aeration_bubble_diameter_mm",
+          "water_volume_name": "water_volume_liters"
+        },
+        "default_water_volume": 2
+      }
+    }
+  ]
+}

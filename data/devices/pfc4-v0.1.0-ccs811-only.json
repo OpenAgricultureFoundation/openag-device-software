@@ -1,0 +1,36 @@
+{
+  "format": "openag-standard-v1",
+  "name": "PFC4 v0.1.0 - CCS811 Only",
+  "uuid": "68451f25-2279-45ef-b45f-92ec00daf929",
+  "peripherals": [
+    {
+      "name": "CCS811-Top",
+      "type": "CCS811",
+      "uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
+      "parameters": {
+        "setup": {
+          "name": "CCS811 Carbon Dioxide Sensor",
+          "file_name": "ccs811/setups/default"
+        },
+        "variables": {
+          "sensor": {
+            "co2_ppm": "air_carbon_dioxide_ppm",
+            "tvoc_ppb": "air_total_volatile_organic_compounds_ppb"
+          },
+          "compensation": {
+            "temperature_celsius": "air_temperature_celsius",
+            "humidity_percent": "air_humidity_percent"
+          },
+          "actuator": null
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 2,
+          "address": "0x5a"
+        }
+      }
+    }
+  ],
+  "controllers": null
+}

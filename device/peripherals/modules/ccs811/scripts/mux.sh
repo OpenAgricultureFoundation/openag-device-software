@@ -1,1 +1,17 @@
-i2cset -y 2 0x77 $((1<<$1))
+#!/bin/bash
+
+# For use on devices with an I2C bus built in: beaglebone, Pi
+
+# Ensure virtual environment is activated
+if [[ -z "${VIRTUAL_ENV}" ]] ; then
+    echo "Please activate your virtual environment then re-run script"
+    exit 0
+fi
+
+# Ensure platform is i2c enabled
+if [[ "$IS_I2C_ENABLED" != "true" ]]; then
+	echo "Platform is not i2c enabled"
+	exit 0
+fi
+
+i2cset -y $DEFAULT_I2C_BUS $DEFAULT_MUX_ADDRESS $((1<<$1))

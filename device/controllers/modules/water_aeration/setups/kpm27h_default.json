@@ -1,0 +1,49 @@
+{
+	"name":  "KPM27H Default Water Aeration Controller",
+	"version": "1",
+	"uuid": "b3d37d51-0326-434b-b905-2b2adcacd5ba",
+	"module_name": "water_aeration.manager",
+	"class_name": "WaterAerationControllerManager",
+	"parameters": {
+		"variables": {
+			"actuator_name": {
+				"type": "string", 
+				"default": "water_aeration_pump_percent"
+			},
+			"rate_name": {
+				"type": "string",
+				"default": "water_aeration_rate_liter_liter_minute"
+			},
+			"period_name": {
+				"type": "string",
+				"default": "water_aeration_period_minutes"
+      },
+      "duty_cycle_name": {
+				"type": "string",
+				"default": "water_aeration_duty_cycle_percent"
+      },
+      "bubble_diameter_name": {
+				"type": "string",
+				"default": "water_aeration_bubble_diameter_mm"
+      },
+      "water_volume_name": {
+				"type": "string",
+				"default": "water_volume_liters"
+      }
+    },
+    "default_water_volume": {
+      "type": "number",
+      "default": 2
+    }
+	},
+	"properties": {
+    "actuator_is_boolean": true,
+		"actuator_aeration_rate_map": {
+      "0": 0,
+      "100": 2.0
+    },
+    "bubble_diameter": 10
+	},
+	"events": null,
+	"info": {}
+}

@@ -1,268 +1,338 @@
 [
-	{
-		"key": "air_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Air Temp",
-				"verbose": "Air Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "air_humidity_percent",
-		"info": {
-			"name": {
-				"brief": "Air Hum",
-				"verbose": "Air Humidity"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "%RH",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "air_carbon_dioxide_ppm",
-		"info": {
-			"name": {
-				"brief": "CO2",
-				"verbose": "Air Carbon Dioxide"
-			},
-			"unit": {
-				"brief": "ppm",
-				"verbose": "Parts Per Million",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "air_total_volatile_organic_compounds_ppb",
-		"info": {
-			"name": {
-				"brief": "TVOC",
-				"verbose": "Total Volatile Organic Compounds"
-			},
-			"unit": {
-				"brief": "ppb",
-				"verbose": "Parts Per Billion",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "water_potential_hydrogen",
-		"info": {
-			"name": {
-				"brief": "pH",
-				"verbose": "Water Potential Hydrogen"
-			},
-			"unit": {
-				"brief": "pH",
-				"verbose": "pH Scale",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "water_electrical_conductivity_ms_cm",
-		"info": {
-			"name": {
-				"brief": "EC",
-				"verbose": "Electrical Conductivity"
-			},
-			"unit": {
-				"brief": "mS/cm",
-				"verbose": "Milli Siemens per Centimeter",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "water_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Water Temp",
-				"verbose": "Water Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "water_dissolved_oxygen_mg_l",
-		"info": {
-			"name": {
-				"brief": "DO",
-				"verbose": "Dissolved Oxygen"
-			},
-			"unit": {
-				"brief": "mg/L",
-				"verbose": "Milligrams per Liter",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "light_ppfd_umol_m2_s",
-		"info": {
-			"name": {
-				"brief": "PPFD",
-				"verbose": "Photosynthetic Photon Flux Density"
-			},
-			"unit": {
-				"brief": "umol/m2/s",
-				"verbose": "Micro-Mole per Meter Squared per Second",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "light_spectrum_channel_percents",
-		"info": {
-			"name": {
-				"brief": "Spectrum",
-				"verbose": "Light Spectrum Channel Percents"
-			},
-			"unit": {
-				"brief": "%",
-				"verbose": "Percent",
-				"type": "object"
-			}
-		}
-	},
-	{
-		"key": "light_spectrum_nm_percent",
-		"info": {
-			"name": {
-				"brief": "Spectrum",
-				"verbose": "Light Spectrum Nanometer Percent"
-			},
-			"unit": {
-				"brief": "nm: %",
-				"verbose": "Nanometer: Percent",
-				"type": "object"
-			}
-		}
-	},
-	{
-		"key": "light_illumination_distance_cm",
-		"info": {
-			"name": {
-				"brief": "Distance",
-				"verbose": "Light Illumination Distance"
-			},
-			"unit": {
-				"brief": "cm",
-				"verbose": "Centimeters",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "nutrient_concentration_ppm",
-			"info": {
-			"name": {
-				"brief": "Nutrient Concentration",
-				"verbose": "Nutrient Concentration"
-			},
-			"unit": {
-				"brief": "ppm",
-				"verbose": "Parts Per Million",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "soil_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Soil Temp",
-				"verbose": "Soil Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "tray_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Tray Temp",
-				"verbose": "Tray Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "top_tray_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Top Tray Temp",
-				"verbose": "Top Tray Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "middle_tray_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Middle Tray Temp",
-				"verbose": "Middle Tray Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "bottom_tray_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Bottom Tray Temp",
-				"verbose": "Bottom Tray Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	},
-	{
-		"key": "heat_sink_temperature_celsius",
-		"info": {
-			"name": {
-				"brief": "Heat Sink Temp",
-				"verbose": "Heat Sink Temperature"
-			},
-			"unit": {
-				"brief": "C",
-				"verbose": "Celsius",
-				"type": "number"
-			}
-		}
-	}
+  {
+    "key": "air_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Air Temp",
+        "verbose": "Air Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "air_humidity_percent",
+    "info": {
+      "name": {
+        "brief": "Air Hum",
+        "verbose": "Air Humidity"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "%RH",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "air_carbon_dioxide_ppm",
+    "info": {
+      "name": {
+        "brief": "CO2",
+        "verbose": "Air Carbon Dioxide"
+      },
+      "unit": {
+        "brief": "ppm",
+        "verbose": "Parts Per Million",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "air_total_volatile_organic_compounds_ppb",
+    "info": {
+      "name": {
+        "brief": "TVOC",
+        "verbose": "Total Volatile Organic Compounds"
+      },
+      "unit": {
+        "brief": "ppb",
+        "verbose": "Parts Per Billion",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_potential_hydrogen",
+    "info": {
+      "name": {
+        "brief": "pH",
+        "verbose": "Water Potential Hydrogen"
+      },
+      "unit": {
+        "brief": "pH",
+        "verbose": "pH Scale",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_electrical_conductivity_ms_cm",
+    "info": {
+      "name": {
+        "brief": "EC",
+        "verbose": "Electrical Conductivity"
+      },
+      "unit": {
+        "brief": "mS/cm",
+        "verbose": "Milli Siemens per Centimeter",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Water Temp",
+        "verbose": "Water Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_dissolved_oxygen_mg_l",
+    "info": {
+      "name": {
+        "brief": "DO",
+        "verbose": "Dissolved Oxygen"
+      },
+      "unit": {
+        "brief": "mg/L",
+        "verbose": "Milligrams per Liter",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "light_ppfd_umol_m2_s",
+    "info": {
+      "name": {
+        "brief": "PPFD",
+        "verbose": "Photosynthetic Photon Flux Density"
+      },
+      "unit": {
+        "brief": "umol/m2/s",
+        "verbose": "Micro-Mole per Meter Squared per Second",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "light_spectrum_channel_percents",
+    "info": {
+      "name": {
+        "brief": "Spectrum",
+        "verbose": "Light Spectrum Channel Percents"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "light_spectrum_nm_percent",
+    "info": {
+      "name": {
+        "brief": "Spectrum",
+        "verbose": "Light Spectrum Nanometer Percent"
+      },
+      "unit": {
+        "brief": "nm: %",
+        "verbose": "Nanometer: Percent",
+        "type": "object"
+      }
+    }
+  },
+  {
+    "key": "light_illumination_distance_cm",
+    "info": {
+      "name": {
+        "brief": "Distance",
+        "verbose": "Light Illumination Distance"
+      },
+      "unit": {
+        "brief": "cm",
+        "verbose": "Centimeters",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "nutrient_concentration_ppm",
+    "info": {
+      "name": {
+        "brief": "Nutrient Concentration",
+        "verbose": "Nutrient Concentration"
+      },
+      "unit": {
+        "brief": "ppm",
+        "verbose": "Parts Per Million",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "soil_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Soil Temp",
+        "verbose": "Soil Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "tray_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Tray Temp",
+        "verbose": "Tray Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "top_tray_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Top Tray Temp",
+        "verbose": "Top Tray Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "middle_tray_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Middle Tray Temp",
+        "verbose": "Middle Tray Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "bottom_tray_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Bottom Tray Temp",
+        "verbose": "Bottom Tray Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "heat_sink_temperature_celsius",
+    "info": {
+      "name": {
+        "brief": "Heat Sink Temp",
+        "verbose": "Heat Sink Temperature"
+      },
+      "unit": {
+        "brief": "C",
+        "verbose": "Celsius",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_aeration_rate_liter_liter_minute",
+    "info": {
+      "name": {
+        "brief": "Water Aeration Rate",
+        "verbose": "Water Aeration Rate"
+      },
+      "unit": {
+        "brief": "l/l/m",
+        "verbose": "Liter/Liter/Minute",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_aeration_period_minutes",
+    "info": {
+      "name": {
+        "brief": "Water Aeration Period",
+        "verbose": "Water Aeration Period"
+      },
+      "unit": {
+        "brief": "min",
+        "verbose": "Minutes",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_aeration_duty_cycle_percent",
+    "info": {
+      "name": {
+        "brief": "Water Aeration Duty Cycle",
+        "verbose": "Water Aeration Duty Cycle"
+      },
+      "unit": {
+        "brief": "%",
+        "verbose": "Percent",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_aeration_bubble_diameter_mm",
+    "info": {
+      "name": {
+        "brief": "Water Aeration Bubble Diameter",
+        "verbose": "Water Aeration Bubble Diameter"
+      },
+      "unit": {
+        "brief": "mm",
+        "verbose": "Millimeters",
+        "type": "number"
+      }
+    }
+  },
+  {
+    "key": "water_volume_liters",
+    "info": {
+      "name": {
+        "brief": "Water Volume",
+        "verbose": "Water Volume"
+      },
+      "unit": {
+        "brief": "L",
+        "verbose": "Liters",
+        "type": "number"
+      }
+    }
+  }
 ]
