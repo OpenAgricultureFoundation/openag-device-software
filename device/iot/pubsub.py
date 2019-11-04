@@ -147,7 +147,7 @@ class PubSub:
         # Connect to the Google MQTT bridge
         self.client.connect(MQTT_BRIDGE_HOSTNAME, MQTT_BRIDGE_PORTS[self.mqtt_port_choice])
 
-        # Subscribe to topics
+        # Subscribe to topicsf
         # self.subscribe_to_topics()
     
     def subscribe_to_topics(self):
@@ -174,6 +174,7 @@ class PubSub:
         # Check if json webtoken is expired, if so renew client
         if self.json_web_token.is_expired:
             self.create_mqtt_client()  # TODO: Renew instead of re-create
+            self.subscribe_to_topics()
 
         # Update mqtt client
         try:
