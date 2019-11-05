@@ -11,7 +11,7 @@
 
   function getInfoAndUpdateView() {
     console.log("Getting info and updating view")
-    document.getElementById("status").innerHTML = "Loading status..."
+    document.getElementById("status").innerHTML = "Loading..."
 
     // Initialize info vars
     var systemInfo = {};
@@ -49,7 +49,12 @@
     // console.log(systemInfo)
     // console.log(networkInfo)
     // console.log(iotInfo)
-    const registrationCode = iotInfo.verificationCode || "Loading...";
+    let registrationCode = iotInfo.verificationCode || "Loading...";
+    if (registrationCode === "INVALID") {
+      registrationCode = "Requesting registration code...";
+    } else if (registrationCode === "UNKNOWN") {
+      registrationCode = "Waiting for network connection...";
+    }
 
     // Always show registration code
     document.getElementById("registration-code").innerHTML = `${registrationCode}`;
@@ -217,7 +222,7 @@
 
     <h2>Connect</h2>
     <div class="card" id="connect-card">
-      <h5><b>Registration Code:</b> <span id="registration-code">Loading code...</span></h5>
+      <h5><b>Registration Code:</b> <span id="registration-code">Loading...</span></h5>
       <h5><b>Register Device At:</b> <a id="cloud-ui-url" href="https://openag-v1.appspot.com/login" target="_blank">https://openag-v1.appspot.com/login/</a></h5>
       <h5><b>Connection Status:</b> <span id="status"></span></h5>
     </div>

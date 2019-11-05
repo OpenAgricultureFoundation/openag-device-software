@@ -267,10 +267,18 @@ class IotManager(manager.StateMachineManager):
             self.logger.debug("Device not registered, registering device")
             registration.register()
 
-            # Update registration state
+            # # Wait for registration to process
+            # while not self.is_registered:
+            #     self.logger.info("Waiting for registration to process")
+            #     time.sleep(1)
+
+            # Update registation state
             self.is_registered = registration.is_registered()
             self.device_id = registration.device_id()
             self.verification_code = registration.verification_code()
+            self.config_topic = "/devices/{}/config".format(self.device_id)
+            self.command_topic = "/devices/{}/commands".format(self.device_id)
+            self.telemetry_topic = "/devices/{}/events".format(self.device_id)
 
         # Initialize pubsub client
         self.pubsub.initialize()
@@ -772,6 +780,9 @@ def on_message(
         ref_self.logger.error(
             "Recevied unknown message topic: {}".format(message.topic)
         )
+        ref_self.logger.debug(f"Config topic: {ref_self.config_topic}")
+        ref_self.logger.debug(f"Command topic: {ref_self.command_topic}")
+
 
 
 def on_log(client: mqtt.Client, ref_self: IotManager, level: str, buf: str) -> None:
