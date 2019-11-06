@@ -86,8 +86,8 @@ class AtlasTempDriver(driver.AtlasDriver):
         temperature = round(temperature_raw, 2)
 
         # Verify tempreature value within valid range
-        if temperature > self.min_temperature and temperature < self.min_temperature:
-            self.logger.warning("Temperature outside of valid range")
+        if temperature < self.min_temperature or temperature > self.max_temperature:
+            self.logger.warning(f"Temperature outside of valid range: {temperature}")
             return None
 
         # Successfully read temperature
