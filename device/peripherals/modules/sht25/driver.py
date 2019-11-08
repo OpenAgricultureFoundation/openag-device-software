@@ -69,6 +69,7 @@ class SHT25Driver:
                 PeripheralSimulator=Simulator,
                 verify_device=False,  # need to write before device responds to read
             )
+            self.i2c_lock = i2c_lock
             self.read_user_register(retry=True)
 
         except I2CError as e:
@@ -77,20 +78,17 @@ class SHT25Driver:
     def read_temperature(self, retry: bool = True) -> Optional[float]:
         """ Reads temperature value."""
         self.logger.debug("Reading temperature")
-
-        # Send read temperature command (no-hold master)
         try:
-            self.i2c.write(bytes([0xF3]), retry=retry)
-        except I2CError as e:
-            raise exceptions.ReadTemperatureError(logger=self.logger) from e
+            with self.i2c_lock:
+                # Send read temperature command (no-hold master)
+                self.i2c.write(bytes([0xF3]), retry=retry)
 
-        # Wait for sensor to process, see datasheet Table 7
-        # SHT25 is 12-bit so max temperature processing time is 22ms
-        time.sleep(0.22)
+                # Wait for sensor to process, see datasheet Table 7
+                # SHT25 is 12-bit so max temperature processing time is 22ms
+                time.sleep(0.22)
 
-        # Read sensor data
-        try:
-            bytes_ = self.i2c.read(2, retry=retry)
+                # Read sensor data
+                bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
             raise exceptions.ReadTemperatureError(logger=self.logger) from e
 
@@ -112,20 +110,17 @@ class SHT25Driver:
     def read_humidity(self, retry: bool = True) -> Optional[float]:
         """Reads humidity value."""
         self.logger.debug("Reading humidity value from hardware")
-
-        # Send read humidity command (no-hold master)
         try:
-            self.i2c.write(bytes([0xF5]), retry=retry)
-        except I2CError as e:
-            raise exceptions.ReadHumidityError(logger=self.logger) from e
+            with self.i2c_lock:
+                # Send read humidity command (no-hold master)
+                self.i2c.write(bytes([0xF5]), retry=retry)
+                
+                # Wait for sensor to process, see datasheet Table 7
+                # SHT25 is 12-bit so max humidity processing time is 29ms
+                time.sleep(0.29)
 
-        # Wait for sensor to process, see datasheet Table 7
-        # SHT25 is 12-bit so max humidity processing time is 29ms
-        time.sleep(0.29)
-
-        # Read sensor
-        try:
-            bytes_ = self.i2c.read(2, retry=retry)  # Read sensor data
+                # Read sensor data
+                bytes_ = self.i2c.read(2, retry=retry)
         except I2CError as e:
             raise exceptions.ReadHumidityError(logger=self.logger) from e
 
