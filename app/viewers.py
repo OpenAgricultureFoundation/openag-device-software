@@ -75,10 +75,19 @@ class EventViewer:
 
         # Get request parameters
         try:
-            recipient = json_.loads(request["recipient"])
+            # Get event recipient
+            if type(request["recipient"]) is dict:
+              recipient = request["recipient"]
+            else:
+              recipient = json_.loads(request["recipient"])
             recipient_type = recipient["type"]
             recipient_name = recipient["name"]
-            request_ = json_.loads(request["request"])
+            
+            # Get event request
+            if type(request["request"]) is dict:
+              request_ = request["request"]
+            else:
+              request_ = json_.loads(request["request"])
             request_type = request_["type"]
             message = "Creating new event request for {} to {}".format(
                 recipient_name, request_type

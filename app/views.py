@@ -547,9 +547,15 @@ class EventViewSet(viewsets.ModelViewSet):
 
         # Get parameters
         try:
-            request_dict = request.data.dict()
+            if type(request.data) is dict:
+              request_dict = request.data
+            else:
+              request_dict = request.data.dict()
         except Exception as e:
             message = "Unable to create request dict: {}".format(e)
+            print(f'~~~Unable to create request dict, error: {e}')
+            print(f'request.data: {request.data}')
+            print(f'type: {type(request.data)}')
             return Response(message, 400)
 
         # Get request parameters

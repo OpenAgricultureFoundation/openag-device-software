@@ -23,8 +23,16 @@ SECRET_KEY = "flnh=1!tsz^4&grtw&0$2&6#n*@aybhg-vdpa-i1rc&pyv$+9c"
 
 ALLOWED_HOSTS = ["*"]
 
-# Application definition
+# CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+ 
+# Application definition
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.admin",

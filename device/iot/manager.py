@@ -267,10 +267,18 @@ class IotManager(manager.StateMachineManager):
             self.logger.debug("Device not registered, registering device")
             registration.register()
 
-            # Update registration state
+            # # Wait for registration to process
+            # while not self.is_registered:
+            #     self.logger.info("Waiting for registration to process")
+            #     time.sleep(1)
+
+            # Update registation state
             self.is_registered = registration.is_registered()
             self.device_id = registration.device_id()
             self.verification_code = registration.verification_code()
+            self.config_topic = "/devices/{}/config".format(self.device_id)
+            self.command_topic = "/devices/{}/commands".format(self.device_id)
+            self.telemetry_topic = "/devices/{}/events".format(self.device_id)
 
         # Initialize pubsub client
         self.pubsub.initialize()
@@ -280,7 +288,7 @@ class IotManager(manager.StateMachineManager):
 
     def run_disconnected_mode(self) -> None:
         """Runs disconnected mode."""
-        self.logger.debug("Entered DISCONNECTED")
+        self.logger.info("Entered DISCONNECTED")
 
         start_time = time.time()
         update_interval = 1  # seconds
@@ -315,7 +323,7 @@ class IotManager(manager.StateMachineManager):
 
     def run_connected_mode(self) -> None:
         """Runs connected mode."""
-        self.logger.debug("Entered CONNECTED")
+        self.logger.info("Entered CONNECTED")
 
         # Subscribe to topics
         self.pubsub.subscribe_to_topics()
@@ -772,6 +780,9 @@ def on_message(
         ref_self.logger.error(
             "Recevied unknown message topic: {}".format(message.topic)
         )
+        ref_self.logger.debug(f"Config topic: {ref_self.config_topic}")
+        ref_self.logger.debug(f"Command topic: {ref_self.command_topic}")
+
 
 
 def on_log(client: mqtt.Client, ref_self: IotManager, level: str, buf: str) -> None:
