@@ -19,6 +19,9 @@ class AtlasCo2Manager(manager.PeripheralManager):
         # Initialize variable names
         self.co2_name = self.variables["sensor"]["co2"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 30
+
     @property
     def co2(self) -> Optional[float]:
         """Gets co2 value."""

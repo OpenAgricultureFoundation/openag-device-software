@@ -30,6 +30,9 @@ class AtlasDOManager(manager.PeripheralManager):
         self.pressure_name = self.variables["compensation"]["pressure_kpa"]
         self.ec_name = self.variables["compensation"]["ec_ms_cm"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 30
+
     @property
     def do(self) -> Optional[float]:
         """Gets dissolved oxygen value."""
