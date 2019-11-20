@@ -152,7 +152,7 @@ class PubSub:
     
     def subscribe_to_topics(self):
         self.logger.info("Subscribing to topics")
-        self.client.subscribe(self.config_topic, qos=1)
+        # self.client.subscribe(self.config_topic, qos=1)
         self.client.subscribe(self.command_topic, qos=1)
 
     def next_port(self):
