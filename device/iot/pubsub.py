@@ -269,11 +269,7 @@ class PubSub:
         self, variable_name: str, values_dict: Dict
     ) -> None:
         """Publish a single environment variable."""
-        self.logger.debug(
-            "Publishing environment variable message: {}".format(variable_name)
-        )
-        # self.logger.debug("variable_name = {}".format(variable_name))
-        # self.logger.debug("values_dict = {}".format(values_dict))
+        self.logger.debug(f"Publishing environment variable message: {variable_name}, value: {values_dict}")
 
         # Check if client is initialized
         if not self.is_initialized:
@@ -335,7 +331,7 @@ class PubSub:
             self.logger.exception(error_message)
 
     def upload_image(self, file_name: str) -> None:
-        self.logger.debug("Uploading binary image")
+        self.logger.debug("Uploading image")
 
         if not self.is_initialized:
             self.logger.warning("Tried to publish before client initialized")
