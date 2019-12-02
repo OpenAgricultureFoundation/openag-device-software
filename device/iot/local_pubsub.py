@@ -14,9 +14,11 @@ from device.utilities.iot import registration, tokens
 from device.iot import commands
 from device.iot import messages
 
-# Initialize constants
-MQTT_BRIDGE_HOSTNAME = "mqtt.googleapis.com"
-MQTT_BRIDGE_PORTS =  [443, 8883]
+
+# Settings file will have hostname and port(s)
+MQTT_SETTINGS_FILE = os.path.join("device","iot","setups","local_mqtt.json")
+
+# Initialize message types
 
 
 # TODO: Write tests
@@ -25,7 +27,7 @@ MQTT_BRIDGE_PORTS =  [443, 8883]
 
 
 class PubSub:
-    """Handles communication with Google Cloud Platform's Iot Pub/Sub via MQTT."""
+    """Handles communication with a local MQTT service"""
 
     # Initialize state
     is_initialized = False
@@ -52,9 +54,14 @@ class PubSub:
         self.on_log = on_log
         # Used to swich ports on failure to communicate to MQTT
         self.mqtt_port_choice = 0
+        self.mqtt_broker = None
+        self.mqtt_ports = []
 
         # Initialize logger
+        logging_level = os.getenv("LOG_LEVEL_iot_pubsub")
         self.logger = logger.Logger("PubSub", "iot")
+        if logging_level is not None:
+            self.logger.setLevel(logging_level)
 
     ##### HELPER FUNCTIONS ####################################################
 
@@ -73,24 +80,34 @@ class PubSub:
     def load_mqtt_config(self) -> None:
         """Loads mqtt config."""
         self.logger.debug("Loading mqtt config")
+        with open(MQTT_SETTINGS_FILE) as settings_file:
+            settings = json.load(settings_file)
+            try:
+                self.mqtt_broker = settings["broker"]
+                self.mqtt_ports = settings["ports"]
+            except KeyError as e:
+                message = "Unable to load {}, key {} is required".format(MQTT_SETTINGS_FILE, e)
+                self.logger.critical(message)
+                raise
 
         # Load settings from environment variables
         try:
-            self.project_id = os.environ["GCLOUD_PROJECT"]
-            self.cloud_region = os.environ["GCLOUD_REGION"]
-            self.registry_id = os.environ["GCLOUD_DEV_REG"]
+            # self.project_id = os.environ["GCLOUD_PROJECT"]
+            # self.cloud_region = os.environ["GCLOUD_REGION"]
+            # self.registry_id = os.environ["GCLOUD_DEV_REG"]
             self.device_id = registration.device_id()
-            self.private_key_filepath = os.environ["IOT_PRIVATE_KEY"]
-            self.ca_certs = os.environ["CA_CERTS"]
+            # self.private_key_filepath = os.environ["IOT_PRIVATE_KEY"]
+            # self.ca_certs = os.environ["CA_CERTS"]
         except KeyError as e:
             message = "Unable to load pubsub config, key {} is required".format(e)
             self.logger.critical(message)
             raise
 
         # Initialize client id
-        self.client_id = "projects/{}/locations/{}/registries/{}/devices/{}".format(
-            self.project_id, self.cloud_region, self.registry_id, self.device_id
-        )
+        # self.client_id = "projects/{}/locations/{}/registries/{}/devices/{}".format(
+        #    self.project_id, self.cloud_region, self.registry_id, self.device_id
+        #)
+        self.client_id = "openag/devices/{}".format(self.device_id)
 
         # Initialize config topic
         self.config_topic = "/devices/{}/config".format(self.device_id)
@@ -114,23 +131,23 @@ class PubSub:
         self.client = mqtt.Client(client_id=self.client_id, userdata=self.ref_self)
 
         # Create json web token
-        try:
-            self.json_web_token = tokens.create_json_web_token(
-                project_id=self.project_id,
-                private_key_filepath=self.private_key_filepath,
-            )
-        except Exception as e:
-            message = "Unable to create client, unhandled exception: {}".format(type(e))
-            self.logger.exception(message)
-            return
-
-        # Pass json web token to google cloud iot core, note username is ignored
-        self.client.username_pw_set(
-            username="unused", password=self.json_web_token.encoded
-        )
-
-        # Enable SSL/TLS support
-        self.client.tls_set(ca_certs=self.ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
+        # try:
+        #     self.json_web_token = tokens.create_json_web_token(
+        #         project_id=self.project_id,
+        #         private_key_filepath=self.private_key_filepath,
+        #     )
+        # except Exception as e:
+        #     message = "Unable to create client, unhandled exception: {}".format(type(e))
+        #     self.logger.exception(message)
+        #     return
+        #
+        # # Pass json web token to google cloud iot core, note username is ignored
+        # self.client.username_pw_set(
+        #     username="unused", password=self.json_web_token.encoded
+        # )
+        #
+        # # Enable SSL/TLS support
+        # self.client.tls_set(ca_certs=self.ca_certs, tls_version=ssl.PROTOCOL_TLSv1_2)
 
         # Register message callbacks
         self.client.on_connect = self.on_connect
@@ -139,19 +156,19 @@ class PubSub:
         self.client.on_publish = self.on_publish
 
         # Connect to the Google MQTT bridge
-        self.client.connect(MQTT_BRIDGE_HOSTNAME, MQTT_BRIDGE_PORTS[self.mqtt_port_choice])
+        self.client.connect(self.mqtt_broker, self.mqtt_ports[self.mqtt_port_choice])
 
         # Subscribe to topicsf
         # self.subscribe_to_topics()
     
     def subscribe_to_topics(self):
-        self.logger.debug("Subscribing to topics")
-        # self.client.subscribe(self.config_topic, qos=1)
+        self.logger.info("Subscribing to topics")
+        self.client.subscribe(self.config_topic, qos=1)
         self.client.subscribe(self.command_topic, qos=1)
 
     def next_port(self):
-        if len(MQTT_BRIDGE_PORTS) > 1:
-            self.mqtt_port_choice = (self.mqtt_port_choice + 1) % len(MQTT_BRIDGE_PORTS)
+        if len(self.mqtt_ports) > 1:
+            self.mqtt_port_choice = (self.mqtt_port_choice + 1) % len(self.mqtt_ports)
         return self.mqtt_port_choice
 
     def update(self) -> None:
@@ -166,9 +183,9 @@ class PubSub:
             return
 
         # Check if json webtoken is expired, if so renew client
-        if self.json_web_token.is_expired:
-            self.logger.debug("JWT is expired... renewing")
-            self.create_mqtt_client()  # TODO: Renew instead of re-create
+        #if self.json_web_token.is_expired:
+        #    self.create_mqtt_client()  # TODO: Renew instead of re-create
+        #    self.subscribe_to_topics()
 
         # Update mqtt client
         try:
@@ -263,7 +280,11 @@ class PubSub:
         self, variable_name: str, values_dict: Dict
     ) -> None:
         """Publish a single environment variable."""
-        self.logger.debug(f"Publishing environment variable message: {variable_name}, value: {values_dict}")
+        self.logger.debug(
+            "Publishing environment variable message: {}".format(variable_name)
+        )
+        # self.logger.debug("variable_name = {}".format(variable_name))
+        # self.logger.debug("values_dict = {}".format(values_dict))
 
         # Check if client is initialized
         if not self.is_initialized:
@@ -324,62 +345,64 @@ class PubSub:
             "unhandled exception: {}".format(type(e))
             self.logger.exception(error_message)
 
+    # TODO: Need to make a local version of this
     def upload_image(self, file_name: str) -> None:
-        self.logger.debug("Uploading image")
-
-        if not self.is_initialized:
-            self.logger.warning("Tried to publish before client initialized")
-            return
-
-        if file_name == None or len(file_name) == 0:
-            error_message = "Unable to publish image, file name "
-            "`{}` is invalid".format(file_name)
-            self.logger.error(error_message)
-            raise ValueError(error_message)
-
-        # Get the camera name and image type from the file_name:
-        # /Users/rob/yada/yada/2019-05-08-T23-18-31Z_Camera-Top.png
-        base = ''
-        try:
-            base = os.path.basename(file_name) # get just the file from path
-            fn1 = base.split("_")  # delimiter between datetime & camera name
-            fn2 = fn1[1]           # 'Camera-Top.png'
-            fn3 = fn2.split(".")   # delimiter between file and extension
-            camera_name = fn3[0]   # 'Camera-Top'
-        except:
-            camera_name = base
-
-        device_id = registration.device_id()
-        upload_file_name = '{}_{}'.format(device_id, base)
-
-        # commented URL below is for running the firebase cloud function 
-        # service locally for testing
-        #URL = 'http://localhost:5000/fb-func-test/us-central1/saveImage'
-
-        URL = 'https://us-central1-fb-func-test.cloudfunctions.net/saveImage'
-        DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
-
-        try:
-            # Use curl to do a multi part form post of the binary data (fast) to
-            # our firebase cloud function that puts the image in the GCP 
-            # storage bucket.
-            res = subprocess.run(['curl', '--silent', URL, '-F', DATA])
-            self.logger.debug("Uploaded file: {}".format(upload_file_name))
-
-            # Publish a message indicating that we uploaded the image to the
-            # public bucket written by the firebase cloud function, and we need
-            # to move the image to the usual images bucket we have been using.
-            message = {
-                "messageType": messages.IMAGE_MESSAGE,
-                "varName": camera_name,
-                "fileName": upload_file_name,
-            }
-
-            message_json = json.dumps(message)
-            self.client.publish(self.telemetry_topic, message_json, qos=1)
-
-        except Exception as e:
-            error_message = "Unable to publish binary image, unhandled "
-            "exception: {}".format(type(e))
-            self.logger.exception(error_message)
+        pass
+        # self.logger.debug("Uploading binary image")
+        #
+        # if not self.is_initialized:
+        #     self.logger.warning("Tried to publish before client initialized")
+        #     return
+        #
+        # if file_name == None or len(file_name) == 0:
+        #     error_message = "Unable to publish image, file name "
+        #     "`{}` is invalid".format(file_name)
+        #     self.logger.error(error_message)
+        #     raise ValueError(error_message)
+        #
+        # # Get the camera name and image type from the file_name:
+        # # /Users/rob/yada/yada/2019-05-08-T23-18-31Z_Camera-Top.png
+        # base = ''
+        # try:
+        #     base = os.path.basename(file_name) # get just the file from path
+        #     fn1 = base.split("_")  # delimiter between datetime & camera name
+        #     fn2 = fn1[1]           # 'Camera-Top.png'
+        #     fn3 = fn2.split(".")   # delimiter between file and extension
+        #     camera_name = fn3[0]   # 'Camera-Top'
+        # except:
+        #     camera_name = base
+        #
+        # device_id = registration.device_id()
+        # upload_file_name = '{}_{}'.format(device_id, base)
+        #
+        # # commented URL below is for running the firebase cloud function
+        # # service locally for testing
+        # #URL = 'http://localhost:5000/fb-func-test/us-central1/saveImage'
+        #
+        # URL = 'https://us-central1-fb-func-test.cloudfunctions.net/saveImage'
+        # DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
+        #
+        # try:
+        #     # Use curl to do a multi part form post of the binary data (fast) to
+        #     # our firebase cloud function that puts the image in the GCP
+        #     # storage bucket.
+        #     res = subprocess.run(['curl', '--silent', URL, '-F', DATA])
+        #     self.logger.debug("Uploaded file: {}".format(upload_file_name))
+        #
+        #     # Publish a message indicating that we uploaded the image to the
+        #     # public bucket written by the firebase cloud function, and we need
+        #     # to move the image to the usual images bucket we have been using.
+        #     message = {
+        #         "messageType": messages.IMAGE_MESSAGE,
+        #         "varName": camera_name,
+        #         "fileName": upload_file_name,
+        #     }
+        #
+        #     message_json = json.dumps(message)
+        #     self.client.publish(self.telemetry_topic, message_json, qos=1)
+        #
+        # except Exception as e:
+        #     error_message = "Unable to publish binary image, unhandled "
+        #     "exception: {}".format(type(e))
+        #     self.logger.exception(error_message)
 

@@ -18,7 +18,8 @@ from device.recipe import modes as recipe_modes
 
 # Import module elements
 from device.iot import modes, commands
-from device.iot.pubsub import PubSub
+#from device.iot.pubsub import PubSub
+from device.iot.local_pubsub import PubSub
 
 from django.conf import settings
 
@@ -52,6 +53,9 @@ class IotManager(manager.StateMachineManager):
 
         # Initialize logger
         self.logger = logger.Logger("IotManager", "iot")
+        logging_level = os.getenv("LOG_LEVEL_iot_manager")
+        if logging_level is not None:
+            self.logger.setLevel(logging_level)
         self.logger.debug("Initializing manager")
 
         # Initialize our state variables
@@ -806,6 +810,7 @@ def on_connect(
     client: mqtt.Client, ref_self: IotManager, flags: int, return_code: int
 ) -> None:
     """Callback for when a device connects to mqtt broker."""
+    ref_self.logger.debug("on_connect callback: flags {}, code {}".format(flags, return_code))
     ref_self.is_connected = True
     ref_self.pubsub.subscribe_to_topics()  # We need to resubscribe everytime we re-connect.
 
@@ -857,5 +862,6 @@ def on_log(client: mqtt.Client, ref_self: IotManager, level: str, buf: str) -> N
 def on_subscribe(
     client: mqtt.Client, ref_self: IotManager, message_id: str, granted_qos: int
 ) -> None:
+    ref_self.logger.debug("on_subscribe callback")
     """Paho callback when mqtt broker receives subscribe."""
 

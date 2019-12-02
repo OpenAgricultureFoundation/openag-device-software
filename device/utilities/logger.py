@@ -71,6 +71,11 @@ class Logger:
         else:
             self.logger.exception(message)
 
+    def setLevel(self, logging_level):
+        """Passes logging level onto underlying loggingAdaptor"""
+        self.logger.warning("Setting log level to {}" + logging_level)
+        self.logger.setLevel(logging_level)
+
 
 class PeripheralFileHandler(logging.Handler):
     """Splits each peripheral thread into its own log file."""
