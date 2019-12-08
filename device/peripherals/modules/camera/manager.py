@@ -162,6 +162,7 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
             if self.recipe_mode == recipe_modes.NORMAL:
                 self.logger.debug("Started new recipe")
                 return True
+        self.previous_recipe_mode = self.recipe_mode
         return False
 
     def set_lighting_conditions(self) -> None:

@@ -24,6 +24,9 @@ class AtlasPHManager(manager.PeripheralManager):
         self.ph_name = self.variables["sensor"]["ph"]
         self.temperature_name = self.variables["compensation"]["temperature_celsius"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 30
+
     @property
     def ph(self) -> Optional[float]:
         """Gets pH value."""

@@ -103,6 +103,10 @@ class IotManager(manager.StateMachineManager):
         # Initialize state machine mode
         self.mode = modes.INIT
 
+        # Initialize recipe modes
+        self.previous_recipe_mode = recipe_modes.NORECIPE
+        
+
     ##### INTERNAL STATE DECORATORS ####################################################
 
     @property
@@ -184,6 +188,11 @@ class IotManager(manager.StateMachineManager):
         """Safely updates value in shared state."""
         with self.state.lock:
             self.state.iot["published_message_count"] = value
+    
+    @property
+    def recipe_mode(self) -> str:
+        """Gets recipe mode."""
+        return self.state.recipe.get("mode", recipe_modes.NORECIPE)
 
     ##### EXTERNAL STATE DECORATORS ####################################################
 
@@ -260,17 +269,13 @@ class IotManager(manager.StateMachineManager):
             time.sleep(0.1)
 
         # Give the network time to initialize
+        self.logger.debug("Waiting 30 seconds for network to initialize")
         time.sleep(30)
 
         # Check if device is registered
         if not self.is_registered:
             self.logger.debug("Device not registered, registering device")
             registration.register()
-
-            # # Wait for registration to process
-            # while not self.is_registered:
-            #     self.logger.info("Waiting for registration to process")
-            #     time.sleep(1)
 
             # Update registation state
             self.is_registered = registration.is_registered()
@@ -332,18 +337,30 @@ class IotManager(manager.StateMachineManager):
         self.publish_boot_message()
 
         # Initialize timing variables
-        last_update_time = 0.0
+        last_update_time = 0
         update_interval = 300  # seconds -> 5 minutes
+        last_update_all_time = 0
+        update_all_interval = 900 # seconds -> 15 minutes
 
         # Loop forever
         while True:
+            
+            # Publish new images
+            if self.new_images():
+                self.publish_images()
 
-            # Publish messages
+            # Publish all environment data
+            if self.new_recipe() or (time.time() - last_update_all_time > update_all_interval):
+                last_update_all_time = time.time()
+                last_update_time = last_update_all_time
+                self.publish_system_summary()
+                self.publish_environment_variables(publish_all=True)
+
+            # Publish changes in environment data
             if time.time() - last_update_time > update_interval:
                 last_update_time = time.time()
                 self.publish_system_summary()
                 self.publish_environment_variables()
-                self.publish_images()
 
             # Update pubsub
             self.pubsub.update()
@@ -357,6 +374,28 @@ class IotManager(manager.StateMachineManager):
 
             # Update every 100ms
             time.sleep(0.1)
+
+    ##### HELPER FUNCTIONS ##################################################
+
+    def new_recipe(self) -> bool:
+        """Checks if a new recipe has been started."""
+        if self.recipe_mode != self.previous_recipe_mode:
+            self.previous_recipe_mode = self.recipe_mode
+            if self.recipe_mode == recipe_modes.NORMAL:
+                self.logger.debug("Started new recipe")
+                return True
+        self.previous_recipe_mode = self.recipe_mode
+        return False
+
+    def new_images(self) -> bool:
+        """Checks if there are new images that are not currently open in another process."""
+        image_files = glob.glob(IMAGES_DIR + "*.png")
+        for image_file in image_files:
+            lsof_result = os.system(f"lsof -f -- {image_file} > /dev/null 2>&1")
+            if lsof_result != 0:
+                return True
+        return False
+        
 
     ##### PUBLISHER FUNCTIONS ###############################################
 
@@ -418,9 +457,9 @@ class IotManager(manager.StateMachineManager):
         # Publish system summary as a status message
         self.pubsub.publish_status_message(message)
 
-    def publish_environment_variables(self) -> None:
+    def publish_environment_variables(self, publish_all: bool = False) -> None:
         """Publishes environment variables."""
-        self.logger.debug("Publishing environment variables")
+        self.logger.debug(f"Publishing {'all' if publish_all else 'changed'} environment variables")
 
         # Get environment variables
         keys = ["reported_sensor_stats", "individual", "instantaneous"]
@@ -432,13 +471,12 @@ class IotManager(manager.StateMachineManager):
         if environment_variables == None:
             environment_variables = {}
 
-        # Keep a copy of the first set of values (usually None). Why?
-        # if self.prev_environment_variables == {}:
-        #    self.environment_variables = copy.deepcopy(environment_variables)
-
         # For each value, only publish the ones that have changed.
         for name, value in environment_variables.items():
-            if self.prev_environment_variables.get(name) != value:
+            if publish_all:
+                self.prev_environment_variables[name] = copy.deepcopy(value)
+                self.pubsub.publish_environment_variable(name, value)
+            elif self.prev_environment_variables.get(name) != value:
                 self.prev_environment_variables[name] = copy.deepcopy(value)
                 self.pubsub.publish_environment_variable(name, value)
 
@@ -448,12 +486,14 @@ class IotManager(manager.StateMachineManager):
         self.logger.debug("Publishing images")
 
         # Check for images to publish
+        published_image_count = 0
         try:
             image_file_list = glob.glob(IMAGES_DIR + "*.png")
             for image_file in image_file_list:
 
                 # Is this file open by a process? (fswebcam)
-                if os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file)) == 0:
+                lsof_result = os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file))
+                if lsof_result == 0:
                     continue  # Yes, so skip it and try the next one.
 
                 # Check the file size
@@ -475,9 +515,14 @@ class IotManager(manager.StateMachineManager):
                 stored_image_file = image_file.replace(IMAGES_DIR, STORED_IMAGES_DIR)
                 shutil.move(image_file, stored_image_file)
 
+                # Increment count
+                published_image_count += 1
+
         except Exception as e:
             message = "Unable to publish images, unhandled exception: {}".format(e)
             self.logger.exception(message)
+        
+        self.logger.debug(f"Published {published_image_count} image(s)")
 
     ##### DEVICE EVENT FUNCTIONS ##############################################
 

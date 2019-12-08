@@ -30,7 +30,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
         # Set default sampling interval
-        self.default_sampling_interval = 3
+        self.default_sampling_interval = 30
 
     @property
     def co2(self) -> Optional[float]:

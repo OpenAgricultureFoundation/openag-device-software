@@ -19,6 +19,9 @@ class AtlasTempManager(manager.PeripheralManager):
         # Initialize variable names
         self.temperature_name = self.variables["sensor"]["temperature"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 30
+
     @property
     def temperature(self) -> Optional[float]:
         """Gets temperature value."""

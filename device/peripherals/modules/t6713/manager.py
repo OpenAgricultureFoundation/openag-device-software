@@ -21,6 +21,9 @@ class T6713Manager(manager.PeripheralManager):
         # Initialize variable names
         self.co2_name = self.variables["sensor"]["carbon_dioxide_ppm"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 30
+
     @property
     def co2(self) -> Optional[float]:
         """Gets carbon dioxide value."""

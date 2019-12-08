@@ -24,6 +24,9 @@ class AtlasECManager(manager.PeripheralManager):
         self.ec_name = self.variables["sensor"]["ec_ms_cm"]
         self.temperature_name = self.variables["compensation"]["temperature_celsius"]
 
+        # Set default sampling interval
+        self.default_sampling_interval = 30
+
     @property
     def ec(self) -> Optional[float]:
         """Gets electrical conductivity value."""
