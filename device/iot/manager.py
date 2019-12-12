@@ -384,7 +384,7 @@ class IotManager(manager.StateMachineManager):
             if self.recipe_mode == recipe_modes.NORMAL:
                 self.logger.debug("Started new recipe")
                 return True
-        self.previous_recipe_mode = self.recipe_mode
+        # self.previous_recipe_mode = self.recipe_mode
         return False
 
     def new_images(self) -> bool:
