@@ -340,14 +340,10 @@ class IotManager(manager.StateMachineManager):
         last_update_time = 0
         update_interval = 300  # seconds -> 5 minutes
         last_update_all_time = 0
-        update_all_interval = 900 # seconds -> 15 minutes
+        update_all_interval = 900  # seconds -> 15 minutes
 
         # Loop forever
         while True:
-            
-            # Publish new images
-            if self.new_images():
-                self.publish_images()
 
             # Publish all environment data
             if self.new_recipe() or (time.time() - last_update_all_time > update_all_interval):
@@ -361,6 +357,9 @@ class IotManager(manager.StateMachineManager):
                 last_update_time = time.time()
                 self.publish_system_summary()
                 self.publish_environment_variables()
+                if self.new_images(): # we only need to check for new images every update_interval
+                    self.logger.info("Found new images")
+                    self.publish_images()
 
             # Update pubsub
             self.pubsub.update()
@@ -390,10 +389,12 @@ class IotManager(manager.StateMachineManager):
     def new_images(self) -> bool:
         """Checks if there are new images that are not currently open in another process."""
         image_files = glob.glob(IMAGES_DIR + "*.png")
-        for image_file in image_files:
-            lsof_result = os.system(f"lsof -f -- {image_file} > /dev/null 2>&1")
-            if lsof_result != 0:
-                return True
+        if len(image_files) > 0:
+            return True
+        #for image_file in image_files:
+        #    lsof_result = os.system(f"lsof -f -- {image_file} > /dev/null 2>&1")
+        #    if lsof_result != 0:
+        #        return True
         return False
         
 
@@ -489,18 +490,24 @@ class IotManager(manager.StateMachineManager):
         published_image_count = 0
         try:
             image_file_list = glob.glob(IMAGES_DIR + "*.png")
+            self.logger.debug("Found {} images".format(len(image_file_list)))
             for image_file in image_file_list:
 
+                # TODO: Fix this for fswebcam (i.e. non-picam)
                 # Is this file open by a process? (fswebcam)
-                lsof_result = os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file))
-                if lsof_result == 0:
-                    continue  # Yes, so skip it and try the next one.
+                #self.logger.info("lsof -f -- {} > /dev/null 2>&1".format(image_file))
+                #lsof_result = os.system("lsof -f -- {} > /dev/null 2>&1".format(image_file))
+                #self.logger.info(f"lsof_result: {lsof_result}")
+                #if lsof_result == 0:
+                #    self.logger.info(f"Skipping {image_file} because it's still open by a process")
+                #    continue  # Yes, so skip it and try the next one.
 
                 # Check the file size
                 fsize = os.path.getsize(image_file)
                 # If the size is < 200KB, then it is garbage we delete
                 # (based on the 1280x1024 average file size)
                 if fsize < 500:  # in KB
+                    self.logger.debug(f"Removing {image_file} due to small size")
                     os.remove(image_file)
                     continue
 

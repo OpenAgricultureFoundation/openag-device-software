@@ -1,5 +1,6 @@
 import datetime
 import os
+import shutil
 import threading
 import time
 from typing import Optional, Dict, Any
@@ -134,10 +135,12 @@ class USBCameraDriver(CameraDriver):
                 filename = "{}_{}.{}.png".format(timestring, self.name, index + 1)
 
             # Create image path
-            image_path = self.directory + filename
+            capture_image_path = self.capture_dir + filename
+            final_image_path = self.directory + filename
 
             # Capture image
-            self.capture_image_pygame(camera_path, image_path)
+            self.capture_image_pygame(camera_path, capture_image_path)
+            shutil.move(capture_image_path, final_image_path)
 
     def capture_image_pygame(self, camera_path: str, image_path: str) -> None:
         """Captures an image with pygame."""

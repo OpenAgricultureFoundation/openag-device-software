@@ -2,6 +2,7 @@ import threading
 import os
 import datetime
 import time
+import shutil
 
 from typing import Optional, Dict, Any
 
@@ -58,7 +59,8 @@ class PiCameraDriver(CameraDriver):
         super().capture(retry=retry)
 
         timestring = datetime.datetime.utcnow().strftime("%Y-%m-%d_T%H-%M-%SZ")
-        filename = self.directory + "{}_{}.png".format(timestring, self.name)
+        #filename = self.directory + "{}_{}.png".format(timestring, self.name)
+        filename = "{}_{}.png".format(timestring, self.name)
 
         # Check if simulated
         # if self.simulate:
@@ -77,7 +79,9 @@ class PiCameraDriver(CameraDriver):
             time.sleep(2)
             # Get timestring in ISO8601 format
             self.logger.debug("Captureing " + filename)
-            self.camera.capture(filename)
+            self.camera.capture(self.capture_dir + filename)
             self.camera.stop_preview()
+            self.logger.debug("Moving captured image")  # This prevents trying to upload while still capturing
+            shutil.move(self.capture_dir + filename, self.directory + filename)
 
         return

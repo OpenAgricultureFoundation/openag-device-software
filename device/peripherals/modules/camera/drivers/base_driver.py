@@ -1,3 +1,4 @@
+import datetime
 from abc import ABC, abstractmethod
 
 import threading, os
@@ -31,6 +32,7 @@ class CameraDriver(ABC):
 
         # universal paths
         self.IMAGE_DIR = settings.DATA_PATH + "/images/"
+        self.CAPTURE_DIR = self.IMAGE_DIR + "capture/"
         self.MODULE_DIR = "device/peripherals/modules/usb_camera/"
         self.SIMULATE_IMAGE_DIR = self.MODULE_DIR + "tests/images/"
         self.DUMMY_IMAGE_PATH = self.MODULE_DIR + "dummy.png"
@@ -59,10 +61,14 @@ class CameraDriver(ABC):
             self.usb_mux_enabled = False
         else:
             self.directory = self.IMAGE_DIR
+            self.capture_dir = self.CAPTURE_DIR
 
             # Check directory exists else create it
             if not os.path.exists(self.directory):
                 os.makedirs(self.directory)
+
+            if not os.path.exists(self.capture_dir):
+                os.makedirs(self.capture_dir)
 
             # Check if using usb mux
             if usb_mux_comms is None \
@@ -107,7 +113,10 @@ class CameraDriver(ABC):
     @abstractmethod
     def capture(self, retry: bool = True) -> None:
         """Captures an image from a camera or set of non-unique cameras."""
-        self.logger.debug("Capturing")
+        timestring = datetime.datetime.utcnow().strftime("%Y-%m-%d_T%H-%M-%SZ")
+        # filename = self.directory + "{}_{}.png".format(timestring, self.name)
+        filename = "{}_{}.png".format(timestring, self.name)
+        self.logger.info(f"Capturing {filename}")
         return
 
     def _simulate_capture(self, filename: str) -> bool:

@@ -33,6 +33,7 @@ class CameraManager(manager.PeripheralManager):  # type: ignore
         # Initialize sampling parameters
         self.min_sampling_interval = 120  # seconds
         self.default_sampling_interval = 3600  # every hour
+        # self.default_sampling_interval = 299  # every ~5 mins for testing
 
         # Initialize light control parameters
         self.lighting_control = self.parameters.get("lighting_control", {})
