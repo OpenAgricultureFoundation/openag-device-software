@@ -297,6 +297,7 @@ class IotManager(manager.StateMachineManager):
 
         start_time = time.time()
         update_interval = 1  # seconds
+        max_update_interval = 10
 
         # Loop forever
         while True:
@@ -313,8 +314,15 @@ class IotManager(manager.StateMachineManager):
 
             # Try to reconnect client every update interval
             if time.time() - start_time > update_interval:
-                self.pubsub.client.reconnect()
-                start_time = time.time()
+                try:
+                    start_time = time.time()
+                    self.pubsub.client.reconnect()
+                except Exception as e:
+                    message = "Unable to reconnect, unhandled exception: {}".format(type(e))
+                    self.logger.exception(message)
+                    if update_interval < max_update_interval:
+                        update_interval = update_interval*2
+
 
             # Check for events
             self.check_events()
@@ -800,6 +808,7 @@ def on_connect(
     ref_self.is_connected = True
     ref_self.pubsub.subscribe_to_topics()  # We need to resubscribe everytime we re-connect.
 
+
 def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -> None:
     """Callback for when a device disconnects from mqtt broker."""
     error = "{}: {}".format(return_code, mqtt.error_string(return_code))
@@ -808,6 +817,7 @@ def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -
         "Trying mqtt port: {}".format(str(ref_self.pubsub.next_port()))
     )
     ref_self.is_connected = False
+    ref_self.mode = modes.DISCONNECTED
 
 
 def on_publish(client: mqtt.Client, ref_self: IotManager, message_id: str) -> None:
