@@ -330,8 +330,8 @@ class IotManager(manager.StateMachineManager):
         """Runs connected mode."""
         self.logger.info("Entered CONNECTED")
 
-        # Subscribe to topics
-        self.pubsub.subscribe_to_topics()
+        # Subscribe to topics # This is handled in the on_connect callback
+        # self.pubsub.subscribe_to_topics()
 
         # Publish a boot message
         self.publish_boot_message()
@@ -798,6 +798,7 @@ def on_connect(
 ) -> None:
     """Callback for when a device connects to mqtt broker."""
     ref_self.is_connected = True
+    ref_self.pubsub.subscribe_to_topics()  # We need to resubscribe everytime we re-connect.
 
 def on_disconnect(client: mqtt.Client, ref_self: IotManager, return_code: int) -> None:
     """Callback for when a device disconnects from mqtt broker."""
