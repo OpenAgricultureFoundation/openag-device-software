@@ -125,42 +125,53 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     def update_peripheral(self) -> None:
         """Updates peripheral by reading co2 and tvoc values then reports them to shared 
         state. Checks for compensation variables before read."""
+        # SRM: Trying to lock for the whole update cycle.
+        with self.i2c_lock:
+            # Update compensation variables if new value
+            if self.new_compensation_variables():
 
-        # Update compensation variables if new value
-        if self.new_compensation_variables():
+                if self.humidity is None:
+                    humidity = self.prev_humidity
+                else:
+                    humidity = self.humidity
 
-            # Set compensation variables
+                if self.temperature is None:
+                    temperature = self.prev_temperature
+                else:
+                    temperature = self.temperature
+
+                # Set compensation variables
+                try:
+                    self.driver.write_environment_data(
+                        temperature=temperature, humidity=humidity
+                    )
+
+                    # Update previous values
+                    if self.temperature is not None:
+                        self.prev_temperature = self.temperature
+                    if self.humidity is not None:
+                        self.prev_humidity = self.humidity
+
+                except exceptions.DriverError:
+                    self.logger.exception("Unable to set compensation variables")
+                    self.mode = modes.ERROR
+                    self.health = 0.0
+
+            # Read co2 and tvoc
             try:
-                self.driver.write_environment_data(
-                    temperature=self.temperature, humidity=self.humidity
-                )
-
-                # Update previous values
-                if self.temperature != None:
-                    self.prev_temperature = self.temperature
-                if self.humidity != None:
-                    self.prev_humidity = self.humidity
-
+                co2, tvoc = self.driver.read_algorithm_data(reread=0)
             except exceptions.DriverError:
-                self.logger.exception("Unable to set compensation variables")
+                self.logger.exception("Unable to read co2, tvoc")
                 self.mode = modes.ERROR
                 self.health = 0.0
+                return
 
-        # Read co2 and tvoc
-        try:
-            co2, tvoc = self.driver.read_algorithm_data(reread=0)
-        except exceptions.DriverError:
-            self.logger.exception("Unable to read co2, tvoc")
-            self.mode = modes.ERROR
-            self.health = 0.0
-            return
-
-        # Update reported values
-        if co2 != None:
-          self.co2 = co2
-        if tvoc != None:
-          self.tvoc = tvoc
-        self.health = 100.0
+            # Update reported values
+            if co2 is not None:
+                self.co2 = co2
+            if tvoc is not None:
+                self.tvoc = tvoc
+            self.health = 100.0
 
     def clear_reported_values(self) -> None:
         """Clears reported values."""
@@ -169,6 +180,9 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
 
     def new_compensation_variables(self) -> bool:
         """Checks if there is a new compensation variable value."""
+
+        # SRM: Temp disable
+        return False
 
         # Check if in calibration mode
         if self.mode == modes.CALIBRATE:
