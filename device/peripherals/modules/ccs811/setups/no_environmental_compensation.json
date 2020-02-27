@@ -1,11 +1,11 @@
 {
 	"name":  "CCS811 Carbon Dioxide Sensor",
 	"version": "1",
-	"uuid": "40a1452c-3326-4464-8f49-51c09bec753a",
+	"uuid": "40a1452c-3326-4464-8f49-51c09bec753b",
 	"module_name": "ccs811.manager",
 	"class_name": "CCS811Manager",
 	"properties": {
-		"enable_compensation": true
+		"enable_compensation": false
 	},
 	"parameters": {
 		"variables": {

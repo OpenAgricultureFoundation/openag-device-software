@@ -29,6 +29,8 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         self.temperature_name = self.variables["compensation"]["temperature_celsius"]
         self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
+        self.enable_compensation = self.properties.get("enable_compensation", True)
+
         # Set default sampling interval
         self.default_sampling_interval = 30
 
@@ -78,7 +80,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     def temperature(self) -> Optional[float]:
         """Gets compensation temperature value from shared environment state."""
         value = self.state.get_environment_reported_sensor_value(self.temperature_name)
-        if value != None:
+        if value is not None:
             return float(value)
         return None
 
@@ -86,7 +88,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     def humidity(self) -> Optional[float]:
         """Gets compensation humidity value from shared environment state."""
         value = self.state.get_environment_reported_sensor_value(self.humidity_name)
-        if value != None:
+        if value is not None:
             return float(value)
         return None
 
@@ -125,10 +127,10 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     def update_peripheral(self) -> None:
         """Updates peripheral by reading co2 and tvoc values then reports them to shared 
         state. Checks for compensation variables before read."""
-        # SRM: Trying to lock for the whole update cycle.
+
         with self.i2c_lock:
-            # Update compensation variables if new value
-            if self.new_compensation_variables():
+            # Update compensation variables if new value and enabled
+            if self.enable_compensation and self.new_compensation_variables():
 
                 if self.humidity is None:
                     humidity = self.prev_humidity
@@ -139,6 +141,8 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
                     temperature = self.prev_temperature
                 else:
                     temperature = self.temperature
+
+                self.logger.info("Updating compensation values to {} degC, {} RH".format(temperature, humidity))
 
                 # Set compensation variables
                 try:
@@ -180,9 +184,6 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
 
     def new_compensation_variables(self) -> bool:
         """Checks if there is a new compensation variable value."""
-
-        # SRM: Temp disable
-        return False
 
         # Check if in calibration mode
         if self.mode == modes.CALIBRATE:
