@@ -100,8 +100,8 @@ class CCS811Driver:
                 # Keep logs active
                 self.logger.info("Warming up, waiting for 20 minutes")
 
-                # Update every 30 seconds
-                time.sleep(30)
+                # Update every 5 minutes
+                time.sleep(5*60)
 
                 # Break out if simulating
                 if self.simulate:
@@ -137,7 +137,7 @@ class CCS811Driver:
 
     def read_status_register(self, retry: bool = True) -> StatusRegister:
         """Reads status of sensor."""
-        self.logger.info("Reading status register")
+        self.logger.debug("Reading status register")
         try:
             byte = self.i2c.read_register(0x00, retry=retry)
         except I2CError as e:
@@ -293,7 +293,8 @@ class CCS811Driver:
         except exceptions.ReadRegisterError as e:
             raise exceptions.ReadAlgorithmDataError(logger=self.logger) from e
 
-        # TODO: This shouldn't be recursive, otherwise we'll end up reading multiple times after the fact
+        # TODO: This shouldn't be recursive, otherwise we'll end up reading multiple times after the fact \
+        #   Potentially this is fixed by just adding a return to the read_algorithm_data line in the if reread section
         # Check if data is ready
         if not status.data_ready:
             if reread:

@@ -30,6 +30,10 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
         self.enable_compensation = self.properties.get("enable_compensation", True)
+        if self.enable_compensation:
+            self.logger.info("Using temperature/humidity compensation from {}, {}".format(self.temperature_name, self.humidity_name))
+        else:
+            self.logger.info("Not using external temp/humidity data compensation")
 
         # Set default sampling interval
         self.default_sampling_interval = 30
