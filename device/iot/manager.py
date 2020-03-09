@@ -580,6 +580,7 @@ class IotManager(manager.StateMachineManager):
             self.start_recipe(message)
         elif "recipe/stop" in message.topic:
             self.logger.debug("Received stop recipe command")
+            self.stop_recipe(message)
         else:
             self.logger.error("Received unknown command: {}".format(command.topic))
 
@@ -657,7 +658,7 @@ class IotManager(manager.StateMachineManager):
     ##### COMMAND FUNCTIONS ###############################################
 
     def start_recipe(self, message):
-        self.logger.debug("Received start recipe command")
+        self.logger.info("Received start recipe command")
 
         # Get parameters
         try:
@@ -781,7 +782,7 @@ class IotManager(manager.StateMachineManager):
 
     def stop_recipe(self, command: str) -> None:
         """Processes stop recipe command."""
-        self.logger.debug("Stopping recipe")
+        self.logger.info("Stopping recipe")
 
         # Stop recipe
         message, status = self.recipe.stop_recipe()
