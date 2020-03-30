@@ -29,6 +29,12 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         self.temperature_name = self.variables["compensation"]["temperature_celsius"]
         self.humidity_name = self.variables["compensation"]["humidity_percent"]
 
+        self.enable_compensation = self.properties.get("enable_compensation", True)
+        if self.enable_compensation:
+            self.logger.info("Using temperature/humidity compensation from {}, {}".format(self.temperature_name, self.humidity_name))
+        else:
+            self.logger.info("Not using external temp/humidity data compensation")
+
         # Set default sampling interval
         self.default_sampling_interval = 30
 
@@ -78,7 +84,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     def temperature(self) -> Optional[float]:
         """Gets compensation temperature value from shared environment state."""
         value = self.state.get_environment_reported_sensor_value(self.temperature_name)
-        if value != None:
+        if value is not None:
             return float(value)
         return None
 
@@ -86,7 +92,7 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
     def humidity(self) -> Optional[float]:
         """Gets compensation humidity value from shared environment state."""
         value = self.state.get_environment_reported_sensor_value(self.humidity_name)
-        if value != None:
+        if value is not None:
             return float(value)
         return None
 
@@ -126,41 +132,54 @@ class CCS811Manager(manager.PeripheralManager):  # type: ignore
         """Updates peripheral by reading co2 and tvoc values then reports them to shared 
         state. Checks for compensation variables before read."""
 
-        # Update compensation variables if new value
-        if self.new_compensation_variables():
+        with self.i2c_lock:
+            # Update compensation variables if new value and enabled
+            if self.enable_compensation and self.new_compensation_variables():
 
-            # Set compensation variables
+                if self.humidity is None:
+                    humidity = self.prev_humidity
+                else:
+                    humidity = self.humidity
+
+                if self.temperature is None:
+                    temperature = self.prev_temperature
+                else:
+                    temperature = self.temperature
+
+                self.logger.info("Updating compensation values to {} degC, {} RH".format(temperature, humidity))
+
+                # Set compensation variables
+                try:
+                    self.driver.write_environment_data(
+                        temperature=temperature, humidity=humidity
+                    )
+
+                    # Update previous values
+                    if self.temperature is not None:
+                        self.prev_temperature = self.temperature
+                    if self.humidity is not None:
+                        self.prev_humidity = self.humidity
+
+                except exceptions.DriverError:
+                    self.logger.exception("Unable to set compensation variables")
+                    self.mode = modes.ERROR
+                    self.health = 0.0
+
+            # Read co2 and tvoc
             try:
-                self.driver.write_environment_data(
-                    temperature=self.temperature, humidity=self.humidity
-                )
-
-                # Update previous values
-                if self.temperature != None:
-                    self.prev_temperature = self.temperature
-                if self.humidity != None:
-                    self.prev_humidity = self.humidity
-
+                co2, tvoc = self.driver.read_algorithm_data(reread=0)
             except exceptions.DriverError:
-                self.logger.exception("Unable to set compensation variables")
+                self.logger.exception("Unable to read co2, tvoc")
                 self.mode = modes.ERROR
                 self.health = 0.0
+                return
 
-        # Read co2 and tvoc
-        try:
-            co2, tvoc = self.driver.read_algorithm_data(reread=0)
-        except exceptions.DriverError:
-            self.logger.exception("Unable to read co2, tvoc")
-            self.mode = modes.ERROR
-            self.health = 0.0
-            return
-
-        # Update reported values
-        if co2 != None:
-          self.co2 = co2
-        if tvoc != None:
-          self.tvoc = tvoc
-        self.health = 100.0
+            # Update reported values
+            if co2 is not None:
+                self.co2 = co2
+            if tvoc is not None:
+                self.tvoc = tvoc
+            self.health = 100.0
 
     def clear_reported_values(self) -> None:
         """Clears reported values."""

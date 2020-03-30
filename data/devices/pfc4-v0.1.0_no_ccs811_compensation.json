@@ -1,0 +1,334 @@
+{
+  "format": "openag-standard-v1",
+  "name": "PFC4 v0.1.0 - no ccs811 env compensation",
+  "uuid": "8546ed97-857a-4a89-8593-1ee0b46149ad",
+  "peripherals": [
+    {
+      "name": "IndicatorLEDs",
+      "type": "PCA9633",
+      "uuid": "bd7f4997-0ae5-4a54-bac7-fb2e7449250b",
+      "parameters": {
+        "setup": {
+          "name": "Quadruple RGB",
+          "file_name": "actuator_pca9633/setups/quadruple_rgb"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": null
+        },
+        "communication": {
+          "devices": [
+            {
+              "name": "PeripheralLED",
+              "bus": "default",
+              "mux": "default",
+              "channel": 1,
+              "address": "0x62"
+            },
+            {
+              "name": "NetworkLED",
+              "bus": "default",
+              "mux": "default",
+              "channel": 4,
+              "address": "0x62"
+            },
+            {
+              "name": "IoTLED",
+              "bus": "default",
+              "mux": "0x77",
+              "channel": 3,
+              "address": "0x62"
+            },
+            {
+              "name": "UserLED",
+              "bus": "default",
+              "mux": "default",
+              "channel": 2,
+              "address": "0x62"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "LEDPanel-Top",
+      "type": "LEDDAC5578",
+      "uuid": "5596ed62-0cf6-4e58-b774-94fe7d537b91",
+      "parameters": {
+        "setup": {
+          "name": "LED Panel Taurus Actuator",
+          "file_name": "led_dac5578/setups/taurus-v2"
+        },
+        "variables": {
+          "sensor": {
+            "ppfd_umol_m2_s": "light_ppfd_umol_m2_s",
+            "spectrum_nm_percent": "light_spectrum_nm_percent",
+            "illumination_distance_cm": "light_illumination_distance_cm"
+          },
+          "actuator": {
+            "channel_output_percents": "light_channel_output_percents"
+          }
+        },
+        "communication": {
+          "panels": [
+            {
+              "name": "LEDPanel-Top",
+              "bus": "default",
+              "mux": "default",
+              "channel": 3,
+              "address": "0x47",
+              "active_low": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Camera-Top",
+      "type": "PiCamera",
+      "uuid": "818fb0ec-db0e-457c-8a88-12cdb14a44b1",
+      "parameters": {
+        "driver_module": "picam_driver",
+        "driver_class": "PiCameraDriver",
+        "setup": {
+          "name": "Raspberry Pi Camera v1.3 ",
+          "file_name": "camera/setups/pi_camera_v13"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": null
+        },
+        "communication": null,
+        "num_cameras": 1,
+        "lighting_control": {
+          "enabled": true,
+          "recipient_type": "Peripheral",
+          "recipient_name": "LEDPanel-Top",
+          "distance": 15,
+          "intensity": 400,
+          "spectrum": {
+            "380-399": 2.03,
+            "400-499": 20.30,
+            "500-599": 23.27,
+            "600-700": 31.09,
+            "701-780": 23.31
+          }
+        }
+      }
+    },
+    {
+      "name": "AtlasEC-Reservoir",
+      "type": "AtlasEC",
+      "uuid": "349fba97-1f23-48c7-8fe7-1ea717915dd4",
+      "parameters": {
+        "setup": {
+          "name": "Atlas Electrical Conductivity Sensor Default (K1.0)",
+          "file_name": "atlas_ec/setups/default_k1_0"
+        },
+        "variables": {
+          "sensor": {
+            "ec_ms_cm": "water_electrical_conductivity_ms_cm"
+          },
+          "actuator": null,
+          "compensation": {
+            "temperature_celsius": null
+          }
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 6,
+          "address": "0x64"
+        }
+      }
+    },
+    {
+      "name": "AtlasPH-Reservoir",
+      "type": "AtlasPH",
+      "uuid": "c29dd9ee-efe2-451e-82e4-4fe107bb6980",
+      "parameters": {
+        "setup": {
+          "name": "Atlas Potential Hydrogen Sensor Default",
+          "file_name": "atlas_ph/setups/default"
+        },
+        "variables": {
+          "sensor": {
+            "ph": "water_potential_hydrogen"
+          },
+          "actuator": null,
+          "compensation": {
+            "temperature_celsius": "water_temperature_celsius"
+          }
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 6,
+          "address": "0x63"
+        }
+      }
+    },
+    {
+      "name": "AtlasTemp-Reservoir",
+      "type": "AtlasTemp",
+      "uuid": "9e96cad1-fe29-4e2b-acdd-65d0288b50a3",
+      "parameters": {
+        "setup": {
+          "name": "Atlas Temperature Sensor Default",
+          "file_name": "atlas_temp/setups/default"
+        },
+        "variables": {
+          "sensor": {
+            "temperature": "water_temperature_celsius"
+          },
+          "actuator": null
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 6,
+          "address": "0x66"
+        }
+      }
+    },
+    {
+      "name": "WaterAerationPump",
+      "type": "ActuatorDAC5578",
+      "uuid": "2786aa6f-f603-4fd1-9963-9881ec4bdeb7",
+      "parameters": {
+        "setup": {
+          "name": "Water Aeration Pump",
+          "file_name": "actuator_dac5578/setups/water_aeration_pump"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": {
+            "output_variable": "water_aeration_pump_percent"
+          }
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 3,
+          "address": "0x47",
+          "port": 1,
+          "is_active_high": true
+        }
+      }
+    },
+    {
+      "name": "HeatSinkFanController",
+      "type": "ControllerADT7470",
+      "uuid": "b199a625-0df3-4883-ad6f-c46a5b6f9ba1",
+      "parameters": {
+        "setup": {
+          "name": "Single Sensor Single Fan",
+          "file_name": "controller_adt7470/setups/single_sensor_single_fan"
+        },
+        "variables": {
+          "sensor": null,
+          "actuator": null
+        },
+        "sensors": [
+          {
+            "variable_name": "heat_sink_temperature_celsius",
+            "sensor_id": 0
+          }
+        ],
+        "actuators": [
+          {
+            "duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
+            "fan_speed_name": "heat_sink_fan_speed_rpm",
+            "fan_id": 0,
+            "control_sensor_id": 0,
+            "minimum_temperature": 60.0,
+            "minimum_duty_cycle": 10.0,
+            "maximum_duty_cycle": 100.0,
+            "drive_frequency_mode": "low",
+            "tachometer_enabled": true
+          }
+        ],
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 1,
+          "address": "0x2E"
+        }
+      }
+    },
+    {
+      "name": "SHT25-Top",
+      "type": "SHT25",
+      "uuid": "23ed44ab-f810-4ca9-beab-82adcaf5f772",
+      "parameters": {
+        "setup": {
+          "name": "SHT25 Temperature / Humidity Sensor Default",
+          "file_name": "sht25/setups/default"
+        },
+        "variables": {
+          "sensor": {
+            "temperature_celsius": "air_temperature_celsius",
+            "humidity_percent": "air_humidity_percent"
+          },
+          "actuator": null
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 2,
+          "address": "0x40"
+        }
+      }
+    },
+    {
+      "name": "CCS811-Top",
+      "type": "CCS811",
+      "uuid": "40a1452c-3326-4464-8f49-51c09bec753b",
+      "parameters": {
+        "setup": {
+          "name": "CCS811 Carbon Dioxide Sensor - no env comp",
+          "file_name": "ccs811/setups/no_environmental_compensation"
+        },
+        "variables": {
+          "sensor": {
+            "co2_ppm": "air_carbon_dioxide_ppm",
+            "tvoc_ppb": "air_total_volatile_organic_compounds_ppb"
+          },
+          "compensation": {
+            "temperature_celsius": "air_temperature_celsius",
+            "humidity_percent": "air_humidity_percent"
+          },
+          "actuator": null
+        },
+        "communication": {
+          "bus": "default",
+          "mux": "default",
+          "channel": 2,
+          "address": "0x5a"
+        }
+      }
+    }
+  ],
+  "controllers": [
+    {
+      "name": "WaterAerationController",
+      "type": "WaterAerationController",
+      "uuid": "b3d37d51-0326-434b-b905-2b2adcacd5ba",
+      "parameters": {
+        "setup": {
+          "name": "KPM27H Default Water Aeration Controller",
+          "file_name": "water_aeration/setups/kpm27h_default"
+        },
+        "variables": {
+          "actuator_name": "water_aeration_pump_percent",
+          "rate_name": "water_aeration_rate_liter_liter_minute",
+          "period_name": "water_aeration_period_minutes",
+          "duty_cycle_name": "water_aeration_duty_cycle_percent",
+          "bubble_diameter_name": "water_aeration_bubble_diameter_mm",
+          "water_volume_name": "water_volume_liters"
+        },
+        "default_water_volume": 2
+      }
+    }
+  ]
+}

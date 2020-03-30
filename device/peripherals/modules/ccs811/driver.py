@@ -1,4 +1,5 @@
 # Import standard python modules
+import struct
 import time, threading
 
 # Import python variables
@@ -99,8 +100,8 @@ class CCS811Driver:
                 # Keep logs active
                 self.logger.info("Warming up, waiting for 20 minutes")
 
-                # Update every 30 seconds
-                time.sleep(30)
+                # Update every 5 minutes
+                time.sleep(5*60)
 
                 # Break out if simulating
                 if self.simulate:
@@ -136,7 +137,7 @@ class CCS811Driver:
 
     def read_status_register(self, retry: bool = True) -> StatusRegister:
         """Reads status of sensor."""
-        self.logger.info("Reading status register")
+        self.logger.debug("Reading status register")
         try:
             byte = self.i2c.read_register(0x00, retry=retry)
         except I2CError as e:
@@ -233,31 +234,50 @@ class CCS811Driver:
         retry: bool = True,
     ) -> None:
         """Writes compensation temperature and / or humidity to sensor."""
-        self.logger.debug("Writing environment data")
+        self.logger.debug("Writing environment data temp: {} humidity: {}".format(temperature, humidity))
 
         # Check valid environment values
-        if temperature == None and humidity == None:
-            raise ValueError("Temperature and/or humidity value required")
+        if temperature is None or humidity is None:
+            raise ValueError("Temperature and humidity value required")
+
+        # SRM trying code from Adafruit driver as a test
+        # Humidity is stored as an unsigned 16 bits in 1/512%RH. The default
+        # value is 50% = 0x64, 0x00. As an example 48.5% humidity would be 0x61,
+        # 0x00.
+        humidity = int(humidity * 512)
+
+        # Temperature is stored as an unsigned 16 bits integer in 1/512 degrees
+        # there is an offset: 0 maps to -25C. The default value is 25C = 0x64,
+        # 0x00. As an example 23.5% temperature would be 0x61, 0x00.
+        temperature = int((temperature + 25) * 512)
+
+        buf = bytearray(5)
+        buf[0] = 0x05
+        struct.pack_into(">HH", buf, 1, humidity, temperature)
 
         # Calculate temperature bytes
-        if temperature != None:
-            t = temperature
-            temp_msb, temp_lsb = bitwise.convert_base_1_512(t + 25)  # type: ignore
-        else:
-            temp_msb = 0x64
-            temp_lsb = 0x00
+        # SRM: This is the wrong approach. We shouldn't be defaulting here, we should use what ever the
+        #       previous value was, so we'll require both to be set and let the manager set the value to current
+        #       or previous. Otherwise we could just be undoing stuff.
+        #if temperature != None:
+        #    t = temperature
+        #    temp_msb, temp_lsb = bitwise.convert_base_1_512(t + 25)  # type: ignore
+        #else:
+        #    temp_msb = 0x64
+        #    temp_lsb = 0x00
 
         # Calculate humidity bytes
-        if humidity != None:
-            hum_msb, hum_lsb = bitwise.convert_base_1_512(humidity)  # type: ignore
-        else:
-            hum_msb = 0x64
-            hum_lsb = 0x00
+        #if humidity != None:
+        #    hum_msb, hum_lsb = bitwise.convert_base_1_512(humidity)  # type: ignore
+        #else:
+        #    hum_msb = 0x64
+        #    hum_lsb = 0x00
 
         # Write environment data to sensor
-        bytes_ = [0x05, hum_msb, hum_lsb, temp_msb, temp_lsb]
+        #bytes_ = [0x05, hum_msb, hum_lsb, temp_msb, temp_lsb]
         try:
-            self.i2c.write(bytes(bytes_), retry=retry)
+            #self.i2c.write(bytes(bytes_), retry=retry)
+            self.i2c.write(buf, retry=retry)
         except I2CError as e:
             raise exceptions.WriteEnvironmentDataError(logger=self.logger) from e
 
@@ -273,6 +293,8 @@ class CCS811Driver:
         except exceptions.ReadRegisterError as e:
             raise exceptions.ReadAlgorithmDataError(logger=self.logger) from e
 
+        # TODO: This shouldn't be recursive, otherwise we'll end up reading multiple times after the fact \
+        #   Potentially this is fixed by just adding a return to the read_algorithm_data line in the if reread section
         # Check if data is ready
         if not status.data_ready:
             if reread:

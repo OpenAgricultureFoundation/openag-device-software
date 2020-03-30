@@ -96,7 +96,7 @@ class SHT25Driver:
         msb, lsb = bytes_
         raw = msb * 256 + lsb
         temperature = float(-46.85 + ((raw * 175.72) / 65536.0))
-        temperature = float("{:.0f}".format(temperature))
+        temperature = round(temperature, 1) #float("{:.0f}".format(temperature))
 
         # Verify temperature value within valid range
         if temperature > self.min_temperature and temperature < self.min_temperature:
@@ -128,7 +128,7 @@ class SHT25Driver:
         msb, lsb = bytes_
         raw = msb * 256 + lsb
         humidity = float(-6 + ((raw * 125.0) / 65536.0))
-        humidity = float("{:.0f}".format(humidity))
+        humidity = round(humidity, 1) # float("{:.0f}".format(humidity))
 
         # Verify humidity value within valid range
         if humidity > self.min_humidity and humidity < self.min_humidity:
