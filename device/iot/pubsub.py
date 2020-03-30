@@ -151,7 +151,7 @@ class PubSub:
         # self.subscribe_to_topics()
     
     def subscribe_to_topics(self):
-        self.logger.info("Subscribing to topics")
+        self.logger.debug("Subscribing to topics")
         # self.client.subscribe(self.config_topic, qos=1)
         self.client.subscribe(self.command_topic, qos=1)
 
@@ -173,8 +173,8 @@ class PubSub:
 
         # Check if json webtoken is expired, if so renew client
         if self.json_web_token.is_expired:
+            self.logger.debug("JWT is expired... renewing")
             self.create_mqtt_client()  # TODO: Renew instead of re-create
-            # self.subscribe_to_topics() # Handled on the on_connect callback
 
         # Update mqtt client
         try:
