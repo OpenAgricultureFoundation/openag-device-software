@@ -60,7 +60,8 @@
     document.getElementById("registration-code").innerHTML = `${registrationCode}`;
 
     // Always show web ui
-    document.getElementById("cloud-ui-url").innerHTML = "https://eduuiv4-dot-openag-v1.appspot.com";
+      // TODO: Configure to a local server for running locally
+    document.getElementById("cloud-ui-url").innerHTML = "NOTE THIS IS OLD AND MIGHT NOT WORK https://eduuiv4-dot-openag-v1.appspot.com";
     document.getElementById("cloud-ui-url").href = "https://eduuiv4-dot-openag-v1.appspot.com";
 
 
@@ -203,7 +204,7 @@
     });
   }
 
-
+// TODO: Configure href below to a local server for running locally
 </script>
 {% endblock %}
 
@@ -223,7 +224,7 @@
     <h2>Connect</h2>
     <div class="card" id="connect-card">
       <h5><b>Registration Code:</b> <span id="registration-code">Loading...</span></h5>
-      <h5><b>Register Device At:</b> <a id="cloud-ui-url" href="https://eduuiv4-dot-openag-v1.appspot.com" target="_blank">https://eduuiv4-dot-openag-v1.appspot.com</a></h5>
+      <h5><b>Register Device At:</b> <a id="cloud-ui-url" href="https://eduuiv4-dot-openag-v1.appspot.com" target="_blank">(NOTE THIS IS OLD) https://eduuiv4-dot-openag-v1.appspot.com</a></h5>
       <h5><b>Connection Status:</b> <span id="status"></span></h5>
     </div>
 

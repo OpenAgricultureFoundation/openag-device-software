@@ -14,6 +14,8 @@ from device.utilities.iot import registration, tokens
 from device.iot import commands
 from device.iot import messages
 
+from django.conf import settings
+
 
 # Settings file will have hostname and port(s)
 MQTT_SETTINGS_FILE = os.path.join("device","iot","setups","local_mqtt.json")
@@ -375,18 +377,13 @@ class PubSub:
         # device_id = registration.device_id()
         # upload_file_name = '{}_{}'.format(device_id, base)
         #
-        # # commented URL below is for running the firebase cloud function
-        # # service locally for testing
-        # #URL = 'http://localhost:5000/fb-func-test/us-central1/saveImage'
-        #
-        # URL = 'https://us-central1-fb-func-test.cloudfunctions.net/saveImage'
         # DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
         #
         # try:
         #     # Use curl to do a multi part form post of the binary data (fast) to
         #     # our firebase cloud function that puts the image in the GCP
         #     # storage bucket.
-        #     res = subprocess.run(['curl', '--silent', URL, '-F', DATA])
+        #     res = subprocess.run(['curl', '--silent', settings.IMAGE_UPLOAD_URL, '-F', DATA])
         #     self.logger.debug("Uploaded file: {}".format(upload_file_name))
         #
         #     # Publish a message indicating that we uploaded the image to the

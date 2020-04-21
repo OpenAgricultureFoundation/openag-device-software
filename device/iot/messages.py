@@ -4,3 +4,6 @@ IMAGE_MESSAGE = "ImageUpload"  # new message type for new upload logic.
 BOOT_MESSAGE = "boot"
 STATUS_MESSAGE = "status"
 RECIPE_EVENT_MESSAGE = 'RecipeEvent'
+
+TEMPERATURE = "TEMPERATURE"
+

@@ -16,8 +16,11 @@ RSA_CERT_PATH = REGISTRATION_DATA_DIR + "rsa_cert.pem"
 RSA_PRIVATE_PATH = REGISTRATION_DATA_DIR + "rsa_private.pem"
 VERIFICATION_CODE_PATH = REGISTRATION_DATA_DIR + "verification_code.txt"
 REGISTER_SCRIPT_PATH = (
-    "scripts/iot/one_time_key_creation_and_iot_device_registration.sh"
+    "scripts/iot/one_time_key_creation_for_local_server.sh"
 )
+# REGISTER_SCRIPT_PATH = (
+#     "scripts/iot/one_time_key_creation_and_iot_device_registration.sh"
+# )
 
 # Initialize logger
 logger = Logger("IotRegistrationUtility", "iot")
