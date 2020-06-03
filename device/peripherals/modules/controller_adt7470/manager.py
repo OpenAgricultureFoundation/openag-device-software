@@ -9,7 +9,8 @@ from device.peripherals.classes.peripheral import manager, modes
 
 # Import manager elements
 from device.peripherals.common.adt7470 import driver
-from device.peripherals.modules.actuator_pca9633 import exceptions, events
+from device.peripherals.modules.controller_adt7470 import events
+from device.peripherals.modules.actuator_pca9633 import exceptions  # , events
 
 
 class ControllerADT7470Manager(manager.PeripheralManager):
@@ -24,6 +25,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
         # Initialize sensors and actuators
         self.sensors = self.parameters.get("sensors", [])
         self.actuators = self.parameters.get("actuators", [])
+        self.manual_duty_cycle = 100
 
         # Initialize setpoints
         for actuator in self.actuators:
@@ -69,7 +71,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
         # TODO: Add simulated bytes
         if self.simulate:
-          return
+            return
 
         # Initialize driver
         try:
@@ -94,7 +96,7 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
         # TODO: Add simulated bytes
         if self.simulate:
-          return
+            return
 
         try:
             # Set drive mode
@@ -164,11 +166,11 @@ class ControllerADT7470Manager(manager.PeripheralManager):
 
     def update_peripheral(self) -> None:
         """Updates peripheral by getting temperatures and fan speeds."""
-        
+
         # TODO: Add simulated bytes
         if self.simulate:
-          return
-        
+            return
+
         try:
             # Update sensors
             for sensor in self.sensors:
@@ -189,8 +191,11 @@ class ControllerADT7470Manager(manager.PeripheralManager):
                 self.set_actuator(duty_cycle_name, duty_cycle)
                 self.set_actuator(fan_speed_name, fan_speed)
                 if tachometer_enabled and duty_cycle > 0 and fan_speed == 0:
-                  self.logger.error("Unable to verify fan {} is functional. Duty Cycle: {}, Fan Speed: {}".format(fan_id, duty_cycle, fan_speed))
-                  health = 60.0
+                    self.logger.error(
+                        "Unable to verify fan {} is functional. Duty Cycle: {}, Fan Speed: {}".format(fan_id,
+                                                                                                      duty_cycle,
+                                                                                                      fan_speed))
+                    health = 60.0
             self.health = health
         except exceptions.DriverError as e:
             self.logger.exception("Unable to update peripheral: {}".format(e))
@@ -224,4 +229,169 @@ class ControllerADT7470Manager(manager.PeripheralManager):
             fan_speed_name = actuator.get("fan_speed_name")
             self.set_actuator(duty_cycle_name, None)
             self.set_actuator(fan_speed_name, None)
+
+    def check_peripheral_specific_events(self, request: Dict[str, Any]) -> None:
+        """Checks peripheral specific events."""
+        if request["type"] == events.TURN_ON:
+            self._turn_on()
+        elif request["type"] == events.TURN_OFF:
+            self._turn_off()
+        elif request["type"] == events.SET_DUTY_CYCLE:
+            self._set_duty_cycle(request)
+        else:
+            message = "Invalid event request type in queue: {}".format(request["type"])
+            self.logger.error(message)
+
+    def create_peripheral_specific_event(
+            self, request: Dict[str, Any]
+    ) -> Tuple[str, int]:
+        """Processes peripheral specific event."""
+        if request["type"] == events.TURN_ON:
+            return self.turn_on()
+        elif request["type"] == events.TURN_OFF:
+            return self.turn_off()
+        elif request["type"] == events.SET_DUTY_CYCLE:
+            return self.set_duty_cycle(request)
+        else:
+            return "Unknown event request type", 400
+
+    def turn_on(self) -> Tuple[str, int]:
+        """Pre-processes turn on event request."""
+        self.logger.debug("Pre-processing turn on event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            return "Must be in manual mode", 400
+
+        # Add event request to event queue
+        request = {"type": events.TURN_ON}
+        self.event_queue.put(request)
+
+        # Successfully turned on
+        return "Turning on", 200
+
+    def turn_off(self) -> Tuple[str, int]:
+        """Pre-processes turn off event request."""
+        self.logger.debug("Pre-processing turn off event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            return "Must be in manual mode", 400
+
+        # Add event request to event queue
+        request = {"type": events.TURN_OFF}
+        self.event_queue.put(request)
+
+        # Successfully turned off
+        return "Turning off", 200
+
+    def set_duty_cycle(self, request: Dict[str, Any]) -> Tuple[str, int]:
+        """Pre-processes set spc event request."""
+        self.logger.debug("Pre-processing set spd event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            message = "Must be in manual mode"
+            self.logger.debug(message)
+            return message, 400
+
+        # Get request parameters
+        try:
+            duty_cycle_string = request.get("value")
+            duty_cycle = float(duty_cycle_string)
+        except KeyError as e:
+            message = "Unable to set fan duty cycle, invalid request parameter: {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except ValueError as e:
+            message = "Unable to set fan duty cycle, {}".format(e)
+            self.logger.debug(message)
+            return message, 400
+        except:
+            message = "Unable to set fan duty cycle, unhandled exception"
+            self.logger.exception(message)
+            return message, 500
+
+        # Verify duty_cycle
+        if duty_cycle < 0 or duty_cycle > 100:
+            message = "Unable to set fan duty cycle, invalid value: {:.0F}%".format(
+                duty_cycle
+            )
+            self.logger.debug(message)
+            return message, 400
+
+        # Add event request to event queue
+        request = {"type": events.SET_DUTY_CYCLE, "duty_cycle": duty_cycle}
+        self.event_queue.put(request)
+
+        # Return response
+        return "Setting fan to {:.0F}%".format(duty_cycle), 200
+
+    def _turn_on(self) -> None:
+        """Processes turn on event request."""
+        self.logger.debug("Processing turn on event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            self.logger.critical("Tried to turn on from {} mode".format(self.mode))
+
+        # Turn on driver and update reported variables
+        try:
+            self.manual_set_all_fans(duty_cycle=self.manual_duty_cycle)
+
+        except exceptions.DriverError as e:
+            self.mode = modes.ERROR
+            message = "Unable to turn on: {}".format(e)
+            self.logger.debug(message)
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to turn on, unhandled exception"
+            self.logger.exception(message)
+
+    def _turn_off(self) -> None:
+        """Processes turn off event request."""
+        self.logger.debug("Processing turn off event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            self.logger.critical("Tried to turn off from {} mode".format(self.mode))
+
+        # Turn off driver and update reported variables
+        try:
+            self.manual_set_all_fans(duty_cycle=0.0)
+        except exceptions.DriverError as e:
+            self.mode = modes.ERROR
+            message = "Unable to turn off: {}".format(e)
+            self.logger.debug(message)
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to turn off, unhandled exception"
+            self.logger.exception(message)
+
+    def _set_duty_cycle(self, request: Dict[str, Any]) -> None:
+        """Processes set duty cycle event request."""
+        self.logger.debug("Processing set duty cycle event request")
+
+        # Require mode to be in manual
+        if self.mode != modes.MANUAL:
+            self.logger.critical("Tried to set duty cycle from {} mode".format(self.mode))
+
+        try:
+            duty_cycle = float(request.get("duty_cycle"))
+            self.manual_duty_cycle = duty_cycle
+            self.manual_set_all_fans(duty_cycle=self.manual_duty_cycle)
+        except exceptions.DriverError as e:
+            self.mode = modes.ERROR
+            message = "Unable to turn off: {}".format(e)
+            self.logger.debug(message)
+        except:
+            self.mode = modes.ERROR
+            message = "Unable to turn off, unhandled exception"
+            self.logger.exception(message)
+
+    def manual_set_all_fans(self, duty_cycle: float):
+        for actuator in self.actuators:
+            fan_id = actuator.get("fan_id")
+            self.driver.enable_manual_fan_control(fan_id)
+            self.driver.write_current_duty_cycle(fan_id, duty_cycle)
 

@@ -487,3 +487,5 @@ class ADT7470Driver:
                 self.i2c.write_register(CONFIG_REGISTER_2, register_byte)
             except I2CError as e:
                 raise exceptions.ShutdownError(logger=self.logger) from e
+
+

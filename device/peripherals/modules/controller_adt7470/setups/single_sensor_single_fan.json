@@ -18,13 +18,13 @@
 		"actuators": [
 			{
 				"duty_cycle_name": "heat_sink_fan_duty_cycle_percent",
-        "fan_speed_name": "heat_sink_fan_speed_rpm",
+        		"fan_speed_name": "heat_sink_fan_speed_rpm",
 				"fan_id": 0,
 				"control_sensor_id": 0,
 				"minimum_temperature": 40,
 				"minimum_duty_cycle": 5,
-        "maximum_duty_cycle": 100,
-        "drive_frequency_mode": "low"
+        		"maximum_duty_cycle": 100,
+        		"drive_frequency_mode": "low"
 			}
 		],
 		"communication": {
@@ -76,18 +76,28 @@
 	    },
 	    {
 	        "name": "Turn On",
-	        "description": "Turns on heater.",
+	        "description": "Turns on fan.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
 	    },
 	    {
 	        "name": "Turn Off",
-	        "description": "Turns off heater.",
+	        "description": "Turns off fan.",
 	        "value": null,
 	        "sequence": null,
 	        "is_manual": true
-	    }
+	    },
+		{
+			"name": "Set Duty Cycle",
+			"description": "Set the duty cycle for the fan 0-100%",
+			"value": {
+				"default": "50",
+				"units": "Percent"
+			},
+			"sequence": null,
+			"is_manual": true
+		}
 	],
 	"info": {
 		"variables": {
