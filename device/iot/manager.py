@@ -465,6 +465,7 @@ class IotManager(manager.StateMachineManager):
             "recipe_time_remaining_minutes": recipe_time_remaining_minutes,
             "recipe_time_remaining_string": recipe_time_remaining_string,
             "recipe_time_elapsed_string": recipe_time_elapsed_string,
+            "serial_number": os.getenv("SERIAL_NUMBER"),
         }
 
         # Publish system summary as a status message

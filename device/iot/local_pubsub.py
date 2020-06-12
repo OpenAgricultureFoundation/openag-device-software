@@ -349,57 +349,56 @@ class PubSub:
 
     # TODO: Need to make a local version of this
     def upload_image(self, file_name: str) -> None:
-        pass
-        # self.logger.debug("Uploading binary image")
-        #
-        # if not self.is_initialized:
-        #     self.logger.warning("Tried to publish before client initialized")
-        #     return
-        #
-        # if file_name == None or len(file_name) == 0:
-        #     error_message = "Unable to publish image, file name "
-        #     "`{}` is invalid".format(file_name)
-        #     self.logger.error(error_message)
-        #     raise ValueError(error_message)
-        #
-        # # Get the camera name and image type from the file_name:
-        # # /Users/rob/yada/yada/2019-05-08-T23-18-31Z_Camera-Top.png
-        # base = ''
-        # try:
-        #     base = os.path.basename(file_name) # get just the file from path
-        #     fn1 = base.split("_")  # delimiter between datetime & camera name
-        #     fn2 = fn1[1]           # 'Camera-Top.png'
-        #     fn3 = fn2.split(".")   # delimiter between file and extension
-        #     camera_name = fn3[0]   # 'Camera-Top'
-        # except:
-        #     camera_name = base
-        #
-        # device_id = registration.device_id()
-        # upload_file_name = '{}_{}'.format(device_id, base)
-        #
-        # DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
-        #
-        # try:
-        #     # Use curl to do a multi part form post of the binary data (fast) to
-        #     # our firebase cloud function that puts the image in the GCP
-        #     # storage bucket.
-        #     res = subprocess.run(['curl', '--silent', settings.IMAGE_UPLOAD_URL, '-F', DATA])
-        #     self.logger.debug("Uploaded file: {}".format(upload_file_name))
-        #
-        #     # Publish a message indicating that we uploaded the image to the
-        #     # public bucket written by the firebase cloud function, and we need
-        #     # to move the image to the usual images bucket we have been using.
-        #     message = {
-        #         "messageType": messages.IMAGE_MESSAGE,
-        #         "varName": camera_name,
-        #         "fileName": upload_file_name,
-        #     }
-        #
-        #     message_json = json.dumps(message)
-        #     self.client.publish(self.telemetry_topic, message_json, qos=1)
-        #
-        # except Exception as e:
-        #     error_message = "Unable to publish binary image, unhandled "
-        #     "exception: {}".format(type(e))
-        #     self.logger.exception(error_message)
+        self.logger.debug("Uploading binary image")
+
+        if not self.is_initialized:
+            self.logger.warning("Tried to publish before client initialized")
+            return
+
+        if file_name == None or len(file_name) == 0:
+            error_message = "Unable to publish image, file name "
+            "`{}` is invalid".format(file_name)
+            self.logger.error(error_message)
+            raise ValueError(error_message)
+
+        # Get the camera name and image type from the file_name:
+        # /Users/rob/yada/yada/2019-05-08-T23-18-31Z_Camera-Top.png
+        base = ''
+        try:
+            base = os.path.basename(file_name) # get just the file from path
+            fn1 = base.split("_")  # delimiter between datetime & camera name
+            fn2 = fn1[1]           # 'Camera-Top.png'
+            fn3 = fn2.split(".")   # delimiter between file and extension
+            camera_name = fn3[0]   # 'Camera-Top'
+        except:
+            camera_name = base
+
+        device_id = registration.device_id()
+        upload_file_name = '{}_{}'.format(device_id, base)
+
+        DATA = 'data=@{};filename={}'.format(file_name, upload_file_name)
+
+        try:
+            # Use curl to do a multi part form post of the binary data (fast) to
+            # our firebase cloud function that puts the image in the GCP
+            # storage bucket.
+            res = subprocess.run(['curl', '--silent', settings.IMAGE_UPLOAD_URL, '-F', DATA])
+            self.logger.debug("Uploaded file: {}".format(upload_file_name))
+
+            # Publish a message indicating that we uploaded the image to the
+            # public bucket written by the firebase cloud function, and we need
+            # to move the image to the usual images bucket we have been using.
+            message = {
+                "messageType": messages.IMAGE_MESSAGE,
+                "varName": camera_name,
+                "fileName": upload_file_name,
+            }
+
+            message_json = json.dumps(message)
+            self.client.publish(self.telemetry_topic, message_json, qos=1)
+
+        except Exception as e:
+            error_message = "Unable to publish binary image, unhandled "
+            "exception: {}".format(type(e))
+            self.logger.exception(error_message)
 
