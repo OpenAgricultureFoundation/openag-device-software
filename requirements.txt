@@ -7,7 +7,7 @@ jsonschema==3.1.1
 numpy==1.17.4
 pytest==3.5.1
 pytest-django==3.2.1
-cryptography==2.8
+cryptography==3.2
 pyjwt==1.6.0
 paho-mqtt==1.5.0
 pyudev==0.21.0
