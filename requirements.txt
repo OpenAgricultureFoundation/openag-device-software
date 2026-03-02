@@ -8,7 +8,7 @@ numpy==1.17.4
 pytest==3.5.1
 pytest-django==3.2.1
 cryptography==2.8
-pyjwt==1.6.0
+pyjwt==2.4.0
 paho-mqtt==1.5.0
 pyudev==0.21.0
 whitenoise==4.1
