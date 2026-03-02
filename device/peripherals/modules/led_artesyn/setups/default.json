@@ -1,0 +1,159 @@
+{
+	"name":  "Light Panel Artesyn Actuator",
+	"version": "1",
+	"uuid": "44eec6ec-58de-497e-9676-45de7ae500d6",
+	"module_name": "led_artesyn/manager",
+	"class_name": "LEDArtesynManager",
+    "properties": {
+        "artesyn_config": "setups/artesyn_config.json",
+        "debug": true
+    },
+	"parameters": {
+		"variables": {
+			"sensor": {
+				"ppfd_umol_m2_s": {
+					"name": {
+						"type": "string",
+						"default": "light_ppfd_umol_m2_s"
+					}
+				},
+				"spectrum_nm_percent": {
+					"name": {
+						"type": "string",
+						"default": "light_spectrum_nm_percent"
+					}
+				},
+				"illumination_distance_cm": {
+					"name": {
+						"type": "string",
+						"default": "light_illumination_distance_cm"
+					} 
+				}
+			},
+			"actuator": {
+				"channel_setpoint_percents": {
+					"name": {
+						"type": "string",
+						"default": "light_channel_setpoint_percents"
+					}
+				}
+			}
+		},	
+		"communication": null
+	},
+	"properties": {
+		"channels": {
+			"FR": {"name": "Far Red", "type": "FR", "port": 0},
+			"CW": {"name": "Cool White", "type": "CW", "port": 1},
+			"WW": {"name": "Warm White", "type": "WW", "port": 2}
+		},
+		"channel_types": {
+			"FR": {
+				"name": "Far Red",
+				"relative_intensity_percent": 1.8,
+		        "spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 0,
+		            "500-599": 0,
+		            "600-700": 10.7,
+		            "701-780": 89.3
+	        	}
+	        },
+			"CW": {
+				"name": "Cool White",
+				"relative_intensity_percent": 22.6,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 23.5,
+		            "500-599": 47,
+		            "600-700": 26.7,
+		            "701-780": 2.8
+	        	}
+	        },
+			"WW": {
+				"name": "Warm White",
+				"relative_intensity_percent": 21.8,
+				"spectrum_nm_percent": {
+		            "380-399": 0,
+		            "400-499": 8.3,
+		            "500-599": 38.4,
+		            "600-700": 48.2,
+		            "701-780": 5.1
+	        	}
+			}
+		}
+	},
+	"events": [
+		{
+		    "name": "Reset",
+		    "description": "Reset sensor.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Shutdown",
+		    "description": "Shutdown sensor.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Set Sampling Interval",
+		    "description": "Sets sampling interval.",
+		    "value": {
+		        "default": 10,
+		        "unit": "Seconds"
+		    },
+		    "sequence": null
+		},
+		{
+		    "name": "Enable Manual Mode",
+		    "description": "Allows actuator to be controlled by manual events.",
+		    "value": null,
+		    "sequence": null
+		},
+		{
+		    "name": "Turn On",
+		    "description": "Turns on all channels on light panel.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Turn Off",
+		    "description": "Turns off all channels on light panel.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Set Channel",
+		    "description": "Set channel name to intensity percent.",
+		    "value": {
+                "default": "WW, 100",
+                "unit": "ch, %"
+            },
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Fade",
+		    "description": "Sequentially fades individual channels up/down.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		},
+		{
+		    "name": "Sunrise",
+		    "description": "Runs sunrise / sunset demo.",
+		    "value": null,
+		    "sequence": null,
+		    "is_manual": true
+		}
+	],
+	"info": {
+		"variables": {
+			"sensors": null,
+			"actuators":null
+		}
+	}
+}
